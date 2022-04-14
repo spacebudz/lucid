@@ -6,9 +6,9 @@ This library is **experimental**. Expect bugs. It's still work in progress.
 
 ### Getting started
 
-You can check out the [Docs](./docs/index.html) and the [exampes](./src/examples/) folder.
+You can check out the [examples](./src/examples/) folder.
 
-### Preview
+#### Preview
 
 ```js
 await Lucid.initialize(
