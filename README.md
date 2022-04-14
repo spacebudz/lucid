@@ -50,6 +50,9 @@ Make sure in your `package.json` you have set `{"type" : "module"}`. Otherwise y
 To run the library flawlessly in Node.js you need to set the flag `--es-module-specifier-resolution=node` behind `node`.
 
 This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib).
+
 Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/plutus
+
 Branch: Plutus
+
 Commit hash: 9e739b6d9fc3978644b9bdda13de0c81d50e8949
