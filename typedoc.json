@@ -1,0 +1,5 @@
+{
+  "out": "./docs",
+  "excludeInternal": true,
+  "readme": "none"
+}
