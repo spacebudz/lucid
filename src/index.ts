@@ -181,7 +181,7 @@ export class Blockfrost implements ProviderSchema {
       body: tx.to_bytes(),
     }).then((res) => res.json());
     if (!result || result.error) {
-      if (result?.status_code === 400) throw new Error(result.error);
+      if (result?.status_code === 400) throw new Error(result.message);
       else throw new Error('Could not submit transaction.');
     }
     return result;
