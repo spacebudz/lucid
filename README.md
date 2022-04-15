@@ -33,7 +33,9 @@ console.log(txHash);
 
 ### NPM package
 
-Coming soon
+```
+npm install lucid-cardano
+```
 
 ### Compatibilty
 
