@@ -1,4 +1,4 @@
 rm -rf build
-mkdir -p build/lucid-js
-# mkdir -p build/lucid-web-js TODO
+mkdir -p build/lucid-cardano
+# mkdir -p build/lucid-cardano-web TODO
 node ./scripts/build.js

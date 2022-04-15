@@ -1,6 +1,6 @@
 {
   "name": "lucid-cardano",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript and Node.js.",
   "engines": {
     "node": ">= 16.13 <17"
@@ -8,7 +8,7 @@
   "browser": {
     "./custom_modules/cardano-multiplatform-lib-nodejs": false
   },
-  "main": "src/main.js",
+  "main": "src/index.ts",
   "devDependencies": {
     "@types/jest": "~27.0.2",
     "@types/node": "^16.11.21",
@@ -30,15 +30,16 @@
     "webpack-cli": "^4.9.2"
   },
   "scripts": {
-    "start": "node --es-module-specifier-resolution=node build/lucid-js/src/index.js",
+    "start": "node --es-module-specifier-resolution=node build/lucid-cardano/src/index.js",
     "clean": "rimraf coverage build tmp && rm -rf build",
     "prebuild": "./scripts/build.sh && npm run lint",
-    "build": "tsc --declaration -p tsconfig.build.json && cp -r custom_modules build/lucid-js",
+    "build": "tsc --declaration -p tsconfig.build.json && cp -r custom_modules build/lucid-cardano",
     "docs": "typedoc src/index.ts",
     "build:watch": "./scripts/build.sh && tsc -w -p tsconfig.build.json",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "publish": "npm run build && npm publish build/lucid-cardano"
   },
   "author": "Alessandro Konrad",
   "license": "MIT",

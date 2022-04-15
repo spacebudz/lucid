@@ -22,4 +22,7 @@ const packageJson = {
   types: 'src/index.d.ts',
 };
 
-fs.writeFileSync('./build/lucid-js/package.json', JSON.stringify(packageJson));
+fs.writeFileSync(
+  './build/lucid-cardano/package.json',
+  JSON.stringify(packageJson),
+);
