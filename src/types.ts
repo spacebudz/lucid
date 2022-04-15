@@ -23,9 +23,10 @@ export interface ProviderSchema {
   getProtocolParameters(): Promise<ProtocolParameters>;
   getCurrentSlot(): Promise<Slot>;
   getUtxos(address: Address): Promise<UTxO[]>;
-  getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]>;
-  // getDatum(datumHash: DatumHash): Promise<Datum>;
-  awaitTx(txHash: TxHash): Promise<boolean>;
+  getUtxosWithUnit?(address: Address, unit: Unit): Promise<UTxO[]>;
+  getDatum?(datumHash: DatumHash): Promise<Datum>;
+  awaitTx?(txHash: TxHash): Promise<boolean>;
+  submitTx?(tx: Transaction): Promise<TxHash>;
 }
 
 export type CredentialType = 'Key' | 'Script';
@@ -141,3 +142,6 @@ export type WalletProvider = 'nami' | 'eternl' | 'flint';
 
 /** JSON object */
 export type Json = any;
+
+/** Time in milliseconds */
+export type UnixTime = number;

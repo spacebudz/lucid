@@ -4,7 +4,14 @@ import {
   Value,
 } from '../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib';
 import { S } from './core';
-import { AddressDetailed, Assets, CredentialType, UTxO } from './types';
+import {
+  AddressDetailed,
+  Assets,
+  CredentialType,
+  Slot,
+  UnixTime,
+  UTxO,
+} from './types';
 
 export const getAddressDetails = (address: string): AddressDetailed => {
   /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
@@ -241,3 +248,15 @@ export const CSLToUtxo = (cslUtxo: TransactionUnspentOutput): UTxO => {
     datumHash: cslUtxo.output()?.datum()?.as_data_hash()?.to_hex(),
   };
 };
+
+export const unixTimeToSlot = (unixTime: UnixTime): Slot =>
+  Math.floor((unixTime - 1596491091000 + 4924800000) / 1000);
+
+export const unixTimeToSlotTestnet = (unixTime: UnixTime): Slot =>
+  Math.floor((unixTime - 1564431616000 - 29937600000) / 1000);
+
+export const slotToUnixTime = (slot: Slot): UnixTime =>
+  1596491091000 + (slot * 1000 - 4924800000);
+
+export const slotToUnixTimeTestnet = (slot: Slot): UnixTime =>
+  1596491091000 + slot * 1000 + 29937600000;

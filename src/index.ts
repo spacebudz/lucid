@@ -26,6 +26,7 @@ import {
   SpendingValidator,
   TxHash,
   Unit,
+  UnixTime,
   UTxO,
   Wallet,
   WalletProvider,
@@ -36,6 +37,8 @@ import {
   CSLToUtxo,
   assetsToValue,
   getAddressDetails,
+  unixTimeToSlot,
+  unixTimeToSlotTestnet,
 } from './utils';
 
 if (typeof window === 'undefined') {
@@ -110,7 +113,7 @@ export class Blockfrost implements ProviderSchema {
       outputIndex: r.output_index,
       assets: (() => {
         const a = {};
-        r.amount.forEach((am) => {
+        r.amount.forEach((am: any) => {
           a[am.unit] = BigInt(am.quantity);
         });
         return a;
@@ -166,6 +169,19 @@ export class Blockfrost implements ProviderSchema {
         }
       }, 3000);
     });
+  }
+
+  async submitTx(tx: Transaction): Promise<TxHash> {
+    const result = await fetch(`${this.url}/tx/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/cbor' },
+      body: tx.to_bytes(),
+    }).then((res) => res.json());
+    if (!result || result.error) {
+      if (result?.status_code === 400) throw new Error(result.message);
+      else throw new Error('Could not submit transaction.');
+    }
+    return result;
   }
 }
 
@@ -240,14 +256,25 @@ export class Lucid {
     )
       .to_address()
       .to_bech32();
-    //TODO
     this.wallet = {
       address,
       getCollateral: async () => {
-        return {} as any;
+        const utxos = await Lucid.utxosAt(address);
+        return utxos.filter(
+          (utxo) =>
+            Object.keys(utxo.assets).length === 1 &&
+            utxo.assets.lovelace >= 5000000n,
+        );
       },
       getCollateralRaw: async () => {
-        return {} as any;
+        const utxos = await Lucid.utxosAt(address);
+        return utxos
+          .filter(
+            (utxo) =>
+              Object.keys(utxo.assets).length === 1 &&
+              utxo.assets.lovelace >= 5000000n,
+          )
+          .map((utxo) => utxoToCSL(utxo));
       },
       getUtxos: async () => {
         return await Lucid.utxosAt(address);
@@ -255,11 +282,19 @@ export class Lucid {
       getUtxosRaw: async () => {
         return S.TransactionUnspentOutputs.new();
       },
-      signTx: async () => {
-        return S.TransactionWitnessSet.new();
+      signTx: async (tx: Transaction) => {
+        const witness = S.make_vkey_witness(
+          S.hash_transaction(tx.body()),
+          priv,
+        );
+        const txWitnessSetBuilder = S.TransactionWitnessSetBuilder.new();
+        txWitnessSetBuilder.add_vkey(witness);
+        return txWitnessSetBuilder.build();
       },
-      submitTx: async (_tx: Transaction) => {
-        return '' as TxHash;
+      submitTx: async (tx: Transaction) => {
+        return await Lucid.provider.submitTx(tx).catch((e) => {
+          throw new Error(e);
+        });
       },
     };
   }
@@ -311,7 +346,7 @@ export class Lucid {
           );
           return CSLToUtxo(parsedUtxo);
         });
-        return utxos as any;
+        return utxos;
       },
       getUtxosRaw: async () => {
         const utxos = S.TransactionUnspentOutputs.new();
@@ -332,9 +367,11 @@ export class Lucid {
         );
       },
       submitTx: async (tx: Transaction) => {
-        const txHash = await api.submitTx(
-          Buffer.from(tx.to_bytes()).toString('hex'),
-        );
+        const txHash = await api
+          .submitTx(Buffer.from(tx.to_bytes()).toString('hex'))
+          .catch((e) => {
+            throw new Error(e);
+          });
         return txHash;
       },
     };
@@ -572,6 +609,26 @@ export class Tx {
     return this;
   }
 
+  validFrom(unixTime: UnixTime) {
+    const slot =
+      Lucid.network === 'Mainnet'
+        ? unixTimeToSlot(unixTime)
+        : unixTimeToSlotTestnet(unixTime);
+    this.txBuilder.set_validity_start_interval(
+      S.BigNum.from_str(slot.toString()),
+    );
+    return this;
+  }
+
+  validTo(unixTime: UnixTime) {
+    const slot =
+      Lucid.network === 'Mainnet'
+        ? unixTimeToSlot(unixTime)
+        : unixTimeToSlotTestnet(unixTime);
+    this.txBuilder.set_ttl(S.BigNum.from_str(slot.toString()));
+    return this;
+  }
+
   attachMetadata(label: Label, metadata: Json) {
     this.txBuilder.add_json_metadatum(
       S.BigNum.from_str(label.toString()),
@@ -644,17 +701,52 @@ export class Tx {
     const utxos = await Lucid.wallet.getUtxosRaw();
     if (this.txBuilder.redeemers()?.len() > 0) {
       const collateral = await Lucid.wallet.getCollateralRaw();
+      if (collateral.length <= 0) throw new Error('No collateral UTxO found.');
       // 2 collateral utxos should be more than sufficient
       collateral.slice(0, 2).forEach((utxo) => {
         this.txBuilder.add_collateral(utxo.output().address(), utxo.input());
       });
     }
 
-    this.txBuilder.add_inputs_from(utxos, 3);
+    try {
+      this.txBuilder.add_inputs_from(
+        utxos,
+        S.CoinSelectionStrategyCIP2.RandomImproveMultiAsset,
+      );
+    } catch (e) {
+      try {
+        this.txBuilder.add_inputs_from(
+          utxos,
+          S.CoinSelectionStrategyCIP2.RandomImprove,
+        );
+      } catch (e) {
+        try {
+          this.txBuilder.add_inputs_from(
+            utxos,
+            S.CoinSelectionStrategyCIP2.LargestFirstMultiAsset,
+          );
+        } catch (e) {
+          try {
+            this.txBuilder.add_inputs_from(
+              utxos,
+              S.CoinSelectionStrategyCIP2.LargestFirst,
+            );
+          } catch (e) {
+            throw new Error(
+              'Coin selection failed. Not enough funds or no fitting UTxOs found.',
+            );
+          }
+        }
+      }
+    }
+
     this.txBuilder.add_change_if_needed(
       S.Address.from_bech32(Lucid.wallet.address),
     );
-    return new TxComplete(await this.txBuilder.construct());
+    return new TxComplete(
+      // TODO error handling from ex units calculation
+      await this.txBuilder.construct(),
+    );
   }
 }
 
@@ -672,8 +764,15 @@ export class TxComplete {
     return this;
   }
 
-  // TODO
-  // signWithPrivateKey(privateKey: string) {}
+  /** Add an extra signature from a private key */
+  signWithPrivateKey(privateKey: PrivateKey) {
+    const priv = S.PrivateKey.from_bech32(privateKey);
+    const witness = S.make_vkey_witness(
+      S.hash_transaction(this.txComplete.body()),
+      priv,
+    );
+    this.witnessSetBuilder.add_vkey(witness);
+  }
 
   complete() {
     const signedTx = S.Transaction.new(
