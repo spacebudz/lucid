@@ -280,7 +280,12 @@ export class Lucid {
         return await Lucid.utxosAt(address);
       },
       getUtxosRaw: async () => {
-        return S.TransactionUnspentOutputs.new();
+        const utxos = await Lucid.utxosAt(address);
+        const rawUtxos = S.TransactionUnspentOutputs.new();
+        utxos.forEach((utxo) => {
+          rawUtxos.add(utxoToCSL(utxo));
+        });
+        return rawUtxos;
       },
       signTx: async (tx: Transaction) => {
         const witness = S.make_vkey_witness(
