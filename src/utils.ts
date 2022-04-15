@@ -22,10 +22,14 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
-      parsedAddress.payment_cred().to_bytes(),
+      parsedAddress.payment_cred().kind() === 0
+        ? parsedAddress.payment_cred().to_keyhash().to_bytes()
+        : parsedAddress.payment_cred().to_scripthash().to_bytes(),
     ).toString('hex');
     const stakeKeyHash = Buffer.from(
-      parsedAddress.stake_cred().to_bytes(),
+      parsedAddress.stake_cred().kind() === 0
+        ? parsedAddress.stake_cred().to_keyhash().to_bytes()
+        : parsedAddress.stake_cred().to_scripthash().to_bytes(),
     ).toString('hex');
     return {
       type: 'Base',
@@ -41,10 +45,14 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
-      parsedAddress.payment_cred().to_bytes(),
+      parsedAddress.payment_cred().kind() === 0
+        ? parsedAddress.payment_cred().to_keyhash().to_bytes()
+        : parsedAddress.payment_cred().to_scripthash().to_bytes(),
     ).toString('hex');
     const stakeKeyHash = Buffer.from(
-      parsedAddress.stake_cred().to_bytes(),
+      parsedAddress.stake_cred().kind() === 0
+        ? parsedAddress.stake_cred().to_keyhash().to_bytes()
+        : parsedAddress.stake_cred().to_scripthash().to_bytes(),
     ).toString('hex');
     return {
       type: 'Base',
@@ -62,7 +70,9 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
-      parsedAddress.payment_cred().to_bytes(),
+      parsedAddress.payment_cred().kind() === 0
+        ? parsedAddress.payment_cred().to_keyhash().to_bytes()
+        : parsedAddress.payment_cred().to_scripthash().to_bytes(),
     ).toString('hex');
     return {
       type: 'Enterprise',
@@ -78,7 +88,9 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
-      parsedAddress.payment_cred().to_bytes(),
+      parsedAddress.payment_cred().kind() === 0
+        ? parsedAddress.payment_cred().to_keyhash().to_bytes()
+        : parsedAddress.payment_cred().to_scripthash().to_bytes(),
     ).toString('hex');
     return {
       type: 'Enterprise',
@@ -95,7 +107,9 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
-      parsedAddress.payment_cred().to_bytes(),
+      parsedAddress.payment_cred().kind() === 0
+        ? parsedAddress.payment_cred().to_keyhash().to_bytes()
+        : parsedAddress.payment_cred().to_scripthash().to_bytes(),
     ).toString('hex');
     return {
       type: 'Pointer',
@@ -111,7 +125,9 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
-      parsedAddress.payment_cred().to_bytes(),
+      parsedAddress.payment_cred().kind() === 0
+        ? parsedAddress.payment_cred().to_keyhash().to_bytes()
+        : parsedAddress.payment_cred().to_scripthash().to_bytes(),
     ).toString('hex');
     return {
       type: 'Pointer',
@@ -128,7 +144,9 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const stakeKeyHash = Buffer.from(
-      parsedAddress.payment_cred().to_bytes(),
+      parsedAddress.payment_cred().kind() === 0
+        ? parsedAddress.payment_cred().to_keyhash().to_bytes()
+        : parsedAddress.payment_cred().to_scripthash().to_bytes(),
     ).toString('hex');
     return {
       type: 'Reward',
@@ -144,7 +162,9 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const stakeKeyHash = Buffer.from(
-      parsedAddress.payment_cred().to_bytes(),
+      parsedAddress.payment_cred().kind() === 0
+        ? parsedAddress.payment_cred().to_keyhash().to_bytes()
+        : parsedAddress.payment_cred().to_scripthash().to_bytes(),
     ).toString('hex');
     return {
       type: 'Reward',
