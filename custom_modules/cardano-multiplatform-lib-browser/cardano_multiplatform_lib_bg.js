@@ -553,7 +553,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_1331(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1329(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__hf20c15ebccf7f833(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -16424,6 +16424,11 @@ export function __wbindgen_json_serialize(arg0, arg1) {
     getInt32Memory0()[arg0 / 4 + 0] = ptr0;
 };
 
+export function __wbg_fetch_da4b562f370dc6f1(arg0, arg1) {
+    var ret = getObject(arg0).fetch(getObject(arg1));
+    return addHeapObject(ret);
+};
+
 export function __wbindgen_string_get(arg0, arg1) {
     const obj = getObject(arg1);
     var ret = typeof(obj) === 'string' ? obj : undefined;
@@ -16506,16 +16511,6 @@ export function __wbg_newwithstrandinit_155cb1478824b198() { return handleError(
     return addHeapObject(ret);
 }, arguments) };
 
-export function __wbg_instanceof_Window_11e25482011fc506(arg0) {
-    var ret = getObject(arg0) instanceof Window;
-    return ret;
-};
-
-export function __wbg_fetch_eb9fd115eef29d0c(arg0, arg1) {
-    var ret = getObject(arg0).fetch(getObject(arg1));
-    return addHeapObject(ret);
-};
-
 export function __wbg_instanceof_Response_d61ff4c524b8dbc4(arg0) {
     var ret = getObject(arg0) instanceof Response;
     return ret;
@@ -16563,7 +16558,7 @@ export function __wbg_new_c143a4f563f78c4e(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_1331(a, state0.b, arg0, arg1);
+                return __wbg_adapter_1329(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -16713,7 +16708,7 @@ export function __wbindgen_memory() {
     return addHeapObject(ret);
 };
 
-export function __wbindgen_closure_wrapper8338(arg0, arg1, arg2) {
+export function __wbindgen_closure_wrapper8344(arg0, arg1, arg2) {
     var ret = makeMutClosure(arg0, arg1, 454, __wbg_adapter_32);
     return addHeapObject(ret);
 };
