@@ -174,7 +174,10 @@ export class Blockfrost implements ProviderSchema {
   async submitTx(tx: Transaction): Promise<TxHash> {
     const result = await fetch(`${this.url}/tx/submit`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/cbor' },
+      headers: {
+        'Content-Type': 'application/cbor',
+        project_id: this.projectId,
+      },
       body: tx.to_bytes(),
     }).then((res) => res.json());
     if (!result || result.error) {
