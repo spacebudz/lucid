@@ -37,9 +37,9 @@
     "docs": "typedoc src/index.ts",
     "build:watch": "./scripts/build.sh && tsc -w -p tsconfig.build.json",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "jest --coverage",
+    "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "jest --watch",
-    "publish": "npm run build && npm publish build/lucid-cardano"
+    "publish": "npm run test && npm run build && npm publish build/lucid-cardano"
   },
   "author": "Alessandro Konrad",
   "license": "MIT",

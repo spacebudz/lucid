@@ -37,6 +37,14 @@ console.log(txHash);
 npm install lucid-cardano
 ```
 
+### Docs
+
+You can generate documentation with:
+```
+npm run docs
+```
+It'll be located under `/docs`.
+
 ### Compatibilty
 
 To run it in the browser Webpack 5 is recommended or any other bundler which allows for top level await and WebAssembly. When you use Webpack 5 enable in the `webpack.config.js`:
@@ -52,6 +60,8 @@ Make sure in your `package.json` you have set `{"type" : "module"}`. Otherwise y
 To run the library flawlessly in Node.js you need to set the flag `--es-module-specifier-resolution=node` behind `node`.
 
 This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib).
+
+Documentation: https://cardano-lucid.readthedocs.io/en/latest
 
 Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/plutus
 
