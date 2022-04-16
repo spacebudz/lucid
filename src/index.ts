@@ -325,7 +325,6 @@ export class Lucid {
         .to_bech32();
 
     this.wallet = {
-      isBrowserWallet: true,
       address,
       rewardAddress,
       getCollateral: async () => {

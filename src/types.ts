@@ -124,7 +124,6 @@ export type AddressDetailed = {
 };
 
 export interface Wallet {
-  isBrowserWallet?: boolean;
   address: Address;
   rewardAddress?: RewardAddress;
   getCollateral(): Promise<UTxO[]>;
