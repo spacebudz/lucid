@@ -4,6 +4,7 @@ import {
   Address,
   Assets,
   CertificateValidator,
+  Configuration,
   Datum,
   Json,
   Label,
@@ -23,17 +24,29 @@ import {
   getAddressDetails,
   unixTimeToSlot,
   unixTimeToSlotTestnet,
+  valueToAssets,
+  chunk,
 } from '../utils';
 import { Lucid } from './lucid';
 import { TxComplete } from './txComplete';
+import { defaultConfig } from './txConfig';
 
 export class Tx {
   txBuilder: Core.TransactionBuilder;
+  configuration = defaultConfig;
 
   static new() {
     const t = new this();
     t.txBuilder = C.TransactionBuilder.new(Lucid.txBuilderConfig);
     return t;
+  }
+
+  /**
+   * Customize the transaction builder
+   */
+  config(newConfig: Partial<Configuration>) {
+    this.configuration = { ...this.configuration, ...newConfig };
+    return this;
   }
 
   /**
@@ -281,6 +294,8 @@ export class Tx {
   }
 
   async complete() {
+    const { enableChangeSplitting } = this.configuration;
+
     const utxos = await Lucid.wallet.getUtxosCore();
     if (this.txBuilder.redeemers()?.len() > 0) {
       const collateral = await Lucid.wallet.getCollateralCore();
@@ -309,8 +324,120 @@ export class Tx {
       }
     }
 
+    if (enableChangeSplitting) {
+      this.splitChange();
+    }
+
     this.txBuilder.add_change_if_needed(C.Address.from_bech32(Lucid.wallet.address));
     return new TxComplete(await this.txBuilder.construct());
+  }
+
+  /**
+   * Splits remaining assets into multiple change outputs
+   * if there's enough ADA to cover for minimum UTxO requirements.
+   *
+   * The objective is to create one collateral output as well as
+   * as many pure outputs as possible, since they cost the least to be consumed.
+   *
+   * It does so by following these steps:
+   * 1. Sort the native assets cannonically
+   * 2. Add outputs with a maximum of N native assets until these are exhausted
+   * 3. Continously create pure ADA outputs with half of the remaining amount
+   *    until said remaining amount is below the minimum K
+   *
+   * This is the advanced UTxO management algorithm used by Eternl
+   */
+  private async splitChange() {
+    const { coinsPerUtxoWord } = await Lucid.provider.getProtocolParameters();
+    const { changeCollateral, changeNativeAssetChunkSize, changeMinUtxo } = this.configuration;
+    const change = this.txBuilder
+      .get_explicit_input()
+      .checked_sub(this.txBuilder.get_explicit_output());
+
+    let changeAda = change.coin();
+
+    // Sort canonically so we group policy IDs together
+    const changeAssets = Object.keys(valueToAssets(change))
+      .filter((v) => v !== 'lovelace')
+      .sort((a, b) => a.localeCompare(b))
+      .reduce((res, key) => Object.assign(res, { [key]: change[key] }), {});
+
+    const numOutputsWithNativeAssets = Math.ceil(
+      Object.keys(changeAssets).length / changeNativeAssetChunkSize,
+    );
+
+    const minAdaPerOutput = C.min_ada_required(
+      assetsToValue(changeAssets),
+      false,
+      C.BigNum.from_str(coinsPerUtxoWord.toString()),
+    );
+    // conservative estimate, multiply by 1.3 instead of 1.1
+    // TODO: Division?
+    // .checked_mul(C.BigNum.from_str('130'))
+    // .checked_div(C.BigNum.from_str('100'));
+
+    // Do we have enough ADA in the change to split and still
+    // statisfy minADA requirements?
+    const shouldSplitChange =
+      minAdaPerOutput
+        .checked_mul(C.BigNum.from_str(numOutputsWithNativeAssets.toString()))
+        .checked_add(C.BigNum.from_str('1000000'))
+        .compare(changeAda) < 0;
+
+    if (change.multiasset() && shouldSplitChange) {
+      const assetChunks = chunk(Object.keys(changeAssets), 20);
+
+      for (const chunk of assetChunks) {
+        const val = assetsToValue(
+          chunk.reduce((res, key) => Object.assign(res, { [key]: change[key] }), {}),
+        );
+        const minAda = C.min_ada_required(
+          val,
+          false,
+          C.BigNum.from_str(coinsPerUtxoWord.toString()),
+        );
+
+        // TODO: Division
+        const coin = minAda.checked_mul(C.BigNum.from_str('110'));
+
+        val.set_coin(coin);
+        changeAda = changeAda.checked_sub(coin);
+
+        this.txBuilder.add_output(
+          C.TransactionOutput.new(C.Address.from_bech32(Lucid.wallet.address), val),
+        );
+      }
+    }
+
+    // Now try adding a collateral amount if possible
+    // Add a collateral output if possible
+    const collateralAmount = C.BigNum.from_str(changeCollateral);
+
+    if (changeAda.compare(collateralAmount.checked_add(minAdaPerOutput)) > 0) {
+      this.txBuilder.add_output(
+        C.TransactionOutput.new(
+          C.Address.from_bech32(Lucid.wallet.address),
+          C.Value.new(collateralAmount),
+        ),
+      );
+      changeAda = changeAda.checked_sub(collateralAmount);
+    }
+
+    // while (
+    // If the half is more than the minimum, we can split it
+    // changeAda
+    // TODO: Division
+    // .checked_div(BigNum.from_str('2'))
+    // .compare(C.BigNum.from_str(changeMinUtxo)) >= 0
+    // ) {
+    //   // TODO: Division
+    //   const half = changeAda.checked_div(BigNum.from_str('2'));
+    //   changeAda = changeAda.checked_sub(half);
+
+    //   this.txBuilder.add_output(
+    //     TransactionOutput.new(this.changeAddress, Value.new(half)),
+    //   );
+    // }
   }
 }
 

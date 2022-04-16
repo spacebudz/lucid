@@ -4,6 +4,13 @@ import { Blockfrost } from '../provider';
 
 export type Provider = Blockfrost; // more providers can be added here
 
+export interface Configuration {
+  enableChangeSplitting: boolean;
+  changeNativeAssetChunkSize: number;
+  changeMinUtxo: string;
+  changeCollateral: string;
+}
+
 export type ProtocolParameters = {
   minFeeA: number;
   minFeeB: number;

@@ -253,3 +253,16 @@ export const slotToUnixTime = (slot: Slot): UnixTime => 1596491091000 + (slot * 
 
 export const slotToUnixTimeTestnet = (slot: Slot): UnixTime =>
   1596491091000 + slot * 1000 + 29937600000;
+
+export const chunk = (array: any[], size: number) => {
+  const chunks = [];
+  const n = array.length;
+
+  let i = 0;
+
+  while (i < n) {
+    chunks.push(array.slice(i, (i += size)));
+  }
+
+  return chunks;
+};
