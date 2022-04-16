@@ -1,6 +1,6 @@
 {
   "env": {
-    "browser": false,
+    "browser": true,
     "es6": true,
     "node": true
   },
@@ -17,7 +17,7 @@
     "plugin:jest/recommended",
     "prettier"
   ],
-  "ignorePatterns": ["custom_modules/**/"],
+  "ignorePatterns": ["custom_modules/**/", "build/**/*"],
   "rules": {
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-explicit-any": "off",
