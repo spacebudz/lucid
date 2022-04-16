@@ -1,8 +1,9 @@
 import { C } from '../core';
 import Core from 'core/types';
-import { costModel } from '../utils';
+import { costModel, fromHex } from '../utils';
 import {
   Address,
+  ExternalWallet,
   Network,
   PrivateKey,
   Provider,
@@ -203,6 +204,58 @@ export class Lucid {
           Buffer.from(tx.to_bytes()).toString('hex'),
         );
         return txHash;
+      },
+    };
+  }
+
+  /**
+   * Emulates a CIP30 wallet by constructing it
+   * with the UTxOs, collateral and addresses.
+   */
+  static async selectWalletFromUtxos({
+    address,
+    utxos: rawUtxos,
+    collateral,
+    rewardAddress,
+  }: ExternalWallet) {
+    this.wallet = {
+      address,
+      rewardAddress,
+      getCollateral: async () => {
+        return collateral.map((rawUtxo) =>
+          coreToUtxo(C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo))),
+        );
+      },
+      getCollateralCore: async () => {
+        return collateral.map((rawUtxo) =>
+          C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo)),
+        );
+      },
+      getUtxos: async () => {
+        const utxos = rawUtxos.map((utxo) => {
+          const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
+            fromHex(utxo),
+          );
+          return coreToUtxo(parsedUtxo);
+        });
+        return utxos;
+      },
+      getUtxosCore: async () => {
+        const coreUtxos = C.TransactionUnspentOutputs.new();
+        rawUtxos.forEach((rawUtxo) =>
+          coreUtxos.add(
+            C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo)),
+          ),
+        );
+        return coreUtxos;
+      },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      signTx: async (_: Core.Transaction) => {
+        throw new Error('Not implemented');
+      },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      submitTx: async (_: Core.Transaction) => {
+        throw new Error('Not implemented');
       },
     };
   }
