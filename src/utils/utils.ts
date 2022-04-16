@@ -267,6 +267,16 @@ export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
   };
 };
 
+export const fromHex = (hexString: string) => {
+  return Buffer.from(hexString, 'hex');
+};
+
+export const toHex = (buf: Uint8Array) => {
+  return [...new Uint8Array(buf)]
+    .map((x) => x.toString(16).padStart(2, '0'))
+    .join('');
+};
+
 export const unixTimeToSlot = (unixTime: UnixTime): Slot =>
   Math.floor((unixTime - 1596491091000 + 4924800000) / 1000);
 

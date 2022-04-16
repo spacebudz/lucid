@@ -1,8 +1,9 @@
 import { S } from '../core';
-import Core from 'core/types';
-import { costModel } from '../utils';
+import Core, { TransactionUnspentOutput } from 'core/types';
+import { costModel, fromHex, toHex } from '../utils';
 import {
   Address,
+  ExternalWallet,
   Network,
   PrivateKey,
   Provider,
@@ -131,7 +132,9 @@ export class Lucid {
       },
     };
   }
-
+  /**
+   * CIP30 wallet selector. Can only be used in a browser environment
+   *  */
   static async selectWallet(walletProvider: WalletProvider) {
     if (!window?.cardano?.[walletProvider]) {
       throw new Error('Wallet not installed or not in a browser environment');
@@ -139,14 +142,14 @@ export class Lucid {
     const api = await window.cardano[walletProvider].enable();
 
     const address = S.Address.from_bytes(
-      Buffer.from((await api.getUsedAddresses())[0], 'hex'),
+      fromHex((await api.getUsedAddresses())[0]),
     ).to_bech32();
 
     const rewardAddressHex = (await api.getRewardAddresses())[0];
     const rewardAddress =
       rewardAddressHex &&
       S.RewardAddress.from_address(
-        S.Address.from_bytes(Buffer.from(rewardAddressHex, 'hex')),
+        S.Address.from_bytes(fromHex(rewardAddressHex)),
       )
         .to_address()
         .to_bech32();
@@ -157,7 +160,7 @@ export class Lucid {
       getCollateral: async () => {
         const utxos = (await api.experimental.getCollateral()).map((utxo) => {
           const parsedUtxo = S.TransactionUnspentOutput.from_bytes(
-            Buffer.from(utxo, 'hex'),
+            fromHex(utxo),
           );
           return coreToUtxo(parsedUtxo);
         });
@@ -165,16 +168,14 @@ export class Lucid {
       },
       getCollateralCore: async () => {
         const utxos = (await api.experimental.getCollateral()).map((utxo) => {
-          return S.TransactionUnspentOutput.from_bytes(
-            Buffer.from(utxo, 'hex'),
-          );
+          return S.TransactionUnspentOutput.from_bytes(fromHex(utxo));
         });
         return utxos;
       },
       getUtxos: async () => {
         const utxos = (await api.getUtxos()).map((utxo) => {
           const parsedUtxo = S.TransactionUnspentOutput.from_bytes(
-            Buffer.from(utxo, 'hex'),
+            fromHex(utxo),
           );
           return coreToUtxo(parsedUtxo);
         });
@@ -183,26 +184,67 @@ export class Lucid {
       getUtxosCore: async () => {
         const utxos = S.TransactionUnspentOutputs.new();
         (await api.getUtxos()).forEach((utxo) => {
-          utxos.add(
-            S.TransactionUnspentOutput.from_bytes(Buffer.from(utxo, 'hex')),
-          );
+          utxos.add(S.TransactionUnspentOutput.from_bytes(fromHex(utxo)));
         });
         return utxos;
       },
       signTx: async (tx: Core.Transaction) => {
-        const witnessSet = await api.signTx(
-          Buffer.from(tx.to_bytes()).toString('hex'),
-          true,
-        );
-        return S.TransactionWitnessSet.from_bytes(
-          Buffer.from(witnessSet, 'hex'),
-        );
+        const witnessSet = await api.signTx(toHex(tx.to_bytes()), true);
+        return S.TransactionWitnessSet.from_bytes(fromHex(witnessSet));
       },
       submitTx: async (tx: Core.Transaction) => {
-        const txHash = await api.submitTx(
-          Buffer.from(tx.to_bytes()).toString('hex'),
-        );
+        const txHash = await api.submitTx(toHex(tx.to_bytes()));
         return txHash;
+      },
+    };
+  }
+
+  /**
+   * Emulates a CIP30 wallet by constructing it
+   * with the UTxOs, collateral and addresses.
+   */
+  static async selectWalletFromUtxos({
+    address,
+    utxos: rawUtxos,
+    collateral,
+    rewardAddress,
+  }: ExternalWallet) {
+    this.wallet = {
+      address,
+      rewardAddress,
+      getCollateral: async () => {
+        return collateral.map((utxo) =>
+          coreToUtxo(TransactionUnspentOutput.from_bytes(fromHex(utxo))),
+        );
+      },
+      getCollateralCore: async () => {
+        return collateral.map((utxo) =>
+          S.TransactionUnspentOutput.from_bytes(fromHex(utxo)),
+        );
+      },
+      getUtxos: async () => {
+        const utxos = rawUtxos.map((utxo) => {
+          const parsedUtxo = S.TransactionUnspentOutput.from_bytes(
+            fromHex(utxo),
+          );
+          return coreToUtxo(parsedUtxo);
+        });
+        return utxos;
+      },
+      getUtxosCore: async () => {
+        const coreUtxos = S.TransactionUnspentOutputs.new();
+        rawUtxos.forEach((utxo) =>
+          coreUtxos.add(TransactionUnspentOutput.from_bytes(fromHex(utxo))),
+        );
+        return coreUtxos;
+      },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      signTx: async (_: Core.Transaction) => {
+        throw new Error('Not implemented');
+      },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      submitTx: async (_: Core.Transaction) => {
+        throw new Error('Not implemented');
       },
     };
   }
