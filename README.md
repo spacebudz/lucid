@@ -5,7 +5,7 @@
 
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/berry-pool/lucid?style=plastic)
 
-[![Read the Docs](https://img.shields.io/readthedocs/cardano-lucid?style=plastic)](https://cardano-lucid.readthedocs.io/en/latest/)
+[![Read the Docs](https://img.shields.io/readthedocs/cardano-lucid?style=plastic)](https://berry-pool.github.io/lucid/)
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/berry_ales?style=social)](https://twitter.com/berry_ales)
 
