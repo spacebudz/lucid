@@ -1,4 +1,4 @@
-import { S } from './';
+import { S } from '../';
 
 export const costModel = {
   plutusV1: () => {

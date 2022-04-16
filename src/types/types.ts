@@ -1,9 +1,7 @@
-import {
-  TransactionUnspentOutput,
-  Transaction,
-  TransactionWitnessSet,
-  TransactionUnspentOutputs,
-} from '../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib';
+import Core from 'core/types';
+import { Blockfrost } from '../provider';
+
+export type Provider = Blockfrost; // more providers can be added here
 
 export type ProtocolParameters = {
   minFeeA: number;
@@ -26,7 +24,7 @@ export interface ProviderSchema {
   getUtxosWithUnit?(address: Address, unit: Unit): Promise<UTxO[]>;
   getDatum?(datumHash: DatumHash): Promise<Datum>;
   awaitTx?(txHash: TxHash): Promise<boolean>;
-  submitTx?(tx: Transaction): Promise<TxHash>;
+  submitTx?(tx: Core.Transaction): Promise<TxHash>;
 }
 
 export type CredentialType = 'Key' | 'Script';
@@ -127,11 +125,11 @@ export interface Wallet {
   address: Address;
   rewardAddress?: RewardAddress;
   getCollateral(): Promise<UTxO[]>;
-  getCollateralRaw(): Promise<TransactionUnspentOutput[]>;
+  getCollateralCore(): Promise<Core.TransactionUnspentOutput[]>;
   getUtxos(): Promise<UTxO[]>;
-  getUtxosRaw(): Promise<TransactionUnspentOutputs>;
-  signTx(tx: Transaction): Promise<TransactionWitnessSet>;
-  submitTx(signedTx: Transaction): Promise<TxHash>;
+  getUtxosCore(): Promise<Core.TransactionUnspentOutputs>;
+  signTx(tx: Core.Transaction): Promise<Core.TransactionWitnessSet>;
+  submitTx(signedTx: Core.Transaction): Promise<TxHash>;
 }
 
 /** Represents an empty Datum or Redeemer */

@@ -11,4 +11,7 @@ module.exports = {
       useESM: true,
     },
   },
+  roots: ['<rootDir>'],
+  modulePaths: ['<rootDir>'],
+  moduleDirectories: ['node_modules', 'custom_modules'],
 };

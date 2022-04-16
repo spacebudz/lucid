@@ -17,8 +17,12 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": false,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": "./src",
+    "paths": {
+      "core/types": ["../custom_modules/cardano-multiplatform-lib-browser"]
+    }
   },
   "include": ["src/**/*", "tests/**/*"],
-  "files": ["src/global.d.ts"]
+  "files": ["src/types/global.d.ts"]
 }

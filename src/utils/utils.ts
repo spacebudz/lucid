@@ -1,9 +1,5 @@
-import {
-  StakeCredential,
-  TransactionUnspentOutput,
-  Value,
-} from '../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib';
-import { S } from './core';
+import { S } from '../core';
+import Core from 'core/types';
 import {
   AddressDetailed,
   Assets,
@@ -11,7 +7,7 @@ import {
   Slot,
   UnixTime,
   UTxO,
-} from './types';
+} from '../types';
 
 export const getAddressDetails = (address: string): AddressDetailed => {
   /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
@@ -176,13 +172,15 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   throw new Error('No address type matched for: ' + address);
 };
 
-const getCredentialType = (credential: StakeCredential): CredentialType => {
+const getCredentialType = (
+  credential: Core.StakeCredential,
+): CredentialType => {
   if (credential.kind() === 0) return 'Key';
   if (credential.kind() === 1) return 'Script';
   return null;
 };
 
-export const valueToAssets = (value: Value): Assets => {
+export const valueToAssets = (value: Core.Value): Assets => {
   const assets = {};
   assets['lovelace'] = BigInt(value.coin().to_str());
   if (value.multiasset()) {
@@ -236,7 +234,7 @@ export const assetsToValue = (assets: Assets) => {
   return value;
 };
 
-export const utxoToCSL = (utxo: UTxO): TransactionUnspentOutput => {
+export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
   const output = S.TransactionOutput.new(
     S.Address.from_bech32(utxo.address),
     assetsToValue(utxo.assets),
@@ -257,15 +255,15 @@ export const utxoToCSL = (utxo: UTxO): TransactionUnspentOutput => {
   );
 };
 
-export const CSLToUtxo = (cslUtxo: TransactionUnspentOutput): UTxO => {
+export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
   return {
-    txHash: Buffer.from(cslUtxo.input().transaction_id().to_bytes()).toString(
+    txHash: Buffer.from(coreUtxo.input().transaction_id().to_bytes()).toString(
       'hex',
     ),
-    outputIndex: parseInt(cslUtxo.input().index().to_str()),
-    assets: valueToAssets(cslUtxo.output().amount()),
-    address: cslUtxo.output().address().to_bech32(), // TODO add byron address
-    datumHash: cslUtxo.output()?.datum()?.as_data_hash()?.to_hex(),
+    outputIndex: parseInt(coreUtxo.input().index().to_str()),
+    assets: valueToAssets(coreUtxo.output().amount()),
+    address: coreUtxo.output().address().to_bech32(), // TODO add byron address
+    datumHash: coreUtxo.output()?.datum()?.as_data_hash()?.to_hex(),
   };
 };
 
