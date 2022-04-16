@@ -1,3 +1,4 @@
+import { PlutusData } from 'utils/plutusData';
 import {
   Lucid,
   Blockfrost,
@@ -9,6 +10,7 @@ import {
   Redeemer,
   SpendingValidator,
   TxHash,
+  toHex,
 } from '..';
 
 /**
@@ -48,15 +50,9 @@ const matchingNumberAddress: Address = C.EnterpriseAddress.new(
   .to_address()
   .to_bech32();
 
-const DATUM = (number: number): Datum =>
-  Buffer.from(C.PlutusData.new_integer(C.BigInt.from_str(number.toString())).to_bytes()).toString(
-    'hex',
-  );
+const DATUM = (number: number): Datum => toHex(PlutusData.fromJS(number).to_bytes());
 
-const REDEEMER = (number: number): Redeemer =>
-  Buffer.from(C.PlutusData.new_integer(C.BigInt.from_str(number.toString())).to_bytes()).toString(
-    'hex',
-  );
+const REDEEMER = (number: number): Redeemer => toHex(PlutusData.fromJS(number).to_bytes());
 
 export const lockUtxo = async (number: number, lovelace: Lovelace): Promise<TxHash> => {
   const tx = await Tx.new()
