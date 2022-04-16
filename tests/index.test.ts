@@ -36,3 +36,21 @@ describe('Testing wallet', () => {
     expect(oldAddress).not.toBe(address);
   });
 });
+
+describe('Datum', () => {
+  test('Build datum schema', async () => {
+    // data Test = Test Integer | A { a :: Integer, b :: ByteString }
+    const Integer = 0;
+    const ByteString = 'bytes';
+
+    const TestType = {
+      Test: Integer,
+      A: {
+        a: Integer,
+        b: ByteString,
+      },
+    };
+    expect(TestType).toBeDefined();
+    //TODO
+  });
+});

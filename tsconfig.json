@@ -16,7 +16,8 @@
     "noUnusedParameters": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "resolveJsonModule": true
   },
   "include": ["src/**/*", "tests/**/*"],
   "files": ["src/global.d.ts"]
