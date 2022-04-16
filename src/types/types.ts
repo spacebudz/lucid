@@ -98,7 +98,7 @@ export type Lovelace = BigInt;
 export type Label = number;
 
 /** Hex */
-export type RawUTxO = string;
+export type CoreUTxO = string;
 
 /** bech32 */
 export type PrivateKey = string;
@@ -130,8 +130,8 @@ export type AddressDetailed = {
  */
 export interface ExternalWallet {
   address: Address;
-  utxos: RawUTxO[];
-  collateral: RawUTxO[];
+  utxos: CoreUTxO[];
+  collateral: CoreUTxO[];
   rewardAddress?: RewardAddress;
 }
 

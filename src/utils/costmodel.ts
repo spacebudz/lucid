@@ -1,4 +1,4 @@
-import { S } from '../';
+import { C } from '../';
 
 export const costModel = {
   plutusV1: () => {
@@ -17,12 +17,12 @@ export const costModel = {
       1, 1, 150000, 32, 150000, 32, 150000, 32, 150000, 32, 150000, 32, 150000,
       32, 150000, 32, 3345831, 1, 1,
     ];
-    const costmdls = S.Costmdls.new();
-    const costmdl = S.CostModel.new();
+    const costmdls = C.Costmdls.new();
+    const costmdl = C.CostModel.new();
     costModel.forEach((cost, index) => {
-      costmdl.set(index, S.Int.new_i32(cost));
+      costmdl.set(index, C.Int.new_i32(cost));
     });
-    costmdls.insert(S.Language.new_plutus_v1(), costmdl);
+    costmdls.insert(C.Language.new_plutus_v1(), costmdl);
     return costmdls;
   },
 };

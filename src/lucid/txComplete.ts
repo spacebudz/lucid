@@ -1,4 +1,4 @@
-import { S } from '../core';
+import { C } from '../core';
 import Core from 'core/types';
 import { PrivateKey } from '../types';
 import { Lucid } from './lucid';
@@ -9,7 +9,7 @@ export class TxComplete {
   witnessSetBuilder: Core.TransactionWitnessSetBuilder;
   constructor(tx: Core.Transaction) {
     this.txComplete = tx;
-    this.witnessSetBuilder = S.TransactionWitnessSetBuilder.new();
+    this.witnessSetBuilder = C.TransactionWitnessSetBuilder.new();
     this.witnessSetBuilder.add_existing(this.txComplete.witness_set());
   }
   async sign() {
@@ -20,16 +20,16 @@ export class TxComplete {
 
   /** Add an extra signature from a private key */
   signWithPrivateKey(privateKey: PrivateKey) {
-    const priv = S.PrivateKey.from_bech32(privateKey);
-    const witness = S.make_vkey_witness(
-      S.hash_transaction(this.txComplete.body()),
+    const priv = C.PrivateKey.from_bech32(privateKey);
+    const witness = C.make_vkey_witness(
+      C.hash_transaction(this.txComplete.body()),
       priv,
     );
     this.witnessSetBuilder.add_vkey(witness);
   }
 
   complete() {
-    const signedTx = S.Transaction.new(
+    const signedTx = C.Transaction.new(
       this.txComplete.body(),
       this.witnessSetBuilder.build(),
       this.txComplete.auxiliary_data(),

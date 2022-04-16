@@ -1,4 +1,4 @@
-import { S } from '../core';
+import { C } from '../core';
 import Core from 'core/types';
 import {
   AddressDetailed,
@@ -13,8 +13,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
   // Base Address
   try {
-    const parsedAddress = S.BaseAddress.from_address(
-      S.Address.from_bytes(Buffer.from(address, 'hex')),
+    const parsedAddress = C.BaseAddress.from_address(
+      C.Address.from_bytes(Buffer.from(address, 'hex')),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -36,8 +36,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     };
   } catch (e) {}
   try {
-    const parsedAddress = S.BaseAddress.from_address(
-      S.Address.from_bech32(address),
+    const parsedAddress = C.BaseAddress.from_address(
+      C.Address.from_bech32(address),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -61,8 +61,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
 
   // Enterprise Address
   try {
-    const parsedAddress = S.EnterpriseAddress.from_address(
-      S.Address.from_bytes(Buffer.from(address, 'hex')),
+    const parsedAddress = C.EnterpriseAddress.from_address(
+      C.Address.from_bytes(Buffer.from(address, 'hex')),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -79,8 +79,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   } catch (e) {}
 
   try {
-    const parsedAddress = S.EnterpriseAddress.from_address(
-      S.Address.from_bech32(address),
+    const parsedAddress = C.EnterpriseAddress.from_address(
+      C.Address.from_bech32(address),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -98,8 +98,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
 
   // Pointer Address
   try {
-    const parsedAddress = S.PointerAddress.from_address(
-      S.Address.from_bytes(Buffer.from(address, 'hex')),
+    const parsedAddress = C.PointerAddress.from_address(
+      C.Address.from_bytes(Buffer.from(address, 'hex')),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -116,8 +116,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   } catch (e) {}
 
   try {
-    const parsedAddress = S.PointerAddress.from_address(
-      S.Address.from_bech32(address),
+    const parsedAddress = C.PointerAddress.from_address(
+      C.Address.from_bech32(address),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -135,8 +135,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
 
   // Reward Address
   try {
-    const parsedAddress = S.RewardAddress.from_address(
-      S.Address.from_bytes(Buffer.from(address, 'hex')),
+    const parsedAddress = C.RewardAddress.from_address(
+      C.Address.from_bytes(Buffer.from(address, 'hex')),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const stakeKeyHash = Buffer.from(
@@ -153,8 +153,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   } catch (e) {}
 
   try {
-    const parsedAddress = S.RewardAddress.from_address(
-      S.Address.from_bech32(address),
+    const parsedAddress = C.RewardAddress.from_address(
+      C.Address.from_bech32(address),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const stakeKeyHash = Buffer.from(
@@ -203,7 +203,7 @@ export const valueToAssets = (value: Core.Value): Assets => {
 };
 
 export const assetsToValue = (assets: Assets) => {
-  const multiAsset = S.MultiAsset.new();
+  const multiAsset = C.MultiAsset.new();
   const lovelace = assets['lovelace'];
   const units = Object.keys(assets);
   const policies = [
@@ -215,41 +215,41 @@ export const assetsToValue = (assets: Assets) => {
   ];
   policies.forEach((policy) => {
     const policyUnits = units.filter((unit) => unit.slice(0, 56) === policy);
-    const assetsValue = S.Assets.new();
+    const assetsValue = C.Assets.new();
     policyUnits.forEach((unit) => {
       assetsValue.insert(
-        S.AssetName.new(Buffer.from(unit.slice(56), 'hex')),
-        S.BigNum.from_str(assets[unit].toString()),
+        C.AssetName.new(Buffer.from(unit.slice(56), 'hex')),
+        C.BigNum.from_str(assets[unit].toString()),
       );
     });
     multiAsset.insert(
-      S.ScriptHash.from_bytes(Buffer.from(policy, 'hex')),
+      C.ScriptHash.from_bytes(Buffer.from(policy, 'hex')),
       assetsValue,
     );
   });
-  const value = S.Value.new(
-    S.BigNum.from_str(lovelace ? lovelace.toString() : '0'),
+  const value = C.Value.new(
+    C.BigNum.from_str(lovelace ? lovelace.toString() : '0'),
   );
   if (units.length > 1 || !lovelace) value.set_multiasset(multiAsset);
   return value;
 };
 
 export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
-  const output = S.TransactionOutput.new(
-    S.Address.from_bech32(utxo.address),
+  const output = C.TransactionOutput.new(
+    C.Address.from_bech32(utxo.address),
     assetsToValue(utxo.assets),
   );
   if (utxo.datumHash) {
     output.set_datum(
-      S.Datum.new_data_hash(
-        S.DataHash.from_bytes(Buffer.from(utxo.datumHash, 'hex')),
+      C.Datum.new_data_hash(
+        C.DataHash.from_bytes(Buffer.from(utxo.datumHash, 'hex')),
       ),
     );
   }
-  return S.TransactionUnspentOutput.new(
-    S.TransactionInput.new(
-      S.TransactionHash.from_bytes(Buffer.from(utxo.txHash, 'hex')),
-      S.BigNum.from_str(utxo.outputIndex.toString()),
+  return C.TransactionUnspentOutput.new(
+    C.TransactionInput.new(
+      C.TransactionHash.from_bytes(Buffer.from(utxo.txHash, 'hex')),
+      C.BigNum.from_str(utxo.outputIndex.toString()),
     ),
     output,
   );
@@ -267,15 +267,10 @@ export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
   };
 };
 
-export const fromHex = (hexString: string) => {
-  return Buffer.from(hexString, 'hex');
-};
+export const fromHex = (hex: string) => Buffer.from(hex, 'hex');
 
-export const toHex = (buf: Uint8Array) => {
-  return [...new Uint8Array(buf)]
-    .map((x) => x.toString(16).padStart(2, '0'))
-    .join('');
-};
+export const toHex = (bytes: Buffer | Uint8Array): string =>
+  Buffer.from(bytes).toString('hex');
 
 export const unixTimeToSlot = (unixTime: UnixTime): Slot =>
   Math.floor((unixTime - 1596491091000 + 4924800000) / 1000);

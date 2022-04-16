@@ -1,6 +1,6 @@
-import { getAddressDetails, Lucid, S } from '../src';
+import { getAddressDetails, Lucid, C } from '../src';
 
-const privateKey = S.PrivateKey.generate_ed25519().to_bech32();
+const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
 await Lucid.selectWalletFromPrivateKey(privateKey);
 
 describe('Testing wallet', () => {
@@ -11,8 +11,8 @@ describe('Testing wallet', () => {
 
   test('Address type', async () => {
     const { address } = getAddressDetails(Lucid.wallet.address);
-    const enterpriseAddress = S.EnterpriseAddress.from_address(
-      S.Address.from_bech32(address),
+    const enterpriseAddress = C.EnterpriseAddress.from_address(
+      C.Address.from_bech32(address),
     )
       .to_address()
       .to_bech32();
@@ -29,7 +29,7 @@ describe('Testing wallet', () => {
   test('Switch wallet', async () => {
     const oldAddress = Lucid.wallet.address;
 
-    const newPrivateKey = S.PrivateKey.generate_ed25519().to_bech32();
+    const newPrivateKey = C.PrivateKey.generate_ed25519().to_bech32();
     await Lucid.selectWalletFromPrivateKey(newPrivateKey);
 
     const address = Lucid.wallet.address;

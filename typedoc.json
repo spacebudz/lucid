@@ -1,8 +1,7 @@
 {
   "out": "./docs",
   "readme": "/README.md",
-  "name": "Berry-Pool/Lucid",
+  "name": "Lucid",
   "excludeInternal": true,
   "disableSources": true
 }
-
