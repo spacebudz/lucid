@@ -2,8 +2,8 @@ import {
   StakeCredential,
   TransactionUnspentOutput,
   Value,
-} from '../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib';
-import { S } from './core';
+} from '../../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib';
+import { S } from '../core';
 import {
   AddressDetailed,
   Assets,
@@ -11,7 +11,7 @@ import {
   Slot,
   UnixTime,
   UTxO,
-} from './types';
+} from '../types';
 
 export const getAddressDetails = (address: string): AddressDetailed => {
   /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */

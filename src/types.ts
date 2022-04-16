@@ -4,6 +4,9 @@ import {
   TransactionWitnessSet,
   TransactionUnspentOutputs,
 } from '../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib';
+import { Blockfrost } from './blockfrost';
+
+export type Provider = Blockfrost;
 
 export type ProtocolParameters = {
   minFeeA: number;
