@@ -1,13 +1,5 @@
 import Core from 'core/types';
-import {
-  Address,
-  ProtocolParameters,
-  ProviderSchema,
-  Slot,
-  TxHash,
-  Unit,
-  UTxO,
-} from '../types';
+import { Address, ProtocolParameters, ProviderSchema, Slot, TxHash, Unit, UTxO } from '../types';
 
 export class Blockfrost implements ProviderSchema {
   url: string;
@@ -47,10 +39,9 @@ export class Blockfrost implements ProviderSchema {
     let page = 1;
     /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
     while (true) {
-      let pageResult = await fetch(
-        `${this.url}/addresses/${address}/utxos?page=${page}`,
-        { headers: { project_id: this.projectId } },
-      ).then((res) => res.json());
+      let pageResult = await fetch(`${this.url}/addresses/${address}/utxos?page=${page}`, {
+        headers: { project_id: this.projectId },
+      }).then((res) => res.json());
       if (pageResult.error) {
         if ((result as any).status_code === 400) return [];
         else if ((result as any).status_code === 500) return [];
@@ -81,10 +72,9 @@ export class Blockfrost implements ProviderSchema {
     let result = [];
     let page = 1;
     while (true) {
-      let pageResult = await fetch(
-        `${this.url}/addresses/${address}/utxos/${unit}?page=${page}`,
-        { headers: { project_id: this.projectId } },
-      ).then((res) => res.json());
+      let pageResult = await fetch(`${this.url}/addresses/${address}/utxos/${unit}?page=${page}`, {
+        headers: { project_id: this.projectId },
+      }).then((res) => res.json());
       if (pageResult.error) {
         if ((result as any).status_code === 400) return [];
         else if ((result as any).status_code === 500) return [];

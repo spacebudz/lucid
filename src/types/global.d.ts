@@ -8,10 +8,7 @@ type WalletAPI = {
   getChangeAddress(): Promise<string>;
   getRewardAddresses(): Promise<string[]>;
   signTx(tx: string, partialSign: boolean): Promise<string>;
-  signData(
-    address: string,
-    payload: string,
-  ): Promise<{ signature: string; key: string }>;
+  signData(address: string, payload: string): Promise<{ signature: string; key: string }>;
   submitTx(tx: string): Promise<string>;
   getCollateral(): Promise<string[]>;
   experimental: {

@@ -21,10 +21,7 @@ export class TxComplete {
   /** Add an extra signature from a private key */
   signWithPrivateKey(privateKey: PrivateKey) {
     const priv = C.PrivateKey.from_bech32(privateKey);
-    const witness = C.make_vkey_witness(
-      C.hash_transaction(this.txComplete.body()),
-      priv,
-    );
+    const witness = C.make_vkey_witness(C.hash_transaction(this.txComplete.body()), priv);
     this.witnessSetBuilder.add_vkey(witness);
   }
 

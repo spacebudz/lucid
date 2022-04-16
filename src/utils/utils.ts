@@ -1,13 +1,6 @@
 import { C } from '../core';
 import Core from 'core/types';
-import {
-  AddressDetailed,
-  Assets,
-  CredentialType,
-  Slot,
-  UnixTime,
-  UTxO,
-} from '../types';
+import { AddressDetailed, Assets, CredentialType, Slot, UnixTime, UTxO } from '../types';
 
 export const getAddressDetails = (address: string): AddressDetailed => {
   /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
@@ -36,9 +29,7 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     };
   } catch (e) {}
   try {
-    const parsedAddress = C.BaseAddress.from_address(
-      C.Address.from_bech32(address),
-    );
+    const parsedAddress = C.BaseAddress.from_address(C.Address.from_bech32(address));
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
@@ -79,9 +70,7 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   } catch (e) {}
 
   try {
-    const parsedAddress = C.EnterpriseAddress.from_address(
-      C.Address.from_bech32(address),
-    );
+    const parsedAddress = C.EnterpriseAddress.from_address(C.Address.from_bech32(address));
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
@@ -116,9 +105,7 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   } catch (e) {}
 
   try {
-    const parsedAddress = C.PointerAddress.from_address(
-      C.Address.from_bech32(address),
-    );
+    const parsedAddress = C.PointerAddress.from_address(C.Address.from_bech32(address));
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
@@ -153,9 +140,7 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   } catch (e) {}
 
   try {
-    const parsedAddress = C.RewardAddress.from_address(
-      C.Address.from_bech32(address),
-    );
+    const parsedAddress = C.RewardAddress.from_address(C.Address.from_bech32(address));
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const stakeKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
@@ -172,9 +157,7 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   throw new Error('No address type matched for: ' + address);
 };
 
-const getCredentialType = (
-  credential: Core.StakeCredential,
-): CredentialType => {
+const getCredentialType = (credential: Core.StakeCredential): CredentialType => {
   if (credential.kind() === 0) return 'Key';
   if (credential.kind() === 1) return 'Script';
   return null;
@@ -207,11 +190,7 @@ export const assetsToValue = (assets: Assets) => {
   const lovelace = assets['lovelace'];
   const units = Object.keys(assets);
   const policies = [
-    ...new Set(
-      units
-        .filter((unit) => unit !== 'lovelace')
-        .map((unit) => unit.slice(0, 56)),
-    ),
+    ...new Set(units.filter((unit) => unit !== 'lovelace').map((unit) => unit.slice(0, 56))),
   ];
   policies.forEach((policy) => {
     const policyUnits = units.filter((unit) => unit.slice(0, 56) === policy);
@@ -222,14 +201,9 @@ export const assetsToValue = (assets: Assets) => {
         C.BigNum.from_str(assets[unit].toString()),
       );
     });
-    multiAsset.insert(
-      C.ScriptHash.from_bytes(Buffer.from(policy, 'hex')),
-      assetsValue,
-    );
+    multiAsset.insert(C.ScriptHash.from_bytes(Buffer.from(policy, 'hex')), assetsValue);
   });
-  const value = C.Value.new(
-    C.BigNum.from_str(lovelace ? lovelace.toString() : '0'),
-  );
+  const value = C.Value.new(C.BigNum.from_str(lovelace ? lovelace.toString() : '0'));
   if (units.length > 1 || !lovelace) value.set_multiasset(multiAsset);
   return value;
 };
@@ -241,9 +215,7 @@ export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
   );
   if (utxo.datumHash) {
     output.set_datum(
-      C.Datum.new_data_hash(
-        C.DataHash.from_bytes(Buffer.from(utxo.datumHash, 'hex')),
-      ),
+      C.Datum.new_data_hash(C.DataHash.from_bytes(Buffer.from(utxo.datumHash, 'hex'))),
     );
   }
   return C.TransactionUnspentOutput.new(
@@ -257,9 +229,7 @@ export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
 
 export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
   return {
-    txHash: Buffer.from(coreUtxo.input().transaction_id().to_bytes()).toString(
-      'hex',
-    ),
+    txHash: Buffer.from(coreUtxo.input().transaction_id().to_bytes()).toString('hex'),
     outputIndex: parseInt(coreUtxo.input().index().to_str()),
     assets: valueToAssets(coreUtxo.output().amount()),
     address: coreUtxo.output().address().to_bech32(), // TODO add byron address
@@ -269,8 +239,9 @@ export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
 
 export const fromHex = (hex: string) => Buffer.from(hex, 'hex');
 
-export const toHex = (bytes: Buffer | Uint8Array): string =>
-  Buffer.from(bytes).toString('hex');
+export const toHex = (buf: Uint8Array) => {
+  return [...new Uint8Array(buf)].map((x) => x.toString(16).padStart(2, '0')).join('');
+};
 
 export const unixTimeToSlot = (unixTime: UnixTime): Slot =>
   Math.floor((unixTime - 1596491091000 + 4924800000) / 1000);
@@ -278,8 +249,7 @@ export const unixTimeToSlot = (unixTime: UnixTime): Slot =>
 export const unixTimeToSlotTestnet = (unixTime: UnixTime): Slot =>
   Math.floor((unixTime - 1564431616000 - 29937600000) / 1000);
 
-export const slotToUnixTime = (slot: Slot): UnixTime =>
-  1596491091000 + (slot * 1000 - 4924800000);
+export const slotToUnixTime = (slot: Slot): UnixTime => 1596491091000 + (slot * 1000 - 4924800000);
 
 export const slotToUnixTimeTestnet = (slot: Slot): UnixTime =>
   1596491091000 + slot * 1000 + 29937600000;

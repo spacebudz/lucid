@@ -40,28 +40,25 @@ const matchingNumberScript: SpendingValidator = {
 const matchingNumberAddress: Address = C.EnterpriseAddress.new(
   0, // testnet
   C.StakeCredential.from_scripthash(
-    C.PlutusScript.from_bytes(
-      Buffer.from(matchingNumberScript.script, 'hex'),
-    ).hash(C.ScriptHashNamespace.PlutusV1),
+    C.PlutusScript.from_bytes(Buffer.from(matchingNumberScript.script, 'hex')).hash(
+      C.ScriptHashNamespace.PlutusV1,
+    ),
   ),
 )
   .to_address()
   .to_bech32();
 
 const DATUM = (number: number): Datum =>
-  Buffer.from(
-    C.PlutusData.new_integer(C.BigInt.from_str(number.toString())).to_bytes(),
-  ).toString('hex');
+  Buffer.from(C.PlutusData.new_integer(C.BigInt.from_str(number.toString())).to_bytes()).toString(
+    'hex',
+  );
 
 const REDEEMER = (number: number): Redeemer =>
-  Buffer.from(
-    C.PlutusData.new_integer(C.BigInt.from_str(number.toString())).to_bytes(),
-  ).toString('hex');
+  Buffer.from(C.PlutusData.new_integer(C.BigInt.from_str(number.toString())).to_bytes()).toString(
+    'hex',
+  );
 
-export const lockUtxo = async (
-  number: number,
-  lovelace: Lovelace,
-): Promise<TxHash> => {
+export const lockUtxo = async (number: number, lovelace: Lovelace): Promise<TxHash> => {
   const tx = await Tx.new()
     .payToContract(matchingNumberAddress, DATUM(number), { lovelace })
     .complete();

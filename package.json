@@ -42,7 +42,8 @@
     "lint": "eslint . --ext .ts,.tsx",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "publish": "npm run test && npm run build && npm publish build/lucid-cardano"
+    "publish": "npm run test && npm run build && npm publish build/lucid-cardano",
+    "format": "prettier --write '**/*.ts'"
   },
   "author": "Alessandro Konrad",
   "license": "MIT",

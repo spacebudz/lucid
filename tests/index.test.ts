@@ -1,3 +1,4 @@
+import { Construct, PlutusData } from '../src/utils/plutusData';
 import { getAddressDetails, Lucid, C, toHex, utxoToCore } from '../src';
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
@@ -11,9 +12,7 @@ describe('Testing wallet', () => {
 
   test('Address type', async () => {
     const { address } = getAddressDetails(Lucid.wallet.address);
-    const enterpriseAddress = C.EnterpriseAddress.from_address(
-      C.Address.from_bech32(address),
-    )
+    const enterpriseAddress = C.EnterpriseAddress.from_address(C.Address.from_bech32(address))
       .to_address()
       .to_bech32();
     expect(address).toBe(enterpriseAddress);
@@ -70,5 +69,16 @@ describe('Datum', () => {
     };
     expect(TestType).toBeDefined();
     //TODO
+  });
+});
+
+describe('PlutusData', () => {
+  test('Construct plutus data', () => {
+    const data = PlutusData.fromJS(
+      new Construct(1, [BigInt(1), 'abc', 'def', new Construct(0, [])]),
+    );
+
+    expect(data).toBe('d87a9f0141ab41ded87980ff');
+    // == 122([1, h'AB', h'DE', 121([])])
   });
 });
