@@ -39,7 +39,11 @@
     "clean": "rimraf coverage build tmp && rm -rf build",
     "prebuild": "./scripts/build.sh && npm run lint",
     "build": "tsc --declaration -p tsconfig.build.json",
+<<<<<<< HEAD
     "docs": "typedoc --entryPoints ./custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.d.ts --entryPoints ./custom_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.d.ts --entryPoints src --entryPointStrategy expand --exclude '**/core/*+(index|csl).ts' --plugin ./node_modules/typedoc-theme-category/dist/index.js --theme category",
+=======
+    "docs": "typedoc src/index.ts",
+>>>>>>> 5f3d5c0e58e9ba99e4dd714f9cb0c3cf37cdc556
     "build:watch": "./scripts/build.sh && tsc -w -p tsconfig.build.json",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
