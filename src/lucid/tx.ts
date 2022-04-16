@@ -286,63 +286,36 @@ export class Tx {
     return this;
   }
 
+  /**
+   * Converts strings to bytes if prefixed with **'0x'**
+   *
+   */
+  attachMetadataWithConversion(label: Label, metadata: Json) {
+    this.txBuilder.add_json_metadatum_with_schema(
+      C.BigNum.from_str(label.toString()),
+      JSON.stringify(metadata),
+      C.MetadataJsonSchema.BasicConversions,
+    );
+    return this;
+  }
+
   attachSpendingValidator(spendingValidator: SpendingValidator) {
-    if (spendingValidator.type === 'Native') {
-      this.txBuilder.add_native_script(
-        C.NativeScript.from_bytes(Buffer.from(spendingValidator.script, 'hex')),
-      );
-    }
-    if (spendingValidator.type === 'Plutus') {
-      this.txBuilder.add_plutus_script(
-        C.PlutusScript.from_bytes(Buffer.from(spendingValidator.script, 'hex')),
-      );
-    }
+    attachScript(this, spendingValidator);
     return this;
   }
 
   attachMintingPolicy(mintingPolicy: MintingPolicy) {
-    if (mintingPolicy.type === 'Native') {
-      this.txBuilder.add_native_script(
-        C.NativeScript.from_bytes(Buffer.from(mintingPolicy.script, 'hex')),
-      );
-    }
-    if (mintingPolicy.type === 'Plutus') {
-      this.txBuilder.add_plutus_script(
-        C.PlutusScript.from_bytes(Buffer.from(mintingPolicy.script, 'hex')),
-      );
-    }
+    attachScript(this, mintingPolicy);
     return this;
   }
 
   attachCertificateValidator(certValidator: CertificateValidator) {
-    if (certValidator.type === 'Native') {
-      this.txBuilder.add_native_script(
-        C.NativeScript.from_bytes(Buffer.from(certValidator.script, 'hex')),
-      );
-    }
-    if (certValidator.type === 'Plutus') {
-      this.txBuilder.add_plutus_script(
-        C.PlutusScript.from_bytes(Buffer.from(certValidator.script, 'hex')),
-      );
-    }
+    attachScript(this, certValidator);
     return this;
   }
 
   attachWithdrawalValidator(withdrawalValidator: WithdrawalValidator) {
-    if (withdrawalValidator.type === 'Native') {
-      this.txBuilder.add_native_script(
-        C.NativeScript.from_bytes(
-          Buffer.from(withdrawalValidator.script, 'hex'),
-        ),
-      );
-    }
-    if (withdrawalValidator.type === 'Plutus') {
-      this.txBuilder.add_plutus_script(
-        C.PlutusScript.from_bytes(
-          Buffer.from(withdrawalValidator.script, 'hex'),
-        ),
-      );
-    }
+    attachScript(this, withdrawalValidator);
     return this;
   }
 
@@ -395,3 +368,23 @@ export class Tx {
     return new TxComplete(await this.txBuilder.construct());
   }
 }
+
+const attachScript = (
+  tx: Tx,
+  script:
+    | SpendingValidator
+    | MintingPolicy
+    | CertificateValidator
+    | WithdrawalValidator,
+) => {
+  if (script.type === 'Native') {
+    tx.txBuilder.add_native_script(
+      C.NativeScript.from_bytes(Buffer.from(script.script, 'hex')),
+    );
+  }
+  if (script.type === 'Plutus') {
+    tx.txBuilder.add_plutus_script(
+      C.PlutusScript.from_bytes(Buffer.from(script.script, 'hex')),
+    );
+  }
+};

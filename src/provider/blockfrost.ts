@@ -101,7 +101,7 @@ export class Blockfrost implements ProviderSchema {
       outputIndex: r.output_index,
       assets: (() => {
         const a = {};
-        return r.amount.forEach((am) => {
+        return r.amount.forEach((am: any) => {
           a[am.unit] = BigInt(am.quantity);
         });
       })(),
