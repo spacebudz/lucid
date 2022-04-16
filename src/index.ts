@@ -157,7 +157,7 @@ export class Blockfrost implements ProviderSchema {
   }
 
   async awaitTx(txHash: TxHash): Promise<boolean> {
-    return new Promise((res, _) => {
+    return new Promise((res) => {
       const confirmation = setInterval(async () => {
         const isConfirmed = await fetch(`${this.url}/txs/${txHash}`, {
           headers: { project_id: this.projectId },
