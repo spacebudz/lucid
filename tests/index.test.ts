@@ -1,3 +1,4 @@
+import { Construct, PlutusData } from '../src/utils/plutusData';
 import { getAddressDetails, Lucid, C, toHex, utxoToCore } from '../src';
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
@@ -70,5 +71,17 @@ describe('Datum', () => {
     };
     expect(TestType).toBeDefined();
     //TODO
+  });
+});
+
+describe('PlutusData', () => {
+  test('Construct plutus data', () => {
+    const data = PlutusData.fromJS(
+      new Construct(1, [BigInt(1), 'abc', 'def', new Construct(0, [])]),
+    );
+    const serialized = toHex(data.to_bytes());
+
+    expect(serialized).toBe('d87a9f0141ab41ded87980ff');
+    // == 122([1, h'AB', h'DE', 121([])])
   });
 });
