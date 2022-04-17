@@ -1,14 +1,14 @@
+import { PlutusData } from 'utils/plutusData';
 import {
   Lucid,
   Blockfrost,
   C,
   Tx,
   Address,
-  Datum,
   Lovelace,
-  Redeemer,
   SpendingValidator,
   TxHash,
+  toHex,
 } from '..';
 
 /**
@@ -48,22 +48,15 @@ const matchingNumberAddress: Address = C.EnterpriseAddress.new(
   .to_address()
   .to_bech32();
 
-const DATUM = (number: number): Datum =>
-  Buffer.from(
-    C.PlutusData.new_integer(C.BigInt.from_str(number.toString())).to_bytes(),
-  ).toString('hex');
-
-const REDEEMER = (number: number): Redeemer =>
-  Buffer.from(
-    C.PlutusData.new_integer(C.BigInt.from_str(number.toString())).to_bytes(),
-  ).toString('hex');
+const getPlutusData = (number: number) =>
+  toHex(PlutusData.fromJS(number).to_bytes());
 
 export const lockUtxo = async (
   number: number,
   lovelace: Lovelace,
 ): Promise<TxHash> => {
   const tx = await Tx.new()
-    .payToContract(matchingNumberAddress, DATUM(number), { lovelace })
+    .payToContract(matchingNumberAddress, getPlutusData(number), { lovelace })
     .complete();
 
   const signedTx = (await tx.sign()).complete();
@@ -77,10 +70,10 @@ export const redeemUtxo = async (number: number): Promise<TxHash> => {
   const utxo = (await Lucid.utxosAt(matchingNumberAddress))[0];
 
   // add datum to utxo (datum discovery may happen automatically in a future release)
-  utxo.datum = DATUM(number);
+  utxo.datum = getPlutusData(number);
 
   const tx = await Tx.new()
-    .collectFrom([utxo], REDEEMER(number))
+    .collectFrom([utxo], getPlutusData(number))
     .attachSpendingValidator(matchingNumberScript)
     .complete();
 

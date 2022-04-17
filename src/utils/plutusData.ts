@@ -16,16 +16,16 @@ export class PlutusData extends C.PlutusData {
   static fromJS(data: PlutusDataJS) {
     try {
       if (typeof data === 'bigint') {
-        return C.PlutusData.new_integer(C.BigInt.from_str(data.toString()));
+        return this.new_integer(C.BigInt.from_str(data.toString()));
       } else if (typeof data === 'string') {
-        return C.PlutusData.new_bytes(fromHex(data));
+        return this.new_bytes(fromHex(data));
       } else if (data instanceof Construct) {
         const { index, args } = data;
         const plutusList = C.PlutusList.new();
 
         args.forEach((arg) => plutusList.add(PlutusData.fromJS(arg)));
 
-        return C.PlutusData.new_constr_plutus_data(
+        return this.new_constr_plutus_data(
           C.ConstrPlutusData.new(
             C.BigNum.from_str(index.toString()),
             plutusList,
@@ -36,7 +36,7 @@ export class PlutusData extends C.PlutusData {
 
         data.forEach((arg) => plutusList.add(PlutusData.fromJS(arg)));
 
-        return C.PlutusData.new_list(plutusList);
+        return this.new_list(plutusList);
       } else if (typeof data === 'object') {
         const plutusMap = C.PlutusMap.new();
 
@@ -46,6 +46,8 @@ export class PlutusData extends C.PlutusData {
             PlutusData.fromJS(value),
           );
         });
+
+        return this.new_map(plutusMap);
       }
       throw new Error('Unsupported type');
     } catch (error) {
