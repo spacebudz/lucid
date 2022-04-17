@@ -319,6 +319,15 @@ export class Tx {
     return this;
   }
 
+  /**
+   * callback cannot be async
+   *
+   */
+  applyIf(condition: boolean, callback: (tx: Tx) => void) {
+    if (condition) callback(this);
+    return this;
+  }
+
   async complete() {
     const utxos = await Lucid.wallet.getUtxosCore();
     if (this.txBuilder.redeemers()?.len() > 0) {
