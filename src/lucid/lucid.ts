@@ -262,7 +262,7 @@ export class Lucid {
 }
 
 if (typeof window === 'undefined') {
-  const fetch = await import('node-fetch');
+  const fetch = await import(/* webpackIgnore: true */ 'node-fetch');
   // @ts-ignore
   global.fetch = fetch.default;
   // @ts-ignore

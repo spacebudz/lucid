@@ -1,12 +1,14 @@
 {
   "name": "lucid-cardano",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript and Node.js.",
   "engines": {
     "node": ">= 16.13 <17"
   },
   "browser": {
-    "./custom_modules/cardano-multiplatform-lib-nodejs": false
+    "./custom_modules/cardano-multiplatform-lib-nodejs": false,
+    "buffer": false,
+    "node-fetch": false
   },
   "main": "src/index.ts",
   "devDependencies": {

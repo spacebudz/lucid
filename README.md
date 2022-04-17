@@ -81,6 +81,7 @@ To run it in the browser Webpack 5 is recommended or any other bundler which all
 experiments: {
     asyncWebAssembly: true,
     topLevelAwait: true,
+    layers: true // optional, with some bundlers/frameworks it doesn't work without
   }
 ```
 
