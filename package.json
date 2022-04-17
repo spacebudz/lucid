@@ -37,7 +37,7 @@
     "clean": "rimraf coverage build tmp && rm -rf build",
     "prebuild": "./scripts/build.sh && npm run lint",
     "build": "tsc --declaration -p tsconfig.build.json",
-    "docs": "typedoc --entryPoints ./custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.d.ts --entryPoints ./custom_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.d.ts --entryPoints src --entryPointStrategy expand --exclude '**/core/*+(index|csl).ts' --plugin ./node_modules/typedoc-theme-category/dist/index.js --theme category",
+    "docs": "typedoc --entryPoints ./custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.d.ts --entryPoints ./custom_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.d.ts --entryPoints src --entryPointStrategy expand --exclude '**/core/**' --exclude '**/examples/**' --plugin ./node_modules/typedoc-theme-category/dist/index.js --theme category",
     "build:watch": "./scripts/build.sh && tsc -w -p tsconfig.build.json",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
