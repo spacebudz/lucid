@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
@@ -18,7 +18,7 @@
     "noImplicitThis": false,
     "strictNullChecks": false,
     "resolveJsonModule": true,
-    "baseUrl": "./src",
+    "baseUrl": "src",
     "paths": {
       "core/types": ["../custom_modules/cardano-multiplatform-lib-browser"]
     }

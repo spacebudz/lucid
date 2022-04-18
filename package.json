@@ -13,6 +13,8 @@
     "@typescript-eslint/parser": "~5.7.0",
     "eslint": "~8.4.1",
     "eslint-config-prettier": "~8.3.0",
+    "eslint-import-resolver-typescript": "^2.7.1",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jest": "~25.3.0",
     "jest": "~27.4.4",
     "prettier": "~2.5.1",
@@ -44,6 +46,8 @@
   "author": "Alessandro Konrad",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.26.1",
+    "dotenv": "^16.0.0",
     "node-fetch": "^3.2.3"
   },
   "volta": {

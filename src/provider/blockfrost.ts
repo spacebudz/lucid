@@ -8,6 +8,8 @@ import {
   Unit,
   UTxO,
 } from '../types';
+import axios from 'axios';
+import { toHex } from '../utils';
 
 export class Blockfrost implements ProviderSchema {
   url: string;
@@ -18,9 +20,12 @@ export class Blockfrost implements ProviderSchema {
   }
 
   async getProtocolParameters(): Promise<ProtocolParameters> {
-    const result = await fetch(`${this.url}/epochs/latest/parameters`, {
-      headers: { project_id: this.projectId },
-    }).then((res) => res.json());
+    const { data: result } = await axios.get(
+      `${this.url}/epochs/latest/parameters`,
+      {
+        headers: { project_id: this.projectId },
+      },
+    );
 
     return {
       minFeeA: parseInt(result.min_fee_a),
@@ -35,11 +40,11 @@ export class Blockfrost implements ProviderSchema {
     };
   }
   async getCurrentSlot(): Promise<Slot> {
-    return await fetch(`${this.url}/blocks/latest`, {
-      headers: { project_id: this.projectId },
-    })
-      .then((res) => res.json())
-      .then((res) => parseInt(res.slot));
+    return axios
+      .get(`${this.url}/blocks/latest`, {
+        headers: { project_id: this.projectId },
+      })
+      .then(({ data: res }) => parseInt(res.slot));
   }
 
   async getUtxos(address: string): Promise<UTxO[]> {
@@ -47,10 +52,12 @@ export class Blockfrost implements ProviderSchema {
     let page = 1;
     /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
     while (true) {
-      let pageResult = await fetch(
+      let { data: pageResult } = await axios.get(
         `${this.url}/addresses/${address}/utxos?page=${page}`,
-        { headers: { project_id: this.projectId } },
-      ).then((res) => res.json());
+        {
+          headers: { project_id: this.projectId },
+        },
+      );
       if (pageResult.error) {
         if ((result as any).status_code === 400) return [];
         else if ((result as any).status_code === 500) return [];
@@ -81,10 +88,10 @@ export class Blockfrost implements ProviderSchema {
     let result = [];
     let page = 1;
     while (true) {
-      let pageResult = await fetch(
+      let { data: pageResult } = await axios.get(
         `${this.url}/addresses/${address}/utxos/${unit}?page=${page}`,
         { headers: { project_id: this.projectId } },
-      ).then((res) => res.json());
+      );
       if (pageResult.error) {
         if ((result as any).status_code === 400) return [];
         else if ((result as any).status_code === 500) return [];
@@ -113,31 +120,35 @@ export class Blockfrost implements ProviderSchema {
   async awaitTx(txHash: TxHash): Promise<boolean> {
     return new Promise((res) => {
       const confirmation = setInterval(async () => {
-        const isConfirmed = await fetch(`${this.url}/txs/${txHash}`, {
-          headers: { project_id: this.projectId },
-        }).then((res) => res.json());
-        if (isConfirmed && !isConfirmed.error) {
-          clearInterval(confirmation);
-          res(true);
-          return;
+        try {
+          const { data: isConfirmed } = await axios.get(
+            `${this.url}/txs/${txHash}`,
+            {
+              headers: { project_id: this.projectId },
+            },
+          );
+          if (isConfirmed) {
+            clearInterval(confirmation);
+            res(true);
+            return;
+          }
+        } catch (error) {
+          // Not confirmed yet
         }
       }, 3000);
     });
   }
 
   async submitTx(tx: Core.Transaction): Promise<TxHash> {
-    const result = await fetch(`${this.url}/tx/submit`, {
-      method: 'POST',
+    const { data: result } = await axios({
+      url: `${this.url}/tx/submit`,
       headers: {
         'Content-Type': 'application/cbor',
         project_id: this.projectId,
       },
-      body: tx.to_bytes(),
-    }).then((res) => res.json());
-    if (!result || result.error) {
-      if (result?.status_code === 400) throw new Error(result.message);
-      else throw new Error('Could not submit transaction.');
-    }
+      method: 'POST',
+      data: toHex(tx.to_bytes()),
+    });
     return result;
   }
 }

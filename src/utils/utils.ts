@@ -1,5 +1,5 @@
-import { C } from '../core';
 import Core from 'core/types';
+import { Lucid } from '../index';
 import {
   AddressDetailed,
   Assets,
@@ -13,8 +13,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
   // Base Address
   try {
-    const parsedAddress = C.BaseAddress.from_address(
-      C.Address.from_bytes(Buffer.from(address, 'hex')),
+    const parsedAddress = Lucid.C.BaseAddress.from_address(
+      Lucid.C.Address.from_bytes(Buffer.from(address, 'hex')),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -36,8 +36,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
     };
   } catch (e) {}
   try {
-    const parsedAddress = C.BaseAddress.from_address(
-      C.Address.from_bech32(address),
+    const parsedAddress = Lucid.C.BaseAddress.from_address(
+      Lucid.C.Address.from_bech32(address),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -61,8 +61,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
 
   // Enterprise Address
   try {
-    const parsedAddress = C.EnterpriseAddress.from_address(
-      C.Address.from_bytes(Buffer.from(address, 'hex')),
+    const parsedAddress = Lucid.C.EnterpriseAddress.from_address(
+      Lucid.C.Address.from_bytes(Buffer.from(address, 'hex')),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -79,8 +79,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   } catch (e) {}
 
   try {
-    const parsedAddress = C.EnterpriseAddress.from_address(
-      C.Address.from_bech32(address),
+    const parsedAddress = Lucid.C.EnterpriseAddress.from_address(
+      Lucid.C.Address.from_bech32(address),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -98,8 +98,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
 
   // Pointer Address
   try {
-    const parsedAddress = C.PointerAddress.from_address(
-      C.Address.from_bytes(Buffer.from(address, 'hex')),
+    const parsedAddress = Lucid.C.PointerAddress.from_address(
+      Lucid.C.Address.from_bytes(Buffer.from(address, 'hex')),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -116,8 +116,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   } catch (e) {}
 
   try {
-    const parsedAddress = C.PointerAddress.from_address(
-      C.Address.from_bech32(address),
+    const parsedAddress = Lucid.C.PointerAddress.from_address(
+      Lucid.C.Address.from_bech32(address),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
@@ -135,8 +135,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
 
   // Reward Address
   try {
-    const parsedAddress = C.RewardAddress.from_address(
-      C.Address.from_bytes(Buffer.from(address, 'hex')),
+    const parsedAddress = Lucid.C.RewardAddress.from_address(
+      Lucid.C.Address.from_bytes(Buffer.from(address, 'hex')),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const stakeKeyHash = Buffer.from(
@@ -153,8 +153,8 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   } catch (e) {}
 
   try {
-    const parsedAddress = C.RewardAddress.from_address(
-      C.Address.from_bech32(address),
+    const parsedAddress = Lucid.C.RewardAddress.from_address(
+      Lucid.C.Address.from_bech32(address),
     );
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const stakeKeyHash = Buffer.from(
@@ -203,7 +203,7 @@ export const valueToAssets = (value: Core.Value): Assets => {
 };
 
 export const assetsToValue = (assets: Assets) => {
-  const multiAsset = C.MultiAsset.new();
+  const multiAsset = Lucid.C.MultiAsset.new();
   const lovelace = assets['lovelace'];
   const units = Object.keys(assets);
   const policies = [
@@ -215,41 +215,41 @@ export const assetsToValue = (assets: Assets) => {
   ];
   policies.forEach((policy) => {
     const policyUnits = units.filter((unit) => unit.slice(0, 56) === policy);
-    const assetsValue = C.Assets.new();
+    const assetsValue = Lucid.C.Assets.new();
     policyUnits.forEach((unit) => {
       assetsValue.insert(
-        C.AssetName.new(Buffer.from(unit.slice(56), 'hex')),
-        C.BigNum.from_str(assets[unit].toString()),
+        Lucid.C.AssetName.new(Buffer.from(unit.slice(56), 'hex')),
+        Lucid.C.BigNum.from_str(assets[unit].toString()),
       );
     });
     multiAsset.insert(
-      C.ScriptHash.from_bytes(Buffer.from(policy, 'hex')),
+      Lucid.C.ScriptHash.from_bytes(Buffer.from(policy, 'hex')),
       assetsValue,
     );
   });
-  const value = C.Value.new(
-    C.BigNum.from_str(lovelace ? lovelace.toString() : '0'),
+  const value = Lucid.C.Value.new(
+    Lucid.C.BigNum.from_str(lovelace ? lovelace.toString() : '0'),
   );
   if (units.length > 1 || !lovelace) value.set_multiasset(multiAsset);
   return value;
 };
 
 export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
-  const output = C.TransactionOutput.new(
-    C.Address.from_bech32(utxo.address),
+  const output = Lucid.C.TransactionOutput.new(
+    Lucid.C.Address.from_bech32(utxo.address),
     assetsToValue(utxo.assets),
   );
   if (utxo.datumHash) {
     output.set_datum(
-      C.Datum.new_data_hash(
-        C.DataHash.from_bytes(Buffer.from(utxo.datumHash, 'hex')),
+      Lucid.C.Datum.new_data_hash(
+        Lucid.C.DataHash.from_bytes(Buffer.from(utxo.datumHash, 'hex')),
       ),
     );
   }
-  return C.TransactionUnspentOutput.new(
-    C.TransactionInput.new(
-      C.TransactionHash.from_bytes(Buffer.from(utxo.txHash, 'hex')),
-      C.BigNum.from_str(utxo.outputIndex.toString()),
+  return Lucid.C.TransactionUnspentOutput.new(
+    Lucid.C.TransactionInput.new(
+      Lucid.C.TransactionHash.from_bytes(Buffer.from(utxo.txHash, 'hex')),
+      Lucid.C.BigNum.from_str(utxo.outputIndex.toString()),
     ),
     output,
   );

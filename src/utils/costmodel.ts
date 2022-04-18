@@ -1,4 +1,4 @@
-import { C } from '../';
+import { Lucid } from '../lucid/index';
 
 export const costModel = {
   plutusV1: () => {
@@ -17,6 +17,7 @@ export const costModel = {
       1, 1, 150000, 32, 150000, 32, 150000, 32, 150000, 32, 150000, 32, 150000,
       32, 150000, 32, 3345831, 1, 1,
     ];
+    const C = Lucid.C;
     const costmdls = C.Costmdls.new();
     const costmdl = C.CostModel.new();
     costModel.forEach((cost, index) => {

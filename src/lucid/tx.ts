@@ -1,4 +1,3 @@
-import { C } from '../core';
 import Core from 'core/types';
 import {
   Address,
@@ -29,10 +28,13 @@ import { TxComplete } from './txComplete';
 
 export class Tx {
   txBuilder: Core.TransactionBuilder;
+  C: typeof Core;
 
   static new() {
     const t = new this();
+    const C = Lucid.C;
     t.txBuilder = C.TransactionBuilder.new(Lucid.txBuilderConfig);
+    t.C = C;
     return t;
   }
 
@@ -50,15 +52,17 @@ export class Tx {
       }
       const coreUtxo = utxoToCore(utxoCloned);
       this.txBuilder.add_input(
-        C.Address.from_bech32(utxo.address),
+        this.C.Address.from_bech32(utxo.address),
         coreUtxo.input(),
         coreUtxo.output().amount(),
         redeemer &&
-          C.ScriptWitness.new_plutus_witness(
-            C.PlutusWitness.new(
-              C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
+          this.C.ScriptWitness.new_plutus_witness(
+            this.C.PlutusWitness.new(
+              this.C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
               utxoCloned.datum &&
-                C.PlutusData.from_bytes(Buffer.from(utxoCloned.datum, 'hex')),
+                this.C.PlutusData.from_bytes(
+                  Buffer.from(utxoCloned.datum, 'hex'),
+                ),
             ),
           ),
       );
@@ -75,25 +79,27 @@ export class Tx {
   mintAssets(assets: Assets, redeemer?: Redeemer) {
     const units = Object.keys(assets);
     const policyId = units[0].slice(0, 56);
-    const mintAssets = C.MintAssets.new();
+    const mintAssets = this.C.MintAssets.new();
     units.forEach((unit) => {
       if (unit.slice(0, 56) !== policyId)
         throw new Error(
           'Only one Policy Id allowed. You can chain multiple mintAssets events together if you need to mint assets with different Policy Ids.',
         );
       mintAssets.insert(
-        C.AssetName.new(Buffer.from(unit.slice(56), 'hex')),
-        C.Int.from_str(assets[unit].toString()),
+        this.C.AssetName.new(Buffer.from(unit.slice(56), 'hex')),
+        this.C.Int.from_str(assets[unit].toString()),
       );
     });
-    const scriptHash = C.ScriptHash.from_bytes(Buffer.from(policyId, 'hex'));
+    const scriptHash = this.C.ScriptHash.from_bytes(
+      Buffer.from(policyId, 'hex'),
+    );
     this.txBuilder.add_mint(
       scriptHash,
       mintAssets,
       redeemer &&
-        C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(
-            C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
+        this.C.ScriptWitness.new_plutus_witness(
+          this.C.PlutusWitness.new(
+            this.C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
           ),
         ),
     );
@@ -104,8 +110,8 @@ export class Tx {
    * Pay to a public key or native script address
    *  */
   payToAddress(address: Address, assets: Assets) {
-    const output = C.TransactionOutput.new(
-      C.Address.from_bech32(address),
+    const output = this.C.TransactionOutput.new(
+      this.C.Address.from_bech32(address),
       assetsToValue(assets),
     );
     this.txBuilder.add_output(output);
@@ -116,12 +122,14 @@ export class Tx {
    * Pay to a plutus script address with datum
    *  */
   payToContract(address: Address, datum: Datum, assets: Assets) {
-    const plutusData = C.PlutusData.from_bytes(Buffer.from(datum, 'hex'));
-    const output = C.TransactionOutput.new(
-      C.Address.from_bech32(address),
+    const plutusData = this.C.PlutusData.from_bytes(Buffer.from(datum, 'hex'));
+    const output = this.C.TransactionOutput.new(
+      this.C.Address.from_bech32(address),
       assetsToValue(assets),
     );
-    output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
+    output.set_datum(
+      this.C.Datum.new_data_hash(this.C.hash_plutus_data(plutusData)),
+    );
     this.txBuilder.add_output(output);
     this.txBuilder.add_plutus_data(plutusData);
     return this;
@@ -140,25 +148,28 @@ export class Tx {
       throw new Error('Not a reward address provided');
     const credential =
       detailedAddress.credentialType === 'Key'
-        ? C.StakeCredential.from_keyhash(
-            C.Ed25519KeyHash.from_bytes(
+        ? this.C.StakeCredential.from_keyhash(
+            this.C.Ed25519KeyHash.from_bytes(
               Buffer.from(detailedAddress.stakeKeyHash, 'hex'),
             ),
           )
-        : C.StakeCredential.from_scripthash(
-            C.Ed25519KeyHash.from_bytes(
+        : this.C.StakeCredential.from_scripthash(
+            this.C.Ed25519KeyHash.from_bytes(
               Buffer.from(detailedAddress.stakeKeyHash, 'hex'),
             ),
           );
 
     this.txBuilder.add_certificate(
-      C.Certificate.new_stake_delegation(
-        C.StakeDelegation.new(credential, C.Ed25519KeyHash.from_bech32(poolId)),
+      this.C.Certificate.new_stake_delegation(
+        this.C.StakeDelegation.new(
+          credential,
+          this.C.Ed25519KeyHash.from_bech32(poolId),
+        ),
       ),
       redeemer &&
-        C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(
-            C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
+        this.C.ScriptWitness.new_plutus_witness(
+          this.C.PlutusWitness.new(
+            this.C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
           ),
         ),
     );
@@ -171,19 +182,21 @@ export class Tx {
       throw new Error('Not a reward address provided');
     const credential =
       detailedAddress.credentialType === 'Key'
-        ? C.StakeCredential.from_keyhash(
-            C.Ed25519KeyHash.from_bytes(
+        ? this.C.StakeCredential.from_keyhash(
+            this.C.Ed25519KeyHash.from_bytes(
               Buffer.from(detailedAddress.stakeKeyHash, 'hex'),
             ),
           )
-        : C.StakeCredential.from_scripthash(
-            C.Ed25519KeyHash.from_bytes(
+        : this.C.StakeCredential.from_scripthash(
+            this.C.Ed25519KeyHash.from_bytes(
               Buffer.from(detailedAddress.stakeKeyHash, 'hex'),
             ),
           );
 
     this.txBuilder.add_certificate(
-      C.Certificate.new_stake_registration(C.StakeRegistration.new(credential)),
+      this.C.Certificate.new_stake_registration(
+        this.C.StakeRegistration.new(credential),
+      ),
     );
     return this;
   }
@@ -194,25 +207,25 @@ export class Tx {
       throw new Error('Not a reward address provided');
     const credential =
       detailedAddress.credentialType === 'Key'
-        ? C.StakeCredential.from_keyhash(
-            C.Ed25519KeyHash.from_bytes(
+        ? this.C.StakeCredential.from_keyhash(
+            this.C.Ed25519KeyHash.from_bytes(
               Buffer.from(detailedAddress.stakeKeyHash, 'hex'),
             ),
           )
-        : C.StakeCredential.from_scripthash(
-            C.Ed25519KeyHash.from_bytes(
+        : this.C.StakeCredential.from_scripthash(
+            this.C.Ed25519KeyHash.from_bytes(
               Buffer.from(detailedAddress.stakeKeyHash, 'hex'),
             ),
           );
 
     this.txBuilder.add_certificate(
-      C.Certificate.new_stake_deregistration(
-        C.StakeDeregistration.new(credential),
+      this.C.Certificate.new_stake_deregistration(
+        this.C.StakeDeregistration.new(credential),
       ),
       redeemer &&
-        C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(
-            C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
+        this.C.ScriptWitness.new_plutus_witness(
+          this.C.PlutusWitness.new(
+            this.C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
           ),
         ),
     );
@@ -225,12 +238,14 @@ export class Tx {
     redeemer?: Redeemer,
   ) {
     this.txBuilder.add_withdrawal(
-      C.RewardAddress.from_address(C.Address.from_bech32(rewardAddress)),
-      C.BigNum.from_str(amount.toString()),
+      this.C.RewardAddress.from_address(
+        this.C.Address.from_bech32(rewardAddress),
+      ),
+      this.C.BigNum.from_str(amount.toString()),
       redeemer &&
-        C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(
-            C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
+        this.C.ScriptWitness.new_plutus_witness(
+          this.C.PlutusWitness.new(
+            this.C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
           ),
         ),
     );
@@ -253,7 +268,7 @@ export class Tx {
         : addressDetailed.paymentKeyHash;
 
     this.txBuilder.add_required_signer(
-      C.Ed25519KeyHash.from_bytes(Buffer.from(keyHash, 'hex')),
+      this.C.Ed25519KeyHash.from_bytes(Buffer.from(keyHash, 'hex')),
     );
     return this;
   }
@@ -264,7 +279,7 @@ export class Tx {
         ? unixTimeToSlot(unixTime)
         : unixTimeToSlotTestnet(unixTime);
     this.txBuilder.set_validity_start_interval(
-      C.BigNum.from_str(slot.toString()),
+      this.C.BigNum.from_str(slot.toString()),
     );
     return this;
   }
@@ -274,13 +289,13 @@ export class Tx {
       Lucid.network === 'Mainnet'
         ? unixTimeToSlot(unixTime)
         : unixTimeToSlotTestnet(unixTime);
-    this.txBuilder.set_ttl(C.BigNum.from_str(slot.toString()));
+    this.txBuilder.set_ttl(this.C.BigNum.from_str(slot.toString()));
     return this;
   }
 
   attachMetadata(label: Label, metadata: Json) {
     this.txBuilder.add_json_metadatum(
-      C.BigNum.from_str(label.toString()),
+      this.C.BigNum.from_str(label.toString()),
       JSON.stringify(metadata),
     );
     return this;
@@ -292,9 +307,9 @@ export class Tx {
    */
   attachMetadataWithConversion(label: Label, metadata: Json) {
     this.txBuilder.add_json_metadatum_with_schema(
-      C.BigNum.from_str(label.toString()),
+      this.C.BigNum.from_str(label.toString()),
       JSON.stringify(metadata),
-      C.MetadataJsonSchema.BasicConversions,
+      this.C.MetadataJsonSchema.BasicConversions,
     );
     return this;
   }
@@ -342,25 +357,25 @@ export class Tx {
     try {
       this.txBuilder.add_inputs_from(
         utxos,
-        C.CoinSelectionStrategyCIP2.RandomImproveMultiAsset,
+        this.C.CoinSelectionStrategyCIP2.RandomImproveMultiAsset,
       );
     } catch (e) {
       try {
         this.txBuilder.add_inputs_from(
           utxos,
-          C.CoinSelectionStrategyCIP2.RandomImprove,
+          this.C.CoinSelectionStrategyCIP2.RandomImprove,
         );
       } catch (e) {
         try {
           this.txBuilder.add_inputs_from(
             utxos,
-            C.CoinSelectionStrategyCIP2.LargestFirstMultiAsset,
+            this.C.CoinSelectionStrategyCIP2.LargestFirstMultiAsset,
           );
         } catch (e) {
           try {
             this.txBuilder.add_inputs_from(
               utxos,
-              C.CoinSelectionStrategyCIP2.LargestFirst,
+              this.C.CoinSelectionStrategyCIP2.LargestFirst,
             );
           } catch (e) {
             throw new Error(
@@ -372,7 +387,7 @@ export class Tx {
     }
 
     this.txBuilder.add_change_if_needed(
-      C.Address.from_bech32(Lucid.wallet.address),
+      this.C.Address.from_bech32(Lucid.wallet.address),
     );
     return new TxComplete(await this.txBuilder.construct());
   }
@@ -388,12 +403,12 @@ const attachScript = (
 ) => {
   if (script.type === 'Native') {
     tx.txBuilder.add_native_script(
-      C.NativeScript.from_bytes(Buffer.from(script.script, 'hex')),
+      Lucid.C.NativeScript.from_bytes(Buffer.from(script.script, 'hex')),
     );
   }
   if (script.type === 'Plutus') {
     tx.txBuilder.add_plutus_script(
-      C.PlutusScript.from_bytes(Buffer.from(script.script, 'hex')),
+      Lucid.C.PlutusScript.from_bytes(Buffer.from(script.script, 'hex')),
     );
   }
 };
