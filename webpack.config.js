@@ -12,11 +12,6 @@ module.exports = {
     asyncWebAssembly: true,
     topLevelAwait: true,
   },
-  plugins: [
-    new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer'],
-    }),
-  ],
   module: {
     rules: [
       {

@@ -5,12 +5,7 @@
   "engines": {
     "node": ">= 16.13 <17"
   },
-  "browser": {
-    "./custom_modules/cardano-multiplatform-lib-nodejs": false,
-    "buffer": false,
-    "node-fetch": false
-  },
-  "main": "src/index.ts",
+  "module": "src/index.ts",
   "devDependencies": {
     "@types/jest": "~27.0.2",
     "@types/node": "^16.11.21",

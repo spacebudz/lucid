@@ -1,7 +1,6 @@
 const fs = require('fs');
 const {
   dependencies,
-  browser,
   name,
   version,
   description,
@@ -10,10 +9,9 @@ const {
 } = require('../package.json');
 
 const packageJson = {
-  main: 'src/index.js',
+  module: 'src/index.js',
   type: 'module',
   dependencies,
-  browser,
   name,
   version,
   description,
