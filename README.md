@@ -85,10 +85,9 @@ experiments: {
   }
 ```
 
-Make sure in your `package.json` you have set `{"type" : "module"}`. Otherwise you will get import issues.
+To run the library in Node.js you need to set `{"type" : "module"}` in your project's `package.json`. Otherwise you will get import issues.
 
-To run the library flawlessly in Node.js you need to set the flag `--es-module-specifier-resolution=node` behind `node`.
-
+<br />
 This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib).
 
 Documentation: https://cardano-lucid.readthedocs.io/en/latest
