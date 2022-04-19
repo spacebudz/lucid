@@ -1,4 +1,10 @@
-import { getAddressDetails, Lucid, C, toHex, utxoToCore } from '../src';
+import {
+  getAddressDetails,
+  Lucid,
+  C,
+  toHex,
+  utxoToCore,
+} from '../src/index.js';
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
 await Lucid.selectWalletFromPrivateKey(privateKey);

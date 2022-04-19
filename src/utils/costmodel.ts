@@ -1,4 +1,4 @@
-import { C } from '../';
+import { C } from '../index.js';
 
 export const costModel = {
   plutusV1: () => {

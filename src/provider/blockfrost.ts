@@ -7,7 +7,7 @@ import {
   TxHash,
   Unit,
   UTxO,
-} from '../types';
+} from '../types/index.js';
 
 export class Blockfrost implements ProviderSchema {
   url: string;

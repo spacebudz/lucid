@@ -1,4 +1,4 @@
-import { C } from '../core';
+import { C } from '../core/index.js';
 import Core from 'core/types';
 import {
   AddressDetailed,
@@ -7,7 +7,7 @@ import {
   Slot,
   UnixTime,
   UTxO,
-} from '../types';
+} from '../types/index.js';
 
 export const getAddressDetails = (address: string): AddressDetailed => {
   /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */

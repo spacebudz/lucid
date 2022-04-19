@@ -1,5 +1,6 @@
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
+  resolver: 'ts-jest-resolver',
   modulePathIgnorePatterns: [
     '<rootDir>/build/',
     '<rootDir>/node_modules/',

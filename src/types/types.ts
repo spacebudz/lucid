@@ -1,5 +1,5 @@
 import Core from 'core/types';
-import { Blockfrost } from '../provider';
+import { Blockfrost } from '../provider/index.js';
 
 export type Provider = Blockfrost; // more providers can be added here
 

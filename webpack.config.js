@@ -23,9 +23,6 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
-    alias: {
-      '../../custom_modules/cardano-multiplatform-lib-nodejs': false,
-    },
   },
   target: 'web',
   output: {

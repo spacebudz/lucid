@@ -1,8 +1,8 @@
-import { C } from '../core';
+import { C } from '../core/index.js';
 import Core from 'core/types';
-import { PrivateKey } from '../types';
-import { Lucid } from './lucid';
-import { TxSigned } from './txSigned';
+import { PrivateKey } from '../types/index.js';
+import { Lucid } from './lucid.js';
+import { TxSigned } from './txSigned.js';
 
 export class TxComplete {
   txComplete: Core.Transaction;

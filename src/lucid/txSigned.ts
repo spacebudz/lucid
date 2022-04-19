@@ -1,6 +1,6 @@
 import Core from 'core/types';
-import { TxHash } from '../types';
-import { Lucid } from './lucid';
+import { TxHash } from '../types/index.js';
+import { Lucid } from './lucid.js';
 
 export class TxSigned {
   txSigned: Core.Transaction;

@@ -4,9 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "allowJs": true,
     "importHelpers": true,
-    "jsx": "react",
     "alwaysStrict": true,
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
@@ -18,6 +16,7 @@
     "noImplicitThis": false,
     "strictNullChecks": false,
     "resolveJsonModule": true,
+    "esModuleInterop": true,
     "baseUrl": "./src",
     "paths": {
       "core/types": ["../custom_modules/cardano-multiplatform-lib-browser"]

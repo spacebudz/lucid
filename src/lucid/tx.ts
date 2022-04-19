@@ -1,4 +1,4 @@
-import { C } from '../core';
+import { C } from '../core/index.js';
 import Core from 'core/types';
 import {
   Address,
@@ -16,16 +16,16 @@ import {
   UnixTime,
   UTxO,
   WithdrawalValidator,
-} from '../types';
+} from '../types/index.js';
 import {
   utxoToCore,
   assetsToValue,
   getAddressDetails,
   unixTimeToSlot,
   unixTimeToSlotTestnet,
-} from '../utils';
-import { Lucid } from './lucid';
-import { TxComplete } from './txComplete';
+} from '../utils/index.js';
+import { Lucid } from './lucid.js';
+import { TxComplete } from './txComplete.js';
 
 export class Tx {
   txBuilder: Core.TransactionBuilder;

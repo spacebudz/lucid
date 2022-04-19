@@ -1,6 +1,6 @@
-import { C } from '../core';
+import { C } from '../core/index.js';
 import Core from 'core/types';
-import { costModel, fromHex } from '../utils';
+import { costModel, fromHex, utxoToCore, coreToUtxo } from '../utils/index.js';
 import {
   Address,
   ExternalWallet,
@@ -13,8 +13,7 @@ import {
   UTxO,
   Wallet,
   WalletProvider,
-} from '../types';
-import { utxoToCore, coreToUtxo } from '../utils';
+} from '../types/index.js';
 
 export class Lucid {
   static txBuilderConfig: Core.TransactionBuilderConfig;

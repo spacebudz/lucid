@@ -10,6 +10,7 @@ const {
 
 const packageJson = {
   module: 'src/index.js',
+  main: 'src/index.js',
   type: 'module',
   dependencies,
   name,
