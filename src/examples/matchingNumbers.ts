@@ -25,7 +25,7 @@ import {
 
 await Lucid.initialize(
   'Testnet',
-  new Blockfrost('https://cardano-testnet.blockfrost.io/api/v0', '<projectId>'),
+  new Blockfrost('https://cardano-testnet.blockfrost.io/api/v0', '<projectId>')
 );
 
 // Assumes you are in a browser environment
@@ -41,9 +41,9 @@ const matchingNumberAddress: Address = C.EnterpriseAddress.new(
   0, // testnet
   C.StakeCredential.from_scripthash(
     C.PlutusScript.from_bytes(
-      Buffer.from(matchingNumberScript.script, 'hex'),
-    ).hash(C.ScriptHashNamespace.PlutusV1),
-  ),
+      Buffer.from(matchingNumberScript.script, 'hex')
+    ).hash(C.ScriptHashNamespace.PlutusV1)
+  )
 )
   .to_address()
   .to_bech32();
@@ -52,7 +52,7 @@ const getPlutusData = (number: number) => toHex(Data.fromJS(number).to_bytes());
 
 export const lockUtxo = async (
   number: number,
-  lovelace: Lovelace,
+  lovelace: Lovelace
 ): Promise<TxHash> => {
   const tx = await Tx.new()
     .payToContract(matchingNumberAddress, getPlutusData(number), { lovelace })

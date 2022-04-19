@@ -1,11 +1,12 @@
-import { Construct, Data } from '../src/utils/data.js';
+import { Construct, Data } from '../src/utils';
 import {
   getAddressDetails,
   Lucid,
   C,
   toHex,
   utxoToCore,
-} from '../src/index.js';
+  fromHex,
+} from '../src';
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
 await Lucid.selectWalletFromPrivateKey(privateKey);
@@ -13,13 +14,17 @@ await Lucid.selectWalletFromPrivateKey(privateKey);
 describe('Testing wallet', () => {
   test('PaymentKeyHash length', async () => {
     const { paymentKeyHash } = getAddressDetails(Lucid.wallet.address);
-    expect(Buffer.from(paymentKeyHash, 'hex')).toHaveLength(28);
+    if (paymentKeyHash) {
+      expect(fromHex(paymentKeyHash)).toHaveLength(28);
+    } else {
+      expect(paymentKeyHash).toBeDefined();
+    }
   });
 
   test('Address type', async () => {
     const { address } = getAddressDetails(Lucid.wallet.address);
     const enterpriseAddress = C.EnterpriseAddress.from_address(
-      C.Address.from_bech32(address),
+      C.Address.from_bech32(address)
     )
       .to_address()
       .to_bech32();
@@ -54,8 +59,8 @@ describe('Testing wallet', () => {
       utxos,
     });
 
-    const rawUtxos = (await Lucid.wallet.getUtxos()).map((utxo) =>
-      toHex(utxoToCore(utxo).to_bytes()),
+    const rawUtxos = (await Lucid.wallet.getUtxos()).map(utxo =>
+      toHex(utxoToCore(utxo).to_bytes())
     );
 
     expect(utxos).toEqual(rawUtxos);
@@ -83,7 +88,7 @@ describe('Datum', () => {
 describe('PlutusData', () => {
   test('Construct plutus data', () => {
     const data = Data.fromJS(
-      new Construct(1, [BigInt(1), 'abc', 'def', new Construct(0, [])]),
+      new Construct(1, [BigInt(1), 'abc', 'def', new Construct(0, [])])
     );
     const serialized = toHex(data.to_bytes());
 

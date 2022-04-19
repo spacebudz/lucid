@@ -1,6 +1,6 @@
 import Core from 'core/types';
-import { Construct } from 'utils/data.js';
-import { Blockfrost } from '../provider/index.js';
+import { Construct } from 'utils';
+import { Blockfrost } from '../provider';
 
 export type Provider = Blockfrost; // more providers can be added here
 
@@ -32,7 +32,7 @@ export type CredentialType = 'Key' | 'Script';
 /** Concatenation of Policy Id and asset name in hex */
 export type Unit = string;
 export type Assets = {
-  [unit: Unit]: BigInt;
+  [unit: string]: BigInt;
 };
 export type ScriptType = 'Native' | 'Plutus';
 

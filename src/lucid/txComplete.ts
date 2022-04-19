@@ -1,8 +1,8 @@
-import { C } from '../core/index.js';
+import { C } from '../core';
 import Core from 'core/types';
-import { PrivateKey } from '../types/index.js';
-import { Lucid } from './lucid.js';
-import { TxSigned } from './txSigned.js';
+import { PrivateKey } from '../types';
+import { Lucid } from './lucid';
+import { TxSigned } from './txSigned';
 
 export class TxComplete {
   txComplete: Core.Transaction;
@@ -23,7 +23,7 @@ export class TxComplete {
     const priv = C.PrivateKey.from_bech32(privateKey);
     const witness = C.make_vkey_witness(
       C.hash_transaction(this.txComplete.body()),
-      priv,
+      priv
     );
     this.witnessSetBuilder.add_vkey(witness);
   }
@@ -32,7 +32,7 @@ export class TxComplete {
     const signedTx = C.Transaction.new(
       this.txComplete.body(),
       this.witnessSetBuilder.build(),
-      this.txComplete.auxiliary_data(),
+      this.txComplete.auxiliary_data()
     );
     return new TxSigned(signedTx);
   }

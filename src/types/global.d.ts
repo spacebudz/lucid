@@ -10,7 +10,7 @@ type WalletAPI = {
   signTx(tx: string, partialSign: boolean): Promise<string>;
   signData(
     address: string,
-    payload: string,
+    payload: string
   ): Promise<{ signature: string; key: string }>;
   submitTx(tx: string): Promise<string>;
   getCollateral(): Promise<string[]>;

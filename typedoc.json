@@ -1,7 +1,0 @@
-{
-  "out": "./docs",
-  "readme": "/README.md",
-  "name": "Lucid",
-  "excludeInternal": true,
-  "disableSources": true
-}

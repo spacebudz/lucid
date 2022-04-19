@@ -1,53 +1,52 @@
 {
   "name": "lucid-cardano",
-  "version": "0.1.5",
+  "version": "0.1.6",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "custom_modules"
+  ],
   "description": "Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript and Node.js.",
+  "repository": "https://github.com/Berry-Pool/lucid",
   "engines": {
-    "node": ">= 16.13 <17"
-  },
-  "devDependencies": {
-    "@types/jest": "~27.0.2",
-    "@types/node": "^16.11.21",
-    "@typescript-eslint/eslint-plugin": "~5.7.0",
-    "@typescript-eslint/parser": "~5.7.0",
-    "eslint": "~8.4.1",
-    "eslint-config-prettier": "~8.3.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-jest": "~25.3.0",
-    "jest": "~27.4.4",
-    "prettier": "~2.5.1",
-    "rimraf": "~3.0.2",
-    "ts-jest": "~27.1.1",
-    "ts-loader": "^9.2.6",
-    "tslib": "~2.3.1",
-    "tsutils": "~3.21.0",
-    "typedoc": "^0.22.11",
-    "typedoc-github-wiki-theme": "^1.0.0",
-    "typedoc-theme-category": "^1.0.7",
-    "typedoc-theme-hierarchy": "^1.1.1",
-    "typescript": "~4.5.3",
-    "webpack": "^5.67.0",
-    "webpack-cli": "^4.9.2",
-    "ts-jest-resolver": "^2.0.0"
+    "node": ">=14"
   },
   "scripts": {
-    "start": "node build/lucid-cardano/src/index.js",
-    "clean": "rimraf coverage build tmp && rm -rf build",
-    "prebuild": "./scripts/build.sh && npm run lint",
-    "build": "tsc --declaration -p tsconfig.build.json",
-    "docs": "typedoc --entryPoints ./custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.d.ts --entryPoints ./custom_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.d.ts --entryPoints src --entryPointStrategy expand --exclude '**/core/**' --exclude '**/examples/**' --plugin ./node_modules/typedoc-theme-category/dist/index.js --theme category",
-    "build:watch": "./scripts/build.sh && tsc -w -p tsconfig.build.json",
-    "lint": "eslint . --ext .ts,.tsx",
+    "start": "tsdx watch --format esm",
+    "build": "tsdx build --format esm",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:watch": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "release": "npm run test && npm run build && npm publish ./build/lucid-cardano"
+    "lint": "tsdx lint src test",
+    "docs": "typedoc --entryPoints ./custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.d.ts --entryPoints ./custom_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.d.ts --entryPoints src --entryPointStrategy expand --exclude '**/core/**' --exclude '**/examples/**' --plugin ./node_modules/typedoc-theme-category/dist/index.js --theme category",
+    "release": "npm run test && npm run build && node scripts/prerelease.js && npm publish && node scripts/postrelease.js"
+  },
+  "peerDependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
   },
   "author": "Alessandro Konrad",
-  "license": "MIT",
-  "dependencies": {
-    "node-fetch": "^3.2.3"
+  "devDependencies": {
+    "husky": "^7.0.4",
+    "jest": "^27.4.4",
+    "ts-jest": "^27.1.4",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.3.1",
+    "typedoc-theme-category": "^1.0.7",
+    "typescript": "^4.6.3"
   },
-  "volta": {
-    "node": "16.13.0"
+  "dependencies": {
+    "node-fetch": "^3.2.3",
+    "typedoc": "^0.22.15"
   }
 }

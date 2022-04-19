@@ -1,1 +1,1 @@
-export * from './core.js';
+export * from './core';

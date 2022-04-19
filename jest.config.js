@@ -1,12 +1,11 @@
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
-  resolver: 'ts-jest-resolver',
+  testEnvironment: 'node',
   modulePathIgnorePatterns: [
-    '<rootDir>/build/',
+    '<rootDir>/dist/',
     '<rootDir>/node_modules/',
     '<rootDir>/custom_modules/',
   ],
-  extensionsToTreatAsEsm: ['.ts'],
   globals: {
     'ts-jest': {
       useESM: true,

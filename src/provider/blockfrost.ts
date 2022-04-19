@@ -1,13 +1,14 @@
 import Core from 'core/types';
 import {
   Address,
+  Assets,
   ProtocolParameters,
   ProviderSchema,
   Slot,
   TxHash,
   Unit,
   UTxO,
-} from '../types/index.js';
+} from '../types';
 
 export class Blockfrost implements ProviderSchema {
   url: string;
@@ -20,7 +21,7 @@ export class Blockfrost implements ProviderSchema {
   async getProtocolParameters(): Promise<ProtocolParameters> {
     const result = await fetch(`${this.url}/epochs/latest/parameters`, {
       headers: { project_id: this.projectId },
-    }).then((res) => res.json());
+    }).then(res => res.json());
 
     return {
       minFeeA: parseInt(result.min_fee_a),
@@ -38,19 +39,19 @@ export class Blockfrost implements ProviderSchema {
     return await fetch(`${this.url}/blocks/latest`, {
       headers: { project_id: this.projectId },
     })
-      .then((res) => res.json())
-      .then((res) => parseInt(res.slot));
+      .then(res => res.json())
+      .then(res => parseInt(res.slot));
   }
 
   async getUtxos(address: string): Promise<UTxO[]> {
-    let result = [];
+    let result: any[] = [];
     let page = 1;
     /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
     while (true) {
       let pageResult = await fetch(
         `${this.url}/addresses/${address}/utxos?page=${page}`,
-        { headers: { project_id: this.projectId } },
-      ).then((res) => res.json());
+        { headers: { project_id: this.projectId } }
+      ).then(res => res.json());
       if (pageResult.error) {
         if ((result as any).status_code === 400) return [];
         else if ((result as any).status_code === 500) return [];
@@ -62,11 +63,11 @@ export class Blockfrost implements ProviderSchema {
       if (pageResult.length <= 0) break;
       page++;
     }
-    return result.map((r) => ({
+    return result.map(r => ({
       txHash: r.tx_hash,
       outputIndex: r.output_index,
       assets: (() => {
-        const a = {};
+        const a: Assets = {};
         r.amount.forEach((am: any) => {
           a[am.unit] = BigInt(am.quantity);
         });
@@ -78,13 +79,13 @@ export class Blockfrost implements ProviderSchema {
   }
 
   async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
-    let result = [];
+    let result: any[] = [];
     let page = 1;
     while (true) {
       let pageResult = await fetch(
         `${this.url}/addresses/${address}/utxos/${unit}?page=${page}`,
-        { headers: { project_id: this.projectId } },
-      ).then((res) => res.json());
+        { headers: { project_id: this.projectId } }
+      ).then(res => res.json());
       if (pageResult.error) {
         if ((result as any).status_code === 400) return [];
         else if ((result as any).status_code === 500) return [];
@@ -96,11 +97,11 @@ export class Blockfrost implements ProviderSchema {
       if (pageResult.length <= 0) break;
       page++;
     }
-    return result.map((r) => ({
+    return result.map(r => ({
       txHash: r.tx_hash,
       outputIndex: r.output_index,
       assets: (() => {
-        const a = {};
+        const a: Assets = {};
         return r.amount.forEach((am: any) => {
           a[am.unit] = BigInt(am.quantity);
         });
@@ -111,11 +112,11 @@ export class Blockfrost implements ProviderSchema {
   }
 
   async awaitTx(txHash: TxHash): Promise<boolean> {
-    return new Promise((res) => {
+    return new Promise(res => {
       const confirmation = setInterval(async () => {
         const isConfirmed = await fetch(`${this.url}/txs/${txHash}`, {
           headers: { project_id: this.projectId },
-        }).then((res) => res.json());
+        }).then(res => res.json());
         if (isConfirmed && !isConfirmed.error) {
           clearInterval(confirmation);
           res(true);
@@ -133,7 +134,7 @@ export class Blockfrost implements ProviderSchema {
         project_id: this.projectId,
       },
       body: tx.to_bytes(),
-    }).then((res) => res.json());
+    }).then(res => res.json());
     if (!result || result.error) {
       if (result?.status_code === 400) throw new Error(result.message);
       else throw new Error('Could not submit transaction.');

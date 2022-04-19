@@ -1,6 +1,6 @@
-import { C } from '../core/index.js';
+import { C } from '../core/index';
 import Core from 'core/types';
-import { costModel, fromHex, utxoToCore, coreToUtxo } from '../utils/index.js';
+import { costModel, fromHex, utxoToCore, coreToUtxo } from '../utils';
 import {
   Address,
   ExternalWallet,
@@ -27,31 +27,31 @@ export class Lucid {
     const protocolParameters = await provider.getProtocolParameters();
     this.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
       .coins_per_utxo_word(
-        C.BigNum.from_str(protocolParameters.coinsPerUtxoWord.toString()),
+        C.BigNum.from_str(protocolParameters.coinsPerUtxoWord.toString())
       )
       .fee_algo(
         C.LinearFee.new(
           C.BigNum.from_str(protocolParameters.minFeeA.toString()),
-          C.BigNum.from_str(protocolParameters.minFeeB.toString()),
-        ),
+          C.BigNum.from_str(protocolParameters.minFeeB.toString())
+        )
       )
       .key_deposit(C.BigNum.from_str(protocolParameters.keyDeposit.toString()))
       .pool_deposit(
-        C.BigNum.from_str(protocolParameters.poolDeposit.toString()),
+        C.BigNum.from_str(protocolParameters.poolDeposit.toString())
       )
       .max_tx_size(protocolParameters.maxTxSize)
       .max_value_size(protocolParameters.maxValSize)
       .ex_unit_prices(
         C.ExUnitPrices.from_float(
           protocolParameters.priceMem,
-          protocolParameters.priceStep,
-        ),
+          protocolParameters.priceStep
+        )
       )
       .blockfrost(
         C.Blockfrost.new(
           provider.url + '/utils/txs/evaluate',
-          provider.projectId,
-        ),
+          provider.projectId
+        )
       )
       .costmdls(costModel.plutusV1())
       .prefer_pure_change(true)
@@ -81,8 +81,8 @@ export class Lucid {
     const priv = C.PrivateKey.from_bech32(privateKey);
     const pubKeyHash = priv.to_public().hash();
     const address = C.EnterpriseAddress.new(
-      this.network == 'Mainnet' ? 1 : 0,
-      C.StakeCredential.from_keyhash(pubKeyHash),
+      this.network === 'Mainnet' ? 1 : 0,
+      C.StakeCredential.from_keyhash(pubKeyHash)
     )
       .to_address()
       .to_bech32();
@@ -91,20 +91,20 @@ export class Lucid {
       getCollateral: async () => {
         const utxos = await Lucid.utxosAt(address);
         return utxos.filter(
-          (utxo) =>
+          utxo =>
             Object.keys(utxo.assets).length === 1 &&
-            utxo.assets.lovelace >= 5000000n,
+            utxo.assets.lovelace >= 5000000n
         );
       },
       getCollateralCore: async () => {
         const utxos = await Lucid.utxosAt(address);
         return utxos
           .filter(
-            (utxo) =>
+            utxo =>
               Object.keys(utxo.assets).length === 1 &&
-              utxo.assets.lovelace >= 5000000n,
+              utxo.assets.lovelace >= 5000000n
           )
-          .map((utxo) => utxoToCore(utxo));
+          .map(utxo => utxoToCore(utxo));
       },
       getUtxos: async () => {
         return await Lucid.utxosAt(address);
@@ -112,7 +112,7 @@ export class Lucid {
       getUtxosCore: async () => {
         const utxos = await Lucid.utxosAt(address);
         const coreUtxos = C.TransactionUnspentOutputs.new();
-        utxos.forEach((utxo) => {
+        utxos.forEach(utxo => {
           coreUtxos.add(utxoToCore(utxo));
         });
         return coreUtxos;
@@ -120,7 +120,7 @@ export class Lucid {
       signTx: async (tx: Core.Transaction) => {
         const witness = C.make_vkey_witness(
           C.hash_transaction(tx.body()),
-          priv,
+          priv
         );
         const txWitnessSetBuilder = C.TransactionWitnessSetBuilder.new();
         txWitnessSetBuilder.add_vkey(witness);
@@ -139,15 +139,15 @@ export class Lucid {
     const api = await window.cardano[walletProvider].enable();
 
     const address = C.Address.from_bytes(
-      Buffer.from((await api.getUsedAddresses())[0], 'hex'),
+      Buffer.from((await api.getUsedAddresses())[0], 'hex')
     ).to_bech32();
 
     const rewardAddressHex = (await api.getRewardAddresses())[0];
     const rewardAddress =
-      rewardAddressHex &&
+      rewardAddressHex ??
       C.RewardAddress.from_address(
-        C.Address.from_bytes(Buffer.from(rewardAddressHex, 'hex')),
-      )
+        C.Address.from_bytes(Buffer.from(rewardAddressHex, 'hex'))
+      )!
         .to_address()
         .to_bech32();
 
@@ -155,26 +155,26 @@ export class Lucid {
       address,
       rewardAddress,
       getCollateral: async () => {
-        const utxos = (await api.experimental.getCollateral()).map((utxo) => {
+        const utxos = (await api.experimental.getCollateral()).map(utxo => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
-            Buffer.from(utxo, 'hex'),
+            Buffer.from(utxo, 'hex')
           );
           return coreToUtxo(parsedUtxo);
         });
         return utxos;
       },
       getCollateralCore: async () => {
-        const utxos = (await api.experimental.getCollateral()).map((utxo) => {
+        const utxos = (await api.experimental.getCollateral()).map(utxo => {
           return C.TransactionUnspentOutput.from_bytes(
-            Buffer.from(utxo, 'hex'),
+            Buffer.from(utxo, 'hex')
           );
         });
         return utxos;
       },
       getUtxos: async () => {
-        const utxos = (await api.getUtxos()).map((utxo) => {
+        const utxos = ((await api.getUtxos()) || []).map(utxo => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
-            Buffer.from(utxo, 'hex'),
+            Buffer.from(utxo, 'hex')
           );
           return coreToUtxo(parsedUtxo);
         });
@@ -182,9 +182,9 @@ export class Lucid {
       },
       getUtxosCore: async () => {
         const utxos = C.TransactionUnspentOutputs.new();
-        (await api.getUtxos()).forEach((utxo) => {
+        ((await api.getUtxos()) || []).forEach(utxo => {
           utxos.add(
-            C.TransactionUnspentOutput.from_bytes(Buffer.from(utxo, 'hex')),
+            C.TransactionUnspentOutput.from_bytes(Buffer.from(utxo, 'hex'))
           );
         });
         return utxos;
@@ -192,15 +192,15 @@ export class Lucid {
       signTx: async (tx: Core.Transaction) => {
         const witnessSet = await api.signTx(
           Buffer.from(tx.to_bytes()).toString('hex'),
-          true,
+          true
         );
         return C.TransactionWitnessSet.from_bytes(
-          Buffer.from(witnessSet, 'hex'),
+          Buffer.from(witnessSet, 'hex')
         );
       },
       submitTx: async (tx: Core.Transaction) => {
         const txHash = await api.submitTx(
-          Buffer.from(tx.to_bytes()).toString('hex'),
+          Buffer.from(tx.to_bytes()).toString('hex')
         );
         return txHash;
       },
@@ -221,19 +221,25 @@ export class Lucid {
       address,
       rewardAddress,
       getCollateral: async () => {
-        return collateral.map((rawUtxo) =>
-          coreToUtxo(C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo))),
-        );
+        return collateral
+          ? collateral.map(rawUtxo =>
+              coreToUtxo(
+                C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo))
+              )
+            )
+          : [];
       },
       getCollateralCore: async () => {
-        return collateral.map((rawUtxo) =>
-          C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo)),
-        );
+        return collateral
+          ? collateral.map(rawUtxo =>
+              C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo))
+            )
+          : [];
       },
       getUtxos: async () => {
-        const utxos = rawUtxos.map((utxo) => {
+        const utxos = rawUtxos.map(utxo => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
-            fromHex(utxo),
+            fromHex(utxo)
           );
           return coreToUtxo(parsedUtxo);
         });
@@ -241,10 +247,8 @@ export class Lucid {
       },
       getUtxosCore: async () => {
         const coreUtxos = C.TransactionUnspentOutputs.new();
-        rawUtxos.forEach((rawUtxo) =>
-          coreUtxos.add(
-            C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo)),
-          ),
+        rawUtxos.forEach(rawUtxo =>
+          coreUtxos.add(C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo)))
         );
         return coreUtxos;
       },
