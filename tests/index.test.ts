@@ -1,3 +1,4 @@
+import { Construct, Data } from '../src/utils/data.js';
 import {
   getAddressDetails,
   Lucid,
@@ -76,5 +77,17 @@ describe('Datum', () => {
     };
     expect(TestType).toBeDefined();
     //TODO
+  });
+});
+
+describe('PlutusData', () => {
+  test('Construct plutus data', () => {
+    const data = Data.fromJS(
+      new Construct(1, [BigInt(1), 'abc', 'def', new Construct(0, [])]),
+    );
+    const serialized = toHex(data.to_bytes());
+
+    expect(serialized).toBe('d87a9f0141ab41ded87980ff');
+    // == 122([1, h'AB', h'DE', 121([])])
   });
 });

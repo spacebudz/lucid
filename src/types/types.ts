@@ -1,4 +1,5 @@
 import Core from 'core/types';
+import { Construct } from 'utils/data.js';
 import { Blockfrost } from '../provider/index.js';
 
 export type Provider = Blockfrost; // more providers can be added here
@@ -150,6 +151,39 @@ export interface Wallet {
 export const EmptyData = '00' as Redeemer | Datum;
 
 export type WalletProvider = 'nami' | 'eternl' | 'flint';
+
+/**
+ * These are the arguments that conform a BuiltinData in Plutus:
+ *
+ * ```hs
+ * data Data =
+ *   Constr Integer [Data]
+ * | Map [(Data, Data)]
+ * | List [Data]
+ * | I Integer
+ * | B BS.ByteString
+ *   deriving stock (Show, Eq, Ord, Generic)
+ *   deriving anyclass (NFData)
+ * ```
+ * So we can define an arbitrary mapping for these types
+ *
+ *```
+ * bigint -> I
+ * string -> B
+ * Map    -> Map
+ * list   -> List
+ * ```
+ *
+ * Note: We need to wrap it in an object to prevent circular references
+ */
+// TODO: Fix circular reference
+// @ts-ignore
+export type PlutusData =
+  | string
+  | bigint
+  | PlutusData[]
+  | Record<string, PlutusData>
+  | Construct; // We emulate the constr like this
 
 /** JSON object */
 export type Json = any;
