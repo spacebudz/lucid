@@ -16,6 +16,7 @@
     "node": ">=14"
   },
   "scripts": {
+    "prepare": "npx husky add .husky/pre-commit 'tsdx lint'",
     "start": "tsdx watch --format esm",
     "build": "tsdx build --format esm",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
@@ -26,7 +27,7 @@
   "peerDependencies": {},
   "husky": {
     "hooks": {
-      "pre-commit": "tsdx lint",
+      "pre-commit": "npm run lint",
       "pre-push": "npm run test && npm run build"
     }
   },
