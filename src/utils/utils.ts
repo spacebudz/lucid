@@ -15,28 +15,28 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   try {
     const parsedAddress = C.BaseAddress.from_address(
       C.Address.from_bytes(Buffer.from(address, 'hex'))
-    );
+    )!;
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
         ? parsedAddress
             .payment_cred()
-            .to_keyhash()
+            .to_keyhash()!
             .to_bytes()
         : parsedAddress
             .payment_cred()
-            .to_scripthash()
+            .to_scripthash()!
             .to_bytes()
     ).toString('hex');
     const stakeKeyHash = Buffer.from(
       parsedAddress.stake_cred().kind() === 0
         ? parsedAddress
             .stake_cred()
-            .to_keyhash()
+            .to_keyhash()!
             .to_bytes()
         : parsedAddress
             .stake_cred()
-            .to_scripthash()
+            .to_scripthash()!
             .to_bytes()
     ).toString('hex');
     return {
@@ -50,28 +50,28 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   try {
     const parsedAddress = C.BaseAddress.from_address(
       C.Address.from_bech32(address)
-    );
+    )!;
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
         ? parsedAddress
             .payment_cred()
-            .to_keyhash()
+            .to_keyhash()!
             .to_bytes()
         : parsedAddress
             .payment_cred()
-            .to_scripthash()
+            .to_scripthash()!
             .to_bytes()
     ).toString('hex');
     const stakeKeyHash = Buffer.from(
       parsedAddress.stake_cred().kind() === 0
         ? parsedAddress
             .stake_cred()
-            .to_keyhash()
+            .to_keyhash()!
             .to_bytes()
         : parsedAddress
             .stake_cred()
-            .to_scripthash()
+            .to_scripthash()!
             .to_bytes()
     ).toString('hex');
     return {
@@ -87,17 +87,17 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   try {
     const parsedAddress = C.EnterpriseAddress.from_address(
       C.Address.from_bytes(Buffer.from(address, 'hex'))
-    );
+    )!;
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
         ? parsedAddress
             .payment_cred()
-            .to_keyhash()
+            .to_keyhash()!
             .to_bytes()
         : parsedAddress
             .payment_cred()
-            .to_scripthash()
+            .to_scripthash()!
             .to_bytes()
     ).toString('hex');
     return {
@@ -111,17 +111,17 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   try {
     const parsedAddress = C.EnterpriseAddress.from_address(
       C.Address.from_bech32(address)
-    );
+    )!;
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
         ? parsedAddress
             .payment_cred()
-            .to_keyhash()
+            .to_keyhash()!
             .to_bytes()
         : parsedAddress
             .payment_cred()
-            .to_scripthash()
+            .to_scripthash()!
             .to_bytes()
     ).toString('hex');
     return {
@@ -136,17 +136,17 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   try {
     const parsedAddress = C.PointerAddress.from_address(
       C.Address.from_bytes(Buffer.from(address, 'hex'))
-    );
+    )!;
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
         ? parsedAddress
             .payment_cred()
-            .to_keyhash()
+            .to_keyhash()!
             .to_bytes()
         : parsedAddress
             .payment_cred()
-            .to_scripthash()
+            .to_scripthash()!
             .to_bytes()
     ).toString('hex');
     return {
@@ -160,17 +160,17 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   try {
     const parsedAddress = C.PointerAddress.from_address(
       C.Address.from_bech32(address)
-    );
+    )!;
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const paymentKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
         ? parsedAddress
             .payment_cred()
-            .to_keyhash()
+            .to_keyhash()!
             .to_bytes()
         : parsedAddress
             .payment_cred()
-            .to_scripthash()
+            .to_scripthash()!
             .to_bytes()
     ).toString('hex');
     return {
@@ -185,17 +185,17 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   try {
     const parsedAddress = C.RewardAddress.from_address(
       C.Address.from_bytes(Buffer.from(address, 'hex'))
-    );
+    )!;
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const stakeKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
         ? parsedAddress
             .payment_cred()
-            .to_keyhash()
+            .to_keyhash()!
             .to_bytes()
         : parsedAddress
             .payment_cred()
-            .to_scripthash()
+            .to_scripthash()!
             .to_bytes()
     ).toString('hex');
     return {
@@ -209,17 +209,17 @@ export const getAddressDetails = (address: string): AddressDetailed => {
   try {
     const parsedAddress = C.RewardAddress.from_address(
       C.Address.from_bech32(address)
-    );
+    )!;
     const credentialType = getCredentialType(parsedAddress.payment_cred());
     const stakeKeyHash = Buffer.from(
       parsedAddress.payment_cred().kind() === 0
         ? parsedAddress
             .payment_cred()
-            .to_keyhash()
+            .to_keyhash()!
             .to_bytes()
         : parsedAddress
             .payment_cred()
-            .to_scripthash()
+            .to_scripthash()!
             .to_bytes()
     ).toString('hex');
     return {

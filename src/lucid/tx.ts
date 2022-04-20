@@ -53,12 +53,12 @@ export class Tx {
         C.Address.from_bech32(utxo.address),
         coreUtxo.input(),
         coreUtxo.output().amount(),
-        redeemer &&
+        (redeemer as undefined) &&
           C.ScriptWitness.new_plutus_witness(
             C.PlutusWitness.new(
-              C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex')),
-              utxoCloned.datum &&
-                C.PlutusData.from_bytes(Buffer.from(utxoCloned.datum, 'hex'))
+              C.PlutusData.from_bytes(Buffer.from(redeemer!, 'hex')),
+              (utxoCloned.datum as undefined) &&
+                C.PlutusData.from_bytes(Buffer.from(utxoCloned.datum!, 'hex'))
             )
           )
       );
@@ -90,10 +90,10 @@ export class Tx {
     this.txBuilder.add_mint(
       scriptHash,
       mintAssets,
-      redeemer &&
+      (redeemer as undefined) &&
         C.ScriptWitness.new_plutus_witness(
           C.PlutusWitness.new(
-            C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex'))
+            C.PlutusData.from_bytes(Buffer.from(redeemer!, 'hex'))
           )
         )
     );
@@ -155,10 +155,10 @@ export class Tx {
       C.Certificate.new_stake_delegation(
         C.StakeDelegation.new(credential, C.Ed25519KeyHash.from_bech32(poolId))
       ),
-      redeemer &&
+      (redeemer as undefined) &&
         C.ScriptWitness.new_plutus_witness(
           C.PlutusWitness.new(
-            C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex'))
+            C.PlutusData.from_bytes(Buffer.from(redeemer!, 'hex'))
           )
         )
     );
@@ -209,10 +209,10 @@ export class Tx {
       C.Certificate.new_stake_deregistration(
         C.StakeDeregistration.new(credential)
       ),
-      redeemer &&
+      (redeemer as undefined) &&
         C.ScriptWitness.new_plutus_witness(
           C.PlutusWitness.new(
-            C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex'))
+            C.PlutusData.from_bytes(Buffer.from(redeemer!, 'hex'))
           )
         )
     );
@@ -225,12 +225,12 @@ export class Tx {
     redeemer?: Redeemer
   ) {
     this.txBuilder.add_withdrawal(
-      C.RewardAddress.from_address(C.Address.from_bech32(rewardAddress)),
+      C.RewardAddress.from_address(C.Address.from_bech32(rewardAddress))!,
       C.BigNum.from_str(amount.toString()),
-      redeemer &&
+      (redeemer as undefined) &&
         C.ScriptWitness.new_plutus_witness(
           C.PlutusWitness.new(
-            C.PlutusData.from_bytes(Buffer.from(redeemer, 'hex'))
+            C.PlutusData.from_bytes(Buffer.from(redeemer!, 'hex'))
           )
         )
     );
