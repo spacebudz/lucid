@@ -16,7 +16,6 @@
     "node": ">=14"
   },
   "scripts": {
-    "prepare": "npx husky add .husky/pre-push 'npm run test && npm run build'",
     "start": "tsdx watch --format esm",
     "build": "tsdx build --format esm",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
