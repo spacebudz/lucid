@@ -1,3 +1,5 @@
+const { dependencies } = require('./package.json');
+
 module.exports = {
   rollup(config, options) {
     config.output = {
@@ -6,8 +8,9 @@ module.exports = {
     config.external = [
       '../../custom_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.js',
       '../../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.js',
-      'node-fetch',
+      ...Object.keys(dependencies),
     ];
+
     return config;
   },
 };

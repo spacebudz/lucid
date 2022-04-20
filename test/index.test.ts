@@ -25,7 +25,7 @@ describe('Testing wallet', () => {
     const { address } = getAddressDetails(Lucid.wallet.address);
     const enterpriseAddress = C.EnterpriseAddress.from_address(
       C.Address.from_bech32(address)
-    )
+    )!
       .to_address()
       .to_bech32();
     expect(address).toBe(enterpriseAddress);
