@@ -26,7 +26,8 @@
   "peerDependencies": {},
   "husky": {
     "hooks": {
-      "pre-commit": "tsdx lint"
+      "pre-commit": "tsdx lint",
+      "pre-push": "npm run test && npm run build"
     }
   },
   "prettier": {
