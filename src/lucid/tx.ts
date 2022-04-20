@@ -347,11 +347,17 @@ export class Tx {
         utxos,
         C.CoinSelectionStrategyCIP2.RandomImproveMultiAsset
       );
+      this.txBuilder.add_change_if_needed(
+        C.Address.from_bech32(Lucid.wallet.address)
+      );
     } catch (e) {
       try {
         this.txBuilder.add_inputs_from(
           utxos,
           C.CoinSelectionStrategyCIP2.RandomImprove
+        );
+        this.txBuilder.add_change_if_needed(
+          C.Address.from_bech32(Lucid.wallet.address)
         );
       } catch (e) {
         try {
@@ -359,11 +365,17 @@ export class Tx {
             utxos,
             C.CoinSelectionStrategyCIP2.LargestFirstMultiAsset
           );
+          this.txBuilder.add_change_if_needed(
+            C.Address.from_bech32(Lucid.wallet.address)
+          );
         } catch (e) {
           try {
             this.txBuilder.add_inputs_from(
               utxos,
               C.CoinSelectionStrategyCIP2.LargestFirst
+            );
+            this.txBuilder.add_change_if_needed(
+              C.Address.from_bech32(Lucid.wallet.address)
             );
           } catch (e) {
             throw new Error(
@@ -374,9 +386,6 @@ export class Tx {
       }
     }
 
-    this.txBuilder.add_change_if_needed(
-      C.Address.from_bech32(Lucid.wallet.address)
-    );
     return new TxComplete(await this.txBuilder.construct());
   }
 }
