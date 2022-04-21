@@ -1,6 +1,6 @@
 {
   "name": "lucid-cardano",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -21,7 +21,9 @@
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
     "lint": "tsdx lint src test",
     "docs": "typedoc --entryPoints ./custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.d.ts --entryPoints ./custom_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.d.ts --entryPoints src --entryPointStrategy expand --exclude '**/core/**' --exclude '**/examples/**' --plugin ./node_modules/typedoc-theme-category/dist/index.js --theme category",
-    "release": "npm run test && npm run build && node scripts/prerelease.js && npm publish && node scripts/postrelease.js"
+    "release": "npm run test && npm run build && node scripts/prerelease.js && npm publish && node scripts/postrelease.js",
+    "prepack": "node scripts/prerelease.js",
+    "postpack": "node scripts/postrelease.js && mkdir -p lucid-cardano && rm -rf lucid-cardano/* && tar zxvf lucid-cardano-*.tgz -C lucid-cardano && mv lucid-cardano/package/* lucid-cardano/ && rm -r lucid-cardano/package && rm lucid-cardano-*.tgz"
   },
   "peerDependencies": {},
   "husky": {
