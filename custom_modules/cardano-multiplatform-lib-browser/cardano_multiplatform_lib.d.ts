@@ -200,22 +200,6 @@ export enum ScriptSchema {
 }
 /**
 */
-export enum TransactionMetadatumKind {
-  MetadataMap,
-  MetadataList,
-  Int,
-  Bytes,
-  Text,
-}
-/**
-*/
-export enum MetadataJsonSchema {
-  NoConversions,
-  BasicConversions,
-  DetailedSchema,
-}
-/**
-*/
 export enum CoinSelectionStrategyCIP2 {
 /**
 * Performs CIP2's Largest First ada-only selection. Will error if outputs contain non-ADA assets.
@@ -233,6 +217,22 @@ export enum CoinSelectionStrategyCIP2 {
 * Same as RandomImprove, but before adding ADA, will insert by random-improve for each asset type.
 */
   RandomImproveMultiAsset,
+}
+/**
+*/
+export enum TransactionMetadatumKind {
+  MetadataMap,
+  MetadataList,
+  Int,
+  Bytes,
+  Text,
+}
+/**
+*/
+export enum MetadataJsonSchema {
+  NoConversions,
+  BasicConversions,
+  DetailedSchema,
 }
 /**
 */
@@ -747,6 +747,11 @@ export class BigNum {
 * @returns {BigNum}
 */
   checked_sub(other: BigNum): BigNum;
+/**
+* @param {BigNum} other
+* @returns {BigNum}
+*/
+  checked_div(other: BigNum): BigNum;
 /**
 * returns 0 if it would otherwise underflow
 * @param {BigNum} other
@@ -5665,6 +5670,14 @@ export class TransactionBuilderConfigBuilder {
 * @returns {TransactionBuilderConfigBuilder}
 */
   prefer_pure_change(prefer_pure_change: boolean): TransactionBuilderConfigBuilder;
+/**
+* @param {boolean} prefer_split_change
+* @param {BigNum} collateral_amount
+* @param {BigNum} min_split_amount_ada
+* @param {number} native_asset_chunk_size
+* @returns {TransactionBuilderConfigBuilder}
+*/
+  prefer_split_change(prefer_split_change: boolean, collateral_amount: BigNum, min_split_amount_ada: BigNum, native_asset_chunk_size: number): TransactionBuilderConfigBuilder;
 /**
 * @returns {TransactionBuilderConfig}
 */

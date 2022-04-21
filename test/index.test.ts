@@ -6,6 +6,8 @@ import {
   toHex,
   utxoToCore,
   fromHex,
+  assetsToValue,
+  valueToAssets,
 } from '../src';
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
@@ -87,12 +89,29 @@ describe('Datum', () => {
 
 describe('PlutusData', () => {
   test('Construct plutus data', () => {
-    const data = Data.fromJS(
+    const data = Data.from(
       new Construct(1, [BigInt(1), 'abc', 'def', new Construct(0, [])])
     );
-    const serialized = toHex(data.to_bytes());
 
-    expect(serialized).toBe('d87a9f0141ab41ded87980ff');
+    expect(data).toBe('d87a9f0141ab41ded87980ff');
     // == 122([1, h'AB', h'DE', 121([])])
+  });
+});
+
+describe('Utils', () => {
+  test('Assets to value', () => {
+    const unit = '0'.repeat(56);
+    const assets = { lovelace: 5000000n, [unit]: 8n };
+
+    const value = assetsToValue(assets);
+    expect(BigInt(value.coin().to_str())).toBe(assets.lovelace);
+    expect(value.multiasset()!.len()).toBe(1);
+  });
+
+  test('Value to assets', () => {
+    const value = C.Value.new(C.BigNum.from_str('5000000'));
+
+    const assets = valueToAssets(value);
+    expect(BigInt(value.coin().to_str())).toBe(assets.lovelace);
   });
 });

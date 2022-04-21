@@ -378,6 +378,7 @@ export class Tx {
               C.Address.from_bech32(Lucid.wallet.address)
             );
           } catch (e) {
+            throw new Error(e as any);
             throw new Error(
               'Coin selection failed. Not enough funds or no fitting UTxOs found.'
             );

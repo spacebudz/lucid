@@ -1,4 +1,3 @@
-import { Data } from 'utils/data';
 import {
   Lucid,
   Blockfrost,
@@ -6,9 +5,9 @@ import {
   Tx,
   Address,
   Lovelace,
+  Data,
   SpendingValidator,
   TxHash,
-  toHex,
 } from '..';
 
 /**
@@ -48,14 +47,15 @@ const matchingNumberAddress: Address = C.EnterpriseAddress.new(
   .to_address()
   .to_bech32();
 
-const getPlutusData = (number: number) => toHex(Data.fromJS(number).to_bytes());
+const Datum = (number: number) => Data.from(number);
+const Redeemer = (number: number) => Data.from(number);
 
 export const lockUtxo = async (
   number: number,
   lovelace: Lovelace
 ): Promise<TxHash> => {
   const tx = await Tx.new()
-    .payToContract(matchingNumberAddress, getPlutusData(number), { lovelace })
+    .payToContract(matchingNumberAddress, Datum(number), { lovelace })
     .complete();
 
   const signedTx = (await tx.sign()).complete();
@@ -69,10 +69,10 @@ export const redeemUtxo = async (number: number): Promise<TxHash> => {
   const utxo = (await Lucid.utxosAt(matchingNumberAddress))[0];
 
   // add datum to utxo (datum discovery may happen automatically in a future release)
-  utxo.datum = getPlutusData(number);
+  utxo.datum = Datum(number);
 
   const tx = await Tx.new()
-    .collectFrom([utxo], getPlutusData(number))
+    .collectFrom([utxo], Redeemer(number))
     .attachSpendingValidator(matchingNumberScript)
     .complete();
 

@@ -267,11 +267,11 @@ export const assetsToValue = (assets: Assets) => {
   const multiAsset = C.MultiAsset.new();
   const lovelace = assets['lovelace'];
   const units = Object.keys(assets);
-  const policies = [
-    ...new Set(
+  const policies = Array.from(
+    new Set(
       units.filter(unit => unit !== 'lovelace').map(unit => unit.slice(0, 56))
-    ),
-  ];
+    )
+  );
   policies.forEach(policy => {
     const policyUnits = units.filter(unit => unit.slice(0, 56) === policy);
     const assetsValue = C.Assets.new();

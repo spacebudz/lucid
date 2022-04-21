@@ -378,6 +378,17 @@ module.exports.encode_json_str_to_native_script = function(json, self_xpub, sche
     return NativeScript.__wrap(ret);
 };
 
+let cachegetUint32Memory0 = null;
+function getUint32Memory0() {
+    if (cachegetUint32Memory0 === null || cachegetUint32Memory0.buffer !== wasm.memory.buffer) {
+        cachegetUint32Memory0 = new Uint32Array(wasm.memory.buffer);
+    }
+    return cachegetUint32Memory0;
+}
+
+function getArrayU32FromWasm0(ptr, len) {
+    return getUint32Memory0().subarray(ptr / 4, ptr / 4 + len);
+}
 /**
 * @param {Uint8Array} bytes
 * @returns {TransactionMetadatum}
@@ -439,17 +450,6 @@ module.exports.decode_metadatum_to_json_str = function(metadatum, schema) {
     }
 };
 
-let cachegetUint32Memory0 = null;
-function getUint32Memory0() {
-    if (cachegetUint32Memory0 === null || cachegetUint32Memory0.buffer !== wasm.memory.buffer) {
-        cachegetUint32Memory0 = new Uint32Array(wasm.memory.buffer);
-    }
-    return cachegetUint32Memory0;
-}
-
-function getArrayU32FromWasm0(ptr, len) {
-    return getUint32Memory0().subarray(ptr / 4, ptr / 4 + len);
-}
 /**
 * @param {string} password
 * @param {string} salt
@@ -552,7 +552,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_1329(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1331(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__hf20c15ebccf7f833(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -588,12 +588,6 @@ module.exports.ScriptHashNamespace = Object.freeze({ NativeScript:0,"0":"NativeS
 module.exports.ScriptSchema = Object.freeze({ Wallet:0,"0":"Wallet",Node:1,"1":"Node", });
 /**
 */
-module.exports.TransactionMetadatumKind = Object.freeze({ MetadataMap:0,"0":"MetadataMap",MetadataList:1,"1":"MetadataList",Int:2,"2":"Int",Bytes:3,"3":"Bytes",Text:4,"4":"Text", });
-/**
-*/
-module.exports.MetadataJsonSchema = Object.freeze({ NoConversions:0,"0":"NoConversions",BasicConversions:1,"1":"BasicConversions",DetailedSchema:2,"2":"DetailedSchema", });
-/**
-*/
 module.exports.CoinSelectionStrategyCIP2 = Object.freeze({
 /**
 * Performs CIP2's Largest First ada-only selection. Will error if outputs contain non-ADA assets.
@@ -611,6 +605,12 @@ LargestFirstMultiAsset:2,"2":"LargestFirstMultiAsset",
 * Same as RandomImprove, but before adding ADA, will insert by random-improve for each asset type.
 */
 RandomImproveMultiAsset:3,"3":"RandomImproveMultiAsset", });
+/**
+*/
+module.exports.TransactionMetadatumKind = Object.freeze({ MetadataMap:0,"0":"MetadataMap",MetadataList:1,"1":"MetadataList",Int:2,"2":"Int",Bytes:3,"3":"Bytes",Text:4,"4":"Text", });
+/**
+*/
+module.exports.MetadataJsonSchema = Object.freeze({ NoConversions:0,"0":"NoConversions",BasicConversions:1,"1":"BasicConversions",DetailedSchema:2,"2":"DetailedSchema", });
 /**
 */
 module.exports.StakeCredKind = Object.freeze({ Key:0,"0":"Key",Script:1,"1":"Script", });
@@ -1743,6 +1743,15 @@ class BigNum {
     checked_sub(other) {
         _assertClass(other, BigNum);
         var ret = wasm.bignum_checked_sub(this.ptr, other.ptr);
+        return BigNum.__wrap(ret);
+    }
+    /**
+    * @param {BigNum} other
+    * @returns {BigNum}
+    */
+    checked_div(other) {
+        _assertClass(other, BigNum);
+        var ret = wasm.bignum_checked_div(this.ptr, other.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -13810,6 +13819,23 @@ class TransactionBuilderConfigBuilder {
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**
+    * @param {boolean} prefer_split_change
+    * @param {BigNum} collateral_amount
+    * @param {BigNum} min_split_amount_ada
+    * @param {number} native_asset_chunk_size
+    * @returns {TransactionBuilderConfigBuilder}
+    */
+    prefer_split_change(prefer_split_change, collateral_amount, min_split_amount_ada, native_asset_chunk_size) {
+        _assertClass(collateral_amount, BigNum);
+        var ptr0 = collateral_amount.ptr;
+        collateral_amount.ptr = 0;
+        _assertClass(min_split_amount_ada, BigNum);
+        var ptr1 = min_split_amount_ada.ptr;
+        min_split_amount_ada.ptr = 0;
+        var ret = wasm.transactionbuilderconfigbuilder_prefer_split_change(this.ptr, prefer_split_change, ptr0, ptr1, native_asset_chunk_size);
+        return TransactionBuilderConfigBuilder.__wrap(ret);
+    }
+    /**
     * @returns {TransactionBuilderConfig}
     */
     build() {
@@ -16703,7 +16729,7 @@ module.exports.__wbg_new_c143a4f563f78c4e = function(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_1329(a, state0.b, arg0, arg1);
+                return __wbg_adapter_1331(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -16853,7 +16879,7 @@ module.exports.__wbindgen_memory = function() {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8344 = function(arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper8348 = function(arg0, arg1, arg2) {
     var ret = makeMutClosure(arg0, arg1, 454, __wbg_adapter_32);
     return addHeapObject(ret);
 };

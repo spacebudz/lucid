@@ -305,6 +305,16 @@ declare export var ScriptSchema: {|
 /**
  */
 
+declare export var CoinSelectionStrategyCIP2: {|
+  +LargestFirst: 0, // 0
+  +RandomImprove: 1, // 1
+  +LargestFirstMultiAsset: 2, // 2
+  +RandomImproveMultiAsset: 3, // 3
+|};
+
+/**
+ */
+
 declare export var TransactionMetadatumKind: {|
   +MetadataMap: 0, // 0
   +MetadataList: 1, // 1
@@ -320,16 +330,6 @@ declare export var MetadataJsonSchema: {|
   +NoConversions: 0, // 0
   +BasicConversions: 1, // 1
   +DetailedSchema: 2, // 2
-|};
-
-/**
- */
-
-declare export var CoinSelectionStrategyCIP2: {|
-  +LargestFirst: 0, // 0
-  +RandomImprove: 1, // 1
-  +LargestFirstMultiAsset: 2, // 2
-  +RandomImproveMultiAsset: 3, // 3
 |};
 
 /**
@@ -910,6 +910,12 @@ declare export class BigNum {
    * @returns {BigNum}
    */
   checked_sub(other: BigNum): BigNum;
+
+  /**
+   * @param {BigNum} other
+   * @returns {BigNum}
+   */
+  checked_div(other: BigNum): BigNum;
 
   /**
    * returns 0 if it would otherwise underflow
@@ -6912,6 +6918,20 @@ declare export class TransactionBuilderConfigBuilder {
    */
   prefer_pure_change(
     prefer_pure_change: boolean
+  ): TransactionBuilderConfigBuilder;
+
+  /**
+   * @param {boolean} prefer_split_change
+   * @param {BigNum} collateral_amount
+   * @param {BigNum} min_split_amount_ada
+   * @param {number} native_asset_chunk_size
+   * @returns {TransactionBuilderConfigBuilder}
+   */
+  prefer_split_change(
+    prefer_split_change: boolean,
+    collateral_amount: BigNum,
+    min_split_amount_ada: BigNum,
+    native_asset_chunk_size: number
   ): TransactionBuilderConfigBuilder;
 
   /**
