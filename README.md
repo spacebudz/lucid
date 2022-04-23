@@ -96,4 +96,4 @@ Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/plutus
 
 Branch: Plutus
 
-Commit hash: 65b93c17af64f2bdf2bbb00de6eed44eadc92e1a
+Commit hash: 5f41e3c1e30a44579ffeef27f497fe7a7334846f
