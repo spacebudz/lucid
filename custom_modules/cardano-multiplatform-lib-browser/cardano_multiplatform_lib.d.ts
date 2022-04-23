@@ -6216,7 +6216,7 @@ export class TransactionWitnessSet {
   static new(): TransactionWitnessSet;
 }
 /**
-* Builder de-duplicates witnesses as they are added 
+* Builder de-duplicates witnesses as they are added
 */
 export class TransactionWitnessSetBuilder {
   free(): void;
