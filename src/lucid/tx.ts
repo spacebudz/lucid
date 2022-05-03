@@ -342,49 +342,9 @@ export class Tx {
       });
     }
 
-    try {
-      this.txBuilder.add_inputs_from(
-        utxos,
-        C.CoinSelectionStrategyCIP2.RandomImproveMultiAsset
-      );
-      this.txBuilder.add_change_if_needed(
-        C.Address.from_bech32(Lucid.wallet.address)
-      );
-    } catch (e) {
-      try {
-        this.txBuilder.add_inputs_from(
-          utxos,
-          C.CoinSelectionStrategyCIP2.RandomImprove
-        );
-        this.txBuilder.add_change_if_needed(
-          C.Address.from_bech32(Lucid.wallet.address)
-        );
-      } catch (e) {
-        try {
-          this.txBuilder.add_inputs_from(
-            utxos,
-            C.CoinSelectionStrategyCIP2.LargestFirstMultiAsset
-          );
-          this.txBuilder.add_change_if_needed(
-            C.Address.from_bech32(Lucid.wallet.address)
-          );
-        } catch (e) {
-          try {
-            this.txBuilder.add_inputs_from(
-              utxos,
-              C.CoinSelectionStrategyCIP2.LargestFirst
-            );
-            this.txBuilder.add_change_if_needed(
-              C.Address.from_bech32(Lucid.wallet.address)
-            );
-          } catch (e) {
-            throw new Error(
-              'Coin selection failed. Not enough funds or no fitting UTxOs found.'
-            );
-          }
-        }
-      }
-    }
+    this.txBuilder.add_inputs_from(utxos);
+    // TODO: allow change outputs to include a datum (in case address is a plutus script)
+    this.txBuilder.balance(C.Address.from_bech32(Lucid.wallet.address));
 
     return new TxComplete(await this.txBuilder.construct());
   }

@@ -1,6 +1,61 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+* @param {Uint8Array} bytes
+* @returns {TransactionMetadatum}
+*/
+export function encode_arbitrary_bytes_as_metadatum(bytes: Uint8Array): TransactionMetadatum;
+/**
+* @param {TransactionMetadatum} metadata
+* @returns {Uint8Array}
+*/
+export function decode_arbitrary_bytes_from_metadatum(metadata: TransactionMetadatum): Uint8Array;
+/**
+* @param {string} json
+* @param {number} schema
+* @returns {TransactionMetadatum}
+*/
+export function encode_json_str_to_metadatum(json: string, schema: number): TransactionMetadatum;
+/**
+* @param {TransactionMetadatum} metadatum
+* @param {number} schema
+* @returns {string}
+*/
+export function decode_metadatum_to_json_str(metadatum: TransactionMetadatum, schema: number): string;
+/**
+* @param {string} password
+* @param {string} salt
+* @param {string} nonce
+* @param {string} data
+* @returns {string}
+*/
+export function encrypt_with_password(password: string, salt: string, nonce: string, data: string): string;
+/**
+* @param {string} password
+* @param {string} data
+* @returns {string}
+*/
+export function decrypt_with_password(password: string, data: string): string;
+/**
+* @param {Transaction} tx
+* @param {LinearFee} linear_fee
+* @param {ExUnitPrices} ex_unit_prices
+* @returns {BigNum}
+*/
+export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
+/**
+* @param {string} json
+* @param {number} schema
+* @returns {PlutusData}
+*/
+export function encode_json_str_to_plutus_datum(json: string, schema: number): PlutusData;
+/**
+* @param {PlutusData} datum
+* @param {number} schema
+* @returns {string}
+*/
+export function decode_plutus_datum_to_json_str(datum: PlutusData, schema: number): string;
+/**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
 * @param {LegacyDaedalusPrivateKey} key
@@ -79,61 +134,6 @@ export function min_ada_required(assets: Value, has_data_hash: boolean, coins_pe
 */
 export function encode_json_str_to_native_script(json: string, self_xpub: string, schema: number): NativeScript;
 /**
-* @param {Uint8Array} bytes
-* @returns {TransactionMetadatum}
-*/
-export function encode_arbitrary_bytes_as_metadatum(bytes: Uint8Array): TransactionMetadatum;
-/**
-* @param {TransactionMetadatum} metadata
-* @returns {Uint8Array}
-*/
-export function decode_arbitrary_bytes_from_metadatum(metadata: TransactionMetadatum): Uint8Array;
-/**
-* @param {string} json
-* @param {number} schema
-* @returns {TransactionMetadatum}
-*/
-export function encode_json_str_to_metadatum(json: string, schema: number): TransactionMetadatum;
-/**
-* @param {TransactionMetadatum} metadatum
-* @param {number} schema
-* @returns {string}
-*/
-export function decode_metadatum_to_json_str(metadatum: TransactionMetadatum, schema: number): string;
-/**
-* @param {string} password
-* @param {string} salt
-* @param {string} nonce
-* @param {string} data
-* @returns {string}
-*/
-export function encrypt_with_password(password: string, salt: string, nonce: string, data: string): string;
-/**
-* @param {string} password
-* @param {string} data
-* @returns {string}
-*/
-export function decrypt_with_password(password: string, data: string): string;
-/**
-* @param {Transaction} tx
-* @param {LinearFee} linear_fee
-* @param {ExUnitPrices} ex_unit_prices
-* @returns {BigNum}
-*/
-export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
-/**
-* @param {string} json
-* @param {number} schema
-* @returns {PlutusData}
-*/
-export function encode_json_str_to_plutus_datum(json: string, schema: number): PlutusData;
-/**
-* @param {PlutusData} datum
-* @param {number} schema
-* @returns {string}
-*/
-export function decode_plutus_datum_to_json_str(datum: PlutusData, schema: number): string;
-/**
 */
 export enum CertificateKind {
   StakeRegistration,
@@ -180,23 +180,20 @@ export enum NetworkIdKind {
   Mainnet,
 }
 /**
-* Each new language uses a different namespace for hashing its script
-* This is because you could have a language where the same bytes have different semantics
-* So this avoids scripts in different languages mapping to the same hash
-* Note that the enum value here is different than the enum value for deciding the cost model of a script
-* https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
 */
-export enum ScriptHashNamespace {
-  NativeScript,
-  PlutusV1,
-  PlutusV2,
+export enum TransactionMetadatumKind {
+  MetadataMap,
+  MetadataList,
+  Int,
+  Bytes,
+  Text,
 }
 /**
-* Used to choose the schema for a script JSON string
 */
-export enum ScriptSchema {
-  Wallet,
-  Node,
+export enum MetadataJsonSchema {
+  NoConversions,
+  BasicConversions,
+  DetailedSchema,
 }
 /**
 */
@@ -217,22 +214,6 @@ export enum CoinSelectionStrategyCIP2 {
 * Same as RandomImprove, but before adding ADA, will insert by random-improve for each asset type.
 */
   RandomImproveMultiAsset,
-}
-/**
-*/
-export enum TransactionMetadatumKind {
-  MetadataMap,
-  MetadataList,
-  Int,
-  Bytes,
-  Text,
-}
-/**
-*/
-export enum MetadataJsonSchema {
-  NoConversions,
-  BasicConversions,
-  DetailedSchema,
 }
 /**
 */
@@ -331,9 +312,27 @@ export enum ScriptKind {
 /**
 */
 export enum DatumKind {
-  Empty,
   Hash,
   Data,
+}
+/**
+* Each new language uses a different namespace for hashing its script
+* This is because you could have a language where the same bytes have different semantics
+* So this avoids scripts in different languages mapping to the same hash
+* Note that the enum value here is different than the enum value for deciding the cost model of a script
+* https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
+*/
+export enum ScriptHashNamespace {
+  NativeScript,
+  PlutusV1,
+  PlutusV2,
+}
+/**
+* Used to choose the schema for a script JSON string
+*/
+export enum ScriptSchema {
+  Wallet,
+  Node,
 }
 /**
 */
@@ -1331,6 +1330,10 @@ export class CostModel {
 */
   static new(): CostModel;
 /**
+* @returns {CostModel}
+*/
+  static new_plutus_v2(): CostModel;
+/**
 * @param {number} operation
 * @param {Int} cost
 * @returns {Int}
@@ -1341,6 +1344,10 @@ export class CostModel {
 * @returns {Int}
 */
   get(operation: number): Int;
+/**
+* @returns {number}
+*/
+  len(): number;
 }
 /**
 */
@@ -5334,14 +5341,11 @@ export class TransactionBuilder {
 * This automatically selects and adds inputs from {inputs} consisting of just enough to cover
 * the outputs that have already been added.
 * This should be called after adding all certs/outputs/etc and will be an error otherwise.
-* Uses CIP2: https://github.com/cardano-foundation/CIPs/blob/master/CIP-0002/CIP-0002.md
-* Adding a change output must be called after via TransactionBuilder::add_change_if_needed()
-* This function, diverging from CIP2, takes into account fees and will attempt to add additional
+* Adding a change output must be called after via TransactionBuilder::balance()
 * inputs to cover the minimum fees. This does not, however, set the txbuilder's fee.
 * @param {TransactionUnspentOutputs} inputs
-* @param {number} strategy
 */
-  add_inputs_from(inputs: TransactionUnspentOutputs, strategy: number): void;
+  add_inputs_from(inputs: TransactionUnspentOutputs): void;
 /**
 * We have to know what kind of inputs these are to know what kind of mock witnesses to create since
 * 1) mock witnesses have different lengths depending on the type which changes the expecting fee
@@ -5545,10 +5549,15 @@ export class TransactionBuilder {
 */
   get_implicit_input(): Value;
 /**
-* Return explicit input plus implicit input plus mint minus burn
+* Return explicit input plus implicit input plus mint
 * @returns {Value}
 */
   get_total_input(): Value;
+/**
+* Return explicit output plus implicit output plus burn (does not consider fee directly)
+* @returns {Value}
+*/
+  get_total_output(): Value;
 /**
 * does not include fee
 * @returns {Value}
@@ -5562,6 +5571,15 @@ export class TransactionBuilder {
 * @returns {BigNum | undefined}
 */
   get_fee_if_set(): BigNum | undefined;
+/**
+* Warning: this function will mutate the /fee/ field
+* Make sure to call this function last after setting all other tx-body properties
+* Editing inputs, outputs, mint, etc. after change been calculated
+* might cause a mismatch in calculated fee versus the required fee
+* @param {Address} address
+* @param {Datum | undefined} datum
+*/
+  balance(address: Address, datum?: Datum): void;
 /**
 * Warning: this function will mutate the /fee/ field
 * Make sure to call this function last after setting all other tx-body properties
@@ -6831,7 +6849,6 @@ export type DNSRecordSRVJSON = string;
 export type DataHashJSON = string;
 export type DatumJSON = DatumEnumJSON;
 export type DatumEnumJSON =
-  | "Empty"
   | {
       Hash: string;
     }
