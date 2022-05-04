@@ -113,6 +113,20 @@ export class Tx {
   }
 
   /**
+   * Pay to a public key or native script address with datum
+   *  */
+  payToAddressWithDatum(address: Address, datum: Datum, assets: Assets) {
+    const plutusData = C.PlutusData.from_bytes(Buffer.from(datum, 'hex'));
+    const output = C.TransactionOutput.new(
+      C.Address.from_bech32(address),
+      assetsToValue(assets)
+    );
+    output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
+    this.txBuilder.add_output(output);
+    return this;
+  }
+
+  /**
    * Pay to a plutus script address with datum
    *  */
   payToContract(address: Address, datum: Datum, assets: Assets) {
