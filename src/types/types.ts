@@ -147,9 +147,6 @@ export interface Wallet {
   submitTx(signedTx: Core.Transaction): Promise<TxHash>;
 }
 
-/** Represents an empty Datum or Redeemer */
-export const EmptyData = '00' as Redeemer | Datum;
-
 export type WalletProvider = 'nami' | 'eternl' | 'flint';
 
 /**

@@ -56,4 +56,11 @@ export class Data {
     };
     return toHex(serialize(data).to_bytes()) as Datum | Redeemer;
   }
+  static empty(): Datum | Redeemer {
+    return toHex(
+      C.PlutusData.new_constr_plutus_data(
+        C.ConstrPlutusData.new(C.BigNum.from_str('0'), C.PlutusList.new())
+      ).to_bytes()
+    );
+  }
 }
