@@ -19,11 +19,11 @@ export class Lucid {
   static txBuilderConfig: Core.TransactionBuilderConfig;
   static wallet: Wallet;
   static provider: Provider;
-  static network: Network;
+  static network: Network = 'Mainnet';
 
-  static async initialize(network: Network, provider: Provider) {
+  static async initialize(provider: Provider, network?: Network) {
     this.provider = provider;
-    this.network = network;
+    if (network) this.network = network;
     const protocolParameters = await provider.getProtocolParameters();
     this.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
       .coins_per_utxo_word(

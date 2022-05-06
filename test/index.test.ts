@@ -15,16 +15,18 @@ await Lucid.selectWalletFromPrivateKey(privateKey);
 
 describe('Testing wallet', () => {
   test('PaymentKeyHash length', async () => {
-    const { paymentKeyHash } = getAddressDetails(Lucid.wallet.address);
-    if (paymentKeyHash) {
-      expect(fromHex(paymentKeyHash)).toHaveLength(28);
+    const { paymentCredential } = getAddressDetails(Lucid.wallet.address);
+    if (paymentCredential) {
+      expect(fromHex(paymentCredential.hash)).toHaveLength(28);
     } else {
-      expect(paymentKeyHash).toBeDefined();
+      expect(paymentCredential).toBeDefined();
     }
   });
 
   test('Address type', async () => {
-    const { address } = getAddressDetails(Lucid.wallet.address);
+    const {
+      address: { address },
+    } = getAddressDetails(Lucid.wallet.address);
     const enterpriseAddress = C.EnterpriseAddress.from_address(
       C.Address.from_bech32(address)
     )!
@@ -35,8 +37,8 @@ describe('Testing wallet', () => {
   });
 
   test('No reward address', async () => {
-    const { stakeKeyHash } = getAddressDetails(Lucid.wallet.address);
-    expect(stakeKeyHash).toBeUndefined();
+    const { stakeCredential } = getAddressDetails(Lucid.wallet.address);
+    expect(stakeCredential).toBeUndefined();
     expect(Lucid.wallet.rewardAddress).toBeUndefined();
   });
 

@@ -149,19 +149,22 @@ export class Tx {
     poolId: PoolId,
     redeemer?: Redeemer
   ) {
-    const detailedAddress = getAddressDetails(rewardAddress);
-    if (detailedAddress.type !== 'Reward' || !detailedAddress.stakeKeyHash)
+    const addressDetails = getAddressDetails(rewardAddress);
+    if (
+      addressDetails.address.type !== 'Reward' ||
+      !addressDetails.stakeCredential
+    )
       throw new Error('Not a reward address provided');
     const credential =
-      detailedAddress.credentialType === 'Key'
+      addressDetails.stakeCredential.type === 'Key'
         ? C.StakeCredential.from_keyhash(
             C.Ed25519KeyHash.from_bytes(
-              Buffer.from(detailedAddress.stakeKeyHash, 'hex')
+              Buffer.from(addressDetails.stakeCredential.hash, 'hex')
             )
           )
         : C.StakeCredential.from_scripthash(
             C.Ed25519KeyHash.from_bytes(
-              Buffer.from(detailedAddress.stakeKeyHash, 'hex')
+              Buffer.from(addressDetails.stakeCredential.hash, 'hex')
             )
           );
 
@@ -180,19 +183,22 @@ export class Tx {
   }
 
   registerStake(rewardAddress: RewardAddress) {
-    const detailedAddress = getAddressDetails(rewardAddress);
-    if (detailedAddress.type !== 'Reward' || !detailedAddress.stakeKeyHash)
+    const addressDetails = getAddressDetails(rewardAddress);
+    if (
+      addressDetails.address.type !== 'Reward' ||
+      !addressDetails.stakeCredential
+    )
       throw new Error('Not a reward address provided');
     const credential =
-      detailedAddress.credentialType === 'Key'
+      addressDetails.stakeCredential.type === 'Key'
         ? C.StakeCredential.from_keyhash(
             C.Ed25519KeyHash.from_bytes(
-              Buffer.from(detailedAddress.stakeKeyHash, 'hex')
+              Buffer.from(addressDetails.stakeCredential.hash, 'hex')
             )
           )
         : C.StakeCredential.from_scripthash(
             C.Ed25519KeyHash.from_bytes(
-              Buffer.from(detailedAddress.stakeKeyHash, 'hex')
+              Buffer.from(addressDetails.stakeCredential.hash, 'hex')
             )
           );
 
@@ -203,19 +209,22 @@ export class Tx {
   }
 
   deregisterStake(rewardAddress: RewardAddress, redeemer?: Redeemer) {
-    const detailedAddress = getAddressDetails(rewardAddress);
-    if (detailedAddress.type !== 'Reward' || !detailedAddress.stakeKeyHash)
+    const addressDetails = getAddressDetails(rewardAddress);
+    if (
+      addressDetails.address.type !== 'Reward' ||
+      !addressDetails.stakeCredential
+    )
       throw new Error('Not a reward address provided');
     const credential =
-      detailedAddress.credentialType === 'Key'
+      addressDetails.stakeCredential.type === 'Key'
         ? C.StakeCredential.from_keyhash(
             C.Ed25519KeyHash.from_bytes(
-              Buffer.from(detailedAddress.stakeKeyHash, 'hex')
+              Buffer.from(addressDetails.stakeCredential.hash, 'hex')
             )
           )
         : C.StakeCredential.from_scripthash(
             C.Ed25519KeyHash.from_bytes(
-              Buffer.from(detailedAddress.stakeKeyHash, 'hex')
+              Buffer.from(addressDetails.stakeCredential.hash, 'hex')
             )
           );
 
@@ -259,18 +268,21 @@ export class Tx {
    * The StakeKeyHash is taken when providing a Reward address
    */
   addSigner(address: Address | RewardAddress) {
-    const addressDetailed = getAddressDetails(address);
+    const addressDetails = getAddressDetails(address);
 
-    if (!addressDetailed.paymentKeyHash || !addressDetailed.stakeKeyHash)
+    if (!addressDetails.paymentCredential || !addressDetails.stakeCredential)
       throw new Error('Not a valid address.');
 
-    const keyHash =
-      addressDetailed.type === 'Reward'
-        ? addressDetailed.stakeKeyHash
-        : addressDetailed.paymentKeyHash;
+    const credential =
+      addressDetails.address.type === 'Reward'
+        ? addressDetails.stakeCredential
+        : addressDetails.paymentCredential;
+
+    if (credential.type === 'Script')
+      throw new Error('Only key hashes are allow as signers.');
 
     this.txBuilder.add_required_signer(
-      C.Ed25519KeyHash.from_bytes(Buffer.from(keyHash, 'hex'))
+      C.Ed25519KeyHash.from_bytes(Buffer.from(credential.hash, 'hex'))
     );
     return this;
   }
@@ -377,7 +389,7 @@ const attachScript = (
       C.NativeScript.from_bytes(Buffer.from(script.script, 'hex'))
     );
   }
-  if (script.type === 'Plutus') {
+  if (script.type === 'PlutusV1' || script.type === 'PlutusV2') {
     tx.txBuilder.add_plutus_script(
       C.PlutusScript.from_bytes(Buffer.from(script.script, 'hex'))
     );

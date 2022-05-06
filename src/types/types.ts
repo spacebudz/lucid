@@ -28,55 +28,53 @@ export interface ProviderSchema {
   submitTx?(tx: Core.Transaction): Promise<TxHash>;
 }
 
-export type CredentialType = 'Key' | 'Script';
+export type Credential = {
+  type: 'Key' | 'Script';
+  hash: KeyHash | ScriptHash;
+};
+
 /** Concatenation of Policy Id and asset name in hex */
 export type Unit = string;
 export type Assets = {
   [unit: string]: BigInt;
 };
-export type ScriptType = 'Native' | 'Plutus';
+export type ScriptType = 'Native' | 'PlutusV1' | 'PlutusV2';
 
 /** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
  *
  * E.g. taking the cborHex coming from writeFileTextEnvelope works
  */
-export type Script = string;
+export type Script = { type: ScriptType; script: string };
 
 /** Hex */
 export type PolicyId = string;
 
+export type Validator =
+  | MintingPolicy
+  | SpendingValidator
+  | CertificateValidator
+  | WithdrawalValidator;
+
 /** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
  *
  * E.g. taking the cborHex coming from writeFileTextEnvelope works
  */
-export type MintingPolicy = {
-  type: ScriptType;
-  script: Script;
-};
+export type MintingPolicy = Script;
 /** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
  *
  * E.g. taking the cborHex coming from writeFileTextEnvelope works
  */
-export type SpendingValidator = {
-  type: ScriptType;
-  script: Script;
-};
+export type SpendingValidator = Script;
 /** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
  *
  * E.g. taking the cborHex coming from writeFileTextEnvelope works
  */
-export type CertificateValidator = {
-  type: ScriptType;
-  script: Script;
-};
+export type CertificateValidator = Script;
 /** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
  *
  * E.g. taking the cborHex coming from writeFileTextEnvelope works
  */
-export type WithdrawalValidator = {
-  type: ScriptType;
-  script: Script;
-};
+export type WithdrawalValidator = Script;
 /** bech32 */
 export type Address = string;
 /** bech32 */
@@ -85,6 +83,10 @@ export type RewardAddress = string;
 export type PaymentKeyHash = string;
 /** Hex */
 export type StakeKeyHash = string;
+/** Hex */
+export type KeyHash = string | PaymentKeyHash | StakeKeyHash;
+/** Hex */
+export type ScriptHash = string;
 /** Hex */
 export type TxHash = string;
 /** bech32 */
@@ -113,16 +115,17 @@ export type UTxO = {
   datum?: Datum; // some providers may be able to return the datum as well in an efficient way
 };
 
-export type AddressType = 'Base' | 'Enterprise' | 'Pointer' | 'Reward';
+export type AddressType = {
+  type: 'Base' | 'Enterprise' | 'Pointer' | 'Reward';
+  address: Address;
+};
 
 export type Network = 'Mainnet' | 'Testnet';
 
-export type AddressDetailed = {
-  type: AddressType;
-  credentialType: CredentialType;
-  address: string;
-  paymentKeyHash?: PaymentKeyHash;
-  stakeKeyHash?: StakeKeyHash;
+export type AddressDetails = {
+  address: AddressType;
+  paymentCredential?: Credential;
+  stakeCredential?: Credential;
 };
 
 /**
