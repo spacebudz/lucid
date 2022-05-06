@@ -1,9 +1,7 @@
 import {
   Lucid,
   Blockfrost,
-  C,
   Tx,
-  Address,
   Lovelace,
   Data,
   SpendingValidator,
