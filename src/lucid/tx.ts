@@ -275,8 +275,8 @@ export class Tx {
 
     const credential =
       addressDetails.address.type === 'Reward'
-        ? addressDetails.stakeCredential
-        : addressDetails.paymentCredential;
+        ? addressDetails.stakeCredential!
+        : addressDetails.paymentCredential!;
 
     if (credential.type === 'Script')
       throw new Error('Only key hashes are allow as signers.');
