@@ -270,7 +270,7 @@ export class Tx {
   addSigner(address: Address | RewardAddress) {
     const addressDetails = getAddressDetails(address);
 
-    if (!addressDetails.paymentCredential || !addressDetails.stakeCredential)
+    if (!addressDetails.paymentCredential && !addressDetails.stakeCredential)
       throw new Error('Not a valid address.');
 
     const credential =
