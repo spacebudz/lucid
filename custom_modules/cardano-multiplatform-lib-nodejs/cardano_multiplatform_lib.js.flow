@@ -6516,13 +6516,13 @@ declare export class TransactionBuilder {
    * @param {ScriptHash} hash
    * @param {TransactionInput} input
    * @param {Value} amount
-   * @param {ScriptWitness} script_witness
+   * @param {ScriptWitness | void} script_witness
    */
   add_script_input(
     hash: ScriptHash,
     input: TransactionInput,
     amount: Value,
-    script_witness: ScriptWitness
+    script_witness?: ScriptWitness
   ): void;
 
   /**

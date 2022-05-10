@@ -5359,9 +5359,9 @@ export class TransactionBuilder {
 * @param {ScriptHash} hash
 * @param {TransactionInput} input
 * @param {Value} amount
-* @param {ScriptWitness} script_witness
+* @param {ScriptWitness | undefined} script_witness
 */
-  add_script_input(hash: ScriptHash, input: TransactionInput, amount: Value, script_witness: ScriptWitness): void;
+  add_script_input(hash: ScriptHash, input: TransactionInput, amount: Value, script_witness?: ScriptWitness): void;
 /**
 * @param {ByronAddress} hash
 * @param {TransactionInput} input

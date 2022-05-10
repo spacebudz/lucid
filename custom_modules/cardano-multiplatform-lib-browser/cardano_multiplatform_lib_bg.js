@@ -13123,14 +13123,19 @@ export class TransactionBuilder {
     * @param {ScriptHash} hash
     * @param {TransactionInput} input
     * @param {Value} amount
-    * @param {ScriptWitness} script_witness
+    * @param {ScriptWitness | undefined} script_witness
     */
     add_script_input(hash, input, amount, script_witness) {
         _assertClass(hash, ScriptHash);
         _assertClass(input, TransactionInput);
         _assertClass(amount, Value);
-        _assertClass(script_witness, ScriptWitness);
-        wasm.transactionbuilder_add_script_input(this.ptr, hash.ptr, input.ptr, amount.ptr, script_witness.ptr);
+        let ptr0 = 0;
+        if (!isLikeNone(script_witness)) {
+            _assertClass(script_witness, ScriptWitness);
+            ptr0 = script_witness.ptr;
+            script_witness.ptr = 0;
+        }
+        wasm.transactionbuilder_add_script_input(this.ptr, hash.ptr, input.ptr, amount.ptr, ptr0);
     }
     /**
     * @param {ByronAddress} hash
