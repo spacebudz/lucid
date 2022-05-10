@@ -9,8 +9,6 @@ import {
   assetsToValue,
   valueToAssets,
   coreToUtxo,
-  Tx,
-  Blockfrost,
 } from '../src';
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
