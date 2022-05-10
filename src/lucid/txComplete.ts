@@ -10,7 +10,6 @@ export class TxComplete {
   constructor(tx: Core.Transaction) {
     this.txComplete = tx;
     this.witnessSetBuilder = C.TransactionWitnessSetBuilder.new();
-    this.witnessSetBuilder.add_existing(this.txComplete.witness_set());
   }
   async sign() {
     const witness = await Lucid.wallet.signTx(this.txComplete);
@@ -29,6 +28,7 @@ export class TxComplete {
   }
 
   complete() {
+    this.witnessSetBuilder.add_existing(this.txComplete.witness_set());
     const signedTx = C.Transaction.new(
       this.txComplete.body(),
       this.witnessSetBuilder.build(),

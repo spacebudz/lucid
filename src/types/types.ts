@@ -100,9 +100,6 @@ export type Redeemer = string; // Plutus Data (same as Datum)
 export type Lovelace = BigInt;
 export type Label = number;
 
-/** Hex */
-export type RawUTxO = string;
-
 /** bech32 */
 export type PrivateKey = string;
 
@@ -134,8 +131,8 @@ export type AddressDetails = {
  */
 export interface ExternalWallet {
   address: Address;
-  utxos: RawUTxO[];
-  collateral?: RawUTxO[];
+  utxos?: UTxO[];
+  collateral?: UTxO[];
   rewardAddress?: RewardAddress;
 }
 

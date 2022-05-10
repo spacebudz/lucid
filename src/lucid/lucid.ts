@@ -1,6 +1,6 @@
 import { C } from '../core/index';
 import Core from 'core/types';
-import { costModel, fromHex, utxoToCore, coreToUtxo } from '../utils';
+import { costModel, utxoToCore, coreToUtxo, getAddressDetails } from '../utils';
 import {
   Address,
   ExternalWallet,
@@ -210,45 +210,55 @@ export class Lucid {
   /**
    * Emulates a CIP30 wallet by constructing it
    * with the UTxOs, collateral and addresses.
+   *
+   * If utxos are not set, utxos are fetched from the provided address
    */
   static async selectWalletFromUtxos({
     address,
-    utxos: rawUtxos,
+    utxos,
     collateral,
     rewardAddress,
   }: ExternalWallet) {
-    this.wallet = {
-      address,
-      rewardAddress,
-      getCollateral: async () => {
-        return collateral
-          ? collateral.map(rawUtxo =>
-              coreToUtxo(
-                C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo))
+    const addressDetails = getAddressDetails(address);
+    const rewardAddr =
+      !rewardAddress && addressDetails.stakeCredential
+        ? (() => {
+            if (addressDetails.stakeCredential.type === 'Key') {
+              return C.RewardAddress.new(
+                Lucid.network === 'Mainnet' ? 1 : 0,
+                C.StakeCredential.from_keyhash(
+                  C.Ed25519KeyHash.from_hex(addressDetails.stakeCredential.hash)
+                )
+              )
+                .to_address()
+                .to_bech32();
+            }
+            return C.RewardAddress.new(
+              Lucid.network === 'Mainnet' ? 1 : 0,
+              C.StakeCredential.from_scripthash(
+                C.ScriptHash.from_hex(addressDetails.stakeCredential.hash)
               )
             )
-          : [];
+              .to_address()
+              .to_bech32();
+          })()
+        : rewardAddress;
+    this.wallet = {
+      address,
+      rewardAddress: rewardAddr,
+      getCollateral: async () => {
+        return collateral ? collateral : [];
       },
       getCollateralCore: async () => {
-        return collateral
-          ? collateral.map(rawUtxo =>
-              C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo))
-            )
-          : [];
+        return collateral ? collateral.map(utxo => utxoToCore(utxo)) : [];
       },
       getUtxos: async () => {
-        const utxos = rawUtxos.map(utxo => {
-          const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
-            fromHex(utxo)
-          );
-          return coreToUtxo(parsedUtxo);
-        });
-        return utxos;
+        return utxos ? utxos : await this.utxosAt(address);
       },
       getUtxosCore: async () => {
         const coreUtxos = C.TransactionUnspentOutputs.new();
-        rawUtxos.forEach(rawUtxo =>
-          coreUtxos.add(C.TransactionUnspentOutput.from_bytes(fromHex(rawUtxo)))
+        (utxos ? utxos : await this.utxosAt(address)).forEach(utxo =>
+          coreUtxos.add(utxoToCore(utxo))
         );
         return coreUtxos;
       },
