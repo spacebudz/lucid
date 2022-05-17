@@ -60,7 +60,7 @@ const tx = await Tx.new()
     .payToAddress("addr...", {lovelace: 5000000n})
     .complete();
 
-const signedTx = (await tx.sign()).complete();
+const signedTx = await tx.sign().complete();
 
 const txHash = await signedTx.submit();
 

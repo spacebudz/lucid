@@ -94,12 +94,31 @@ describe('Datum', () => {
 
 describe('PlutusData', () => {
   test('Construct plutus data', () => {
-    const data = Data.from(
+    const data = Data.to(
       new Construct(1, [BigInt(1), 'abc', 'def', new Construct(0, [])])
     );
 
     expect(data).toBe('d87a9f0141ab41ded87980ff');
     // == 122([1, h'AB', h'DE', 121([])])
+  });
+
+  test('Deserialize plutus data', () => {
+    const data = 'd87a9f0141ab41ded87980ff';
+    const desData = Data.from(data);
+    expect(data).toBe(Data.to(desData));
+  });
+
+  test('(De)serialize map', () => {
+    const m = new Map();
+    m.set(2n, 1n);
+    m.set('53706163654275647a', 2n);
+    const datum = Data.to(m);
+    expect(m).toEqual(Data.from(datum));
+  });
+  test('More complex datum structure', () => {
+    const data = [new Construct(1, [new Map([[2n, 3n]])])];
+    const datum = Data.to(data);
+    expect(data).toEqual(Data.from(datum));
   });
 });
 

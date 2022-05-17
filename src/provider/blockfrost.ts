@@ -1,7 +1,11 @@
 import Core from 'core/types';
+import { C } from '../core';
+import { fromHex, toHex } from '../utils';
 import {
   Address,
   Assets,
+  Datum,
+  DatumHash,
   ProtocolParameters,
   ProviderSchema,
   Slot,
@@ -112,6 +116,15 @@ export class Blockfrost implements ProviderSchema {
     }));
   }
 
+  async getDatum(datumHash: DatumHash): Promise<Datum> {
+    const datum = await fetch(`${this.url}/scripts/datum/${datumHash}`, {
+      headers: { project_id: this.projectId },
+    })
+      .then(res => res.json())
+      .then(res => res.json_value);
+    return datumJsonToCbor(datum);
+  }
+
   async awaitTx(txHash: TxHash): Promise<boolean> {
     return new Promise(res => {
       const confirmation = setInterval(async () => {
@@ -143,3 +156,43 @@ export class Blockfrost implements ProviderSchema {
     return result;
   }
 }
+
+/** This function is temporarily needed only, until Blockfrost returns the datum natively in cbor
+ *
+ * The conversion is ambigious, that's why it's better to get the datum directly in cbor
+ */
+const datumJsonToCbor = (json: any): Datum => {
+  const convert = (json: any): Core.PlutusData => {
+    if (json.int || json.int == 0) {
+      return C.PlutusData.new_integer(C.BigInt.from_str(json.int.toString()));
+    } else if (json.bytes) {
+      return C.PlutusData.new_bytes(fromHex(json.bytes));
+    } else if (json.map) {
+      const m = C.PlutusMap.new();
+      json.map.forEach(({ v, k }: any) => {
+        m.insert(convert(k), convert(v));
+      });
+      return C.PlutusData.new_map(m);
+    } else if (json.list) {
+      const l = C.PlutusList.new();
+      json.list.forEach((v: any) => {
+        l.add(convert(v));
+      });
+      return C.PlutusData.new_list(l);
+    } else if (json.constructor) {
+      const l = C.PlutusList.new();
+      json.fields.forEach((v: any) => {
+        l.add(convert(v));
+      });
+      return C.PlutusData.new_constr_plutus_data(
+        C.ConstrPlutusData.new(
+          C.BigNum.from_str(json.constructor.toString()),
+          l
+        )
+      );
+    }
+    throw new Error('Unsupported type');
+  };
+
+  return toHex(convert(json).to_bytes());
+};

@@ -1,8 +1,16 @@
 import { C } from '../core/index';
 import Core from 'core/types';
-import { costModel, utxoToCore, coreToUtxo, getAddressDetails } from '../utils';
+import {
+  costModel,
+  utxoToCore,
+  coreToUtxo,
+  getAddressDetails,
+  fromHex,
+  toHex,
+} from '../utils';
 import {
   Address,
+  Datum,
   ExternalWallet,
   Network,
   PrivateKey,
@@ -13,7 +21,7 @@ import {
   UTxO,
   Wallet,
   WalletProvider,
-} from '../types/index.js';
+} from '../types';
 
 export class Lucid {
   static txBuilderConfig: Core.TransactionBuilderConfig;
@@ -72,6 +80,14 @@ export class Lucid {
 
   static async awaitTx(txHash: TxHash): Promise<boolean> {
     return this.provider.awaitTx(txHash);
+  }
+
+  static async datumOf(utxo: UTxO): Promise<Datum> {
+    if (!utxo.datumHash)
+      throw new Error('This UTxO does not have a datum hash.');
+    if (utxo.datum) return utxo.datum;
+    utxo.datum = await this.provider.getDatum(utxo.datumHash);
+    return utxo.datum;
   }
 
   /**
@@ -139,14 +155,14 @@ export class Lucid {
     const api = await window.cardano[walletProvider].enable();
 
     const address = C.Address.from_bytes(
-      Buffer.from((await api.getUsedAddresses())[0], 'hex')
+      fromHex((await api.getUsedAddresses())[0])
     ).to_bech32();
 
     const rewardAddressHex = (await api.getRewardAddresses())[0];
     const rewardAddress =
       rewardAddressHex ??
       C.RewardAddress.from_address(
-        C.Address.from_bytes(Buffer.from(rewardAddressHex, 'hex'))
+        C.Address.from_bytes(fromHex(rewardAddressHex))
       )!
         .to_address()
         .to_bech32();
@@ -157,7 +173,7 @@ export class Lucid {
       getCollateral: async () => {
         const utxos = (await api.experimental.getCollateral()).map(utxo => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
-            Buffer.from(utxo, 'hex')
+            fromHex(utxo)
           );
           return coreToUtxo(parsedUtxo);
         });
@@ -165,16 +181,14 @@ export class Lucid {
       },
       getCollateralCore: async () => {
         const utxos = (await api.experimental.getCollateral()).map(utxo => {
-          return C.TransactionUnspentOutput.from_bytes(
-            Buffer.from(utxo, 'hex')
-          );
+          return C.TransactionUnspentOutput.from_bytes(fromHex(utxo));
         });
         return utxos;
       },
       getUtxos: async () => {
         const utxos = ((await api.getUtxos()) || []).map(utxo => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
-            Buffer.from(utxo, 'hex')
+            fromHex(utxo)
           );
           return coreToUtxo(parsedUtxo);
         });
@@ -183,25 +197,16 @@ export class Lucid {
       getUtxosCore: async () => {
         const utxos = C.TransactionUnspentOutputs.new();
         ((await api.getUtxos()) || []).forEach(utxo => {
-          utxos.add(
-            C.TransactionUnspentOutput.from_bytes(Buffer.from(utxo, 'hex'))
-          );
+          utxos.add(C.TransactionUnspentOutput.from_bytes(fromHex(utxo)));
         });
         return utxos;
       },
       signTx: async (tx: Core.Transaction) => {
-        const witnessSet = await api.signTx(
-          Buffer.from(tx.to_bytes()).toString('hex'),
-          true
-        );
-        return C.TransactionWitnessSet.from_bytes(
-          Buffer.from(witnessSet, 'hex')
-        );
+        const witnessSet = await api.signTx(toHex(tx.to_bytes()), true);
+        return C.TransactionWitnessSet.from_bytes(fromHex(witnessSet));
       },
       submitTx: async (tx: Core.Transaction) => {
-        const txHash = await api.submitTx(
-          Buffer.from(tx.to_bytes()).toString('hex')
-        );
+        const txHash = await api.submitTx(toHex(tx.to_bytes()));
         return txHash;
       },
     };

@@ -37,8 +37,8 @@ const matchingNumberScript: SpendingValidator = {
 
 const matchingNumberAddress = validatorToAddress(matchingNumberScript);
 
-const Datum = (number: number) => Data.from(number);
-const Redeemer = (number: number) => Data.from(number);
+const Datum = (number: number) => Data.to(number);
+const Redeemer = (number: number) => Data.to(number);
 
 export const lockUtxo = async (
   number: number,
@@ -48,7 +48,7 @@ export const lockUtxo = async (
     .payToContract(matchingNumberAddress, Datum(number), { lovelace })
     .complete();
 
-  const signedTx = (await tx.sign()).complete();
+  const signedTx = await tx.sign().complete();
 
   const txHash = await signedTx.submit();
 
@@ -66,7 +66,7 @@ export const redeemUtxo = async (number: number): Promise<TxHash> => {
     .attachSpendingValidator(matchingNumberScript)
     .complete();
 
-  const signedTx = (await tx.sign()).complete();
+  const signedTx = await tx.sign().complete();
 
   const txHash = await signedTx.submit();
 
