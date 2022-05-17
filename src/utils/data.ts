@@ -4,7 +4,7 @@ import { fromHex, toHex } from './utils';
 
 export class Construct {
   index: number;
-  args: Data[];
+  args: PlutusData[];
 
   constructor(index: number, args: PlutusData[]) {
     this.index = index;
