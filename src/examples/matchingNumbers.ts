@@ -58,9 +58,6 @@ export const lockUtxo = async (
 export const redeemUtxo = async (number: number): Promise<TxHash> => {
   const utxo = (await Lucid.utxosAt(matchingNumberAddress))[0];
 
-  // add datum to utxo (datum discovery may happen automatically in a future release)
-  utxo.datum = Datum(number);
-
   const tx = await Tx.new()
     .collectFrom([utxo], Redeemer(number))
     .attachSpendingValidator(matchingNumberScript)
