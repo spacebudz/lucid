@@ -49,8 +49,8 @@ You can check out the [examples](./src/examples/) folder.
 
 ```js
 await Lucid.initialize(
-  'Testnet',
   new Blockfrost('https://cardano-testnet.blockfrost.io/api/v0', '<projectId>'),
+  'Testnet'
 );
 
 // Assumes you are in a browser environment
