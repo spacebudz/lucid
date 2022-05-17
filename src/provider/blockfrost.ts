@@ -122,6 +122,8 @@ export class Blockfrost implements ProviderSchema {
     })
       .then(res => res.json())
       .then(res => res.json_value);
+    if (!datum || datum.error)
+      throw new Error(`No datum found for datum hash: ${datumHash}`);
     return datumJsonToCbor(datum);
   }
 
