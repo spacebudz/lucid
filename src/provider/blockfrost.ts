@@ -163,7 +163,7 @@ export class Blockfrost implements ProviderSchema {
  */
 const datumJsonToCbor = (json: any): Datum => {
   const convert = (json: any): Core.PlutusData => {
-    if (json.int || json.int == 0) {
+    if (json.int || json.int === 0) {
       return C.PlutusData.new_integer(C.BigInt.from_str(json.int.toString()));
     } else if (json.bytes) {
       return C.PlutusData.new_bytes(fromHex(json.bytes));
