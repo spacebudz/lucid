@@ -30,6 +30,8 @@ export class Lucid {
   static network: Network = 'Mainnet';
 
   static async initialize(provider: Provider, network?: Network) {
+    if (this.txBuilderConfig && this.network === network) return;
+
     this.provider = provider;
     if (network) this.network = network;
     const protocolParameters = await provider.getProtocolParameters();
