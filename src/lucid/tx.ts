@@ -373,7 +373,7 @@ export class Tx {
 
     this.txBuilder.add_inputs_from(utxos);
     // TODO: allow change outputs to include a datum (in case address is a plutus script)
-    this.txBuilder.balance(C.Address.from_bech32(Lucid.wallet.address));
+    this.txBuilder.balance(C.Address.from_bech32(await Lucid.wallet.address()));
 
     return new TxComplete(await this.txBuilder.construct());
   }

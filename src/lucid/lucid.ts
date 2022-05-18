@@ -96,16 +96,18 @@ export class Lucid {
   static async selectWalletFromPrivateKey(privateKey: PrivateKey) {
     const priv = C.PrivateKey.from_bech32(privateKey);
     const pubKeyHash = priv.to_public().hash();
-    const address = C.EnterpriseAddress.new(
-      this.network === 'Mainnet' ? 1 : 0,
-      C.StakeCredential.from_keyhash(pubKeyHash)
-    )
-      .to_address()
-      .to_bech32();
+
     this.wallet = {
-      address,
+      address: async () =>
+        C.EnterpriseAddress.new(
+          this.network === 'Mainnet' ? 1 : 0,
+          C.StakeCredential.from_keyhash(pubKeyHash)
+        )
+          .to_address()
+          .to_bech32(),
+      rewardAddress: async () => undefined,
       getCollateral: async () => {
-        const utxos = await Lucid.utxosAt(address);
+        const utxos = await Lucid.utxosAt(await this.wallet.address());
         return utxos.filter(
           utxo =>
             Object.keys(utxo.assets).length === 1 &&
@@ -113,7 +115,7 @@ export class Lucid {
         );
       },
       getCollateralCore: async () => {
-        const utxos = await Lucid.utxosAt(address);
+        const utxos = await Lucid.utxosAt(await this.wallet.address());
         return utxos
           .filter(
             utxo =>
@@ -123,10 +125,10 @@ export class Lucid {
           .map(utxo => utxoToCore(utxo));
       },
       getUtxos: async () => {
-        return await Lucid.utxosAt(address);
+        return await Lucid.utxosAt(await this.wallet.address());
       },
       getUtxosCore: async () => {
-        const utxos = await Lucid.utxosAt(address);
+        const utxos = await Lucid.utxosAt(await this.wallet.address());
         const coreUtxos = C.TransactionUnspentOutputs.new();
         utxos.forEach(utxo => {
           coreUtxos.add(utxoToCore(utxo));
@@ -154,22 +156,22 @@ export class Lucid {
     }
     const api = await window.cardano[walletProvider].enable();
 
-    const address = C.Address.from_bytes(
-      fromHex((await api.getUsedAddresses())[0])
-    ).to_bech32();
-
-    const rewardAddressHex = (await api.getRewardAddresses())[0];
-    const rewardAddress =
-      rewardAddressHex ??
-      C.RewardAddress.from_address(
-        C.Address.from_bytes(fromHex(rewardAddressHex))
-      )!
-        .to_address()
-        .to_bech32();
-
     this.wallet = {
-      address,
-      rewardAddress,
+      address: async () =>
+        C.Address.from_bytes(
+          fromHex((await api.getUsedAddresses())[0])
+        ).to_bech32(),
+      rewardAddress: async () => {
+        const [rewardAddressHex] = await api.getRewardAddresses();
+        const rewardAddress =
+          rewardAddressHex ??
+          C.RewardAddress.from_address(
+            C.Address.from_bytes(fromHex(rewardAddressHex))
+          )!
+            .to_address()
+            .to_bech32();
+        return rewardAddress;
+      },
       getCollateral: async () => {
         const utxos = (await api.experimental.getCollateral()).map(utxo => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
@@ -225,32 +227,36 @@ export class Lucid {
     rewardAddress,
   }: ExternalWallet) {
     const addressDetails = getAddressDetails(address);
-    const rewardAddr =
-      !rewardAddress && addressDetails.stakeCredential
-        ? (() => {
-            if (addressDetails.stakeCredential.type === 'Key') {
-              return C.RewardAddress.new(
-                Lucid.network === 'Mainnet' ? 1 : 0,
-                C.StakeCredential.from_keyhash(
-                  C.Ed25519KeyHash.from_hex(addressDetails.stakeCredential.hash)
-                )
-              )
-                .to_address()
-                .to_bech32();
-            }
-            return C.RewardAddress.new(
-              Lucid.network === 'Mainnet' ? 1 : 0,
-              C.StakeCredential.from_scripthash(
-                C.ScriptHash.from_hex(addressDetails.stakeCredential.hash)
-              )
-            )
-              .to_address()
-              .to_bech32();
-          })()
-        : rewardAddress;
     this.wallet = {
-      address,
-      rewardAddress: rewardAddr,
+      address: async () => address,
+      rewardAddress: async () => {
+        const rewardAddr =
+          !rewardAddress && addressDetails.stakeCredential
+            ? (() => {
+                if (addressDetails.stakeCredential.type === 'Key') {
+                  return C.RewardAddress.new(
+                    Lucid.network === 'Mainnet' ? 1 : 0,
+                    C.StakeCredential.from_keyhash(
+                      C.Ed25519KeyHash.from_hex(
+                        addressDetails.stakeCredential.hash
+                      )
+                    )
+                  )
+                    .to_address()
+                    .to_bech32();
+                }
+                return C.RewardAddress.new(
+                  Lucid.network === 'Mainnet' ? 1 : 0,
+                  C.StakeCredential.from_scripthash(
+                    C.ScriptHash.from_hex(addressDetails.stakeCredential.hash)
+                  )
+                )
+                  .to_address()
+                  .to_bech32();
+              })()
+            : rewardAddress;
+        return rewardAddr;
+      },
       getCollateral: async () => {
         return collateral ? collateral : [];
       },

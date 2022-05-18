@@ -16,7 +16,9 @@ await Lucid.selectWalletFromPrivateKey(privateKey);
 
 describe('Testing wallet', () => {
   test('PaymentKeyHash length', async () => {
-    const { paymentCredential } = getAddressDetails(Lucid.wallet.address);
+    const { paymentCredential } = getAddressDetails(
+      await Lucid.wallet.address()
+    );
     if (paymentCredential) {
       expect(fromHex(paymentCredential.hash)).toHaveLength(28);
     } else {
@@ -27,29 +29,29 @@ describe('Testing wallet', () => {
   test('Address type', async () => {
     const {
       address: { address },
-    } = getAddressDetails(Lucid.wallet.address);
+    } = getAddressDetails(await Lucid.wallet.address());
     const enterpriseAddress = C.EnterpriseAddress.from_address(
       C.Address.from_bech32(address)
     )!
       .to_address()
       .to_bech32();
     expect(address).toBe(enterpriseAddress);
-    expect(address).toBe(Lucid.wallet.address);
+    expect(address).toBe(await Lucid.wallet.address());
   });
 
   test('No reward address', async () => {
-    const { stakeCredential } = getAddressDetails(Lucid.wallet.address);
+    const { stakeCredential } = getAddressDetails(await Lucid.wallet.address());
     expect(stakeCredential).toBeUndefined();
-    expect(Lucid.wallet.rewardAddress).toBeUndefined();
+    expect(await Lucid.wallet.rewardAddress()).toBeUndefined();
   });
 
   test('Switch wallet', async () => {
-    const oldAddress = Lucid.wallet.address;
+    const oldAddress = await Lucid.wallet.address();
 
     const newPrivateKey = C.PrivateKey.generate_ed25519().to_bech32();
     await Lucid.selectWalletFromPrivateKey(newPrivateKey);
 
-    const address = Lucid.wallet.address;
+    const address = await Lucid.wallet.address();
     expect(oldAddress).not.toBe(address);
   });
 

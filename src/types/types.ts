@@ -137,8 +137,8 @@ export interface ExternalWallet {
 }
 
 export interface Wallet {
-  address: Address;
-  rewardAddress?: RewardAddress;
+  address(): Promise<Address>;
+  rewardAddress(): Promise<RewardAddress | undefined>;
   getCollateral(): Promise<UTxO[]>;
   getCollateralCore(): Promise<Core.TransactionUnspentOutput[]>;
   getUtxos(): Promise<UTxO[]>;

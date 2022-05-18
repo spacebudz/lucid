@@ -1,6 +1,6 @@
 {
   "name": "lucid-cardano",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.js",
