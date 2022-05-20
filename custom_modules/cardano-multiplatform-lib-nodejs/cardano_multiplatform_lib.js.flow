@@ -8548,9 +8548,7 @@ export interface PlutusListJSON {
   definite_encoding?: boolean | null;
   elems: PlutusDataJSON[];
 }
-export interface PlutusMapJSON {
-  [k: string]: PlutusDataJSON;
-}
+export type PlutusMapJSON = [PlutusDataJSON, PlutusData][];
 export type PlutusScriptJSON = string;
 export type PlutusScriptsJSON = string[];
 export interface PoolMetadataJSON {
