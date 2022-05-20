@@ -265,7 +265,7 @@ export const getAddressDetails = (address: string): AddressDetails => {
     const parsedAddress = C.RewardAddress.from_address(
       C.Address.from_bytes(fromHex(address))
     )!;
-    const paymentCredential: Credential =
+    const stakeCredential: Credential =
       parsedAddress.payment_cred().kind() === 0
         ? {
             type: 'Key',
@@ -290,7 +290,7 @@ export const getAddressDetails = (address: string): AddressDetails => {
         type: 'Reward',
         address: parsedAddress.to_address().to_bech32(),
       },
-      stakeCredential: paymentCredential,
+      stakeCredential,
     };
   } catch (e) {}
 
@@ -298,7 +298,7 @@ export const getAddressDetails = (address: string): AddressDetails => {
     const parsedAddress = C.RewardAddress.from_address(
       C.Address.from_bech32(address)
     )!;
-    const paymentCredential: Credential =
+    const stakeCredential: Credential =
       parsedAddress.payment_cred().kind() === 0
         ? {
             type: 'Key',
@@ -323,7 +323,7 @@ export const getAddressDetails = (address: string): AddressDetails => {
         type: 'Reward',
         address: parsedAddress.to_address().to_bech32(),
       },
-      stakeCredential: paymentCredential,
+      stakeCredential,
     };
   } catch (e) {}
   throw new Error('No address type matched for: ' + address);
