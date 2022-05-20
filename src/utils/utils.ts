@@ -290,7 +290,7 @@ export const getAddressDetails = (address: string): AddressDetails => {
         type: 'Reward',
         address: parsedAddress.to_address().to_bech32(),
       },
-      paymentCredential,
+      stakeCredential: paymentCredential,
     };
   } catch (e) {}
 
@@ -323,7 +323,7 @@ export const getAddressDetails = (address: string): AddressDetails => {
         type: 'Reward',
         address: parsedAddress.to_address().to_bech32(),
       },
-      paymentCredential,
+      stakeCredential: paymentCredential,
     };
   } catch (e) {}
   throw new Error('No address type matched for: ' + address);
