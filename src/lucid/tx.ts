@@ -168,7 +168,7 @@ export class Tx {
             )
           )
         : C.StakeCredential.from_scripthash(
-            C.Ed25519KeyHash.from_bytes(
+            C.ScriptHash.from_bytes(
               fromHex(addressDetails.stakeCredential.hash)
             )
           );
@@ -200,7 +200,7 @@ export class Tx {
             )
           )
         : C.StakeCredential.from_scripthash(
-            C.Ed25519KeyHash.from_bytes(
+            C.ScriptHash.from_bytes(
               fromHex(addressDetails.stakeCredential.hash)
             )
           );
@@ -226,7 +226,7 @@ export class Tx {
             )
           )
         : C.StakeCredential.from_scripthash(
-            C.Ed25519KeyHash.from_bytes(
+            C.ScriptHash.from_bytes(
               fromHex(addressDetails.stakeCredential.hash)
             )
           );
