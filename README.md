@@ -23,16 +23,6 @@
 </p>
 
 
-### Table of contents
-
-- [Features](#features)
-- [Installation](#installation)
-- [From Source](#from-source)
-- [Examples](#examples)
-- [Docs](#docs)
-- [Preview](#preview)
-- [Compatibilty](#compatibilty)
-
 ### Installation
 ```
 npm install lucid-cardano
@@ -54,7 +44,7 @@ npm run build
 
 You can check out the [examples](./src/examples/) folder.
 
-#### Preview
+### Basic usage
 
 ```js
 import {Lucid, Tx, Blockfrost} from "lucid-cardano";
@@ -77,6 +67,13 @@ const txHash = await signedTx.submit();
 
 console.log(txHash);
 ```
+
+### Test
+
+```
+npm test
+```
+
 ### Docs
 
 You can generate documentation with:
@@ -101,7 +98,7 @@ To run the library in Node.js you need to set `{"type" : "module"}` in your proj
 <br />
 This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib).
 
-Documentation: https://cardano-lucid.readthedocs.io/en/latest
+Documentation for cardano-multiplatform-lib: https://cardano-lucid.readthedocs.io/en/latest
 
 Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/plutus
 
