@@ -1,46 +1,55 @@
-# Lucid
+<p align="center">
+  <img width="100px" src="./src/logo/lucid.svg" align="center" alt="GitHub Readme Stats" />
+  <h1 align="center">Lucid</h1>
+  <p align="center">Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript and Node.js.</p>
 
+  <p align="center">
+    <img src="https://img.shields.io/github/commit-activity/m/berry-pool/lucid?style=flat-square" />
+     <a href="https://berry-pool.github.io/lucid/">
+      <img src="https://img.shields.io/readthedocs/cardano-lucid?style=flat-square" />
+    </a>
+    <a href="https://www.npmjs.com/package/lucid-cardano">
+      <img src="https://img.shields.io/npm/v/lucid-cardano?style=flat-square" />
+    </a>
+    <a href="https://www.npmjs.com/package/lucid-cardano">
+      <img src="https://img.shields.io/npm/dw/lucid-cardano?style=flat-square" />
+    </a>
+    <img src="https://img.shields.io/npm/l/lucid-cardano?style=flat-square" />
+    <a href="https://twitter.com/berry_ales">
+      <img src="https://img.shields.io/twitter/follow/berry_ales?style=flat-square&logo=twitter" />
+    </a>
+  </p>
 
-<!-- [![GitHub Release Date](https://img.shields.io/github/release-date/berry-pool/lucid?style=plastic)](https://github.com/Berry-Pool/lucid) -->
+</p>
 
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/berry-pool/lucid?style=plastic)
-
-[![Read the Docs](https://img.shields.io/readthedocs/cardano-lucid?style=plastic)](https://berry-pool.github.io/lucid/)
-
-[![Twitter Follow](https://img.shields.io/twitter/follow/berry_ales?style=social)](https://twitter.com/berry_ales)
-
-[![Discord](https://img.shields.io/discord/929963273741295696.svg?style=plastic&label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.com/invite/sKqxrPb5fd)
-
-[![npm version](https://img.shields.io/npm/v/lucid-cardano?style=plastic)](https://www.npmjs.com/package/lucid-cardano)
-
-[![npm downloads](https://img.shields.io/npm/dw/lucid-cardano?style=plastic)](https://www.npmjs.com/package/lucid-cardano)
-<!-- [![npm peer dependency version](https://img.shields.io/npm/dependency-version/cardano-lsd/peer/gsap?style=plastic)](https://greensock.com/gsap/) -->
-[![NPM](https://img.shields.io/npm/l/lucid-cardano?style=plastic)](https://github.com/Berry-Pool/lucid)
-
-
-Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript and Node.js.
-
-This library is **experimental**. Expect bugs. It's still work in progress.
 
 ### Table of contents
 
 - [Features](#features)
 - [Installation](#installation)
+- [From Source](#from-source)
 - [Examples](#examples)
 - [Docs](#docs)
 - [Preview](#preview)
 - [Compatibilty](#compatibilty)
 
-### Features
-
-- [ ] To be added
-- [ ] To be added
-
-
 ### Installation
 ```
 npm install lucid-cardano
 ```
+
+### From Source
+
+Install dependencies
+```
+npm install
+```
+
+Generate build
+```
+npm run build
+```
+
 ### Examples
 
 You can check out the [examples](./src/examples/) folder.
@@ -48,6 +57,8 @@ You can check out the [examples](./src/examples/) folder.
 #### Preview
 
 ```js
+import {Lucid, Tx, Blockfrost} from "lucid-cardano";
+
 await Lucid.initialize(
   new Blockfrost('https://cardano-testnet.blockfrost.io/api/v0', '<projectId>'),
   'Testnet'
