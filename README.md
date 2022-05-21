@@ -4,19 +4,19 @@
   <p align="center">Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript and Node.js.</p>
 
   <p align="center">
-    <img src="https://img.shields.io/github/commit-activity/m/berry-pool/lucid?style=flat-square" />
+    <img src="https://img.shields.io/github/commit-activity/m/berry-pool/lucid?style=for-the-badge" />
      <a href="https://berry-pool.github.io/lucid/">
-      <img src="https://img.shields.io/readthedocs/cardano-lucid?style=flat-square" />
+      <img src="https://img.shields.io/readthedocs/cardano-lucid?style=for-the-badge" />
     </a>
     <a href="https://www.npmjs.com/package/lucid-cardano">
-      <img src="https://img.shields.io/npm/v/lucid-cardano?style=flat-square" />
+      <img src="https://img.shields.io/npm/v/lucid-cardano?style=for-the-badge" />
     </a>
     <a href="https://www.npmjs.com/package/lucid-cardano">
-      <img src="https://img.shields.io/npm/dw/lucid-cardano?style=flat-square" />
+      <img src="https://img.shields.io/npm/dw/lucid-cardano?style=for-the-badge" />
     </a>
-    <img src="https://img.shields.io/npm/l/lucid-cardano?style=flat-square" />
+    <img src="https://img.shields.io/npm/l/lucid-cardano?style=for-the-badge" />
     <a href="https://twitter.com/berry_ales">
-      <img src="https://img.shields.io/twitter/follow/berry_ales?style=flat-square&logo=twitter" />
+      <img src="https://img.shields.io/twitter/follow/berry_ales?style=for-the-badge&logo=twitter" />
     </a>
   </p>
 
