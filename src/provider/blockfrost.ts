@@ -163,11 +163,11 @@ export class Blockfrost implements ProviderSchema {
  *
  * The conversion is ambigious, that's why it's better to get the datum directly in cbor
  */
-const datumJsonToCbor = (json: any): Datum => {
+export const datumJsonToCbor = (json: any): Datum => {
   const convert = (json: any): Core.PlutusData => {
     if (!isNaN(json.int)) {
       return C.PlutusData.new_integer(C.BigInt.from_str(json.int.toString()));
-    } else if (json.bytes) {
+    } else if (json.bytes || !isNaN(json.bytes)) {
       return C.PlutusData.new_bytes(fromHex(json.bytes));
     } else if (json.map) {
       const m = C.PlutusMap.new();
