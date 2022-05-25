@@ -84,7 +84,7 @@ It'll be located under `/docs`.
 
 ### Compatibilty
 
-To run it in the browser Webpack 5 is recommended or any other bundler which allows for top level await and WebAssembly. When you use Webpack 5 enable in the `webpack.config.js`:
+To run it in the browser Webpack 5 is recommended or any other bundler which allows for top level await and WebAssembly. If you use Webpack 5 enable in the `webpack.config.js`:
 ```
 experiments: {
     asyncWebAssembly: true,

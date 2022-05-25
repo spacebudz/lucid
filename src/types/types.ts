@@ -189,3 +189,25 @@ export type Json = any;
 
 /** Time in milliseconds */
 export type UnixTime = number;
+
+type NFTFile = {
+  name: string;
+  mediaType: string;
+  src: string | string[];
+};
+
+export type NFTMetadataDetails = {
+  name: string;
+  image: string;
+  mediaType?: string;
+  description?: string | string[];
+  files?: NFTFile[];
+  [key: string]: any;
+};
+
+export type NFTMetadata = {
+  [policyId: string]: {
+    [assetName: string]: NFTMetadataDetails;
+  };
+  version?: any; // number
+};

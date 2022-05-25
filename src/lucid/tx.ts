@@ -9,6 +9,7 @@ import {
   Label,
   Lovelace,
   MintingPolicy,
+  NFTMetadata,
   PoolId,
   Redeemer,
   RewardAddress,
@@ -34,10 +35,16 @@ export class Tx {
    * @private
    */
   tasks!: Function[];
+  /**
+   * @private
+   */
+  nftMetadata: NFTMetadata = {};
 
   static new() {
     const t = new this();
     t.tasks = [];
+    t.nftMetadata = {};
+    t.nftMetadata.version = 2;
     t.txBuilder = C.TransactionBuilder.new(Lucid.txBuilderConfig);
     return t;
   }
@@ -316,7 +323,6 @@ export class Tx {
 
   /**
    * Converts strings to bytes if prefixed with **'0x'**
-   *
    */
   attachMetadataWithConversion(label: Label, metadata: Json) {
     this.txBuilder.add_json_metadatum_with_schema(
@@ -326,6 +332,22 @@ export class Tx {
     );
     return this;
   }
+
+  // /**
+  //  * Converts strings to bytes if prefixed with **'0x'**
+  //  *
+  //  * Policy id and asset name are converted to bytes
+  //  */
+  // attachNFTMetadata(unit: Unit, metadata: NFTMetadataDetails) {
+  //   const policyId = unit.slice(0, 56);
+  //   const assetName = unit.slice(56);
+  //   this.nftMetadata['0x' + policyId] = {
+  //     ...(this.nftMetadata['0x' + policyId] || {}),
+  //     ['0x' + assetName]: metadata,
+  //   };
+
+  //   return this;
+  // }
 
   attachSpendingValidator(spendingValidator: SpendingValidator) {
     attachScript(this, spendingValidator);
@@ -356,9 +378,17 @@ export class Tx {
     return this;
   }
 
-  async complete() {
+  async complete(option?: { changeAddress?: Address; datum?: Datum }) {
     for (const task of this.tasks) {
       await task();
+    }
+    // Add NFT metadata
+    if (Object.keys(this.nftMetadata).length > 1) {
+      this.txBuilder.add_json_metadatum_with_schema(
+        C.BigNum.from_str('721'),
+        JSON.stringify(this.nftMetadata),
+        C.MetadataJsonSchema.BasicConversions
+      );
     }
 
     const utxos = await Lucid.wallet.getUtxosCore();
@@ -372,8 +402,21 @@ export class Tx {
     }
 
     this.txBuilder.add_inputs_from(utxos);
-    // TODO: allow change outputs to include a datum (in case address is a plutus script)
-    this.txBuilder.balance(C.Address.from_bech32(await Lucid.wallet.address()));
+    this.txBuilder.balance(
+      C.Address.from_bech32(
+        option?.changeAddress || (await Lucid.wallet.address())
+      ),
+      option?.datum
+        ? C.Datum.new_data_hash(
+            C.hash_plutus_data(C.PlutusData.from_bytes(fromHex(option.datum)))
+          )
+        : undefined
+    );
+    if (option?.datum) {
+      this.txBuilder.add_plutus_data(
+        C.PlutusData.from_bytes(fromHex(option.datum))
+      );
+    }
 
     return new TxComplete(await this.txBuilder.construct());
   }

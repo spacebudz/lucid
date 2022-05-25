@@ -7,6 +7,7 @@ import {
   Credential,
   KeyHash,
   Network,
+  PrivateKey,
   ScriptHash,
   Slot,
   SpendingValidator,
@@ -16,6 +17,7 @@ import {
 } from '../types';
 import { Lucid } from '..';
 
+/** Address can be in bech32 or hex */
 export const getAddressDetails = (address: string): AddressDetails => {
   /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
   // Base Address
@@ -502,3 +504,6 @@ export const keyHashToCredential = (keyHash: KeyHash): Credential => ({
   type: 'Key',
   hash: keyHash,
 });
+
+export const generatePrivateKey = (): PrivateKey =>
+  C.PrivateKey.generate_ed25519().to_bech32();
