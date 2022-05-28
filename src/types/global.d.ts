@@ -1,5 +1,5 @@
 /* CIP-0030 */
-type WalletAPI = {
+type WalletApi = {
   getNetworkId(): Promise<number>;
   getUtxos(): Promise<string[] | undefined>;
   getBalance(): Promise<string>;
@@ -26,7 +26,7 @@ type Cardano = {
     name: string;
     icon: string;
     version: string;
-    enable(): Promise<WalletAPI>;
+    enable(): Promise<WalletApi>;
     isEnabled(): Promise<boolean>;
   };
 };

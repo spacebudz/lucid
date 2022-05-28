@@ -18,14 +18,7 @@ import {
   UTxO,
   WithdrawalValidator,
 } from '../types';
-import {
-  utxoToCore,
-  assetsToValue,
-  getAddressDetails,
-  unixTimeToSlot,
-  unixTimeToSlotTestnet,
-  fromHex,
-} from '../utils';
+import { utxoToCore, assetsToValue, fromHex } from '../utils';
 import { Lucid } from './lucid';
 import { TxComplete } from './txComplete';
 
@@ -39,14 +32,17 @@ export class Tx {
    * @private
    */
   nftMetadata: NFTMetadata = {};
+  /**
+   * @private
+   */
+  lucid: Lucid;
 
-  static new() {
-    const t = new this();
-    t.tasks = [];
-    t.nftMetadata = {};
-    t.nftMetadata.version = 2;
-    t.txBuilder = C.TransactionBuilder.new(Lucid.txBuilderConfig);
-    return t;
+  constructor(lucid: Lucid) {
+    this.lucid = lucid;
+    this.txBuilder = C.TransactionBuilder.new(this.lucid.txBuilderConfig);
+    this.tasks = [];
+    this.nftMetadata = {};
+    this.nftMetadata.version = 2;
   }
 
   /**
@@ -58,7 +54,7 @@ export class Tx {
     this.tasks.push(async () => {
       for (const utxo of utxos) {
         if (utxo.datumHash && !utxo.datum) {
-          utxo.datum = await Lucid.datumOf(utxo);
+          utxo.datum = await this.lucid.datumOf(utxo);
         }
         const coreUtxo = utxoToCore(utxo);
         this.txBuilder.add_input(
@@ -161,7 +157,7 @@ export class Tx {
     poolId: PoolId,
     redeemer?: Redeemer
   ) {
-    const addressDetails = getAddressDetails(rewardAddress);
+    const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
     if (
       addressDetails.address.type !== 'Reward' ||
       !addressDetails.stakeCredential
@@ -193,7 +189,7 @@ export class Tx {
   }
 
   registerStake(rewardAddress: RewardAddress) {
-    const addressDetails = getAddressDetails(rewardAddress);
+    const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
     if (
       addressDetails.address.type !== 'Reward' ||
       !addressDetails.stakeCredential
@@ -219,7 +215,7 @@ export class Tx {
   }
 
   deregisterStake(rewardAddress: RewardAddress, redeemer?: Redeemer) {
-    const addressDetails = getAddressDetails(rewardAddress);
+    const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
     if (
       addressDetails.address.type !== 'Reward' ||
       !addressDetails.stakeCredential
@@ -274,7 +270,7 @@ export class Tx {
    * The StakeKeyHash is taken when providing a Reward address
    */
   addSigner(address: Address | RewardAddress) {
-    const addressDetails = getAddressDetails(address);
+    const addressDetails = this.lucid.utils.getAddressDetails(address);
 
     if (!addressDetails.paymentCredential && !addressDetails.stakeCredential)
       throw new Error('Not a valid address.');
@@ -294,10 +290,7 @@ export class Tx {
   }
 
   validFrom(unixTime: UnixTime) {
-    const slot =
-      Lucid.network === 'Mainnet'
-        ? unixTimeToSlot(unixTime)
-        : unixTimeToSlotTestnet(unixTime);
+    const slot = this.lucid.utils.unixTimeToSlot(unixTime);
     this.txBuilder.set_validity_start_interval(
       C.BigNum.from_str(slot.toString())
     );
@@ -305,10 +298,7 @@ export class Tx {
   }
 
   validTo(unixTime: UnixTime) {
-    const slot =
-      Lucid.network === 'Mainnet'
-        ? unixTimeToSlot(unixTime)
-        : unixTimeToSlotTestnet(unixTime);
+    const slot = this.lucid.utils.slotToUnixTime(unixTime);
     this.txBuilder.set_ttl(C.BigNum.from_str(slot.toString()));
     return this;
   }
@@ -391,9 +381,9 @@ export class Tx {
       );
     }
 
-    const utxos = await Lucid.wallet.getUtxosCore();
+    const utxos = await this.lucid.wallet.getUtxosCore();
     if (this.txBuilder.redeemers()!?.len() > 0) {
-      const collateral = await Lucid.wallet.getCollateralCore();
+      const collateral = await this.lucid.wallet.getCollateralCore();
       if (collateral.length <= 0) throw new Error('No collateral UTxO found.');
       // 2 collateral utxos should be more than sufficient
       collateral.slice(0, 2).forEach(utxo => {
@@ -404,7 +394,7 @@ export class Tx {
     this.txBuilder.add_inputs_from(utxos);
     this.txBuilder.balance(
       C.Address.from_bech32(
-        option?.changeAddress || (await Lucid.wallet.address())
+        option?.changeAddress || (await this.lucid.wallet.address())
       ),
       option?.datum
         ? C.Datum.new_data_hash(
@@ -418,7 +408,7 @@ export class Tx {
       );
     }
 
-    return new TxComplete(await this.txBuilder.construct());
+    return new TxComplete(this.lucid, await this.txBuilder.construct());
   }
 }
 

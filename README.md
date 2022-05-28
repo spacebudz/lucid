@@ -47,17 +47,18 @@ You can check out the [examples](./src/examples/) folder.
 ### Basic usage
 
 ```js
-import {Lucid, Tx, Blockfrost} from "lucid-cardano";
+import {Lucid, Blockfrost} from "lucid-cardano";
 
-await Lucid.initialize(
+const lucid = await Lucid.new(
   new Blockfrost('https://cardano-testnet.blockfrost.io/api/v0', '<projectId>'),
   'Testnet'
 );
 
 // Assumes you are in a browser environment
-await Lucid.selectWallet('nami');
+const api = await window.cardano.nami.enable();
+lucid.selectWallet(api);
 
-const tx = await Tx.new()
+const tx = await lucid.newTx()
     .payToAddress("addr...", {lovelace: 5000000n})
     .complete();
 
