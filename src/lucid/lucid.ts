@@ -16,12 +16,14 @@ import {
   PrivateKey,
   Provider,
   Slot,
+  Transaction,
   TxHash,
   Unit,
   UTxO,
   Wallet,
 } from '../types';
 import { Tx } from './tx';
+import { TxComplete } from './txComplete';
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
@@ -76,6 +78,10 @@ export class Lucid {
 
   newTx(): Tx {
     return new Tx(this);
+  }
+
+  fromTx(tx: Transaction) {
+    return new TxComplete(this, C.Transaction.from_bytes(fromHex(tx)));
   }
 
   async currentSlot(): Promise<Slot> {
@@ -286,9 +292,8 @@ export class Lucid {
       signTx: async (_: Core.Transaction) => {
         throw new Error('Not implemented');
       },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      submitTx: async (_: Core.Transaction) => {
-        throw new Error('Not implemented');
+      submitTx: async (tx: Core.Transaction) => {
+        return await this.provider.submitTx(tx);
       },
     };
     return this;

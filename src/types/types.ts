@@ -101,6 +101,8 @@ export type Lovelace = BigInt;
 export type Label = number;
 /** Hex */
 export type TransactionWitnesses = string;
+/** Hex */
+export type Transaction = string;
 
 /** bech32 */
 export type PrivateKey = string;
