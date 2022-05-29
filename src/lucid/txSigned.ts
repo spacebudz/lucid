@@ -4,10 +4,7 @@ import { Lucid } from './lucid';
 
 export class TxSigned {
   txSigned: Core.Transaction;
-  /**
-   * @private
-   */
-  lucid: Lucid;
+  private lucid: Lucid;
   constructor(lucid: Lucid, tx: Core.Transaction) {
     this.lucid = lucid;
     this.txSigned = tx;

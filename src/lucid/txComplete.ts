@@ -8,14 +8,8 @@ import { fromHex, toHex } from '../utils';
 export class TxComplete {
   txComplete: Core.Transaction;
   witnessSetBuilder: Core.TransactionWitnessSetBuilder;
-  /**
-   * @private
-   */
-  tasks: Function[];
-  /**
-   * @private
-   */
-  lucid: Lucid;
+  private tasks: Function[];
+  private lucid: Lucid;
 
   constructor(lucid: Lucid, tx: Core.Transaction) {
     this.lucid = lucid;

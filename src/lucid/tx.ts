@@ -24,18 +24,9 @@ import { TxComplete } from './txComplete';
 
 export class Tx {
   txBuilder!: Core.TransactionBuilder;
-  /**
-   * @private
-   */
-  tasks!: Function[];
-  /**
-   * @private
-   */
-  nftMetadata: NFTMetadata = {};
-  /**
-   * @private
-   */
-  lucid: Lucid;
+  private tasks!: Function[];
+  private nftMetadata: NFTMetadata = {};
+  private lucid: Lucid;
 
   constructor(lucid: Lucid) {
     this.lucid = lucid;

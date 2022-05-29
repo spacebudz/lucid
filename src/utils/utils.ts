@@ -18,10 +18,7 @@ import {
 import { Lucid } from '..';
 
 export class Utils {
-  /**
-   * @private
-   */
-  lucid: Lucid;
+  private lucid: Lucid;
   constructor(lucid: Lucid) {
     this.lucid = lucid;
   }
