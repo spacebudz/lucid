@@ -58,7 +58,7 @@ export const lockUtxo = async (
 };
 
 export const redeemUtxo = async (number: number): Promise<TxHash> => {
-  const utxo = (await lucid.utxosAt(matchingNumberAddress))[0];
+  const utxo = (await lucid.utxosAt(matchingNumberAddress)).slice(-1)[0];
 
   const tx = await lucid
     .newTx()
