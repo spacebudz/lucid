@@ -23,8 +23,8 @@ import { Lucid } from './lucid';
 import { TxComplete } from './txComplete';
 
 export class Tx {
-  txBuilder!: Core.TransactionBuilder;
-  private tasks!: Function[];
+  txBuilder: Core.TransactionBuilder;
+  private tasks: Function[];
   private nftMetadata: NFTMetadata = {};
   private lucid: Lucid;
 
