@@ -1,7 +1,7 @@
 import { C } from '../core/index';
 import Core from 'core/types';
 import {
-  costModel,
+  costModels,
   utxoToCore,
   coreToUtxo,
   fromHex,
@@ -68,7 +68,7 @@ export class Lucid {
             provider.projectId
           )
         )
-        .costmdls(costModel.plutusV1())
+        .costmdls(costModels())
         .build();
     }
     lucid.utils = new Utils(lucid);
