@@ -103,16 +103,16 @@ function passStringToWasm0(arg, malloc, realloc) {
     return ptr;
 }
 
+function isLikeNone(x) {
+    return x === undefined || x === null;
+}
+
 let cachegetInt32Memory0 = null;
 function getInt32Memory0() {
     if (cachegetInt32Memory0 === null || cachegetInt32Memory0.buffer !== wasm.memory.buffer) {
         cachegetInt32Memory0 = new Int32Array(wasm.memory.buffer);
     }
     return cachegetInt32Memory0;
-}
-
-function isLikeNone(x) {
-    return x === undefined || x === null;
 }
 
 function debugString(val) {
@@ -348,20 +348,6 @@ module.exports.decrypt_with_password = function(password, data) {
 };
 
 /**
-* @param {Transaction} tx
-* @param {LinearFee} linear_fee
-* @param {ExUnitPrices} ex_unit_prices
-* @returns {BigNum}
-*/
-module.exports.min_fee = function(tx, linear_fee, ex_unit_prices) {
-    _assertClass(tx, Transaction);
-    _assertClass(linear_fee, LinearFee);
-    _assertClass(ex_unit_prices, ExUnitPrices);
-    var ret = wasm.min_fee(tx.ptr, linear_fee.ptr, ex_unit_prices.ptr);
-    return BigNum.__wrap(ret);
-};
-
-/**
 * @param {string} json
 * @param {number} schema
 * @returns {PlutusData}
@@ -390,6 +376,20 @@ module.exports.decode_plutus_datum_to_json_str = function(datum, schema) {
         wasm.__wbindgen_add_to_stack_pointer(16);
         wasm.__wbindgen_free(r0, r1);
     }
+};
+
+/**
+* @param {Transaction} tx
+* @param {LinearFee} linear_fee
+* @param {ExUnitPrices} ex_unit_prices
+* @returns {BigNum}
+*/
+module.exports.min_fee = function(tx, linear_fee, ex_unit_prices) {
+    _assertClass(tx, Transaction);
+    _assertClass(linear_fee, LinearFee);
+    _assertClass(ex_unit_prices, ExUnitPrices);
+    var ret = wasm.min_fee(tx.ptr, linear_fee.ptr, ex_unit_prices.ptr);
+    return BigNum.__wrap(ret);
 };
 
 /**
@@ -510,15 +510,14 @@ module.exports.get_deposit = function(txbody, pool_deposit, key_deposit) {
 };
 
 /**
-* @param {Value} assets
-* @param {boolean} has_data_hash
+* @param {TransactionOutput} output
 * @param {BigNum} coins_per_utxo_word
 * @returns {BigNum}
 */
-module.exports.min_ada_required = function(assets, has_data_hash, coins_per_utxo_word) {
-    _assertClass(assets, Value);
+module.exports.min_ada_required = function(output, coins_per_utxo_word) {
+    _assertClass(output, TransactionOutput);
     _assertClass(coins_per_utxo_word, BigNum);
-    var ret = wasm.min_ada_required(assets.ptr, has_data_hash, coins_per_utxo_word.ptr);
+    var ret = wasm.min_ada_required(output.ptr, coins_per_utxo_word.ptr);
     return BigNum.__wrap(ret);
 };
 
@@ -552,7 +551,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_1335(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1355(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__hf20c15ebccf7f833(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -582,6 +581,9 @@ module.exports.TransactionMetadatumKind = Object.freeze({ MetadataMap:0,"0":"Met
 module.exports.MetadataJsonSchema = Object.freeze({ NoConversions:0,"0":"NoConversions",BasicConversions:1,"1":"BasicConversions",DetailedSchema:2,"2":"DetailedSchema", });
 /**
 */
+module.exports.StakeCredKind = Object.freeze({ Key:0,"0":"Key",Script:1,"1":"Script", });
+/**
+*/
 module.exports.CoinSelectionStrategyCIP2 = Object.freeze({
 /**
 * Performs CIP2's Largest First ada-only selection. Will error if outputs contain non-ADA assets.
@@ -599,12 +601,6 @@ LargestFirstMultiAsset:2,"2":"LargestFirstMultiAsset",
 * Same as RandomImprove, but before adding ADA, will insert by random-improve for each asset type.
 */
 RandomImproveMultiAsset:3,"3":"RandomImproveMultiAsset", });
-/**
-*/
-module.exports.StakeCredKind = Object.freeze({ Key:0,"0":"Key",Script:1,"1":"Script", });
-/**
-*/
-module.exports.ScriptWitnessKind = Object.freeze({ NativeWitness:0,"0":"NativeWitness",PlutusWitness:1,"1":"PlutusWitness", });
 /**
 */
 module.exports.LanguageKind = Object.freeze({ PlutusV1:0,"0":"PlutusV1",PlutusV2:1,"1":"PlutusV2", });
@@ -671,6 +667,9 @@ module.exports.ScriptKind = Object.freeze({ NativeScript:0,"0":"NativeScript",Pl
 /**
 */
 module.exports.DatumKind = Object.freeze({ Hash:0,"0":"Hash",Data:1,"1":"Data", });
+/**
+*/
+module.exports.ScriptWitnessKind = Object.freeze({ NativeWitness:0,"0":"NativeWitness",PlutusWitness:1,"1":"PlutusWitness", });
 /**
 * Each new language uses a different namespace for hashing its script
 * This is because you could have a language where the same bytes have different semantics
@@ -3475,12 +3474,70 @@ class Data {
         wasm.__wbg_data_free(ptr);
     }
     /**
+    * @returns {Uint8Array}
+    */
+    to_bytes() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.data_to_bytes(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v0 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1);
+            return v0;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @param {Uint8Array} bytes
+    * @returns {Data}
+    */
+    static from_bytes(bytes) {
+        var ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.data_from_bytes(ptr0, len0);
+        return Data.__wrap(ret);
+    }
+    /**
+    * @returns {string}
+    */
+    to_json() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.data_to_json(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_free(r0, r1);
+        }
+    }
+    /**
+    * @returns {any}
+    */
+    to_js_value() {
+        var ret = wasm.data_to_js_value(this.ptr);
+        return takeObject(ret);
+    }
+    /**
+    * @param {string} json
+    * @returns {Data}
+    */
+    static from_json(json) {
+        var ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.data_from_json(ptr0, len0);
+        return Data.__wrap(ret);
+    }
+    /**
     * @param {PlutusData} plutus_data
     * @returns {Data}
     */
-    new(plutus_data) {
+    static new(plutus_data) {
         _assertClass(plutus_data, PlutusData);
-        var ret = wasm.data_new(this.ptr, plutus_data.ptr);
+        var ret = wasm.data_new(plutus_data.ptr);
         return Data.__wrap(ret);
     }
     /**
@@ -3616,6 +3673,32 @@ class Datum {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_datum_free(ptr);
+    }
+    /**
+    * @returns {Uint8Array}
+    */
+    to_bytes() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.datum_to_bytes(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v0 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1);
+            return v0;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @param {Uint8Array} bytes
+    * @returns {Datum}
+    */
+    static from_bytes(bytes) {
+        var ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.datum_from_bytes(ptr0, len0);
+        return Datum.__wrap(ret);
     }
     /**
     * @returns {string}
@@ -8072,6 +8155,7 @@ class PlutusWitness {
         wasm.__wbg_plutuswitness_free(ptr);
     }
     /**
+    * Plutus V1 witness or witness where no script is attached and so version doesn't matter
     * @param {PlutusData} redeemer
     * @param {PlutusData | undefined} plutus_data
     * @param {PlutusScript | undefined} script
@@ -8095,6 +8179,29 @@ class PlutusWitness {
         return PlutusWitness.__wrap(ret);
     }
     /**
+    * @param {PlutusData} redeemer
+    * @param {PlutusData | undefined} plutus_data
+    * @param {PlutusScript | undefined} script
+    * @returns {PlutusWitness}
+    */
+    static new_plutus_v2(redeemer, plutus_data, script) {
+        _assertClass(redeemer, PlutusData);
+        let ptr0 = 0;
+        if (!isLikeNone(plutus_data)) {
+            _assertClass(plutus_data, PlutusData);
+            ptr0 = plutus_data.ptr;
+            plutus_data.ptr = 0;
+        }
+        let ptr1 = 0;
+        if (!isLikeNone(script)) {
+            _assertClass(script, PlutusScript);
+            ptr1 = script.ptr;
+            script.ptr = 0;
+        }
+        var ret = wasm.plutuswitness_new_plutus_v2(redeemer.ptr, ptr0, ptr1);
+        return PlutusWitness.__wrap(ret);
+    }
+    /**
     * @returns {PlutusData | undefined}
     */
     plutus_data() {
@@ -8114,6 +8221,13 @@ class PlutusWitness {
     script() {
         var ret = wasm.plutuswitness_script(this.ptr);
         return ret === 0 ? undefined : PlutusScript.__wrap(ret);
+    }
+    /**
+    * @returns {number}
+    */
+    version() {
+        var ret = wasm.plutuswitness_version(this.ptr);
+        return ret >>> 0;
     }
 }
 module.exports.PlutusWitness = PlutusWitness;
@@ -10447,6 +10561,13 @@ class RequiredWitnessSet {
         wasm.requiredwitnessset_add_plutus_script(this.ptr, plutus_script.ptr);
     }
     /**
+    * @param {PlutusScript} plutus_script
+    */
+    add_plutus_v2_script(plutus_script) {
+        _assertClass(plutus_script, PlutusScript);
+        wasm.requiredwitnessset_add_plutus_v2_script(this.ptr, plutus_script.ptr);
+    }
+    /**
     * @param {ScriptHash} plutus_script
     */
     add_plutus_hash(plutus_script) {
@@ -10688,30 +10809,88 @@ class Script {
         wasm.__wbg_script_free(ptr);
     }
     /**
+    * @returns {Uint8Array}
+    */
+    to_bytes() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.script_to_bytes(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v0 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1);
+            return v0;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @param {Uint8Array} bytes
+    * @returns {Script}
+    */
+    static from_bytes(bytes) {
+        var ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.script_from_bytes(ptr0, len0);
+        return Script.__wrap(ret);
+    }
+    /**
+    * @returns {string}
+    */
+    to_json() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.script_to_json(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_free(r0, r1);
+        }
+    }
+    /**
+    * @returns {any}
+    */
+    to_js_value() {
+        var ret = wasm.script_to_js_value(this.ptr);
+        return takeObject(ret);
+    }
+    /**
+    * @param {string} json
+    * @returns {Script}
+    */
+    static from_json(json) {
+        var ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.script_from_json(ptr0, len0);
+        return Script.__wrap(ret);
+    }
+    /**
     * @param {NativeScript} native_script
     * @returns {Script}
     */
-    new_native(native_script) {
+    static new_native(native_script) {
         _assertClass(native_script, NativeScript);
-        var ret = wasm.script_new_native(this.ptr, native_script.ptr);
+        var ret = wasm.script_new_native(native_script.ptr);
         return Script.__wrap(ret);
     }
     /**
     * @param {PlutusScript} plutus_script
     * @returns {Script}
     */
-    new_plutus_v1(plutus_script) {
+    static new_plutus_v1(plutus_script) {
         _assertClass(plutus_script, PlutusScript);
-        var ret = wasm.script_new_plutus_v1(this.ptr, plutus_script.ptr);
+        var ret = wasm.script_new_plutus_v1(plutus_script.ptr);
         return Script.__wrap(ret);
     }
     /**
     * @param {PlutusScript} plutus_script
     * @returns {Script}
     */
-    new_plutus_v2(plutus_script) {
+    static new_plutus_v2(plutus_script) {
         _assertClass(plutus_script, PlutusScript);
-        var ret = wasm.script_new_plutus_v2(this.ptr, plutus_script.ptr);
+        var ret = wasm.script_new_plutus_v2(plutus_script.ptr);
         return Script.__wrap(ret);
     }
     /**
@@ -11484,12 +11663,70 @@ class ScriptRef {
         wasm.__wbg_scriptref_free(ptr);
     }
     /**
+    * @returns {Uint8Array}
+    */
+    to_bytes() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.scriptref_to_bytes(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v0 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1);
+            return v0;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @param {Uint8Array} bytes
+    * @returns {ScriptRef}
+    */
+    static from_bytes(bytes) {
+        var ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.scriptref_from_bytes(ptr0, len0);
+        return ScriptRef.__wrap(ret);
+    }
+    /**
+    * @returns {string}
+    */
+    to_json() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.scriptref_to_json(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_free(r0, r1);
+        }
+    }
+    /**
+    * @returns {any}
+    */
+    to_js_value() {
+        var ret = wasm.scriptref_to_js_value(this.ptr);
+        return takeObject(ret);
+    }
+    /**
+    * @param {string} json
+    * @returns {ScriptRef}
+    */
+    static from_json(json) {
+        var ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.scriptref_from_json(ptr0, len0);
+        return ScriptRef.__wrap(ret);
+    }
+    /**
     * @param {Script} script
     * @returns {ScriptRef}
     */
-    new(script) {
+    static new(script) {
         _assertClass(script, Script);
-        var ret = wasm.scriptref_new(this.ptr, script.ptr);
+        var ret = wasm.scriptref_new(script.ptr);
         return ScriptRef.__wrap(ret);
     }
     /**
@@ -13221,72 +13458,25 @@ class TransactionBuilder {
         wasm.transactionbuilder_add_inputs_from(this.ptr, inputs.ptr);
     }
     /**
-    * We have to know what kind of inputs these are to know what kind of mock witnesses to create since
-    * 1) mock witnesses have different lengths depending on the type which changes the expecting fee
-    * 2) Witnesses are a set so we need to get rid of duplicates to avoid over-estimating the fee
-    * @param {Ed25519KeyHash} hash
-    * @param {TransactionInput} input
-    * @param {Value} amount
-    */
-    add_key_input(hash, input, amount) {
-        _assertClass(hash, Ed25519KeyHash);
-        _assertClass(input, TransactionInput);
-        _assertClass(amount, Value);
-        wasm.transactionbuilder_add_key_input(this.ptr, hash.ptr, input.ptr, amount.ptr);
-    }
-    /**
-    * @param {ScriptHash} hash
-    * @param {TransactionInput} input
-    * @param {Value} amount
+    * @param {TransactionUnspentOutput} utxo
     * @param {ScriptWitness | undefined} script_witness
     */
-    add_script_input(hash, input, amount, script_witness) {
-        _assertClass(hash, ScriptHash);
-        _assertClass(input, TransactionInput);
-        _assertClass(amount, Value);
+    add_input(utxo, script_witness) {
+        _assertClass(utxo, TransactionUnspentOutput);
         let ptr0 = 0;
         if (!isLikeNone(script_witness)) {
             _assertClass(script_witness, ScriptWitness);
             ptr0 = script_witness.ptr;
             script_witness.ptr = 0;
         }
-        wasm.transactionbuilder_add_script_input(this.ptr, hash.ptr, input.ptr, amount.ptr, ptr0);
+        wasm.transactionbuilder_add_input(this.ptr, utxo.ptr, ptr0);
     }
     /**
-    * @param {ByronAddress} hash
-    * @param {TransactionInput} input
-    * @param {Value} amount
+    * @param {TransactionUnspentOutput} utxo
     */
-    add_bootstrap_input(hash, input, amount) {
-        _assertClass(hash, ByronAddress);
-        _assertClass(input, TransactionInput);
-        _assertClass(amount, Value);
-        wasm.transactionbuilder_add_bootstrap_input(this.ptr, hash.ptr, input.ptr, amount.ptr);
-    }
-    /**
-    * @param {Address} address
-    * @param {TransactionInput} input
-    * @param {Value} amount
-    * @param {ScriptWitness | undefined} script_witness
-    */
-    add_input(address, input, amount, script_witness) {
-        _assertClass(address, Address);
-        _assertClass(input, TransactionInput);
-        _assertClass(amount, Value);
-        let ptr0 = 0;
-        if (!isLikeNone(script_witness)) {
-            _assertClass(script_witness, ScriptWitness);
-            ptr0 = script_witness.ptr;
-            script_witness.ptr = 0;
-        }
-        wasm.transactionbuilder_add_input(this.ptr, address.ptr, input.ptr, amount.ptr, ptr0);
-    }
-    /**
-    * @param {TransactionInput} reference_input
-    */
-    add_reference_input(reference_input) {
-        _assertClass(reference_input, TransactionInput);
-        wasm.transactionbuilder_add_reference_input(this.ptr, reference_input.ptr);
+    add_reference_input(utxo) {
+        _assertClass(utxo, TransactionUnspentOutput);
+        wasm.transactionbuilder_add_reference_input(this.ptr, utxo.ptr);
     }
     /**
     * calculates how much the fee would increase if you added a given output
@@ -13317,6 +13507,14 @@ class TransactionBuilder {
     add_plutus_script(plutus_script) {
         _assertClass(plutus_script, PlutusScript);
         wasm.transactionbuilder_add_plutus_script(this.ptr, plutus_script.ptr);
+    }
+    /**
+    * Add plutus v2 scripts via a PlutusScripts object
+    * @param {PlutusScript} plutus_script
+    */
+    add_plutus_v2_script(plutus_script) {
+        _assertClass(plutus_script, PlutusScript);
+        wasm.transactionbuilder_add_plutus_v2_script(this.ptr, plutus_script.ptr);
     }
     /**
     * Add plutus data via a PlutusData object
@@ -13643,19 +13841,6 @@ class TransactionBuilder {
         wasm.transactionbuilder_balance(this.ptr, address.ptr, ptr0);
     }
     /**
-    * Warning: this function will mutate the /fee/ field
-    * Make sure to call this function last after setting all other tx-body properties
-    * Editing inputs, outputs, mint, etc. after change been calculated
-    * might cause a mismatch in calculated fee versus the required fee
-    * @param {Address} address
-    * @returns {boolean}
-    */
-    add_change_if_needed(address) {
-        _assertClass(address, Address);
-        var ret = wasm.transactionbuilder_add_change_if_needed(this.ptr, address.ptr);
-        return ret !== 0;
-    }
-    /**
     * @returns {number}
     */
     full_size() {
@@ -13850,31 +14035,6 @@ class TransactionBuilderConfigBuilder {
     blockfrost(blockfrost) {
         _assertClass(blockfrost, Blockfrost);
         var ret = wasm.transactionbuilderconfigbuilder_blockfrost(this.ptr, blockfrost.ptr);
-        return TransactionBuilderConfigBuilder.__wrap(ret);
-    }
-    /**
-    * @param {boolean} prefer_pure_change
-    * @returns {TransactionBuilderConfigBuilder}
-    */
-    prefer_pure_change(prefer_pure_change) {
-        var ret = wasm.transactionbuilderconfigbuilder_prefer_pure_change(this.ptr, prefer_pure_change);
-        return TransactionBuilderConfigBuilder.__wrap(ret);
-    }
-    /**
-    * @param {boolean} prefer_split_change
-    * @param {BigNum} collateral_amount
-    * @param {BigNum} min_split_amount_ada
-    * @param {number} native_asset_chunk_size
-    * @returns {TransactionBuilderConfigBuilder}
-    */
-    prefer_split_change(prefer_split_change, collateral_amount, min_split_amount_ada, native_asset_chunk_size) {
-        _assertClass(collateral_amount, BigNum);
-        var ptr0 = collateral_amount.ptr;
-        collateral_amount.ptr = 0;
-        _assertClass(min_split_amount_ada, BigNum);
-        var ptr1 = min_split_amount_ada.ptr;
-        min_split_amount_ada.ptr = 0;
-        var ret = wasm.transactionbuilderconfigbuilder_prefer_split_change(this.ptr, prefer_split_change, ptr0, ptr1, native_asset_chunk_size);
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**
@@ -14654,6 +14814,25 @@ class TransactionOutput {
         var ret = wasm.transactionoutput_new(address.ptr, amount.ptr);
         return TransactionOutput.__wrap(ret);
     }
+    /**
+    * legacy support: serialize output as array array
+    *
+    * does not support inline datum and script_ref!
+    * @returns {Uint8Array}
+    */
+    to_legacy_bytes() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.transactionoutput_to_legacy_bytes(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v0 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1);
+            return v0;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
 }
 module.exports.TransactionOutput = TransactionOutput;
 /**
@@ -14972,6 +15151,22 @@ class TransactionUnspentOutput {
         var ret = wasm.transactionunspentoutput_output(this.ptr);
         return TransactionOutput.__wrap(ret);
     }
+    /**
+    * @returns {Uint8Array}
+    */
+    to_legacy_bytes() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.transactionunspentoutput_to_legacy_bytes(retptr, this.ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v0 = getArrayU8FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1);
+            return v0;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
 }
 module.exports.TransactionUnspentOutput = TransactionUnspentOutput;
 /**
@@ -15185,11 +15380,25 @@ class TransactionWitnessSet {
         wasm.transactionwitnessset_set_redeemers(this.ptr, redeemers.ptr);
     }
     /**
+    * @param {PlutusScripts} plutus_scripts
+    */
+    set_plutus_v2_scripts(plutus_scripts) {
+        _assertClass(plutus_scripts, PlutusScripts);
+        wasm.transactionwitnessset_set_plutus_v2_scripts(this.ptr, plutus_scripts.ptr);
+    }
+    /**
     * @returns {Redeemers | undefined}
     */
     redeemers() {
         var ret = wasm.transactionwitnessset_redeemers(this.ptr);
         return ret === 0 ? undefined : Redeemers.__wrap(ret);
+    }
+    /**
+    * @returns {PlutusScripts | undefined}
+    */
+    plutus_v2_scripts() {
+        var ret = wasm.transactionwitnessset_plutus_v2_scripts(this.ptr);
+        return ret === 0 ? undefined : PlutusScripts.__wrap(ret);
     }
     /**
     * @returns {TransactionWitnessSet}
@@ -15250,6 +15459,13 @@ class TransactionWitnessSetBuilder {
     add_plutus_script(plutus_script) {
         _assertClass(plutus_script, PlutusScript);
         wasm.transactionwitnesssetbuilder_add_plutus_script(this.ptr, plutus_script.ptr);
+    }
+    /**
+    * @param {PlutusScript} plutus_script
+    */
+    add_plutus_v2_script(plutus_script) {
+        _assertClass(plutus_script, PlutusScript);
+        wasm.transactionwitnesssetbuilder_add_plutus_v2_script(this.ptr, plutus_script.ptr);
     }
     /**
     * @param {PlutusData} plutus_datum
@@ -16623,20 +16839,6 @@ module.exports.__wbindgen_string_new = function(arg0, arg1) {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_json_parse = function(arg0, arg1) {
-    var ret = JSON.parse(getStringFromWasm0(arg0, arg1));
-    return addHeapObject(ret);
-};
-
-module.exports.__wbindgen_json_serialize = function(arg0, arg1) {
-    const obj = getObject(arg1);
-    var ret = JSON.stringify(obj === undefined ? null : obj);
-    var ptr0 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len0 = WASM_VECTOR_LEN;
-    getInt32Memory0()[arg0 / 4 + 1] = len0;
-    getInt32Memory0()[arg0 / 4 + 0] = ptr0;
-};
-
 module.exports.__wbg_fetch_da4b562f370dc6f1 = function(arg0, arg1) {
     var ret = getObject(arg0).fetch(getObject(arg1));
     return addHeapObject(ret);
@@ -16646,6 +16848,20 @@ module.exports.__wbindgen_string_get = function(arg0, arg1) {
     const obj = getObject(arg1);
     var ret = typeof(obj) === 'string' ? obj : undefined;
     var ptr0 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len0 = WASM_VECTOR_LEN;
+    getInt32Memory0()[arg0 / 4 + 1] = len0;
+    getInt32Memory0()[arg0 / 4 + 0] = ptr0;
+};
+
+module.exports.__wbindgen_json_parse = function(arg0, arg1) {
+    var ret = JSON.parse(getStringFromWasm0(arg0, arg1));
+    return addHeapObject(ret);
+};
+
+module.exports.__wbindgen_json_serialize = function(arg0, arg1) {
+    const obj = getObject(arg1);
+    var ret = JSON.stringify(obj === undefined ? null : obj);
+    var ptr0 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     var len0 = WASM_VECTOR_LEN;
     getInt32Memory0()[arg0 / 4 + 1] = len0;
     getInt32Memory0()[arg0 / 4 + 0] = ptr0;
@@ -16771,7 +16987,7 @@ module.exports.__wbg_new_c143a4f563f78c4e = function(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_1335(a, state0.b, arg0, arg1);
+                return __wbg_adapter_1355(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -16921,7 +17137,7 @@ module.exports.__wbindgen_memory = function() {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8270 = function(arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper8341 = function(arg0, arg1, arg2) {
     var ret = makeMutClosure(arg0, arg1, 462, __wbg_adapter_32);
     return addHeapObject(ret);
 };

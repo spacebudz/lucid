@@ -2,9 +2,9 @@ import {
   Lucid,
   Blockfrost,
   Lovelace,
-  Data,
   SpendingValidator,
   TxHash,
+  Data,
 } from '..';
 
 /**
@@ -47,7 +47,11 @@ export const lockUtxo = async (
 ): Promise<TxHash> => {
   const tx = await lucid
     .newTx()
-    .payToContract(matchingNumberAddress, Datum(number), { lovelace })
+    .payToContract(
+      matchingNumberAddress,
+      { inline: Datum(number) },
+      { lovelace }
+    )
     .complete();
 
   const signedTx = await tx.sign().complete();

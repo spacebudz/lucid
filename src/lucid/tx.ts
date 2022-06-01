@@ -4,6 +4,7 @@ import {
   Address,
   Assets,
   CertificateValidator,
+  OutputData,
   Datum,
   Json,
   Label,
@@ -37,6 +38,26 @@ export class Tx {
   }
 
   /**
+   *
+   * Read data from utxos. These utxos are only referenced and not spent
+   */
+  readFrom(utxos: UTxO[]) {
+    this.tasks.push(async () => {
+      for (const utxo of utxos) {
+        if (utxo.datumHash && !utxo.datum) {
+          utxo.datum = await this.lucid.datumOf(utxo);
+          // Add datum to witness set, so it can be read from validators
+          const plutusData = C.PlutusData.from_bytes(fromHex(utxo.datum));
+          this.txBuilder.add_plutus_data(plutusData);
+        }
+        const coreUtxo = utxoToCore(utxo);
+        this.txBuilder.add_reference_input(coreUtxo);
+      }
+    });
+    return this;
+  }
+
+  /**
    * A public key or native script input
    *
    * With redeemer a plutus script input
@@ -49,9 +70,7 @@ export class Tx {
         }
         const coreUtxo = utxoToCore(utxo);
         this.txBuilder.add_input(
-          C.Address.from_bech32(utxo.address),
-          coreUtxo.input(),
-          coreUtxo.output().amount(),
+          coreUtxo,
           (redeemer as undefined) &&
             C.ScriptWitness.new_plutus_witness(
               C.PlutusWitness.new(
@@ -111,32 +130,106 @@ export class Tx {
   }
 
   /**
-   * Pay to a public key or native script address with datum
+   * Pay to a public key or native script address with datum or scriptRef
    *  */
-  payToAddressWithDatum(address: Address, datum: Datum, assets: Assets) {
-    const plutusData = C.PlutusData.from_bytes(fromHex(datum));
+  payToAddressWithData(
+    address: Address,
+    outputData: OutputData,
+    assets: Assets
+  ) {
+    if (outputData.asHash && outputData.inline)
+      throw new Error('Not allowed to set asHash and inline at the same time');
+
     const output = C.TransactionOutput.new(
       C.Address.from_bech32(address),
       assetsToValue(assets)
     );
-    output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
+
+    if (outputData.asHash) {
+      const plutusData = C.PlutusData.from_bytes(fromHex(outputData.asHash));
+      output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
+      this.txBuilder.add_plutus_data(plutusData);
+    } else if (outputData.inline) {
+      const plutusData = C.PlutusData.from_bytes(fromHex(outputData.inline));
+      output.set_datum(C.Datum.new_data(C.Data.new(plutusData)));
+    }
+    const script = outputData.scriptRef;
+    if (script) {
+      if (script.type === 'Native') {
+        output.set_script_ref(
+          C.ScriptRef.new(
+            C.Script.new_native(
+              C.NativeScript.from_bytes(fromHex(script.script))
+            )
+          )
+        );
+      } else if (script.type === 'PlutusV1') {
+        output.set_script_ref(
+          C.ScriptRef.new(
+            C.Script.new_plutus_v1(
+              C.PlutusScript.from_bytes(fromHex(script.script))
+            )
+          )
+        );
+      } else if (script.type === 'PlutusV2') {
+        output.set_script_ref(
+          C.ScriptRef.new(
+            C.Script.new_plutus_v2(
+              C.PlutusScript.from_bytes(fromHex(script.script))
+            )
+          )
+        );
+      }
+    }
     this.txBuilder.add_output(output);
-    this.txBuilder.add_plutus_data(plutusData);
     return this;
   }
 
   /**
-   * Pay to a plutus script address with datum
+   * Pay to a plutus script address with datum or scriptRef
    *  */
-  payToContract(address: Address, datum: Datum, assets: Assets) {
-    const plutusData = C.PlutusData.from_bytes(fromHex(datum));
+  payToContract(address: Address, outputData: OutputData, assets: Assets) {
     const output = C.TransactionOutput.new(
       C.Address.from_bech32(address),
       assetsToValue(assets)
     );
-    output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
+    if (outputData.asHash) {
+      const plutusData = C.PlutusData.from_bytes(fromHex(outputData.asHash));
+      output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
+      this.txBuilder.add_plutus_data(plutusData);
+    } else if (outputData.inline) {
+      const plutusData = C.PlutusData.from_bytes(fromHex(outputData.inline));
+      output.set_datum(C.Datum.new_data(C.Data.new(plutusData)));
+    }
+    const script = outputData.scriptRef;
+    if (script) {
+      if (script.type === 'Native') {
+        output.set_script_ref(
+          C.ScriptRef.new(
+            C.Script.new_native(
+              C.NativeScript.from_bytes(fromHex(script.script))
+            )
+          )
+        );
+      } else if (script.type === 'PlutusV1') {
+        output.set_script_ref(
+          C.ScriptRef.new(
+            C.Script.new_plutus_v1(
+              C.PlutusScript.from_bytes(fromHex(script.script))
+            )
+          )
+        );
+      } else if (script.type === 'PlutusV2') {
+        output.set_script_ref(
+          C.ScriptRef.new(
+            C.Script.new_plutus_v2(
+              C.PlutusScript.from_bytes(fromHex(script.script))
+            )
+          )
+        );
+      }
+    }
     this.txBuilder.add_output(output);
-    this.txBuilder.add_plutus_data(plutusData);
     return this;
   }
 
@@ -359,7 +452,10 @@ export class Tx {
     return this;
   }
 
-  async complete(option?: { changeAddress?: Address; datum?: Datum }) {
+  async complete(option?: {
+    changeAddress?: Address;
+    datum?: { asHash?: Datum; inline?: Datum };
+  }) {
     for (const task of this.tasks) {
       await task();
     }
@@ -387,15 +483,21 @@ export class Tx {
       C.Address.from_bech32(
         option?.changeAddress || (await this.lucid.wallet.address())
       ),
-      option?.datum
+      option?.datum?.asHash
         ? C.Datum.new_data_hash(
-            C.hash_plutus_data(C.PlutusData.from_bytes(fromHex(option.datum)))
+            C.hash_plutus_data(
+              C.PlutusData.from_bytes(fromHex(option.datum.asHash))
+            )
+          )
+        : option?.datum?.inline
+        ? C.Datum.new_data(
+            C.Data.new(C.PlutusData.from_bytes(fromHex(option.datum.inline)))
           )
         : undefined
     );
-    if (option?.datum) {
+    if (option?.datum?.asHash) {
       this.txBuilder.add_plutus_data(
-        C.PlutusData.from_bytes(fromHex(option.datum))
+        C.PlutusData.from_bytes(fromHex(option.datum.asHash))
       );
     }
 
@@ -415,10 +517,14 @@ const attachScript = (
     tx.txBuilder.add_native_script(
       C.NativeScript.from_bytes(fromHex(script.script))
     );
-  }
-  if (script.type === 'PlutusV1' || script.type === 'PlutusV2') {
+  } else if (script.type === 'PlutusV1') {
     tx.txBuilder.add_plutus_script(
       C.PlutusScript.from_bytes(fromHex(script.script))
     );
+  } else if (script.type === 'PlutusV2') {
+    tx.txBuilder.add_plutus_v2_script(
+      C.PlutusScript.from_bytes(fromHex(script.script))
+    );
   }
+  throw new Error('No variant matched');
 };

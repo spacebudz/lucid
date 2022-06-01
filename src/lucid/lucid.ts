@@ -69,7 +69,6 @@ export class Lucid {
           )
         )
         .costmdls(costModel.plutusV1())
-        .prefer_pure_change(true)
         .build();
     }
     lucid.utils = new Utils(lucid);

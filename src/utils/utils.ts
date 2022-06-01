@@ -472,6 +472,17 @@ export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
       C.Datum.new_data_hash(C.DataHash.from_bytes(fromHex(utxo.datumHash)))
     );
   }
+  // inline datum
+  if (!utxo.datumHash && utxo.datum) {
+    output.set_datum(
+      C.Datum.new_data(C.Data.new(C.PlutusData.from_bytes(fromHex(utxo.datum))))
+    );
+  }
+
+  if (utxo.scriptRef) {
+    output.set_script_ref(C.ScriptRef.from_bytes(fromHex(utxo.scriptRef)));
+  }
+
   return C.TransactionUnspentOutput.new(
     C.TransactionInput.new(
       C.TransactionHash.from_bytes(fromHex(utxo.txHash)),
@@ -505,6 +516,26 @@ export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
       ?.datum()
       ?.as_data_hash()
       ?.to_hex(),
+    datum:
+      coreUtxo
+        .output()
+        ?.datum()
+        ?.as_data() &&
+      toHex(
+        coreUtxo
+          .output()
+          .datum()!
+          .as_data()!
+          .to_bytes()
+      ),
+    scriptRef:
+      coreUtxo.output()?.script_ref() &&
+      toHex(
+        coreUtxo
+          .output()
+          .script_ref()!
+          .to_bytes()
+      ),
   };
 };
 

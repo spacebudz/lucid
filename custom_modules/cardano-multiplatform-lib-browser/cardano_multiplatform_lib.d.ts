@@ -37,13 +37,6 @@ export function encrypt_with_password(password: string, salt: string, nonce: str
 */
 export function decrypt_with_password(password: string, data: string): string;
 /**
-* @param {Transaction} tx
-* @param {LinearFee} linear_fee
-* @param {ExUnitPrices} ex_unit_prices
-* @returns {BigNum}
-*/
-export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
-/**
 * @param {string} json
 * @param {number} schema
 * @returns {PlutusData}
@@ -55,6 +48,13 @@ export function encode_json_str_to_plutus_datum(json: string, schema: number): P
 * @returns {string}
 */
 export function decode_plutus_datum_to_json_str(datum: PlutusData, schema: number): string;
+/**
+* @param {Transaction} tx
+* @param {LinearFee} linear_fee
+* @param {ExUnitPrices} ex_unit_prices
+* @returns {BigNum}
+*/
+export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
 /**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
@@ -112,12 +112,11 @@ export function get_implicit_input(txbody: TransactionBody, pool_deposit: BigNum
 */
 export function get_deposit(txbody: TransactionBody, pool_deposit: BigNum, key_deposit: BigNum): BigNum;
 /**
-* @param {Value} assets
-* @param {boolean} has_data_hash
+* @param {TransactionOutput} output
 * @param {BigNum} coins_per_utxo_word
 * @returns {BigNum}
 */
-export function min_ada_required(assets: Value, has_data_hash: boolean, coins_per_utxo_word: BigNum): BigNum;
+export function min_ada_required(output: TransactionOutput, coins_per_utxo_word: BigNum): BigNum;
 /**
 * Receives a script JSON string
 * and returns a NativeScript.
@@ -197,6 +196,12 @@ export enum MetadataJsonSchema {
 }
 /**
 */
+export enum StakeCredKind {
+  Key,
+  Script,
+}
+/**
+*/
 export enum CoinSelectionStrategyCIP2 {
 /**
 * Performs CIP2's Largest First ada-only selection. Will error if outputs contain non-ADA assets.
@@ -214,18 +219,6 @@ export enum CoinSelectionStrategyCIP2 {
 * Same as RandomImprove, but before adding ADA, will insert by random-improve for each asset type.
 */
   RandomImproveMultiAsset,
-}
-/**
-*/
-export enum StakeCredKind {
-  Key,
-  Script,
-}
-/**
-*/
-export enum ScriptWitnessKind {
-  NativeWitness,
-  PlutusWitness,
 }
 /**
 */
@@ -314,6 +307,12 @@ export enum ScriptKind {
 export enum DatumKind {
   Hash,
   Data,
+}
+/**
+*/
+export enum ScriptWitnessKind {
+  NativeWitness,
+  PlutusWitness,
 }
 /**
 * Each new language uses a different namespace for hashing its script
@@ -1437,10 +1436,32 @@ export class DNSRecordSRV {
 export class Data {
   free(): void;
 /**
+* @returns {Uint8Array}
+*/
+  to_bytes(): Uint8Array;
+/**
+* @param {Uint8Array} bytes
+* @returns {Data}
+*/
+  static from_bytes(bytes: Uint8Array): Data;
+/**
+* @returns {string}
+*/
+  to_json(): string;
+/**
+* @returns {DataJSON}
+*/
+  to_js_value(): DataJSON;
+/**
+* @param {string} json
+* @returns {Data}
+*/
+  static from_json(json: string): Data;
+/**
 * @param {PlutusData} plutus_data
 * @returns {Data}
 */
-  new(plutus_data: PlutusData): Data;
+  static new(plutus_data: PlutusData): Data;
 /**
 * @returns {PlutusData}
 */
@@ -1483,6 +1504,15 @@ export class DataHash {
 */
 export class Datum {
   free(): void;
+/**
+* @returns {Uint8Array}
+*/
+  to_bytes(): Uint8Array;
+/**
+* @param {Uint8Array} bytes
+* @returns {Datum}
+*/
+  static from_bytes(bytes: Uint8Array): Datum;
 /**
 * @returns {string}
 */
@@ -3251,12 +3281,20 @@ export class PlutusScripts {
 export class PlutusWitness {
   free(): void;
 /**
+* Plutus V1 witness or witness where no script is attached and so version doesn't matter
 * @param {PlutusData} redeemer
 * @param {PlutusData | undefined} plutus_data
 * @param {PlutusScript | undefined} script
 * @returns {PlutusWitness}
 */
   static new(redeemer: PlutusData, plutus_data?: PlutusData, script?: PlutusScript): PlutusWitness;
+/**
+* @param {PlutusData} redeemer
+* @param {PlutusData | undefined} plutus_data
+* @param {PlutusScript | undefined} script
+* @returns {PlutusWitness}
+*/
+  static new_plutus_v2(redeemer: PlutusData, plutus_data?: PlutusData, script?: PlutusScript): PlutusWitness;
 /**
 * @returns {PlutusData | undefined}
 */
@@ -3269,6 +3307,10 @@ export class PlutusWitness {
 * @returns {PlutusScript | undefined}
 */
   script(): PlutusScript | undefined;
+/**
+* @returns {number}
+*/
+  version(): number;
 }
 /**
 */
@@ -4242,6 +4284,10 @@ export class RequiredWitnessSet {
 */
   add_plutus_script(plutus_script: PlutusScript): void;
 /**
+* @param {PlutusScript} plutus_script
+*/
+  add_plutus_v2_script(plutus_script: PlutusScript): void;
+/**
 * @param {ScriptHash} plutus_script
 */
   add_plutus_hash(plutus_script: ScriptHash): void;
@@ -4343,20 +4389,42 @@ export class RewardAddresses {
 export class Script {
   free(): void;
 /**
+* @returns {Uint8Array}
+*/
+  to_bytes(): Uint8Array;
+/**
+* @param {Uint8Array} bytes
+* @returns {Script}
+*/
+  static from_bytes(bytes: Uint8Array): Script;
+/**
+* @returns {string}
+*/
+  to_json(): string;
+/**
+* @returns {ScriptJSON}
+*/
+  to_js_value(): ScriptJSON;
+/**
+* @param {string} json
+* @returns {Script}
+*/
+  static from_json(json: string): Script;
+/**
 * @param {NativeScript} native_script
 * @returns {Script}
 */
-  new_native(native_script: NativeScript): Script;
+  static new_native(native_script: NativeScript): Script;
 /**
 * @param {PlutusScript} plutus_script
 * @returns {Script}
 */
-  new_plutus_v1(plutus_script: PlutusScript): Script;
+  static new_plutus_v1(plutus_script: PlutusScript): Script;
 /**
 * @param {PlutusScript} plutus_script
 * @returns {Script}
 */
-  new_plutus_v2(plutus_script: PlutusScript): Script;
+  static new_plutus_v2(plutus_script: PlutusScript): Script;
 /**
 * @returns {number}
 */
@@ -4638,10 +4706,32 @@ export class ScriptPubkey {
 export class ScriptRef {
   free(): void;
 /**
+* @returns {Uint8Array}
+*/
+  to_bytes(): Uint8Array;
+/**
+* @param {Uint8Array} bytes
+* @returns {ScriptRef}
+*/
+  static from_bytes(bytes: Uint8Array): ScriptRef;
+/**
+* @returns {string}
+*/
+  to_json(): string;
+/**
+* @returns {ScriptRefJSON}
+*/
+  to_js_value(): ScriptRefJSON;
+/**
+* @param {string} json
+* @returns {ScriptRef}
+*/
+  static from_json(json: string): ScriptRef;
+/**
 * @param {Script} script
 * @returns {ScriptRef}
 */
-  new(script: Script): ScriptRef;
+  static new(script: Script): ScriptRef;
 /**
 * @returns {Script}
 */
@@ -5347,38 +5437,14 @@ export class TransactionBuilder {
 */
   add_inputs_from(inputs: TransactionUnspentOutputs): void;
 /**
-* We have to know what kind of inputs these are to know what kind of mock witnesses to create since
-* 1) mock witnesses have different lengths depending on the type which changes the expecting fee
-* 2) Witnesses are a set so we need to get rid of duplicates to avoid over-estimating the fee
-* @param {Ed25519KeyHash} hash
-* @param {TransactionInput} input
-* @param {Value} amount
-*/
-  add_key_input(hash: Ed25519KeyHash, input: TransactionInput, amount: Value): void;
-/**
-* @param {ScriptHash} hash
-* @param {TransactionInput} input
-* @param {Value} amount
+* @param {TransactionUnspentOutput} utxo
 * @param {ScriptWitness | undefined} script_witness
 */
-  add_script_input(hash: ScriptHash, input: TransactionInput, amount: Value, script_witness?: ScriptWitness): void;
+  add_input(utxo: TransactionUnspentOutput, script_witness?: ScriptWitness): void;
 /**
-* @param {ByronAddress} hash
-* @param {TransactionInput} input
-* @param {Value} amount
+* @param {TransactionUnspentOutput} utxo
 */
-  add_bootstrap_input(hash: ByronAddress, input: TransactionInput, amount: Value): void;
-/**
-* @param {Address} address
-* @param {TransactionInput} input
-* @param {Value} amount
-* @param {ScriptWitness | undefined} script_witness
-*/
-  add_input(address: Address, input: TransactionInput, amount: Value, script_witness?: ScriptWitness): void;
-/**
-* @param {TransactionInput} reference_input
-*/
-  add_reference_input(reference_input: TransactionInput): void;
+  add_reference_input(utxo: TransactionUnspentOutput): void;
 /**
 * calculates how much the fee would increase if you added a given output
 * @param {Address} address
@@ -5397,6 +5463,11 @@ export class TransactionBuilder {
 * @param {PlutusScript} plutus_script
 */
   add_plutus_script(plutus_script: PlutusScript): void;
+/**
+* Add plutus v2 scripts via a PlutusScripts object
+* @param {PlutusScript} plutus_script
+*/
+  add_plutus_v2_script(plutus_script: PlutusScript): void;
 /**
 * Add plutus data via a PlutusData object
 * @param {PlutusData} plutus_data
@@ -5581,15 +5652,6 @@ export class TransactionBuilder {
 */
   balance(address: Address, datum?: Datum): void;
 /**
-* Warning: this function will mutate the /fee/ field
-* Make sure to call this function last after setting all other tx-body properties
-* Editing inputs, outputs, mint, etc. after change been calculated
-* might cause a mismatch in calculated fee versus the required fee
-* @param {Address} address
-* @returns {boolean}
-*/
-  add_change_if_needed(address: Address): boolean;
-/**
 * @returns {number}
 */
   full_size(): number;
@@ -5683,19 +5745,6 @@ export class TransactionBuilderConfigBuilder {
 * @returns {TransactionBuilderConfigBuilder}
 */
   blockfrost(blockfrost: Blockfrost): TransactionBuilderConfigBuilder;
-/**
-* @param {boolean} prefer_pure_change
-* @returns {TransactionBuilderConfigBuilder}
-*/
-  prefer_pure_change(prefer_pure_change: boolean): TransactionBuilderConfigBuilder;
-/**
-* @param {boolean} prefer_split_change
-* @param {BigNum} collateral_amount
-* @param {BigNum} min_split_amount_ada
-* @param {number} native_asset_chunk_size
-* @returns {TransactionBuilderConfigBuilder}
-*/
-  prefer_split_change(prefer_split_change: boolean, collateral_amount: BigNum, min_split_amount_ada: BigNum, native_asset_chunk_size: number): TransactionBuilderConfigBuilder;
 /**
 * @returns {TransactionBuilderConfig}
 */
@@ -6000,6 +6049,13 @@ export class TransactionOutput {
 * @returns {TransactionOutput}
 */
   static new(address: Address, amount: Value): TransactionOutput;
+/**
+* legacy support: serialize output as array array
+*
+* does not support inline datum and script_ref!
+* @returns {Uint8Array}
+*/
+  to_legacy_bytes(): Uint8Array;
 }
 /**
 */
@@ -6131,6 +6187,10 @@ export class TransactionUnspentOutput {
 * @returns {TransactionOutput}
 */
   output(): TransactionOutput;
+/**
+* @returns {Uint8Array}
+*/
+  to_legacy_bytes(): Uint8Array;
 }
 /**
 */
@@ -6225,9 +6285,17 @@ export class TransactionWitnessSet {
 */
   set_redeemers(redeemers: Redeemers): void;
 /**
+* @param {PlutusScripts} plutus_scripts
+*/
+  set_plutus_v2_scripts(plutus_scripts: PlutusScripts): void;
+/**
 * @returns {Redeemers | undefined}
 */
   redeemers(): Redeemers | undefined;
+/**
+* @returns {PlutusScripts | undefined}
+*/
+  plutus_v2_scripts(): PlutusScripts | undefined;
 /**
 * @returns {TransactionWitnessSet}
 */
@@ -6254,6 +6322,10 @@ export class TransactionWitnessSetBuilder {
 * @param {PlutusScript} plutus_script
 */
   add_plutus_script(plutus_script: PlutusScript): void;
+/**
+* @param {PlutusScript} plutus_script
+*/
+  add_plutus_v2_script(plutus_script: PlutusScript): void;
 /**
 * @param {PlutusData} plutus_datum
 */
@@ -7229,6 +7301,7 @@ export interface TransactionWitnessSetJSON {
   native_scripts?: NativeScriptsJSON | null;
   plutus_data?: PlutusListJSON | null;
   plutus_scripts?: PlutusScriptsJSON | null;
+  plutus_v2_scripts?: PlutusScriptsJSON | null;
   redeemers?: RedeemersJSON | null;
   vkeys?: VkeywitnessesJSON | null;
 }

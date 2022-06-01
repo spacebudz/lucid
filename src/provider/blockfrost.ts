@@ -79,6 +79,8 @@ export class Blockfrost implements ProviderSchema {
       })(),
       address,
       datumHash: r.data_hash,
+      datum: r.datum, // TODO: Check if correct with blockfrost
+      scriptRef: r.scriptRef, // TODO: Check if correct with blockfrost
     }));
   }
 
@@ -113,6 +115,8 @@ export class Blockfrost implements ProviderSchema {
       })(),
       address,
       datumHash: r.data_hash,
+      datum: r.datum, // TODO: Check if correct with blockfrost
+      scriptRef: r.scriptRef, // TODO: Check if correct with blockfrost
     }));
   }
 

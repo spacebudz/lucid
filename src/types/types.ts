@@ -93,6 +93,16 @@ export type TxHash = string;
 export type PoolId = string;
 /** Hex */
 export type Datum = string;
+/**
+ * asHash will add the datum hash to the output and the datum to the witness set
+ *
+ * inline will add the datum to the output
+ *
+ * scriptRef will add any script to the output
+ *
+ * You can only specify asHash or inline, not both at the same time
+ */
+export type OutputData = { asHash?: Datum; inline?: Datum; scriptRef?: Script };
 /** Hex */
 export type DatumHash = string;
 /** Hex (Redeemer is only PlutusData, same as Datum) */
@@ -103,9 +113,10 @@ export type Label = number;
 export type TransactionWitnesses = string;
 /** Hex */
 export type Transaction = string;
-
 /** bech32 */
 export type PrivateKey = string;
+/** Hex */
+export type ScriptRef = string;
 
 export type UTxO = {
   txHash: TxHash;
@@ -113,7 +124,8 @@ export type UTxO = {
   assets: Assets;
   address: Address;
   datumHash?: DatumHash;
-  datum?: Datum; // some providers may be able to return the datum as well in an efficient way
+  datum?: Datum;
+  scriptRef?: ScriptRef;
 };
 
 export type AddressType = {
