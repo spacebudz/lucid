@@ -289,7 +289,7 @@ export class Tx {
   }
 
   validTo(unixTime: UnixTime) {
-    const slot = this.lucid.utils.slotToUnixTime(unixTime);
+    const slot = this.lucid.utils.unixTimeToSlot(unixTime);
     this.txBuilder.set_ttl(C.BigNum.from_str(slot.toString()));
     return this;
   }
