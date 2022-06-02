@@ -382,7 +382,7 @@ export class Tx {
   }
 
   validTo(unixTime: UnixTime) {
-    const slot = this.lucid.utils.slotToUnixTime(unixTime);
+    const slot = this.lucid.utils.unixTimeToSlot(unixTime);
     this.txBuilder.set_ttl(C.BigNum.from_str(slot.toString()));
     return this;
   }
@@ -456,6 +456,9 @@ export class Tx {
     changeAddress?: Address;
     datum?: { asHash?: Datum; inline?: Datum };
   }) {
+    if (option?.datum?.asHash && option?.datum?.inline)
+      throw new Error('Not allowed to set asHash and inline at the same time');
+
     for (const task of this.tasks) {
       await task();
     }
