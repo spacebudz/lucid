@@ -517,15 +517,15 @@ const attachScript = (
     | WithdrawalValidator
 ) => {
   if (script.type === 'Native') {
-    tx.txBuilder.add_native_script(
+    return tx.txBuilder.add_native_script(
       C.NativeScript.from_bytes(fromHex(script.script))
     );
   } else if (script.type === 'PlutusV1') {
-    tx.txBuilder.add_plutus_script(
+    return tx.txBuilder.add_plutus_script(
       C.PlutusScript.from_bytes(fromHex(script.script))
     );
   } else if (script.type === 'PlutusV2') {
-    tx.txBuilder.add_plutus_v2_script(
+    return tx.txBuilder.add_plutus_v2_script(
       C.PlutusScript.from_bytes(fromHex(script.script))
     );
   }

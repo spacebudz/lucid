@@ -62,7 +62,7 @@ export class Utils {
         .hash(C.ScriptHashNamespace.PlutusV1)
         .to_hex();
     } else if (validator.type === 'PlutusV2') {
-      C.PlutusScript.from_bytes(fromHex(validator.script))
+      return C.PlutusScript.from_bytes(fromHex(validator.script))
         .hash(C.ScriptHashNamespace.PlutusV2)
         .to_hex();
     }
@@ -463,10 +463,14 @@ export const assetsToValue = (assets: Assets) => {
 };
 
 export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
-  const output = C.TransactionOutput.new(
-    C.Address.from_bech32(utxo.address),
-    assetsToValue(utxo.assets)
-  );
+  const address: Core.Address = (() => {
+    try {
+      return C.Address.from_bech32(utxo.address);
+    } catch (e) {
+      return C.ByronAddress.from_base58(utxo.address).to_address();
+    }
+  })();
+  const output = C.TransactionOutput.new(address, assetsToValue(utxo.assets));
   if (utxo.datumHash) {
     output.set_datum(
       C.Datum.new_data_hash(C.DataHash.from_bytes(fromHex(utxo.datumHash)))
@@ -510,7 +514,16 @@ export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
     address: coreUtxo
       .output()
       .address()
-      .to_bech32(), // TODO add byron address
+      .as_byron()
+      ? coreUtxo
+          .output()
+          .address()
+          .as_byron()
+          ?.to_base58()!
+      : coreUtxo
+          .output()
+          .address()
+          .to_bech32(),
     datumHash: coreUtxo
       .output()
       ?.datum()
