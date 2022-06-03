@@ -365,7 +365,7 @@ export class Tx {
         : addressDetails.paymentCredential!;
 
     if (credential.type === 'Script')
-      throw new Error('Only key hashes are allow as signers.');
+      throw new Error('Only key hashes are allowed as signers.');
 
     this.txBuilder.add_required_signer(
       C.Ed25519KeyHash.from_bytes(fromHex(credential.hash))
