@@ -14,6 +14,8 @@ export type ProtocolParameters = {
   priceMem: number;
   priceStep: number;
   coinsPerUtxoWord: BigInt;
+  collateralPercentage: number;
+  maxCollateralInputs: number;
 };
 
 export type Slot = number;

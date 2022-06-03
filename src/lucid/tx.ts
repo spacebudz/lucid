@@ -472,20 +472,15 @@ export class Tx {
     }
 
     const utxos = await this.lucid.wallet.getUtxosCore();
-    if (this.txBuilder.redeemers()!?.len() > 0) {
-      const collateral = await this.lucid.wallet.getCollateralCore();
-      if (collateral.length <= 0) throw new Error('No collateral UTxO found.');
-      // 2 collateral utxos should be more than sufficient
-      collateral.slice(0, 2).forEach(utxo => {
-        this.txBuilder.add_collateral(utxo.output().address(), utxo.input());
-      });
-    }
+
+    const changeAddress: Core.Address = C.Address.from_bech32(
+      option?.changeAddress || (await this.lucid.wallet.address())
+    );
 
     this.txBuilder.add_inputs_from(utxos);
+
     this.txBuilder.balance(
-      C.Address.from_bech32(
-        option?.changeAddress || (await this.lucid.wallet.address())
-      ),
+      changeAddress,
       option?.datum?.asHash
         ? C.Datum.new_data_hash(
             C.hash_plutus_data(
@@ -504,7 +499,10 @@ export class Tx {
       );
     }
 
-    return new TxComplete(this.lucid, await this.txBuilder.construct());
+    return new TxComplete(
+      this.lucid,
+      await this.txBuilder.construct(utxos, changeAddress)
+    );
   }
 }
 

@@ -56,6 +56,8 @@ export class Lucid {
         )
         .max_tx_size(protocolParameters.maxTxSize)
         .max_value_size(protocolParameters.maxValSize)
+        .collateral_percentage(protocolParameters.collateralPercentage)
+        .max_collateral_inputs(protocolParameters.maxCollateralInputs)
         .ex_unit_prices(
           C.ExUnitPrices.from_float(
             protocolParameters.priceMem,

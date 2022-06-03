@@ -37,6 +37,8 @@ export class Blockfrost implements ProviderSchema {
       priceMem: parseFloat(result.price_mem),
       priceStep: parseFloat(result.price_step),
       coinsPerUtxoWord: BigInt(result.coins_per_utxo_word),
+      collateralPercentage: parseInt(result.collateral_percent),
+      maxCollateralInputs: parseInt(result.max_collateral_inputs),
     };
   }
   async getCurrentSlot(): Promise<Slot> {
