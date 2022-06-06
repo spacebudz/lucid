@@ -1,3 +1,4 @@
+//@ts-ignore
 import { Lucid, Blockfrost, Network, WalletProvider } from 'lucid-cardano';
 
 export const NetworkTestnet = 'Testnet' as Network;

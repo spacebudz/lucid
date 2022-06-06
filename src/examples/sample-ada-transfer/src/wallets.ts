@@ -1,3 +1,4 @@
+//@ts-ignore
 import { WalletProvider } from 'lucid-cardano';
 
 const supportedProviders: { [key: string]: boolean } = {
