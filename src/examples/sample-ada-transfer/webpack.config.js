@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-mode: 'development',
+  mode: 'development',
   entry: './src/index.ts',
   module: {
     rules: [
@@ -23,12 +23,12 @@ mode: 'development',
   experiments: {
     asyncWebAssembly: true,
     topLevelAwait: true,
-    layers: true // optional, with some bundlers/frameworks it doesn't work without
+    layers: true, // optional, with some bundlers/frameworks it doesn't work without
   },
   plugins: [
-      // Required since webpack 5 removed Buffer polyfills
+    // Required since webpack 5 removed Buffer polyfills
     new webpack.ProvidePlugin({
-        Buffer: ['buffer', 'Buffer'],
-      })
-  ]
+      Buffer: ['buffer', 'Buffer'],
+    }),
+  ],
 };
