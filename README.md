@@ -46,6 +46,8 @@ You can check out the [examples](./src/examples/) folder.
 
 ### Basic usage
 
+See [sample-ada-transfer](./src/examples/sample-ada-transfer) example for end-to-end browser integration usage. 
+
 ```js
 import {Lucid, Blockfrost} from "lucid-cardano";
 
