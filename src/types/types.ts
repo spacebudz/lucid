@@ -1,5 +1,5 @@
-import Core from 'core/types';
-import { Construct } from 'utils';
+import { Core } from '../core';
+import { Construct } from '../utils';
 import { Blockfrost } from '../provider';
 
 export type Provider = Blockfrost; // more providers can be added here

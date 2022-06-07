@@ -1,5 +1,4 @@
-import Core from 'core/types';
-import { C } from '../core';
+import { C, Core } from '../core';
 import { fromHex, toHex } from '../utils';
 import {
   Address,

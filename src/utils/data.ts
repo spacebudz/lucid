@@ -1,5 +1,5 @@
 import { PlutusData, C, Datum, Redeemer } from '..';
-import Core from 'core/types';
+import { Core } from '../core/';
 import { fromHex, toHex } from './utils';
 
 export class Construct {

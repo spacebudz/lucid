@@ -1,5 +1,4 @@
-import { C } from '../core/index';
-import Core from 'core/types';
+import { C, Core } from '../core';
 import {
   costModels,
   utxoToCore,

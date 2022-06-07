@@ -1,5 +1,4 @@
-import { C } from '../core';
-import Core from 'core/types';
+import { C, Core } from '../core';
 import { PrivateKey, TransactionWitnesses } from '../types';
 import { Lucid } from './lucid';
 import { TxSigned } from './txSigned';

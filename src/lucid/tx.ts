@@ -1,5 +1,4 @@
-import { C } from '../core';
-import Core from 'core/types';
+import { C, Core } from '../core';
 import {
   Address,
   Assets,

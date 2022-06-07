@@ -1,4 +1,4 @@
-import Core from 'core/types';
+import { Core } from '../core';
 import { TxHash } from '../types';
 import { Lucid } from './lucid';
 

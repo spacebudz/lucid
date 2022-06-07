@@ -1,3 +1,8 @@
+/* eslint-disable */
+import type Core from "../../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.js";
+export {Core};
+/* eslint-enable */
+
 /** Check if environment is Node.js or SSR like Gatsby or Next.js */
 const importNodeOrSSR = async () => {
   try {
@@ -10,7 +15,6 @@ const importNodeOrSSR = async () => {
   }
 };
 
-/** @internal */
 export const C = (typeof window !== 'undefined'
   ? await import(
       '../../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.js'

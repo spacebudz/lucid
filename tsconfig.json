@@ -33,9 +33,6 @@
     "forceConsistentCasingInFileNames": true,
     // `tsdx build` ignores this option, but it is commonly used when type-checking separately with `tsc`
     "noEmit": true,
-    "baseUrl": "src",
-    "paths": {
-      "core/types": ["../custom_modules/cardano-multiplatform-lib-browser"]
-    }
+    "baseUrl": "src"
   }
 }
