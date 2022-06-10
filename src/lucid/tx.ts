@@ -17,6 +17,8 @@ import {
   UnixTime,
   UTxO,
   WithdrawalValidator,
+  Unit,
+  NFTMetadataDetails,
 } from '../types';
 import { utxoToCore, assetsToValue, fromHex } from '../utils';
 import { Lucid } from './lucid';
@@ -137,7 +139,7 @@ export class Tx {
     assets: Assets
   ) {
     if (outputData.asHash && outputData.inline)
-      throw new Error('Not allowed to set asHash and inline at the same time');
+      throw new Error('Not allowed to set asHash and inline at the same time.');
 
     const output = C.TransactionOutput.new(
       C.Address.from_bech32(address),
@@ -188,6 +190,15 @@ export class Tx {
    * Pay to a plutus script address with datum or scriptRef
    *  */
   payToContract(address: Address, outputData: OutputData, assets: Assets) {
+    if (outputData.asHash && outputData.inline)
+      throw new Error('Not allowed to set asHash and inline at the same time.');
+
+    if (!(outputData.asHash || outputData.inline)) {
+      throw new Error(
+        'No datum set. Script output becomes unspendable without datum.'
+      );
+    }
+
     const output = C.TransactionOutput.new(
       C.Address.from_bech32(address),
       assetsToValue(assets)
@@ -245,7 +256,7 @@ export class Tx {
       addressDetails.address.type !== 'Reward' ||
       !addressDetails.stakeCredential
     )
-      throw new Error('Not a reward address provided');
+      throw new Error('Not a reward address provided.');
     const credential =
       addressDetails.stakeCredential.type === 'Key'
         ? C.StakeCredential.from_keyhash(
@@ -277,7 +288,7 @@ export class Tx {
       addressDetails.address.type !== 'Reward' ||
       !addressDetails.stakeCredential
     )
-      throw new Error('Not a reward address provided');
+      throw new Error('Not a reward address provided.');
     const credential =
       addressDetails.stakeCredential.type === 'Key'
         ? C.StakeCredential.from_keyhash(
@@ -303,7 +314,7 @@ export class Tx {
       addressDetails.address.type !== 'Reward' ||
       !addressDetails.stakeCredential
     )
-      throw new Error('Not a reward address provided');
+      throw new Error('Not a reward address provided.');
     const credential =
       addressDetails.stakeCredential.type === 'Key'
         ? C.StakeCredential.from_keyhash(
@@ -406,21 +417,21 @@ export class Tx {
     return this;
   }
 
-  // /**
-  //  * Converts strings to bytes if prefixed with **'0x'**
-  //  *
-  //  * Policy id and asset name are converted to bytes
-  //  */
-  // attachNFTMetadata(unit: Unit, metadata: NFTMetadataDetails) {
-  //   const policyId = unit.slice(0, 56);
-  //   const assetName = unit.slice(56);
-  //   this.nftMetadata['0x' + policyId] = {
-  //     ...(this.nftMetadata['0x' + policyId] || {}),
-  //     ['0x' + assetName]: metadata,
-  //   };
+  /**
+   * Converts strings to bytes if prefixed with **'0x'**
+   *
+   * Policy id and asset name are converted to bytes
+   */
+  attachNFTMetadata(unit: Unit, metadata: NFTMetadataDetails) {
+    const policyId = unit.slice(0, 56);
+    const assetName = unit.slice(56);
+    this.nftMetadata['0x' + policyId] = {
+      ...(this.nftMetadata['0x' + policyId] || {}),
+      ['0x' + assetName]: metadata,
+    };
 
-  //   return this;
-  // }
+    return this;
+  }
 
   attachSpendingValidator(spendingValidator: SpendingValidator) {
     attachScript(this, spendingValidator);
@@ -456,7 +467,7 @@ export class Tx {
     datum?: { asHash?: Datum; inline?: Datum };
   }) {
     if (option?.datum?.asHash && option?.datum?.inline)
-      throw new Error('Not allowed to set asHash and inline at the same time');
+      throw new Error('Not allowed to set asHash and inline at the same time.');
 
     for (const task of this.tasks) {
       await task();
@@ -526,5 +537,5 @@ const attachScript = (
       C.PlutusScript.from_bytes(fromHex(script.script))
     );
   }
-  throw new Error('No variant matched');
+  throw new Error('No variant matched.');
 };
