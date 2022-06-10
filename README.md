@@ -103,8 +103,8 @@ This library is built on top of a customized version of the serialization-lib (c
 
 Documentation for cardano-multiplatform-lib: https://cardano-lucid.readthedocs.io/en/latest
 
-Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/plutus
+Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
-Branch: Plutus
+Branch: vasil
 
-Commit hash: 97e57ec28a0a1a48a5c1f71af9ed97b058091b74
+Commit hash: b0d8d76500746c7dcf99708edb8aa174af76d138
