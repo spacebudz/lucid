@@ -572,4 +572,4 @@ const slotToUnixTime = (slot: Slot): UnixTime =>
   1596491091000 + (slot * 1000 - 4924800000);
 
 const slotToUnixTimeTestnet = (slot: Slot): UnixTime =>
-  1596491091000 + slot * 1000 + 29937600000;
+  1564431616000 + slot * 1000 + 29937600000;
