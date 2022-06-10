@@ -420,7 +420,9 @@ export class Tx {
   /**
    * Converts strings to bytes if prefixed with **'0x'**
    *
-   * Policy id and asset name are converted to bytes
+   * Uses version 2 of CIP-0025
+   *
+   * You don't need to add policy id and asset name to the metadata, only add the details
    */
   attachNFTMetadata(unit: Unit, metadata: NFTMetadataDetails) {
     const policyId = unit.slice(0, 56);
