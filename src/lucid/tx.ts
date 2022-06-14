@@ -34,8 +34,7 @@ export class Tx {
     this.lucid = lucid;
     this.txBuilder = C.TransactionBuilder.new(this.lucid.txBuilderConfig);
     this.tasks = [];
-    this.nftMetadata = {};
-    this.nftMetadata.version = 2;
+    this.nftMetadata = { version: 2 as any };
   }
 
   /**
