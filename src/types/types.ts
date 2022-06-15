@@ -183,7 +183,7 @@ export type PlutusData =
   | string
   | bigint
   | PlutusData[]
-  | Record<string, PlutusData>
+  | Map<PlutusData, PlutusData>
   | Construct; // We emulate the constr like this
 
 /** JSON object */
