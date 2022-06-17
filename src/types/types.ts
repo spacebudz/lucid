@@ -177,13 +177,11 @@ export type WalletProvider = 'nami' | 'eternl' | 'flint';
  *
  * Note: We need to wrap it in an object to prevent circular references
  */
-// TODO: Fix circular reference
-// @ts-ignore
 export type PlutusData =
   | string
   | bigint
   | PlutusData[]
-  | Record<string, PlutusData>
+  | Map<PlutusData, PlutusData>
   | Construct; // We emulate the constr like this
 
 /** JSON object */
