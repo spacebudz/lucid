@@ -31,10 +31,10 @@ const handleAdaTransfer = async () => {
     window.alert(`Transfer succesfully submitted! TxHash: ${txHash}`);
   } catch (err) {
     console.error('error sending tranfer', err);
-    window.alert(`Unexpected error sending transfer: ${err.message}`);
+    window.alert(`Unexpected error sending transfer: ${(err as any).message}`);
   }
 };
 
 // Register Events handlers
 const btn = document.getElementById('snd-btn');
-btn.addEventListener('click', handleAdaTransfer);
+btn!.addEventListener('click', handleAdaTransfer);
