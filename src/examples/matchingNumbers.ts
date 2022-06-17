@@ -38,8 +38,8 @@ const matchingNumberAddress = lucid.utils.validatorToAddress(
   matchingNumberScript
 );
 
-const Datum = (number: number) => Data.to(number);
-const Redeemer = (number: number) => Data.to(number);
+const Datum = (number: number) => Data.to(BigInt(number));
+const Redeemer = (number: number) => Data.to(BigInt(number));
 
 export const lockUtxo = async (
   number: number,
