@@ -924,6 +924,8 @@ export function pointeraddress_payment_cred(a: number): number;
 export function pointeraddress_stake_pointer(a: number): number;
 export function pointeraddress_to_address(a: number): number;
 export function pointeraddress_from_address(a: number): number;
+export function encrypt_with_password(a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number): void;
+export function decrypt_with_password(a: number, b: number, c: number, d: number, e: number): void;
 export function __wbg_redeemerwitnesskey_free(a: number): void;
 export function redeemerwitnesskey_tag(a: number): number;
 export function redeemerwitnesskey_index(a: number): number;
@@ -958,8 +960,6 @@ export function transactionwitnesssetbuilder_add_required_wits(a: number, b: num
 export function transactionwitnesssetbuilder_new(): number;
 export function transactionwitnesssetbuilder_add_existing(a: number, b: number): void;
 export function transactionwitnesssetbuilder_build(a: number): number;
-export function encrypt_with_password(a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number): void;
-export function decrypt_with_password(a: number, b: number, c: number, d: number, e: number): void;
 export function __wbg_blockfrost_free(a: number): void;
 export function blockfrost_new(a: number, b: number, c: number, d: number): number;
 export function blockfrost_url(a: number, b: number): void;
