@@ -551,7 +551,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_1358(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1359(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__h7a735230209646c7(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -1739,6 +1739,15 @@ class BigNum {
     checked_div(other) {
         _assertClass(other, BigNum);
         var ret = wasm.bignum_checked_div(this.ptr, other.ptr);
+        return BigNum.__wrap(ret);
+    }
+    /**
+    * @param {BigNum} other
+    * @returns {BigNum}
+    */
+    checked_div_ceil(other) {
+        _assertClass(other, BigNum);
+        var ret = wasm.bignum_checked_div_ceil(this.ptr, other.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -17034,7 +17043,7 @@ module.exports.__wbg_new_c143a4f563f78c4e = function(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_1358(a, state0.b, arg0, arg1);
+                return __wbg_adapter_1359(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -17159,8 +17168,8 @@ module.exports.__wbindgen_memory = function() {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8425 = function(arg0, arg1, arg2) {
-    var ret = makeMutClosure(arg0, arg1, 456, __wbg_adapter_32);
+module.exports.__wbindgen_closure_wrapper8417 = function(arg0, arg1, arg2) {
+    var ret = makeMutClosure(arg0, arg1, 453, __wbg_adapter_32);
     return addHeapObject(ret);
 };
 

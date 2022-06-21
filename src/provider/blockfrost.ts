@@ -7,6 +7,7 @@ import {
   DatumHash,
   ProtocolParameters,
   ProviderSchema,
+  ScriptType,
   Slot,
   TxHash,
   Unit,
@@ -25,6 +26,9 @@ export class Blockfrost implements ProviderSchema {
     const result = await fetch(`${this.url}/epochs/latest/parameters`, {
       headers: { project_id: this.projectId },
     }).then(res => res.json());
+
+    // TODO: bug in blockfrost
+    result.coins_per_utxo_word = 34480;
 
     return {
       minFeeA: parseInt(result.min_fee_a),
@@ -68,21 +72,48 @@ export class Blockfrost implements ProviderSchema {
       if (pageResult.length <= 0) break;
       page++;
     }
-    return result.map(r => ({
-      txHash: r.tx_hash,
-      outputIndex: r.output_index,
-      assets: (() => {
-        const a: Assets = {};
-        r.amount.forEach((am: any) => {
-          a[am.unit] = BigInt(am.quantity);
-        });
-        return a;
-      })(),
-      address,
-      datumHash: r.data_hash,
-      datum: r.datum, // TODO: Check if correct with blockfrost
-      scriptRef: r.scriptRef, // TODO: Check if correct with blockfrost
-    }));
+
+    return Promise.all(
+      result.map(async r => ({
+        txHash: r.tx_hash,
+        outputIndex: r.output_index,
+        assets: (() => {
+          const a: Assets = {};
+          r.amount.forEach((am: any) => {
+            a[am.unit] = BigInt(am.quantity);
+          });
+          return a;
+        })(),
+        address,
+        datumHash: !r.inline_datum ? r.data_hash : null,
+        datum: r.inline_datum,
+        scriptRef:
+          r.reference_script_hash &&
+          (await (async () => {
+            // TODO: support native scripts
+            const {
+              type,
+            }: {
+              type: ScriptType;
+            } = await fetch(`${this.url}/scripts/${r.reference_script_hash}`, {
+              headers: { project_id: this.projectId },
+            }).then(res => res.json());
+            const {
+              cbor,
+            } = await fetch(
+              `${this.url}/scripts/${r.reference_script_hash}/cbor`,
+              { headers: { project_id: this.projectId } }
+            ).then(res => res.json());
+            const script = C.PlutusScript.from_bytes(fromHex(cbor));
+            const scriptRef = C.ScriptRef.new(
+              type === 'PlutusV1'
+                ? C.Script.new_plutus_v1(script)
+                : C.Script.new_plutus_v2(script)
+            );
+            return toHex(scriptRef.to_bytes());
+          })()),
+      }))
+    );
   }
 
   async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
@@ -104,21 +135,47 @@ export class Blockfrost implements ProviderSchema {
       if (pageResult.length <= 0) break;
       page++;
     }
-    return result.map(r => ({
-      txHash: r.tx_hash,
-      outputIndex: r.output_index,
-      assets: (() => {
-        const a: Assets = {};
-        r.amount.forEach((am: any) => {
-          a[am.unit] = BigInt(am.quantity);
-        });
-        return a;
-      })(),
-      address,
-      datumHash: r.data_hash,
-      datum: r.datum, // TODO: Check if correct with blockfrost
-      scriptRef: r.scriptRef, // TODO: Check if correct with blockfrost
-    }));
+    return Promise.all(
+      result.map(async r => ({
+        txHash: r.tx_hash,
+        outputIndex: r.output_index,
+        assets: (() => {
+          const a: Assets = {};
+          r.amount.forEach((am: any) => {
+            a[am.unit] = BigInt(am.quantity);
+          });
+          return a;
+        })(),
+        address,
+        datumHash: !r.inline_datum ? r.data_hash : null,
+        datum: r.inline_datum,
+        scriptRef:
+          r.reference_script_hash &&
+          (await (async () => {
+            // TODO: support native scripts
+            const {
+              type,
+            }: {
+              type: ScriptType;
+            } = await fetch(`${this.url}/scripts/${r.reference_script_hash}`, {
+              headers: { project_id: this.projectId },
+            }).then(res => res.json());
+            const {
+              cbor,
+            } = await fetch(
+              `${this.url}/scripts/${r.reference_script_hash}/cbor`,
+              { headers: { project_id: this.projectId } }
+            ).then(res => res.json());
+            const script = C.PlutusScript.from_bytes(fromHex(cbor));
+            const scriptRef = C.ScriptRef.new(
+              type === 'PlutusV1'
+                ? C.Script.new_plutus_v1(script)
+                : C.Script.new_plutus_v2(script)
+            );
+            return toHex(scriptRef.to_bytes());
+          })()),
+      }))
+    );
   }
 
   async getDatum(datumHash: DatumHash): Promise<Datum> {
