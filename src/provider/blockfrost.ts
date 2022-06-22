@@ -90,7 +90,6 @@ export class Blockfrost implements ProviderSchema {
         scriptRef:
           r.reference_script_hash &&
           (await (async () => {
-            // TODO: support native scripts
             const {
               type,
             }: {
@@ -98,6 +97,9 @@ export class Blockfrost implements ProviderSchema {
             } = await fetch(`${this.url}/scripts/${r.reference_script_hash}`, {
               headers: { project_id: this.projectId },
             }).then(res => res.json());
+            // TODO: support native scripts
+            if (type === 'Native')
+              throw new Error('Native script ref not implemented!');
             const {
               cbor,
             } = await fetch(
@@ -152,7 +154,6 @@ export class Blockfrost implements ProviderSchema {
         scriptRef:
           r.reference_script_hash &&
           (await (async () => {
-            // TODO: support native scripts
             const {
               type,
             }: {
@@ -160,6 +161,9 @@ export class Blockfrost implements ProviderSchema {
             } = await fetch(`${this.url}/scripts/${r.reference_script_hash}`, {
               headers: { project_id: this.projectId },
             }).then(res => res.json());
+            // TODO: support native scripts
+            if (type === 'Native')
+              throw new Error('Native script ref not implemented!');
             const {
               cbor,
             } = await fetch(

@@ -75,8 +75,9 @@ export class Tx {
             C.ScriptWitness.new_plutus_witness(
               C.PlutusWitness.new(
                 C.PlutusData.from_bytes(fromHex(redeemer!)),
-                (utxo.datum as undefined) &&
-                  C.PlutusData.from_bytes(fromHex(utxo.datum!))
+                utxo.datumHash && utxo.datum
+                  ? C.PlutusData.from_bytes(fromHex(utxo.datum!))
+                  : undefined
               )
             )
         );
@@ -109,10 +110,11 @@ export class Tx {
     this.txBuilder.add_mint(
       scriptHash,
       mintAssets,
-      (redeemer as undefined) &&
-        C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(C.PlutusData.from_bytes(fromHex(redeemer!)))
-        )
+      redeemer
+        ? C.ScriptWitness.new_plutus_witness(
+            C.PlutusWitness.new(C.PlutusData.from_bytes(fromHex(redeemer!)))
+          )
+        : undefined
     );
     return this;
   }
@@ -134,9 +136,13 @@ export class Tx {
    *  */
   payToAddressWithData(
     address: Address,
-    outputData: OutputData,
+    outputData: Datum | OutputData,
     assets: Assets
   ) {
+    if (typeof outputData === 'string') {
+      outputData = { asHash: outputData };
+    }
+
     if (outputData.asHash && outputData.inline)
       throw new Error('Not allowed to set asHash and inline at the same time.');
 
@@ -188,7 +194,15 @@ export class Tx {
   /**
    * Pay to a plutus script address with datum or scriptRef
    *  */
-  payToContract(address: Address, outputData: OutputData, assets: Assets) {
+  payToContract(
+    address: Address,
+    outputData: Datum | OutputData,
+    assets: Assets
+  ) {
+    if (typeof outputData === 'string') {
+      outputData = { asHash: outputData };
+    }
+
     if (outputData.asHash && outputData.inline)
       throw new Error('Not allowed to set asHash and inline at the same time.');
 
@@ -273,10 +287,11 @@ export class Tx {
       C.Certificate.new_stake_delegation(
         C.StakeDelegation.new(credential, C.Ed25519KeyHash.from_bech32(poolId))
       ),
-      (redeemer as undefined) &&
-        C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(C.PlutusData.from_bytes(fromHex(redeemer!)))
-        )
+      redeemer
+        ? C.ScriptWitness.new_plutus_witness(
+            C.PlutusWitness.new(C.PlutusData.from_bytes(fromHex(redeemer!)))
+          )
+        : undefined
     );
     return this;
   }
@@ -331,10 +346,11 @@ export class Tx {
       C.Certificate.new_stake_deregistration(
         C.StakeDeregistration.new(credential)
       ),
-      (redeemer as undefined) &&
-        C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(C.PlutusData.from_bytes(fromHex(redeemer!)))
-        )
+      redeemer
+        ? C.ScriptWitness.new_plutus_witness(
+            C.PlutusWitness.new(C.PlutusData.from_bytes(fromHex(redeemer!)))
+          )
+        : undefined
     );
     return this;
   }
@@ -347,10 +363,11 @@ export class Tx {
     this.txBuilder.add_withdrawal(
       C.RewardAddress.from_address(C.Address.from_bech32(rewardAddress))!,
       C.BigNum.from_str(amount.toString()),
-      (redeemer as undefined) &&
-        C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(C.PlutusData.from_bytes(fromHex(redeemer!)))
-        )
+      redeemer
+        ? C.ScriptWitness.new_plutus_witness(
+            C.PlutusWitness.new(C.PlutusData.from_bytes(fromHex(redeemer!)))
+          )
+        : undefined
     );
     return this;
   }
