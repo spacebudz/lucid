@@ -47,11 +47,7 @@ export const lockUtxo = async (
 ): Promise<TxHash> => {
   const tx = await lucid
     .newTx()
-    .payToContract(
-      matchingNumberAddress,
-      { inline: Datum(number) },
-      { lovelace }
-    )
+    .payToContract(matchingNumberAddress, Datum(number), { lovelace })
     .complete();
 
   const signedTx = await tx.sign().complete();

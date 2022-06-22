@@ -191,12 +191,12 @@ declare export function get_deposit(
 
 /**
  * @param {TransactionOutput} output
- * @param {BigNum} coins_per_utxo_word
+ * @param {BigNum} coins_per_utxo_byte
  * @returns {BigNum}
  */
 declare export function min_ada_required(
   output: TransactionOutput,
-  coins_per_utxo_word: BigNum
+  coins_per_utxo_byte: BigNum
 ): BigNum;
 
 /**

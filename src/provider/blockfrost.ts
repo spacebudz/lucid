@@ -27,9 +27,6 @@ export class Blockfrost implements ProviderSchema {
       headers: { project_id: this.projectId },
     }).then(res => res.json());
 
-    // TODO: bug in blockfrost
-    result.coins_per_utxo_word = 34480;
-
     return {
       minFeeA: parseInt(result.min_fee_a),
       minFeeB: parseInt(result.min_fee_b),

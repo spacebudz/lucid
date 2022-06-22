@@ -512,13 +512,13 @@ export function get_deposit(txbody, pool_deposit, key_deposit) {
 
 /**
 * @param {TransactionOutput} output
-* @param {BigNum} coins_per_utxo_word
+* @param {BigNum} coins_per_utxo_byte
 * @returns {BigNum}
 */
-export function min_ada_required(output, coins_per_utxo_word) {
+export function min_ada_required(output, coins_per_utxo_byte) {
     _assertClass(output, TransactionOutput);
-    _assertClass(coins_per_utxo_word, BigNum);
-    var ret = wasm.min_ada_required(output.ptr, coins_per_utxo_word.ptr);
+    _assertClass(coins_per_utxo_byte, BigNum);
+    var ret = wasm.min_ada_required(output.ptr, coins_per_utxo_byte.ptr);
     return BigNum.__wrap(ret);
 }
 

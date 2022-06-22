@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "buffer": "^6.0.3",
-    "lucid-cardano": "^0.3.3"
+    "lucid-cardano": "^0.4.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

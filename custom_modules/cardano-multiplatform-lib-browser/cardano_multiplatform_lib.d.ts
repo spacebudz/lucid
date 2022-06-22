@@ -113,10 +113,10 @@ export function get_implicit_input(txbody: TransactionBody, pool_deposit: BigNum
 export function get_deposit(txbody: TransactionBody, pool_deposit: BigNum, key_deposit: BigNum): BigNum;
 /**
 * @param {TransactionOutput} output
-* @param {BigNum} coins_per_utxo_word
+* @param {BigNum} coins_per_utxo_byte
 * @returns {BigNum}
 */
-export function min_ada_required(output: TransactionOutput, coins_per_utxo_word: BigNum): BigNum;
+export function min_ada_required(output: TransactionOutput, coins_per_utxo_byte: BigNum): BigNum;
 /**
 * Receives a script JSON string
 * and returns a NativeScript.
