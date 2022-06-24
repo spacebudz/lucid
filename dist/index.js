@@ -900,14 +900,20 @@ var importDeno = /*#__PURE__*/function () {
 
           case 2:
             pkg = _context2.sent;
-            _context2.next = 5;
-            return pkg["default"](window.Deno.readFile( // Deno.readFile reads from the root file
-            './custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm'));
-
-          case 5:
-            return _context2.abrupt("return", pkg);
+            _context2.t0 = pkg;
+            _context2.next = 6;
+            return fetch( // Deno.readFile reads from the root file
+            '../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm');
 
           case 6:
+            _context2.t1 = _context2.sent;
+            _context2.next = 9;
+            return _context2.t0["default"].call(_context2.t0, _context2.t1);
+
+          case 9:
+            return _context2.abrupt("return", pkg);
+
+          case 10:
           case "end":
             return _context2.stop();
         }
