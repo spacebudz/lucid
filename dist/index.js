@@ -888,7 +888,7 @@ var importNodeOrSSR = /*#__PURE__*/function () {
 
 var importDeno = /*#__PURE__*/function () {
   var _ref2 = /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/runtime_1.mark(function _callee2() {
-    var pkg;
+    var pkg, href;
     return runtime_1.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
@@ -900,20 +900,20 @@ var importDeno = /*#__PURE__*/function () {
 
           case 2:
             pkg = _context2.sent;
+            href = new URL('.', import.meta.url).href;
             _context2.t0 = pkg;
-            _context2.next = 6;
-            return fetch( // Deno.readFile reads from the root dir
-            '/custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm');
+            _context2.next = 7;
+            return fetch(href + '../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm');
 
-          case 6:
+          case 7:
             _context2.t1 = _context2.sent;
-            _context2.next = 9;
+            _context2.next = 10;
             return _context2.t0["default"].call(_context2.t0, _context2.t1);
 
-          case 9:
+          case 10:
             return _context2.abrupt("return", pkg);
 
-          case 10:
+          case 11:
           case "end":
             return _context2.stop();
         }

@@ -20,10 +20,10 @@ const importDeno = async () => {
     /* webpackIgnore: true */
     '../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js'
   );
+  const href = new URL('.', import.meta.url).href;
   await pkg.default(
-    await (window as any).Deno.readFile(
-      // Deno.readFile reads from the root dir
-      '/custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm'
+    await fetch(
+      href + '../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm'
     )
   );
   return pkg;
