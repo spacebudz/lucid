@@ -902,7 +902,7 @@ var importDeno = /*#__PURE__*/function () {
             pkg = _context2.sent;
             _context2.next = 5;
             return pkg["default"](window.Deno.readFile( // Deno.readFile reads from the root file
-            './lucid-cardano/custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm'));
+            './custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm'));
 
           case 5:
             return _context2.abrupt("return", pkg);

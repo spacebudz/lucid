@@ -21,9 +21,9 @@ const importDeno = async () => {
     '../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js'
   );
   await pkg.default(
-    (window as any).Deno.readFile(
+    await fetch(
       // Deno.readFile reads from the root file
-      './custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm'
+      '../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm'
     )
   );
   return pkg;
