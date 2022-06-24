@@ -39,7 +39,7 @@ export class Lucid {
       const protocolParameters = await provider.getProtocolParameters();
       lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
         .coins_per_utxo_word(
-          C.BigNum.from_str(protocolParameters.coinsPerUtxoWord.toString())
+          C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString())
         )
         .fee_algo(
           C.LinearFee.new(

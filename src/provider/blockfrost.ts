@@ -36,7 +36,7 @@ export class Blockfrost implements ProviderSchema {
       poolDeposit: BigInt(result.pool_deposit),
       priceMem: parseFloat(result.price_mem),
       priceStep: parseFloat(result.price_step),
-      coinsPerUtxoWord: BigInt(result.coins_per_utxo_word),
+      coinsPerUtxoByte: BigInt(result.coins_per_utxo_size),
       collateralPercentage: parseInt(result.collateral_percent),
       maxCollateralInputs: parseInt(result.max_collateral_inputs),
     };

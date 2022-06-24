@@ -13,7 +13,7 @@ export type ProtocolParameters = {
   poolDeposit: BigInt;
   priceMem: number;
   priceStep: number;
-  coinsPerUtxoWord: BigInt;
+  coinsPerUtxoByte: BigInt;
   collateralPercentage: number;
   maxCollateralInputs: number;
 };
