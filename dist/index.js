@@ -902,8 +902,8 @@ var importDeno = /*#__PURE__*/function () {
             pkg = _context2.sent;
             _context2.t0 = pkg;
             _context2.next = 6;
-            return fetch( // Deno.readFile reads from the root file
-            '../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm');
+            return fetch( // Deno.readFile reads from the root dir
+            '/custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm');
 
           case 6:
             _context2.t1 = _context2.sent;
