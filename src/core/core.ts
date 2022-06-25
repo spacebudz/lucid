@@ -20,16 +20,15 @@ const importDeno = async () => {
     /* webpackIgnore: true */
     '../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js'
   );
-  const href = new URL('.', import.meta.url).href;
-  await pkg.default(
-    await fetch(
-      href + '../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm'
-    )
+  const wasm = new URL(
+    '../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm',
+    import.meta.url
   );
+  await pkg.default(await fetch(wasm as any));
   return pkg;
 };
 
-export const C = (typeof window !== 'undefined'
+export const C: typeof Core = (typeof window !== 'undefined'
   ? typeof (window as any).Deno !== 'undefined'
     ? await importDeno()
     : await import(

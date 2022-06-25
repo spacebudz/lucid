@@ -1,1 +1,0 @@
-export declare const costModels: () => import("../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib").Costmdls | import("../../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib").Costmdls;
