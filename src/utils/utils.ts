@@ -14,7 +14,7 @@ import {
   UTxO,
   Validator,
 } from '../types';
-import { Lucid } from '..';
+import { Lucid } from '../lucid';
 
 export class Utils {
   private lucid: Lucid;

@@ -1,4 +1,4 @@
-import { C } from '..';
+import { C } from '../core';
 
 export const costModels = () => {
   const costmdls = C.Costmdls.new();
