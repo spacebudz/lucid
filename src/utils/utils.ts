@@ -5,8 +5,12 @@ import {
   AddressDetails,
   Assets,
   Credential,
+  Datum,
+  DatumHash,
   KeyHash,
+  MintingPolicy,
   Network,
+  PolicyId,
   PrivateKey,
   ScriptHash,
   Slot,
@@ -67,6 +71,13 @@ export class Utils {
         .to_hex();
     }
     throw new Error('No variant matched');
+  }
+
+  mintingPolicyToId: (mp: MintingPolicy) => PolicyId = this
+    .validatorToScriptHash;
+
+  datumToHash(data: Datum): DatumHash {
+    return C.hash_plutus_data(C.PlutusData.from_bytes(fromHex(data))).to_hex();
   }
 
   scriptHashToCredential(scriptHash: ScriptHash): Credential {
