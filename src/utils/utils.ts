@@ -508,7 +508,7 @@ export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
   };
 };
 
-const networkToId = (network: Network): number => {
+export const networkToId = (network: Network): number => {
   if (network === 'Testnet') return 0;
   else if (network === 'Mainnet') return 1;
   throw new Error('Network not found');
