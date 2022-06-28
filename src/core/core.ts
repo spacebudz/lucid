@@ -1,37 +1,46 @@
 /* eslint-disable */
-import type Core from "../../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.js";
+import type * as Core from "../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js";
 export { Core };
 /* eslint-enable */
 
-/** Check if environment is Node.js or SSR like Gatsby or Next.js */
-const importNodeOrSSR = async () => {
+if (typeof window === 'undefined') {
+  const fetch = await import(/* webpackIgnore: true */ 'node-fetch');
+  // @ts-ignore
+  global.fetch = fetch.default;
+  // @ts-ignore
+  global.Headers = fetch.Headers;
+  // @ts-ignore
+  global.Request = fetch.Request;
+  // @ts-ignore
+  global.Response = fetch.Response;
+}
+
+const importForEnvironment = async (): Promise<typeof Core | null> => {
   try {
-    return await import(
-      /* webpackIgnore: true */
-      '../../custom_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.js'
+    if (typeof window === 'undefined') {
+      return (await import(
+        /* webpackIgnore: true */
+        '../../custom_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.js'
+      )) as any;
+    }
+
+    const pkg = await import(
+      '../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js'
     );
-  } catch (e) {
+
+    await pkg.default(
+      await fetch(
+        new URL(
+          '../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm',
+          import.meta.url
+        ) as any
+      )
+    );
+    return pkg;
+  } catch (_e) {
+    // This only ever happens during SSR rendering
     return null;
   }
 };
 
-const importDeno = async () => {
-  const pkg = await import(
-    /* webpackIgnore: true */
-    '../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js'
-  );
-  const wasm = new URL(
-    '../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm',
-    import.meta.url
-  );
-  await pkg.default(await fetch(wasm as any));
-  return pkg;
-};
-
-export const C: typeof Core = (typeof window !== 'undefined'
-  ? typeof (window as any).Deno !== 'undefined'
-    ? await importDeno()
-    : await import(
-        '../../custom_modules/cardano-multiplatform-lib-browser/cardano_multiplatform_lib.js'
-      )
-  : await importNodeOrSSR())!;
+export const C: typeof Core = (await importForEnvironment())!;

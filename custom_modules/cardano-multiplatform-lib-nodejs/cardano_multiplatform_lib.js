@@ -13983,12 +13983,12 @@ class TransactionBuilderConfigBuilder {
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**
-    * @param {BigNum} coins_per_utxo_word
+    * @param {BigNum} coins_per_utxo_byte
     * @returns {TransactionBuilderConfigBuilder}
     */
-    coins_per_utxo_word(coins_per_utxo_word) {
-        _assertClass(coins_per_utxo_word, BigNum);
-        var ret = wasm.transactionbuilderconfigbuilder_coins_per_utxo_word(this.ptr, coins_per_utxo_word.ptr);
+    coins_per_utxo_byte(coins_per_utxo_byte) {
+        _assertClass(coins_per_utxo_byte, BigNum);
+        var ret = wasm.transactionbuilderconfigbuilder_coins_per_utxo_byte(this.ptr, coins_per_utxo_byte.ptr);
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**

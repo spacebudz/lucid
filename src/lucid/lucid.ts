@@ -38,7 +38,7 @@ export class Lucid {
       lucid.provider = provider;
       const protocolParameters = await provider.getProtocolParameters();
       lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
-        .coins_per_utxo_word(
+        .coins_per_utxo_byte(
           C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString())
         )
         .fee_algo(
@@ -298,16 +298,4 @@ export class Lucid {
     };
     return this;
   }
-}
-
-if (typeof window === 'undefined') {
-  const fetch = await import(/* webpackIgnore: true */ 'node-fetch');
-  // @ts-ignore
-  global.fetch = fetch.default;
-  // @ts-ignore
-  global.Headers = fetch.Headers;
-  // @ts-ignore
-  global.Request = fetch.Request;
-  // @ts-ignore
-  global.Response = fetch.Response;
 }

@@ -5702,10 +5702,10 @@ export class TransactionBuilderConfigBuilder {
 */
   fee_algo(fee_algo: LinearFee): TransactionBuilderConfigBuilder;
 /**
-* @param {BigNum} coins_per_utxo_word
+* @param {BigNum} coins_per_utxo_byte
 * @returns {TransactionBuilderConfigBuilder}
 */
-  coins_per_utxo_word(coins_per_utxo_word: BigNum): TransactionBuilderConfigBuilder;
+  coins_per_utxo_byte(coins_per_utxo_byte: BigNum): TransactionBuilderConfigBuilder;
 /**
 * @param {BigNum} pool_deposit
 * @returns {TransactionBuilderConfigBuilder}

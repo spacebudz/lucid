@@ -100,7 +100,7 @@ describe('Datum', () => {
 describe('PlutusData', () => {
   test('Construct plutus data', () => {
     const data = Data.to(
-      new Construct(1, [BigInt(1), 'abc', 'def', new Construct(0, [])])
+      new Construct(1, [BigInt(1), 'abcd', 'deff', new Construct(0, [])])
     );
 
     expect(data).toBe('d87a9f0141ab41ded87980ff');
