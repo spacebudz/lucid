@@ -1,43 +1,45 @@
-/* eslint-disable */
-import type * as Core from "../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js";
+import type * as Core from "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.d.ts";
 export { Core };
-/* eslint-enable */
 
-if (typeof window === 'undefined') {
-  const fetch = await import(/* webpackIgnore: true */ 'node-fetch');
-  // @ts-ignore
+// dnt-shim-ignore
+const isNode = typeof window === "undefined";
+
+if (isNode) {
+  const fetch = await import(/* webpackIgnore: true */ "node-fetch" as string);
+  // @ts-ignore : global
   global.fetch = fetch.default;
-  // @ts-ignore
+  // @ts-ignore : global
   global.Headers = fetch.Headers;
-  // @ts-ignore
+  // @ts-ignore : global
   global.Request = fetch.Request;
-  // @ts-ignore
+  // @ts-ignore : global
   global.Response = fetch.Response;
 }
 
 const importForEnvironment = async (): Promise<typeof Core | null> => {
   try {
-    if (typeof window === 'undefined') {
+    if (isNode) {
       return (await import(
         /* webpackIgnore: true */
-        '../../custom_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.js'
-      )) as any;
+        "./wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.js"
+      )) as typeof Core;
     }
 
     const pkg = await import(
-      '../../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js'
+      "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js"
     );
 
     await pkg.default(
       await fetch(
         new URL(
-          '../custom_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm',
+          "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
           import.meta.url
-        ) as any
+        )
       )
     );
-    return pkg;
+    return pkg as unknown as typeof Core;
   } catch (_e) {
+    console.log(_e);
     // This only ever happens during SSR rendering
     return null;
   }

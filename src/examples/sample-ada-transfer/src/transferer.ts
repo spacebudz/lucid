@@ -1,12 +1,12 @@
 //@ts-ignore
-import { Lucid, Blockfrost, Network, WalletProvider } from 'lucid-cardano';
+import { Blockfrost, Lucid, Network, WalletProvider } from "lucid-cardano";
 
-export const NetworkTestnet = 'Testnet' as Network;
-export const NetworkMainnet = 'Mainnet' as Network;
+export const NetworkTestnet = "Testnet" as Network;
+export const NetworkMainnet = "Mainnet" as Network;
 
 const blockfrostUrls: { [key: string]: string } = {
-  [NetworkTestnet]: 'https://cardano-testnet.blockfrost.io/api/v0',
-  [NetworkMainnet]: 'https://cardano.blockfrost.io/api/v0',
+  [NetworkTestnet]: "https://cardano-testnet.blockfrost.io/api/v0",
+  [NetworkMainnet]: "https://cardano.blockfrost.io/api/v0",
 };
 
 export class Transferer {
@@ -18,13 +18,13 @@ export class Transferer {
   constructor(
     network: Network,
     walletProvider: WalletProvider,
-    blockfrostKey: string
+    blockfrostKey: string,
   ) {
     if (!blockfrostKey) {
       console.error(
-        'Blockfrost API Key not provided. A valid key must be provided in source index'
+        "Blockfrost API Key not provided. A valid key must be provided in source index",
       );
-      throw new Error('Invalid API Key');
+      throw new Error("Invalid API Key");
     }
     this.walletProvider = walletProvider;
     this.network = network;
@@ -35,7 +35,7 @@ export class Transferer {
     if (!this.clientInstance) {
       const bfAPI = new Blockfrost(
         blockfrostUrls[this.network],
-        this.blockfrostKey
+        this.blockfrostKey,
       );
       const lucidClient = await Lucid.new(bfAPI, this.network);
       this.clientInstance = await lucidClient.selectWallet(this.walletProvider);
@@ -45,11 +45,11 @@ export class Transferer {
 
   async sendAda(addr: string, amt: number) {
     if (!addr) {
-      throw new Error('Invalid Addr. Cannot be empty');
+      throw new Error("Invalid Addr. Cannot be empty");
     }
 
     if (!amt) {
-      throw new Error('Invalid ADA Amount. Cannot be empty');
+      throw new Error("Invalid ADA Amount. Cannot be empty");
     }
     console.log(`Sending ADA to: ${addr}`);
     const client = await this.client();
@@ -62,20 +62,20 @@ export class Transferer {
     const signedTx = await tx.sign().complete();
     const txHash = await signedTx.submit();
 
-    console.log('txHash:', txHash);
+    console.log("txHash:", txHash);
     return txHash;
   }
 }
 
 export const networkName = (key: string): Network => {
   if (!key) {
-    throw new Error('Invalid network key');
+    throw new Error("Invalid network key");
   }
 
   switch (key.toLowerCase()) {
-    case 'testnet':
+    case "testnet":
       return NetworkTestnet;
-    case 'mainnet':
+    case "mainnet":
       return NetworkMainnet;
     default:
       throw new Error(`Network not supported: ${key}`);

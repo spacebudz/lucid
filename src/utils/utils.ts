@@ -1,4 +1,9 @@
-import { C, Core } from '../core';
+// deno-lint-ignore-file no-empty
+import {
+  decodeString,
+  encodeToString,
+} from "https://deno.land/std@0.100.0/encoding/hex.ts";
+import { C, Core } from "../core/mod.ts";
 import {
   Address,
   AddressDetails,
@@ -13,8 +18,8 @@ import {
   UnixTime,
   UTxO,
   Validator,
-} from '../types';
-import { Lucid } from '../lucid';
+} from "../types/mod.ts";
+import { Lucid } from "../lucid/mod.ts";
 
 export class Utils {
   private lucid: Lucid;
@@ -31,7 +36,7 @@ export class Utils {
       return C.BaseAddress.new(
         networkToId(this.lucid.network),
         C.StakeCredential.from_scripthash(C.ScriptHash.from_hex(validatorHash)),
-        stakeCredential.type === 'Key'
+        stakeCredential.type === "Key"
           ? C.StakeCredential.from_keyhash(
               C.Ed25519KeyHash.from_hex(stakeCredential.hash)
             )
@@ -40,44 +45,44 @@ export class Utils {
             )
       )
         .to_address()
-        .to_bech32();
+        .to_bech32(undefined);
     } else {
       return C.EnterpriseAddress.new(
         networkToId(this.lucid.network),
         C.StakeCredential.from_scripthash(C.ScriptHash.from_hex(validatorHash))
       )
         .to_address()
-        .to_bech32();
+        .to_bech32(undefined);
     }
   }
 
   validatorToScriptHash(validator: Validator): ScriptHash {
-    if (validator.type === 'Native') {
+    if (validator.type === "Native") {
       return C.NativeScript.from_bytes(fromHex(validator.script))
         .hash(C.ScriptHashNamespace.NativeScript)
         .to_hex();
-    } else if (validator.type === 'PlutusV1') {
+    } else if (validator.type === "PlutusV1") {
       return C.PlutusScript.from_bytes(fromHex(validator.script))
         .hash(C.ScriptHashNamespace.PlutusV1)
         .to_hex();
-    } else if (validator.type === 'PlutusV2') {
+    } else if (validator.type === "PlutusV2") {
       return C.PlutusScript.from_bytes(fromHex(validator.script))
         .hash(C.ScriptHashNamespace.PlutusV2)
         .to_hex();
     }
-    throw new Error('No variant matched');
+    throw new Error("No variant matched");
   }
 
   scriptHashToCredential(scriptHash: ScriptHash): Credential {
     return {
-      type: 'Script',
+      type: "Script",
       hash: scriptHash,
     };
   }
 
   keyHashToCredential(keyHash: KeyHash): Credential {
     return {
-      type: 'Key',
+      type: "Key",
       hash: keyHash,
     };
   }
@@ -87,20 +92,19 @@ export class Utils {
   }
 
   unixTimeToSlot(unixTime: UnixTime): Slot {
-    return this.lucid.network === 'Mainnet'
+    return this.lucid.network === "Mainnet"
       ? unixTimeToSlot(unixTime)
       : unixTimeToSlotTestnet(unixTime);
   }
 
   slotToUnixTime(slot: Slot): UnixTime {
-    return this.lucid.network === 'Mainnet'
+    return this.lucid.network === "Mainnet"
       ? slotToUnixTime(slot)
       : slotToUnixTimeTestnet(slot);
   }
 
   /** Address can be in bech32 or hex */
   getAddressDetails(address: string): AddressDetails {
-    /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
     // Base Address
     try {
       const parsedAddress = C.BaseAddress.from_address(
@@ -109,52 +113,38 @@ export class Utils {
       const paymentCredential: Credential =
         parsedAddress.payment_cred().kind() === 0
           ? {
-              type: 'Key',
+              type: "Key",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_keyhash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_keyhash()!.to_bytes()
               ),
             }
           : {
-              type: 'Script',
+              type: "Script",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_scripthash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_scripthash()!.to_bytes()
               ),
             };
       const stakeCredential: Credential =
         parsedAddress.stake_cred().kind() === 0
           ? {
-              type: 'Key',
-              hash: toHex(
-                parsedAddress
-                  .stake_cred()
-                  .to_keyhash()!
-                  .to_bytes()
-              ),
+              type: "Key",
+              hash: toHex(parsedAddress.stake_cred().to_keyhash()!.to_bytes()),
             }
           : {
-              type: 'Script',
+              type: "Script",
               hash: toHex(
-                parsedAddress
-                  .stake_cred()
-                  .to_scripthash()!
-                  .to_bytes()
+                parsedAddress.stake_cred().to_scripthash()!.to_bytes()
               ),
             };
       return {
         address: {
-          type: 'Base',
-          address: parsedAddress.to_address().to_bech32(),
+          type: "Base",
+          address: parsedAddress.to_address().to_bech32(undefined),
         },
         paymentCredential,
         stakeCredential,
       };
-    } catch (e) {}
+    } catch (_e) {}
     try {
       const parsedAddress = C.BaseAddress.from_address(
         C.Address.from_bech32(address)
@@ -162,52 +152,38 @@ export class Utils {
       const paymentCredential: Credential =
         parsedAddress.payment_cred().kind() === 0
           ? {
-              type: 'Key',
+              type: "Key",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_keyhash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_keyhash()!.to_bytes()
               ),
             }
           : {
-              type: 'Script',
+              type: "Script",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_scripthash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_scripthash()!.to_bytes()
               ),
             };
       const stakeCredential: Credential =
         parsedAddress.stake_cred().kind() === 0
           ? {
-              type: 'Key',
-              hash: toHex(
-                parsedAddress
-                  .stake_cred()
-                  .to_keyhash()!
-                  .to_bytes()
-              ),
+              type: "Key",
+              hash: toHex(parsedAddress.stake_cred().to_keyhash()!.to_bytes()),
             }
           : {
-              type: 'Script',
+              type: "Script",
               hash: toHex(
-                parsedAddress
-                  .stake_cred()
-                  .to_scripthash()!
-                  .to_bytes()
+                parsedAddress.stake_cred().to_scripthash()!.to_bytes()
               ),
             };
       return {
         address: {
-          type: 'Base',
-          address: parsedAddress.to_address().to_bech32(),
+          type: "Base",
+          address: parsedAddress.to_address().to_bech32(undefined),
         },
         paymentCredential,
         stakeCredential,
       };
-    } catch (e) {}
+    } catch (_e) {}
 
     // Enterprise Address
     try {
@@ -217,31 +193,25 @@ export class Utils {
       const paymentCredential: Credential =
         parsedAddress.payment_cred().kind() === 0
           ? {
-              type: 'Key',
+              type: "Key",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_keyhash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_keyhash()!.to_bytes()
               ),
             }
           : {
-              type: 'Script',
+              type: "Script",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_scripthash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_scripthash()!.to_bytes()
               ),
             };
       return {
         address: {
-          type: 'Enterprise',
-          address: parsedAddress.to_address().to_bech32(),
+          type: "Enterprise",
+          address: parsedAddress.to_address().to_bech32(undefined),
         },
         paymentCredential,
       };
-    } catch (e) {}
+    } catch (_e) {}
 
     try {
       const parsedAddress = C.EnterpriseAddress.from_address(
@@ -250,31 +220,25 @@ export class Utils {
       const paymentCredential: Credential =
         parsedAddress.payment_cred().kind() === 0
           ? {
-              type: 'Key',
+              type: "Key",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_keyhash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_keyhash()!.to_bytes()
               ),
             }
           : {
-              type: 'Script',
+              type: "Script",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_scripthash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_scripthash()!.to_bytes()
               ),
             };
       return {
         address: {
-          type: 'Enterprise',
-          address: parsedAddress.to_address().to_bech32(),
+          type: "Enterprise",
+          address: parsedAddress.to_address().to_bech32(undefined),
         },
         paymentCredential,
       };
-    } catch (e) {}
+    } catch (_e) {}
 
     // Pointer Address
     try {
@@ -284,31 +248,25 @@ export class Utils {
       const paymentCredential: Credential =
         parsedAddress.payment_cred().kind() === 0
           ? {
-              type: 'Key',
+              type: "Key",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_keyhash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_keyhash()!.to_bytes()
               ),
             }
           : {
-              type: 'Script',
+              type: "Script",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_scripthash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_scripthash()!.to_bytes()
               ),
             };
       return {
         address: {
-          type: 'Pointer',
-          address: parsedAddress.to_address().to_bech32(),
+          type: "Pointer",
+          address: parsedAddress.to_address().to_bech32(undefined),
         },
         paymentCredential,
       };
-    } catch (e) {}
+    } catch (_e) {}
 
     try {
       const parsedAddress = C.PointerAddress.from_address(
@@ -317,31 +275,25 @@ export class Utils {
       const paymentCredential: Credential =
         parsedAddress.payment_cred().kind() === 0
           ? {
-              type: 'Key',
+              type: "Key",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_keyhash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_keyhash()!.to_bytes()
               ),
             }
           : {
-              type: 'Script',
+              type: "Script",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_scripthash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_scripthash()!.to_bytes()
               ),
             };
       return {
         address: {
-          type: 'Pointer',
-          address: parsedAddress.to_address().to_bech32(),
+          type: "Pointer",
+          address: parsedAddress.to_address().to_bech32(undefined),
         },
         paymentCredential,
       };
-    } catch (e) {}
+    } catch (_e) {}
 
     // Reward Address
     try {
@@ -351,31 +303,25 @@ export class Utils {
       const stakeCredential: Credential =
         parsedAddress.payment_cred().kind() === 0
           ? {
-              type: 'Key',
+              type: "Key",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_keyhash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_keyhash()!.to_bytes()
               ),
             }
           : {
-              type: 'Script',
+              type: "Script",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_scripthash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_scripthash()!.to_bytes()
               ),
             };
       return {
         address: {
-          type: 'Reward',
-          address: parsedAddress.to_address().to_bech32(),
+          type: "Reward",
+          address: parsedAddress.to_address().to_bech32(undefined),
         },
         stakeCredential,
       };
-    } catch (e) {}
+    } catch (_e) {}
 
     try {
       const parsedAddress = C.RewardAddress.from_address(
@@ -384,38 +330,32 @@ export class Utils {
       const stakeCredential: Credential =
         parsedAddress.payment_cred().kind() === 0
           ? {
-              type: 'Key',
+              type: "Key",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_keyhash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_keyhash()!.to_bytes()
               ),
             }
           : {
-              type: 'Script',
+              type: "Script",
               hash: toHex(
-                parsedAddress
-                  .payment_cred()
-                  .to_scripthash()!
-                  .to_bytes()
+                parsedAddress.payment_cred().to_scripthash()!.to_bytes()
               ),
             };
       return {
         address: {
-          type: 'Reward',
-          address: parsedAddress.to_address().to_bech32(),
+          type: "Reward",
+          address: parsedAddress.to_address().to_bech32(undefined),
         },
         stakeCredential,
       };
-    } catch (e) {}
-    throw new Error('No address type matched for: ' + address);
+    } catch (_e) {}
+    throw new Error("No address type matched for: " + address);
   }
 }
 
 export const valueToAssets = (value: Core.Value): Assets => {
   const assets: Assets = {};
-  assets['lovelace'] = BigInt(value.coin().to_str());
+  assets["lovelace"] = BigInt(value.coin().to_str());
   const ma = value.multiasset();
   if (ma) {
     const multiAssets = ma.keys();
@@ -436,17 +376,19 @@ export const valueToAssets = (value: Core.Value): Assets => {
 
 export const assetsToValue = (assets: Assets) => {
   const multiAsset = C.MultiAsset.new();
-  const lovelace = assets['lovelace'];
+  const lovelace = assets["lovelace"];
   const units = Object.keys(assets);
   const policies = Array.from(
     new Set(
-      units.filter(unit => unit !== 'lovelace').map(unit => unit.slice(0, 56))
+      units
+        .filter((unit) => unit !== "lovelace")
+        .map((unit) => unit.slice(0, 56))
     )
   );
-  policies.forEach(policy => {
-    const policyUnits = units.filter(unit => unit.slice(0, 56) === policy);
+  policies.forEach((policy) => {
+    const policyUnits = units.filter((unit) => unit.slice(0, 56) === policy);
     const assetsValue = C.Assets.new();
-    policyUnits.forEach(unit => {
+    policyUnits.forEach((unit) => {
       assetsValue.insert(
         C.AssetName.new(fromHex(unit.slice(56))),
         C.BigNum.from_str(assets[unit].toString())
@@ -455,7 +397,7 @@ export const assetsToValue = (assets: Assets) => {
     multiAsset.insert(C.ScriptHash.from_bytes(fromHex(policy)), assetsValue);
   });
   const value = C.Value.new(
-    C.BigNum.from_str(lovelace ? lovelace.toString() : '0')
+    C.BigNum.from_str(lovelace ? lovelace.toString() : "0")
   );
   if (units.length > 1 || !lovelace) value.set_multiasset(multiAsset);
   return value;
@@ -465,7 +407,7 @@ export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
   const address: Core.Address = (() => {
     try {
       return C.Address.from_bech32(utxo.address);
-    } catch (e) {
+    } catch (_e) {
       return C.ByronAddress.from_base58(utxo.address).to_address();
     }
   })();
@@ -497,70 +439,31 @@ export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
 
 export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
   return {
-    txHash: toHex(
-      coreUtxo
-        .input()
-        .transaction_id()
-        .to_bytes()
-    ),
-    outputIndex: parseInt(
-      coreUtxo
-        .input()
-        .index()
-        .to_str()
-    ),
+    txHash: toHex(coreUtxo.input().transaction_id().to_bytes()),
+    outputIndex: parseInt(coreUtxo.input().index().to_str()),
     assets: valueToAssets(coreUtxo.output().amount()),
-    address: coreUtxo
-      .output()
-      .address()
-      .as_byron()
-      ? coreUtxo
-          .output()
-          .address()
-          .as_byron()
-          ?.to_base58()!
-      : coreUtxo
-          .output()
-          .address()
-          .to_bech32(),
-    datumHash: coreUtxo
-      .output()
-      ?.datum()
-      ?.as_data_hash()
-      ?.to_hex(),
+    address: coreUtxo.output().address().as_byron()
+      ? coreUtxo.output().address().as_byron()?.to_base58()!
+      : coreUtxo.output().address().to_bech32(undefined),
+    datumHash: coreUtxo.output()?.datum()?.as_data_hash()?.to_hex(),
     datum:
-      coreUtxo
-        .output()
-        ?.datum()
-        ?.as_data() &&
-      toHex(
-        coreUtxo
-          .output()
-          .datum()!
-          .as_data()!
-          .to_bytes()
-      ),
+      coreUtxo.output()?.datum()?.as_data() &&
+      toHex(coreUtxo.output().datum()!.as_data()!.to_bytes()),
     scriptRef:
       coreUtxo.output()?.script_ref() &&
-      toHex(
-        coreUtxo
-          .output()
-          .script_ref()!
-          .to_bytes()
-      ),
+      toHex(coreUtxo.output().script_ref()!.to_bytes()),
   };
 };
 
 const networkToId = (network: Network): number => {
-  if (network === 'Testnet') return 0;
-  else if (network === 'Mainnet') return 1;
-  throw new Error('Network not found');
+  if (network === "Testnet") return 0;
+  else if (network === "Mainnet") return 1;
+  throw new Error("Network not found");
 };
 
-export const fromHex = (hex: string) => Buffer.from(hex, 'hex');
+export const fromHex = (hex: string): Uint8Array => decodeString(hex);
 
-export const toHex = (bytes: Buffer | Uint8Array): string =>
-  Buffer.from(bytes).toString('hex');
+export const toHex = (bytes: Uint8Array): string => encodeToString(bytes);
 
 const unixTimeToSlot = (unixTime: UnixTime): Slot =>
   Math.floor((unixTime - 1596491091000 + 4924800000) / 1000);

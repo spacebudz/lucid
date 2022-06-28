@@ -3,7 +3,7 @@
   <h1 align="center">Lucid</h1>
   <p align="center">Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript and Node.js.</p>
 
-  <p align="center">
+<p align="center">
     <img src="https://img.shields.io/github/commit-activity/m/berry-pool/lucid?style=for-the-badge" />
      <a href="https://berry-pool.github.io/lucid/">
       <img src="https://img.shields.io/readthedocs/cardano-lucid?style=for-the-badge" />
@@ -22,8 +22,8 @@
 
 </p>
 
-
 ### Installation
+
 ```
 npm install lucid-cardano
 ```
@@ -31,11 +31,13 @@ npm install lucid-cardano
 ### From Source
 
 Install dependencies
+
 ```
 npm install
 ```
 
 Generate build
+
 ```
 npm run build
 ```
@@ -46,14 +48,15 @@ You can check out the [examples](./src/examples/) folder.
 
 ### Basic usage
 
-See [sample-ada-transfer](./src/examples/sample-ada-transfer) example for end-to-end browser integration usage. 
+See [sample-ada-transfer](./src/examples/sample-ada-transfer) example for
+end-to-end browser integration usage.
 
 ```js
-import {Lucid, Blockfrost} from "lucid-cardano";
+import { Blockfrost, Lucid } from "lucid-cardano";
 
 const lucid = await Lucid.new(
-  new Blockfrost('https://cardano-testnet.blockfrost.io/api/v0', '<projectId>'),
-  'Testnet'
+  new Blockfrost("https://cardano-testnet.blockfrost.io/api/v0", "<projectId>"),
+  "Testnet",
 );
 
 // Assumes you are in a browser environment
@@ -61,8 +64,8 @@ const api = await window.cardano.nami.enable();
 lucid.selectWallet(api);
 
 const tx = await lucid.newTx()
-    .payToAddress("addr...", {lovelace: 5000000n})
-    .complete();
+  .payToAddress("addr...", { lovelace: 5000000n })
+  .complete();
 
 const signedTx = await tx.sign().complete();
 
@@ -80,14 +83,19 @@ npm test
 ### Docs
 
 You can generate documentation with:
+
 ```
 npm run docs
 ```
+
 It'll be located under `/docs`.
 
 ### Compatibilty
 
-To run it in the browser Webpack 5 is recommended or any other bundler which allows for top level await and WebAssembly. If you use Webpack 5 enable in the `webpack.config.js`:
+To run it in the browser Webpack 5 is recommended or any other bundler which
+allows for top level await and WebAssembly. If you use Webpack 5 enable in the
+`webpack.config.js`:
+
 ```
 experiments: {
     asyncWebAssembly: true,
@@ -96,12 +104,14 @@ experiments: {
   }
 ```
 
-To run the library in Node.js you need to set `{"type" : "module"}` in your project's `package.json`. Otherwise you will get import issues.
+To run the library in Node.js you need to set `{"type" : "module"}` in your
+project's `package.json`. Otherwise you will get import issues.
 
 <br />
 This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib).
 
-Documentation for cardano-multiplatform-lib: https://cardano-lucid.readthedocs.io/en/latest
+Documentation for cardano-multiplatform-lib:
+https://cardano-lucid.readthedocs.io/en/latest
 
 Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 

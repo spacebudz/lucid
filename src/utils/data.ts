@@ -1,6 +1,6 @@
-import { C, Core } from '../core';
-import { PlutusData, Datum, Redeemer } from '../types';
-import { fromHex, toHex } from './utils';
+import { C, Core } from "../core/mod.ts";
+import { Datum, PlutusData, Redeemer } from "../types/mod.ts";
+import { fromHex, toHex } from "./utils.ts";
 
 export class Construct {
   index: number;
@@ -17,22 +17,22 @@ export class Data {
     const serialize = (data: PlutusData) => {
       try {
         if (
-          typeof data === 'bigint' ||
-          typeof data === 'number' ||
-          (typeof data === 'string' &&
+          typeof data === "bigint" ||
+          typeof data === "number" ||
+          (typeof data === "string" &&
             !isNaN(parseInt(data)) &&
-            data.slice(-1) === 'n')
+            data.slice(-1) === "n")
         ) {
           const bigint =
-            typeof data === 'string' ? BigInt(data.slice(0, -1)) : data;
+            typeof data === "string" ? BigInt(data.slice(0, -1)) : data;
           return C.PlutusData.new_integer(C.BigInt.from_str(bigint.toString()));
-        } else if (typeof data === 'string') {
+        } else if (typeof data === "string") {
           return C.PlutusData.new_bytes(fromHex(data));
         } else if (data instanceof Construct) {
           const { index, args } = data;
           const plutusList = C.PlutusList.new();
 
-          args.forEach(arg => plutusList.add(serialize(arg)));
+          args.forEach((arg) => plutusList.add(serialize(arg)));
 
           return C.PlutusData.new_constr_plutus_data(
             C.ConstrPlutusData.new(
@@ -43,7 +43,7 @@ export class Data {
         } else if (data instanceof Array) {
           const plutusList = C.PlutusList.new();
 
-          data.forEach(arg => plutusList.add(serialize(arg)));
+          data.forEach((arg) => plutusList.add(serialize(arg)));
 
           return C.PlutusData.new_list(plutusList);
         } else if (data instanceof Map) {
@@ -55,9 +55,9 @@ export class Data {
 
           return C.PlutusData.new_map(plutusMap);
         }
-        throw new Error('Unsupported type');
+        throw new Error("Unsupported type");
       } catch (error) {
-        throw new Error('Could not serialize the data: ' + error);
+        throw new Error("Could not serialize the data: " + error);
       }
     };
     return toHex(serialize(data).to_bytes()) as Datum | Redeemer;
@@ -93,14 +93,14 @@ export class Data {
       } else if (data.kind() === 4) {
         return toHex(data.as_bytes()!);
       }
-      throw new Error('Unsupported type');
+      throw new Error("Unsupported type");
     };
     return deserialize(plutusData);
   }
   static empty(): Datum | Redeemer {
     return toHex(
       C.PlutusData.new_constr_plutus_data(
-        C.ConstrPlutusData.new(C.BigNum.from_str('0'), C.PlutusList.new())
+        C.ConstrPlutusData.new(C.BigNum.from_str("0"), C.PlutusList.new())
       ).to_bytes()
     );
   }
