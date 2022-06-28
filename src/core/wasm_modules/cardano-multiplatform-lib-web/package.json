@@ -17,6 +17,5 @@
   ],
   "module": "cardano_multiplatform_lib.js",
   "types": "cardano_multiplatform_lib.d.ts",
-  "sideEffects": false,
-  "type": "module"
+  "sideEffects": false
 }
