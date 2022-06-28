@@ -23,7 +23,7 @@
 
 #### NPM
 
-```js
+```
 npm install lucid-cardano
 ```
 
@@ -36,7 +36,7 @@ import { Lucid } from "https://deno.land/x/lucid_cardano/mod.ts"
 ```
 
 #### Web
-```js
+```html
 <script type="module">
 import { Lucid } from "https://unpkg.com/lucid-cardano/web/mod.js"
 // ...
@@ -99,7 +99,7 @@ deno task test
 You can generate documentation with:
 
 ```
-deno docs
+deno doc
 ```
 
 ### Compatibilty
