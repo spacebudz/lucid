@@ -65,7 +65,7 @@ Outputs a `dist` folder.
 
 ### Examples
 
-View [examples](./src/examples/) folder.
+View [examples](./src/examples/) folder. 
 
 See [sample-ada-transfer](./src/examples/sample-ada-transfer) for end-to-end
 browser integration usage.
