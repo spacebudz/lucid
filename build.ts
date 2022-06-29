@@ -45,12 +45,16 @@ Deno.copyFileSync(
 
 //** Web ES Module */
 
+Deno.mkdirSync("dist/web/wasm_modules/cardano-multiplatform-lib-web", {
+  recursive: true,
+});
+
 await esbuild.build({
   bundle: true,
   format: "esm",
-  entryPoints: ["./mod.ts"],
+  entryPoints: ["./dist/esm/mod.js"],
   outfile: "./dist/web/mod.js",
-  minify: true,
+  // minify: true,
   external: [
     "./wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.js",
     "node-fetch",
@@ -59,9 +63,6 @@ await esbuild.build({
 esbuild.stop();
 
 // copy wasm file
-Deno.mkdirSync("dist/web/wasm_modules/cardano-multiplatform-lib-web", {
-  recursive: true,
-});
 Deno.copyFileSync(
   "src/core/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
   "dist/web/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm"
