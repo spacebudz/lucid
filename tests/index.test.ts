@@ -84,14 +84,12 @@ Deno.test("Wallet from utxos roundtrip (legacy utxos)", async () => {
 });
 
 Deno.test("Construct plutus data", () => {
-  console.log("JOO");
   const data = Data.to(
     new Construct(1, [BigInt(1), "abcd", "deff", new Construct(0, [])])
   );
-  console.log(data);
 
   assertEquals(data, "d87a9f0142abcd42deffd87980ff");
-  // == 122([1, h'AB', h'DE', 121([])])
+  // == 122([1, h'ABCD', h'DEFF', 121([])])
 });
 
 Deno.test("Deserialize plutus data", () => {

@@ -105,7 +105,7 @@ deno doc
 ### Compatibilty
 
 
-Lucid is an ES Module, so to run it in the browser Webpack 5 is recommended or any other bundler which allows for top level await and WebAssembly.
+Lucid is an ES Module, so to run it in the browser any bundler which allows for top level await and WebAssembly is recommended.
 If you use Webpack 5 enable in the
 `webpack.config.js`:
 
@@ -130,4 +130,4 @@ Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
 Branch: vasil
 
-Commit hash: cd2fa40c21e28fac2da714c1470f551322e5cd1a
+Commit hash: 9891966de6cbd82ff509c80e6440586af64a2278
