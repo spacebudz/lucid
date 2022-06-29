@@ -1,3 +1,6 @@
+<!--#
+VERSION=0.5.
+$-->
 <p align="center">
   <img width="100px" src="./logo/lucid.svg" align="center"/>
   <h1 align="center">Lucid</h1>
@@ -24,7 +27,7 @@
 #### NPM
 
 ```
-npm install lucid-cardano
+npm install lucid-cardano@vasil
 ```
 
 #### Deno
@@ -32,14 +35,14 @@ npm install lucid-cardano
 For JavaScript and TypeScript
 
 ```js
-import { Lucid } from "https://deno.land/x/lucid/mod.ts";
+import { Lucid } from "https://deno.land/x/lucid@0.5.0/mod.ts";
 ```
 
 #### Web
 
 ```html
 <script type="module">
-import { Lucid } from "https://unpkg.com/lucid-cardano/web/mod.js"
+import { Lucid } from "https://unpkg.com/lucid-cardano@0.5.0/web/mod.js"
 // ...
 </script>
 ```
@@ -67,7 +70,7 @@ browser integration usage.
 
 ```js
 import { Blockfrost, Lucid } from "lucid-cardano"; // NPM
-// import { Blockfrost, Lucid } from "https://deno.land/x/lucid/mod.ts"; Deno
+// import { Blockfrost, Lucid } from "https://deno.land/x/lucid@0.5.0/mod.ts"; Deno
 
 const lucid = await Lucid.new(
   new Blockfrost("https://cardano-testnet.blockfrost.io/api/v0", "<projectId>"),
