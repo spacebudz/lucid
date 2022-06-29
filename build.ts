@@ -54,7 +54,7 @@ await esbuild.build({
   format: "esm",
   entryPoints: ["./dist/esm/mod.js"],
   outfile: "./dist/web/mod.js",
-  // minify: true,
+  minify: true,
   external: [
     "./wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.js",
     "node-fetch",
