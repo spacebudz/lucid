@@ -11,6 +11,10 @@ $-->
     <a href="https://www.npmjs.com/package/lucid-cardano">
       <img src="https://img.shields.io/npm/v/lucid-cardano?style=for-the-badge" />
     </a>
+    <img src="https://img.shields.io/github/commit-activity/m/berry-pool/lucid?style=for-the-badge" />
+     <a href="https://doc.deno.land/https://deno.land/x/lucid/mod.ts">
+      <img src="https://img.shields.io/readthedocs/cardano-lucid?style=for-the-badge" />
+    </a>
     <a href="https://www.npmjs.com/package/lucid-cardano">
       <img src="https://img.shields.io/npm/dw/lucid-cardano?style=for-the-badge" />
     </a>
