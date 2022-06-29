@@ -10,10 +10,12 @@ import {
   Lovelace,
   MintingPolicy,
   NFTMetadata,
+  PaymentKeyHash,
   PoolId,
   Redeemer,
   RewardAddress,
   SpendingValidator,
+  StakeKeyHash,
   UnixTime,
   UTxO,
   WithdrawalValidator,
@@ -274,8 +276,15 @@ export class Tx {
     if (credential.type === 'Script')
       throw new Error('Only key hashes are allow as signers.');
 
+    return this.addSignerKey(credential.hash);
+  }
+
+  /**
+   * Add a public or stake key hash as a required signer of the transaction.
+   */
+  addSignerKey(signer: PaymentKeyHash | StakeKeyHash) {
     this.txBuilder.add_required_signer(
-      C.Ed25519KeyHash.from_bytes(fromHex(credential.hash))
+      C.Ed25519KeyHash.from_bytes(fromHex(signer))
     );
     return this;
   }
