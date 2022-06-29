@@ -9,8 +9,12 @@ import {
   AddressDetails,
   Assets,
   Credential,
+  Datum,
+  DatumHash,
   KeyHash,
+  MintingPolicy,
   Network,
+  PolicyId,
   PrivateKey,
   ScriptHash,
   Slot,
@@ -71,6 +75,14 @@ export class Utils {
         .to_hex();
     }
     throw new Error("No variant matched");
+  }
+
+  mintingPolicyToId(mintingPolicy: MintingPolicy): PolicyId {
+    return this.validatorToScriptHash(mintingPolicy);
+  }
+
+  datumToHash(datum: Datum): DatumHash {
+    return C.hash_plutus_data(C.PlutusData.from_bytes(fromHex(datum))).to_hex();
   }
 
   scriptHashToCredential(scriptHash: ScriptHash): Credential {
@@ -455,7 +467,7 @@ export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
   };
 };
 
-const networkToId = (network: Network): number => {
+export const networkToId = (network: Network): number => {
   if (network === "Testnet") return 0;
   else if (network === "Mainnet") return 1;
   throw new Error("Network not found");

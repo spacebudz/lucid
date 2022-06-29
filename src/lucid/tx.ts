@@ -11,10 +11,12 @@ import {
   NFTMetadata,
   NFTMetadataDetails,
   OutputData,
+  PaymentKeyHash,
   PoolId,
   Redeemer,
   RewardAddress,
   SpendingValidator,
+  StakeKeyHash,
   Unit,
   UnixTime,
   UTxO,
@@ -210,58 +212,13 @@ export class Tx {
       outputData = { asHash: outputData };
     }
 
-    if (outputData.asHash && outputData.inline) {
-      throw new Error("Not allowed to set asHash and inline at the same time.");
-    }
-
     if (!(outputData.asHash || outputData.inline)) {
       throw new Error(
         "No datum set. Script output becomes unspendable without datum.",
       );
     }
 
-    const output = C.TransactionOutput.new(
-      C.Address.from_bech32(address),
-      assetsToValue(assets),
-    );
-    if (outputData.asHash) {
-      const plutusData = C.PlutusData.from_bytes(fromHex(outputData.asHash));
-      output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
-      this.txBuilder.add_plutus_data(plutusData);
-    } else if (outputData.inline) {
-      const plutusData = C.PlutusData.from_bytes(fromHex(outputData.inline));
-      output.set_datum(C.Datum.new_data(C.Data.new(plutusData)));
-    }
-    const script = outputData.scriptRef;
-    if (script) {
-      if (script.type === "Native") {
-        output.set_script_ref(
-          C.ScriptRef.new(
-            C.Script.new_native(
-              C.NativeScript.from_bytes(fromHex(script.script)),
-            ),
-          ),
-        );
-      } else if (script.type === "PlutusV1") {
-        output.set_script_ref(
-          C.ScriptRef.new(
-            C.Script.new_plutus_v1(
-              C.PlutusScript.from_bytes(fromHex(script.script)),
-            ),
-          ),
-        );
-      } else if (script.type === "PlutusV2") {
-        output.set_script_ref(
-          C.ScriptRef.new(
-            C.Script.new_plutus_v2(
-              C.PlutusScript.from_bytes(fromHex(script.script)),
-            ),
-          ),
-        );
-      }
-    }
-    this.txBuilder.add_output(output);
-    return this;
+    return this.payToAddressWithData(address, outputData, assets);
   }
 
   /**
@@ -415,8 +372,15 @@ export class Tx {
       throw new Error("Only key hashes are allowed as signers.");
     }
 
+    return this.addSignerKey(credential.hash);
+  }
+
+  /**
+   * Add a payment or stake key hash as a required signer of the transaction.
+   */
+  addSignerKey(keyHash: PaymentKeyHash | StakeKeyHash) {
     this.txBuilder.add_required_signer(
-      C.Ed25519KeyHash.from_bytes(fromHex(credential.hash)),
+      C.Ed25519KeyHash.from_bytes(fromHex(keyHash)),
     );
     return this;
   }
