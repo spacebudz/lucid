@@ -218,8 +218,7 @@ export class Tx {
       );
     }
 
-    this.payToAddressWithData(address, outputData, assets);
-    return this;
+    return this.payToAddressWithData(address, outputData, assets);
   }
 
   /**
