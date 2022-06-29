@@ -53,7 +53,7 @@ import { Lucid } from "https://unpkg.com/lucid-cardano@0.5.0/web/mod.js"
 
 ### 
 
-### Build from Source
+### Build from source
 
 Build NPM and Web target
 
@@ -61,11 +61,11 @@ Build NPM and Web target
 deno task build
 ```
 
-Outputs a `dist` folder.
+Outputs a `dist` folder
 
 ### Examples
 
-View [examples](./src/examples/) folder. 
+[View examples](./src/examples/)
 
 See [sample-ada-transfer](./src/examples/sample-ada-transfer) for end-to-end
 browser integration usage.
@@ -134,6 +134,6 @@ This library is built on top of a customized version of the serialization-lib (c
 
 Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
-Branch: vasil
+Branch: **vasil**
 
-Commit hash: 9891966de6cbd82ff509c80e6440586af64a2278
+Commit hash: **9891966de6cbd82ff509c80e6440586af64a2278**
