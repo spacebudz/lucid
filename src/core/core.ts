@@ -33,9 +33,9 @@ const importForEnvironment = async (): Promise<typeof Core | null> => {
       await fetch(
         new URL(
           "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
-          import.meta.url
-        )
-      )
+          import.meta.url,
+        ),
+      ),
     );
     return pkg as unknown as typeof Core;
   } catch (_e) {

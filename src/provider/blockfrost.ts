@@ -56,7 +56,7 @@ export class Blockfrost implements ProviderSchema {
     while (true) {
       let pageResult = await fetch(
         `${this.url}/addresses/${address}/utxos?page=${page}`,
-        { headers: { project_id: this.projectId } }
+        { headers: { project_id: this.projectId } },
       ).then((res) => res.json());
       if (pageResult.error) {
         if ((result as any).status_code === 400) return [];
@@ -84,8 +84,7 @@ export class Blockfrost implements ProviderSchema {
         address,
         datumHash: !r.inline_datum ? r.data_hash : null,
         datum: r.inline_datum,
-        scriptRef:
-          r.reference_script_hash &&
+        scriptRef: r.reference_script_hash &&
           (await (async () => {
             const {
               type,
@@ -100,17 +99,17 @@ export class Blockfrost implements ProviderSchema {
             }
             const { cbor } = await fetch(
               `${this.url}/scripts/${r.reference_script_hash}/cbor`,
-              { headers: { project_id: this.projectId } }
+              { headers: { project_id: this.projectId } },
             ).then((res) => res.json());
             const script = C.PlutusScript.from_bytes(fromHex(cbor));
             const scriptRef = C.ScriptRef.new(
               type === "PlutusV1"
                 ? C.Script.new_plutus_v1(script)
-                : C.Script.new_plutus_v2(script)
+                : C.Script.new_plutus_v2(script),
             );
             return toHex(scriptRef.to_bytes());
           })()),
-      }))
+      })),
     );
   }
 
@@ -120,7 +119,7 @@ export class Blockfrost implements ProviderSchema {
     while (true) {
       let pageResult = await fetch(
         `${this.url}/addresses/${address}/utxos/${unit}?page=${page}`,
-        { headers: { project_id: this.projectId } }
+        { headers: { project_id: this.projectId } },
       ).then((res) => res.json());
       if (pageResult.error) {
         if ((result as any).status_code === 400) return [];
@@ -147,8 +146,7 @@ export class Blockfrost implements ProviderSchema {
         address,
         datumHash: !r.inline_datum ? r.data_hash : null,
         datum: r.inline_datum,
-        scriptRef:
-          r.reference_script_hash &&
+        scriptRef: r.reference_script_hash &&
           (await (async () => {
             const {
               type,
@@ -163,17 +161,17 @@ export class Blockfrost implements ProviderSchema {
             }
             const { cbor } = await fetch(
               `${this.url}/scripts/${r.reference_script_hash}/cbor`,
-              { headers: { project_id: this.projectId } }
+              { headers: { project_id: this.projectId } },
             ).then((res) => res.json());
             const script = C.PlutusScript.from_bytes(fromHex(cbor));
             const scriptRef = C.ScriptRef.new(
               type === "PlutusV1"
                 ? C.Script.new_plutus_v1(script)
-                : C.Script.new_plutus_v2(script)
+                : C.Script.new_plutus_v2(script),
             );
             return toHex(scriptRef.to_bytes());
           })()),
-      }))
+      })),
     );
   }
 
@@ -251,8 +249,8 @@ export const datumJsonToCbor = (json: any): Datum => {
       return C.PlutusData.new_constr_plutus_data(
         C.ConstrPlutusData.new(
           C.BigNum.from_str(json.constructor.toString()),
-          l
-        )
+          l,
+        ),
       );
     }
     throw new Error("Unsupported type");

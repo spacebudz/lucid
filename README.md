@@ -32,10 +32,11 @@ npm install lucid-cardano
 For JavaScript and TypeScript
 
 ```js
-import { Lucid } from "https://deno.land/x/lucid_cardano/mod.ts"
+import { Lucid } from "https://deno.land/x/lucid_cardano/mod.ts";
 ```
 
 #### Web
+
 ```html
 <script type="module">
 import { Lucid } from "https://unpkg.com/lucid-cardano/web/mod.js"
@@ -43,7 +44,7 @@ import { Lucid } from "https://unpkg.com/lucid-cardano/web/mod.js"
 </script>
 ```
 
-###
+### 
 
 ### Build from Source
 
@@ -55,12 +56,12 @@ deno task build
 
 Outputs a `dist` folder.
 
-
 ### Examples
 
 You can check out the [examples](./src/examples/) folder.
 
-See [sample-ada-transfer](./src/examples/sample-ada-transfer) for end-to-end browser integration usage.
+See [sample-ada-transfer](./src/examples/sample-ada-transfer) for end-to-end
+browser integration usage.
 
 ### Basic usage
 
@@ -104,10 +105,9 @@ deno doc
 
 ### Compatibilty
 
-
-Lucid is an ES Module, so to run it in the browser any bundler which allows for top level await and WebAssembly is recommended.
-If you use Webpack 5 enable in the
-`webpack.config.js`:
+Lucid is an ES Module, so to run it in the browser any bundler which allows for
+top level await and WebAssembly is recommended. If you use Webpack 5 enable in
+the `webpack.config.js`:
 
 ```
 experiments: {

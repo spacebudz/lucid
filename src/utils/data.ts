@@ -23,8 +23,9 @@ export class Data {
             !isNaN(parseInt(data)) &&
             data.slice(-1) === "n")
         ) {
-          const bigint =
-            typeof data === "string" ? BigInt(data.slice(0, -1)) : data;
+          const bigint = typeof data === "string"
+            ? BigInt(data.slice(0, -1))
+            : data;
           return C.PlutusData.new_integer(C.BigInt.from_str(bigint.toString()));
         } else if (typeof data === "string") {
           return C.PlutusData.new_bytes(fromHex(data));
@@ -37,8 +38,8 @@ export class Data {
           return C.PlutusData.new_constr_plutus_data(
             C.ConstrPlutusData.new(
               C.BigNum.from_str(index.toString()),
-              plutusList
-            )
+              plutusList,
+            ),
           );
         } else if (data instanceof Array) {
           const plutusList = C.PlutusList.new();
@@ -100,8 +101,8 @@ export class Data {
   static empty(): Datum | Redeemer {
     return toHex(
       C.PlutusData.new_constr_plutus_data(
-        C.ConstrPlutusData.new(C.BigNum.from_str("0"), C.PlutusList.new())
-      ).to_bytes()
+        C.ConstrPlutusData.new(C.BigNum.from_str("0"), C.PlutusList.new()),
+      ).to_bytes(),
     );
   }
 }

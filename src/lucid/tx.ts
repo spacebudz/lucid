@@ -78,9 +78,9 @@ export class Tx {
                 utxo.datumHash && utxo.datum
                   ? C.PlutusData.from_bytes(fromHex(utxo.datum!))
                   : undefined,
-                undefined
-              )
-            )
+                undefined,
+              ),
+            ),
         );
       }
     });
@@ -100,12 +100,12 @@ export class Tx {
     units.forEach((unit) => {
       if (unit.slice(0, 56) !== policyId) {
         throw new Error(
-          "Only one Policy Id allowed. You can chain multiple mintAssets events together if you need to mint assets with different Policy Ids."
+          "Only one Policy Id allowed. You can chain multiple mintAssets events together if you need to mint assets with different Policy Ids.",
         );
       }
       mintAssets.insert(
         C.AssetName.new(fromHex(unit.slice(56))),
-        C.Int.from_str(assets[unit].toString())
+        C.Int.from_str(assets[unit].toString()),
       );
     });
     const scriptHash = C.ScriptHash.from_bytes(fromHex(policyId));
@@ -114,13 +114,13 @@ export class Tx {
       mintAssets,
       redeemer
         ? C.ScriptWitness.new_plutus_witness(
-            C.PlutusWitness.new(
-              C.PlutusData.from_bytes(fromHex(redeemer!)),
-              undefined,
-              undefined
-            )
-          )
-        : undefined
+          C.PlutusWitness.new(
+            C.PlutusData.from_bytes(fromHex(redeemer!)),
+            undefined,
+            undefined,
+          ),
+        )
+        : undefined,
     );
     return this;
   }
@@ -131,7 +131,7 @@ export class Tx {
   payToAddress(address: Address, assets: Assets) {
     const output = C.TransactionOutput.new(
       C.Address.from_bech32(address),
-      assetsToValue(assets)
+      assetsToValue(assets),
     );
     this.txBuilder.add_output(output);
     return this;
@@ -143,7 +143,7 @@ export class Tx {
   payToAddressWithData(
     address: Address,
     outputData: Datum | OutputData,
-    assets: Assets
+    assets: Assets,
   ) {
     if (typeof outputData === "string") {
       outputData = { asHash: outputData };
@@ -155,7 +155,7 @@ export class Tx {
 
     const output = C.TransactionOutput.new(
       C.Address.from_bech32(address),
-      assetsToValue(assets)
+      assetsToValue(assets),
     );
 
     if (outputData.asHash) {
@@ -172,25 +172,25 @@ export class Tx {
         output.set_script_ref(
           C.ScriptRef.new(
             C.Script.new_native(
-              C.NativeScript.from_bytes(fromHex(script.script))
-            )
-          )
+              C.NativeScript.from_bytes(fromHex(script.script)),
+            ),
+          ),
         );
       } else if (script.type === "PlutusV1") {
         output.set_script_ref(
           C.ScriptRef.new(
             C.Script.new_plutus_v1(
-              C.PlutusScript.from_bytes(fromHex(script.script))
-            )
-          )
+              C.PlutusScript.from_bytes(fromHex(script.script)),
+            ),
+          ),
         );
       } else if (script.type === "PlutusV2") {
         output.set_script_ref(
           C.ScriptRef.new(
             C.Script.new_plutus_v2(
-              C.PlutusScript.from_bytes(fromHex(script.script))
-            )
-          )
+              C.PlutusScript.from_bytes(fromHex(script.script)),
+            ),
+          ),
         );
       }
     }
@@ -204,7 +204,7 @@ export class Tx {
   payToContract(
     address: Address,
     outputData: Datum | OutputData,
-    assets: Assets
+    assets: Assets,
   ) {
     if (typeof outputData === "string") {
       outputData = { asHash: outputData };
@@ -216,13 +216,13 @@ export class Tx {
 
     if (!(outputData.asHash || outputData.inline)) {
       throw new Error(
-        "No datum set. Script output becomes unspendable without datum."
+        "No datum set. Script output becomes unspendable without datum.",
       );
     }
 
     const output = C.TransactionOutput.new(
       C.Address.from_bech32(address),
-      assetsToValue(assets)
+      assetsToValue(assets),
     );
     if (outputData.asHash) {
       const plutusData = C.PlutusData.from_bytes(fromHex(outputData.asHash));
@@ -238,25 +238,25 @@ export class Tx {
         output.set_script_ref(
           C.ScriptRef.new(
             C.Script.new_native(
-              C.NativeScript.from_bytes(fromHex(script.script))
-            )
-          )
+              C.NativeScript.from_bytes(fromHex(script.script)),
+            ),
+          ),
         );
       } else if (script.type === "PlutusV1") {
         output.set_script_ref(
           C.ScriptRef.new(
             C.Script.new_plutus_v1(
-              C.PlutusScript.from_bytes(fromHex(script.script))
-            )
-          )
+              C.PlutusScript.from_bytes(fromHex(script.script)),
+            ),
+          ),
         );
       } else if (script.type === "PlutusV2") {
         output.set_script_ref(
           C.ScriptRef.new(
             C.Script.new_plutus_v2(
-              C.PlutusScript.from_bytes(fromHex(script.script))
-            )
-          )
+              C.PlutusScript.from_bytes(fromHex(script.script)),
+            ),
+          ),
         );
       }
     }
@@ -270,7 +270,7 @@ export class Tx {
   delegateTo(
     rewardAddress: RewardAddress,
     poolId: PoolId,
-    redeemer?: Redeemer
+    redeemer?: Redeemer,
   ) {
     const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
     if (
@@ -279,32 +279,31 @@ export class Tx {
     ) {
       throw new Error("Not a reward address provided.");
     }
-    const credential =
-      addressDetails.stakeCredential.type === "Key"
-        ? C.StakeCredential.from_keyhash(
-            C.Ed25519KeyHash.from_bytes(
-              fromHex(addressDetails.stakeCredential.hash)
-            )
-          )
-        : C.StakeCredential.from_scripthash(
-            C.ScriptHash.from_bytes(
-              fromHex(addressDetails.stakeCredential.hash)
-            )
-          );
+    const credential = addressDetails.stakeCredential.type === "Key"
+      ? C.StakeCredential.from_keyhash(
+        C.Ed25519KeyHash.from_bytes(
+          fromHex(addressDetails.stakeCredential.hash),
+        ),
+      )
+      : C.StakeCredential.from_scripthash(
+        C.ScriptHash.from_bytes(
+          fromHex(addressDetails.stakeCredential.hash),
+        ),
+      );
 
     this.txBuilder.add_certificate(
       C.Certificate.new_stake_delegation(
-        C.StakeDelegation.new(credential, C.Ed25519KeyHash.from_bech32(poolId))
+        C.StakeDelegation.new(credential, C.Ed25519KeyHash.from_bech32(poolId)),
       ),
       redeemer
         ? C.ScriptWitness.new_plutus_witness(
-            C.PlutusWitness.new(
-              C.PlutusData.from_bytes(fromHex(redeemer!)),
-              undefined,
-              undefined
-            )
-          )
-        : undefined
+          C.PlutusWitness.new(
+            C.PlutusData.from_bytes(fromHex(redeemer!)),
+            undefined,
+            undefined,
+          ),
+        )
+        : undefined,
     );
     return this;
   }
@@ -317,22 +316,21 @@ export class Tx {
     ) {
       throw new Error("Not a reward address provided.");
     }
-    const credential =
-      addressDetails.stakeCredential.type === "Key"
-        ? C.StakeCredential.from_keyhash(
-            C.Ed25519KeyHash.from_bytes(
-              fromHex(addressDetails.stakeCredential.hash)
-            )
-          )
-        : C.StakeCredential.from_scripthash(
-            C.ScriptHash.from_bytes(
-              fromHex(addressDetails.stakeCredential.hash)
-            )
-          );
+    const credential = addressDetails.stakeCredential.type === "Key"
+      ? C.StakeCredential.from_keyhash(
+        C.Ed25519KeyHash.from_bytes(
+          fromHex(addressDetails.stakeCredential.hash),
+        ),
+      )
+      : C.StakeCredential.from_scripthash(
+        C.ScriptHash.from_bytes(
+          fromHex(addressDetails.stakeCredential.hash),
+        ),
+      );
 
     this.txBuilder.add_certificate(
       C.Certificate.new_stake_registration(C.StakeRegistration.new(credential)),
-      undefined
+      undefined,
     );
     return this;
   }
@@ -345,32 +343,31 @@ export class Tx {
     ) {
       throw new Error("Not a reward address provided.");
     }
-    const credential =
-      addressDetails.stakeCredential.type === "Key"
-        ? C.StakeCredential.from_keyhash(
-            C.Ed25519KeyHash.from_bytes(
-              fromHex(addressDetails.stakeCredential.hash)
-            )
-          )
-        : C.StakeCredential.from_scripthash(
-            C.ScriptHash.from_bytes(
-              fromHex(addressDetails.stakeCredential.hash)
-            )
-          );
+    const credential = addressDetails.stakeCredential.type === "Key"
+      ? C.StakeCredential.from_keyhash(
+        C.Ed25519KeyHash.from_bytes(
+          fromHex(addressDetails.stakeCredential.hash),
+        ),
+      )
+      : C.StakeCredential.from_scripthash(
+        C.ScriptHash.from_bytes(
+          fromHex(addressDetails.stakeCredential.hash),
+        ),
+      );
 
     this.txBuilder.add_certificate(
       C.Certificate.new_stake_deregistration(
-        C.StakeDeregistration.new(credential)
+        C.StakeDeregistration.new(credential),
       ),
       redeemer
         ? C.ScriptWitness.new_plutus_witness(
-            C.PlutusWitness.new(
-              C.PlutusData.from_bytes(fromHex(redeemer!)),
-              undefined,
-              undefined
-            )
-          )
-        : undefined
+          C.PlutusWitness.new(
+            C.PlutusData.from_bytes(fromHex(redeemer!)),
+            undefined,
+            undefined,
+          ),
+        )
+        : undefined,
     );
     return this;
   }
@@ -378,20 +375,20 @@ export class Tx {
   withdraw(
     rewardAddress: RewardAddress,
     amount: Lovelace,
-    redeemer?: Redeemer
+    redeemer?: Redeemer,
   ) {
     this.txBuilder.add_withdrawal(
       C.RewardAddress.from_address(C.Address.from_bech32(rewardAddress))!,
       C.BigNum.from_str(amount.toString()),
       redeemer
         ? C.ScriptWitness.new_plutus_witness(
-            C.PlutusWitness.new(
-              C.PlutusData.from_bytes(fromHex(redeemer!)),
-              undefined,
-              undefined
-            )
-          )
-        : undefined
+          C.PlutusWitness.new(
+            C.PlutusData.from_bytes(fromHex(redeemer!)),
+            undefined,
+            undefined,
+          ),
+        )
+        : undefined,
     );
     return this;
   }
@@ -410,17 +407,16 @@ export class Tx {
       throw new Error("Not a valid address.");
     }
 
-    const credential =
-      addressDetails.address.type === "Reward"
-        ? addressDetails.stakeCredential!
-        : addressDetails.paymentCredential!;
+    const credential = addressDetails.address.type === "Reward"
+      ? addressDetails.stakeCredential!
+      : addressDetails.paymentCredential!;
 
     if (credential.type === "Script") {
       throw new Error("Only key hashes are allowed as signers.");
     }
 
     this.txBuilder.add_required_signer(
-      C.Ed25519KeyHash.from_bytes(fromHex(credential.hash))
+      C.Ed25519KeyHash.from_bytes(fromHex(credential.hash)),
     );
     return this;
   }
@@ -428,7 +424,7 @@ export class Tx {
   validFrom(unixTime: UnixTime) {
     const slot = this.lucid.utils.unixTimeToSlot(unixTime);
     this.txBuilder.set_validity_start_interval(
-      C.BigNum.from_str(slot.toString())
+      C.BigNum.from_str(slot.toString()),
     );
     return this;
   }
@@ -442,7 +438,7 @@ export class Tx {
   attachMetadata(label: Label, metadata: Json) {
     this.txBuilder.add_json_metadatum(
       C.BigNum.from_str(label.toString()),
-      JSON.stringify(metadata)
+      JSON.stringify(metadata),
     );
     return this;
   }
@@ -454,7 +450,7 @@ export class Tx {
     this.txBuilder.add_json_metadatum_with_schema(
       C.BigNum.from_str(label.toString()),
       JSON.stringify(metadata),
-      C.MetadataJsonSchema.BasicConversions
+      C.MetadataJsonSchema.BasicConversions,
     );
     return this;
   }
@@ -521,14 +517,14 @@ export class Tx {
       this.txBuilder.add_json_metadatum_with_schema(
         C.BigNum.from_str("721"),
         JSON.stringify(this.nftMetadata),
-        C.MetadataJsonSchema.BasicConversions
+        C.MetadataJsonSchema.BasicConversions,
       );
     }
 
     const utxos = await this.lucid.wallet.getUtxosCore();
 
     const changeAddress: Core.Address = C.Address.from_bech32(
-      option?.changeAddress || (await this.lucid.wallet.address())
+      option?.changeAddress || (await this.lucid.wallet.address()),
     );
 
     this.txBuilder.add_inputs_from(utxos);
@@ -537,25 +533,25 @@ export class Tx {
       changeAddress,
       option?.datum?.asHash
         ? C.Datum.new_data_hash(
-            C.hash_plutus_data(
-              C.PlutusData.from_bytes(fromHex(option.datum.asHash))
-            )
-          )
+          C.hash_plutus_data(
+            C.PlutusData.from_bytes(fromHex(option.datum.asHash)),
+          ),
+        )
         : option?.datum?.inline
         ? C.Datum.new_data(
-            C.Data.new(C.PlutusData.from_bytes(fromHex(option.datum.inline)))
-          )
-        : undefined
+          C.Data.new(C.PlutusData.from_bytes(fromHex(option.datum.inline))),
+        )
+        : undefined,
     );
     if (option?.datum?.asHash) {
       this.txBuilder.add_plutus_data(
-        C.PlutusData.from_bytes(fromHex(option.datum.asHash))
+        C.PlutusData.from_bytes(fromHex(option.datum.asHash)),
       );
     }
 
     return new TxComplete(
       this.lucid,
-      await this.txBuilder.construct(utxos, changeAddress)
+      await this.txBuilder.construct(utxos, changeAddress),
     );
   }
 }
@@ -566,19 +562,19 @@ const attachScript = (
     | SpendingValidator
     | MintingPolicy
     | CertificateValidator
-    | WithdrawalValidator
+    | WithdrawalValidator,
 ) => {
   if (script.type === "Native") {
     return tx.txBuilder.add_native_script(
-      C.NativeScript.from_bytes(fromHex(script.script))
+      C.NativeScript.from_bytes(fromHex(script.script)),
     );
   } else if (script.type === "PlutusV1") {
     return tx.txBuilder.add_plutus_script(
-      C.PlutusScript.from_bytes(fromHex(script.script))
+      C.PlutusScript.from_bytes(fromHex(script.script)),
     );
   } else if (script.type === "PlutusV2") {
     return tx.txBuilder.add_plutus_v2_script(
-      C.PlutusScript.from_bytes(fromHex(script.script))
+      C.PlutusScript.from_bytes(fromHex(script.script)),
     );
   }
   throw new Error("No variant matched.");

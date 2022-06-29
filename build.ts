@@ -32,15 +32,15 @@ Deno.copyFileSync("README.md", "dist/README.md");
 // copy wasm files
 Deno.copyFileSync(
   "src/core/wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib_bg.wasm",
-  "dist/esm/src/core/wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib_bg.wasm"
+  "dist/esm/src/core/wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib_bg.wasm",
 );
 Deno.writeTextFileSync(
   "dist/esm/src/core/wasm_modules/cardano-multiplatform-lib-nodejs/package.json",
-  JSON.stringify({ type: "commonjs" })
+  JSON.stringify({ type: "commonjs" }),
 );
 Deno.copyFileSync(
   "src/core/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
-  "dist/esm/src/core/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm"
+  "dist/esm/src/core/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
 );
 
 //** Web ES Module */
@@ -65,5 +65,5 @@ esbuild.stop();
 // copy wasm file
 Deno.copyFileSync(
   "src/core/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
-  "dist/web/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm"
+  "dist/web/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
 );

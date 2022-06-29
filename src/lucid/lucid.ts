@@ -40,19 +40,19 @@ export class Lucid {
       const protocolParameters = await provider.getProtocolParameters();
       lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
         .coins_per_utxo_byte(
-          C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString())
+          C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString()),
         )
         .fee_algo(
           C.LinearFee.new(
             C.BigNum.from_str(protocolParameters.minFeeA.toString()),
-            C.BigNum.from_str(protocolParameters.minFeeB.toString())
-          )
+            C.BigNum.from_str(protocolParameters.minFeeB.toString()),
+          ),
         )
         .key_deposit(
-          C.BigNum.from_str(protocolParameters.keyDeposit.toString())
+          C.BigNum.from_str(protocolParameters.keyDeposit.toString()),
         )
         .pool_deposit(
-          C.BigNum.from_str(protocolParameters.poolDeposit.toString())
+          C.BigNum.from_str(protocolParameters.poolDeposit.toString()),
         )
         .max_tx_size(protocolParameters.maxTxSize)
         .max_value_size(protocolParameters.maxValSize)
@@ -61,14 +61,14 @@ export class Lucid {
         .ex_unit_prices(
           C.ExUnitPrices.from_float(
             protocolParameters.priceMem,
-            protocolParameters.priceStep
-          )
+            protocolParameters.priceStep,
+          ),
         )
         .blockfrost(
           C.Blockfrost.new(
             provider.url + "/utils/txs/evaluate",
-            provider.projectId
-          )
+            provider.projectId,
+          ),
         )
         .costmdls(costModels())
         .build();
@@ -122,7 +122,7 @@ export class Lucid {
       address: async () =>
         C.EnterpriseAddress.new(
           this.network === "Mainnet" ? 1 : 0,
-          C.StakeCredential.from_keyhash(pubKeyHash)
+          C.StakeCredential.from_keyhash(pubKeyHash),
         )
           .to_address()
           .to_bech32(undefined),
@@ -133,7 +133,7 @@ export class Lucid {
         return utxos.filter(
           (utxo) =>
             Object.keys(utxo.assets).length === 1 &&
-            utxo.assets.lovelace >= 5000000n
+            utxo.assets.lovelace >= 5000000n,
         );
       },
       getCollateralCore: async () => {
@@ -142,7 +142,7 @@ export class Lucid {
           .filter(
             (utxo) =>
               Object.keys(utxo.assets).length === 1 &&
-              utxo.assets.lovelace >= 5000000n
+              utxo.assets.lovelace >= 5000000n,
           )
           .map((utxo) => utxoToCore(utxo));
       },
@@ -161,7 +161,7 @@ export class Lucid {
       signTx: async (tx: Core.Transaction) => {
         const witness = C.make_vkey_witness(
           C.hash_transaction(tx.body()),
-          priv
+          priv,
         );
         const txWitnessSetBuilder = C.TransactionWitnessSetBuilder.new();
         txWitnessSetBuilder.add_vkey(witness);
@@ -178,14 +178,13 @@ export class Lucid {
     this.wallet = {
       address: async () =>
         C.Address.from_bytes(
-          fromHex((await api.getUsedAddresses())[0])
+          fromHex((await api.getUsedAddresses())[0]),
         ).to_bech32(undefined),
       rewardAddress: async () => {
         const [rewardAddressHex] = await api.getRewardAddresses();
-        const rewardAddress =
-          rewardAddressHex ??
+        const rewardAddress = rewardAddressHex ??
           C.RewardAddress.from_address(
-            C.Address.from_bytes(fromHex(rewardAddressHex))
+            C.Address.from_bytes(fromHex(rewardAddressHex)),
           )!
             .to_address()
             .to_bech32(undefined);
@@ -194,7 +193,7 @@ export class Lucid {
       getCollateral: async () => {
         const utxos = (await api.experimental.getCollateral()).map((utxo) => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
-            fromHex(utxo)
+            fromHex(utxo),
           );
           return coreToUtxo(parsedUtxo);
         });
@@ -209,7 +208,7 @@ export class Lucid {
       getUtxos: async () => {
         const utxos = ((await api.getUtxos()) || []).map((utxo) => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
-            fromHex(utxo)
+            fromHex(utxo),
           );
           return coreToUtxo(parsedUtxo);
         });
@@ -252,31 +251,30 @@ export class Lucid {
       address: async () => address,
       // deno-lint-ignore require-await
       rewardAddress: async () => {
-        const rewardAddr =
-          !rewardAddress && addressDetails.stakeCredential
-            ? (() => {
-                if (addressDetails.stakeCredential.type === "Key") {
-                  return C.RewardAddress.new(
-                    this.network === "Mainnet" ? 1 : 0,
-                    C.StakeCredential.from_keyhash(
-                      C.Ed25519KeyHash.from_hex(
-                        addressDetails.stakeCredential.hash
-                      )
-                    )
-                  )
-                    .to_address()
-                    .to_bech32(undefined);
-                }
-                return C.RewardAddress.new(
-                  this.network === "Mainnet" ? 1 : 0,
-                  C.StakeCredential.from_scripthash(
-                    C.ScriptHash.from_hex(addressDetails.stakeCredential.hash)
-                  )
-                )
-                  .to_address()
-                  .to_bech32(undefined);
-              })()
-            : rewardAddress;
+        const rewardAddr = !rewardAddress && addressDetails.stakeCredential
+          ? (() => {
+            if (addressDetails.stakeCredential.type === "Key") {
+              return C.RewardAddress.new(
+                this.network === "Mainnet" ? 1 : 0,
+                C.StakeCredential.from_keyhash(
+                  C.Ed25519KeyHash.from_hex(
+                    addressDetails.stakeCredential.hash,
+                  ),
+                ),
+              )
+                .to_address()
+                .to_bech32(undefined);
+            }
+            return C.RewardAddress.new(
+              this.network === "Mainnet" ? 1 : 0,
+              C.StakeCredential.from_scripthash(
+                C.ScriptHash.from_hex(addressDetails.stakeCredential.hash),
+              ),
+            )
+              .to_address()
+              .to_bech32(undefined);
+          })()
+          : rewardAddress;
         return rewardAddr;
       },
       // deno-lint-ignore require-await

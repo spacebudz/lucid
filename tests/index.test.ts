@@ -1,19 +1,19 @@
 import {
-  Lucid,
+  assetsToValue,
   C,
+  Construct,
+  coreToUtxo,
+  Data,
+  datumJsonToCbor,
+  fromHex,
+  Lucid,
   toHex,
   utxoToCore,
-  fromHex,
-  assetsToValue,
   valueToAssets,
-  coreToUtxo,
-  datumJsonToCbor,
-  Construct,
-  Data,
 } from "../src/mod.ts";
 import {
-  assertEquals,
   assert,
+  assertEquals,
   assertNotEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 
@@ -23,7 +23,7 @@ lucid.selectWalletFromPrivateKey(privateKey);
 
 Deno.test("PaymentKeyHash length", async () => {
   const { paymentCredential } = lucid.utils.getAddressDetails(
-    await lucid.wallet.address()
+    await lucid.wallet.address(),
   );
   if (paymentCredential) {
     assertEquals(fromHex(paymentCredential.hash).length, 28);
@@ -37,7 +37,7 @@ Deno.test("Address type", async () => {
     address: { address },
   } = lucid.utils.getAddressDetails(await lucid.wallet.address());
   const enterpriseAddress = C.EnterpriseAddress.from_address(
-    C.Address.from_bech32(address)
+    C.Address.from_bech32(address),
   )!
     .to_address()
     .to_bech32();
@@ -47,7 +47,7 @@ Deno.test("Address type", async () => {
 
 Deno.test("No reward address", async () => {
   const { stakeCredential } = lucid.utils.getAddressDetails(
-    await lucid.wallet.address()
+    await lucid.wallet.address(),
   );
   assertEquals(stakeCredential, undefined);
   assertEquals(await lucid.wallet.rewardAddress(), undefined);
@@ -85,7 +85,7 @@ Deno.test("Wallet from utxos roundtrip (legacy utxos)", async () => {
 
 Deno.test("Construct plutus data", () => {
   const data = Data.to(
-    new Construct(1, [BigInt(1), "abcd", "deff", new Construct(0, [])])
+    new Construct(1, [BigInt(1), "abcd", "deff", new Construct(0, [])]),
   );
 
   assertEquals(data, "d87a9f0142abcd42deffd87980ff");
