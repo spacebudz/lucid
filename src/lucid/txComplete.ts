@@ -1,8 +1,8 @@
-import { C, Core } from '../core';
-import { PrivateKey, TransactionWitnesses } from '../types';
-import { Lucid } from './lucid';
-import { TxSigned } from './txSigned';
-import { fromHex, toHex } from '../utils';
+import { C, Core } from "../core/mod.ts";
+import { PrivateKey, TransactionWitnesses } from "../types/mod.ts";
+import { Lucid } from "./lucid.ts";
+import { TxSigned } from "./txSigned.ts";
+import { fromHex, toHex } from "../utils/mod.ts";
 
 export class TxComplete {
   txComplete: Core.Transaction;
@@ -29,7 +29,7 @@ export class TxComplete {
     const priv = C.PrivateKey.from_bech32(privateKey);
     const witness = C.make_vkey_witness(
       C.hash_transaction(this.txComplete.body()),
-      priv
+      priv,
     );
     this.witnessSetBuilder.add_vkey(witness);
     return this;
@@ -52,7 +52,7 @@ export class TxComplete {
     const priv = C.PrivateKey.from_bech32(privateKey);
     const witness = C.make_vkey_witness(
       C.hash_transaction(this.txComplete.body()),
-      priv
+      priv,
     );
     this.witnessSetBuilder.add_vkey(witness);
     const witnesses = C.TransactionWitnessSetBuilder.new();
@@ -64,9 +64,9 @@ export class TxComplete {
    * Signs the transaction with the given witnesses
    */
   assemble(witnesses: TransactionWitnesses[]) {
-    witnesses.forEach(witness => {
+    witnesses.forEach((witness) => {
       const witnessParsed = C.TransactionWitnessSet.from_bytes(
-        fromHex(witness)
+        fromHex(witness),
       );
       this.witnessSetBuilder.add_existing(witnessParsed);
     });
@@ -82,7 +82,7 @@ export class TxComplete {
     const signedTx = C.Transaction.new(
       this.txComplete.body(),
       this.witnessSetBuilder.build(),
-      this.txComplete.auxiliary_data()
+      this.txComplete.auxiliary_data(),
     );
     return new TxSigned(this.lucid, signedTx);
   }

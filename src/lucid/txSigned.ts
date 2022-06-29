@@ -1,6 +1,6 @@
-import { Core } from '../core';
-import { TxHash } from '../types';
-import { Lucid } from './lucid';
+import { Core } from "../core/mod.ts";
+import { TxHash } from "../types/mod.ts";
+import { Lucid } from "./lucid.ts";
 
 export class TxSigned {
   txSigned: Core.Transaction;

@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "build": "deno run --allow-env --allow-write --allow-read --allow-net --allow-run build.ts",
+    "publish": "deno task build && deno task test && npm publish dist",
+    "test": "deno test --allow-env --allow-read --allow-net tests"
+  }
+}

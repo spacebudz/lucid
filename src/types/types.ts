@@ -1,6 +1,6 @@
-import { Core } from '../core';
-import { Construct } from '../utils';
-import { Blockfrost } from '../provider';
+import { Core } from "../core/mod.ts";
+import { Construct } from "../utils/mod.ts";
+import { Blockfrost } from "../provider/mod.ts";
 
 export type Provider = Blockfrost; // more providers can be added here
 
@@ -31,7 +31,7 @@ export interface ProviderSchema {
 }
 
 export type Credential = {
-  type: 'Key' | 'Script';
+  type: "Key" | "Script";
   hash: KeyHash | ScriptHash;
 };
 
@@ -40,7 +40,7 @@ export type Unit = string;
 export type Assets = {
   [unit: string]: BigInt;
 };
-export type ScriptType = 'Native' | 'PlutusV1' | 'PlutusV2';
+export type ScriptType = "Native" | "PlutusV1" | "PlutusV2";
 
 /** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
  *
@@ -131,11 +131,11 @@ export type UTxO = {
 };
 
 export type AddressType = {
-  type: 'Base' | 'Enterprise' | 'Pointer' | 'Reward';
+  type: "Base" | "Enterprise" | "Pointer" | "Reward";
   address: Address;
 };
 
-export type Network = 'Mainnet' | 'Testnet';
+export type Network = "Mainnet" | "Testnet";
 
 export type AddressDetails = {
   address: AddressType;
@@ -165,7 +165,7 @@ export interface Wallet {
   submitTx(signedTx: Core.Transaction): Promise<TxHash>;
 }
 
-export type WalletProvider = 'nami' | 'eternl' | 'flint';
+export type WalletProvider = "nami" | "eternl" | "flint";
 
 /**
  * These are the arguments that conform a BuiltinData in Plutus:
@@ -182,7 +182,7 @@ export type WalletProvider = 'nami' | 'eternl' | 'flint';
  * ```
  * So we can define an arbitrary mapping for these types
  *
- *```
+ * ```
  * bigint -> I
  * string -> B
  * Map    -> Map
@@ -199,7 +199,7 @@ export type PlutusData =
   | Construct; // We emulate the constr like this
 
 /** JSON object */
-export type Json = any;
+export type Json = unknown;
 
 /** Time in milliseconds */
 export type UnixTime = number;
@@ -216,12 +216,13 @@ export type NFTMetadataDetails = {
   mediaType?: string;
   description?: string | string[];
   files?: NFTFile[];
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 export type NFTMetadata = {
   [policyId: string]: {
     [assetName: string]: NFTMetadataDetails;
   };
+  // deno-lint-ignore no-explicit-any
   version?: any; // number
 };

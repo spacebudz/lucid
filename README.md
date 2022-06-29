@@ -1,13 +1,10 @@
 <p align="center">
   <img width="100px" src="./logo/lucid.svg" align="center"/>
   <h1 align="center">Lucid</h1>
-  <p align="center">Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript and Node.js.</p>
+  <p align="center">Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript, Deno and Node.js.</p>
 
-  <p align="center">
+<p align="center">
     <img src="https://img.shields.io/github/commit-activity/m/berry-pool/lucid?style=for-the-badge" />
-     <a href="https://berry-pool.github.io/lucid/">
-      <img src="https://img.shields.io/readthedocs/cardano-lucid?style=for-the-badge" />
-    </a>
     <a href="https://www.npmjs.com/package/lucid-cardano">
       <img src="https://img.shields.io/npm/v/lucid-cardano?style=for-the-badge" />
     </a>
@@ -22,38 +19,59 @@
 
 </p>
 
+### Get started
 
-### Installation
+#### NPM
+
 ```
 npm install lucid-cardano
 ```
 
-### From Source
+#### Deno
 
-Install dependencies
-```
-npm install
+For JavaScript and TypeScript
+
+```js
+import { Lucid } from "https://deno.land/x/lucid_cardano/mod.ts";
 ```
 
-Generate build
+#### Web
+
+```html
+<script type="module">
+import { Lucid } from "https://unpkg.com/lucid-cardano/web/mod.js"
+// ...
+</script>
 ```
-npm run build
+
+### 
+
+### Build from Source
+
+Build NPM and Web target
+
 ```
+deno task build
+```
+
+Outputs a `dist` folder.
 
 ### Examples
 
 You can check out the [examples](./src/examples/) folder.
 
+See [sample-ada-transfer](./src/examples/sample-ada-transfer) for end-to-end
+browser integration usage.
+
 ### Basic usage
 
-See [sample-ada-transfer](./src/examples/sample-ada-transfer) example for end-to-end browser integration usage. 
-
 ```js
-import {Lucid, Blockfrost} from "lucid-cardano";
+import { Blockfrost, Lucid } from "lucid-cardano"; // NPM
+// import { Blockfrost, Lucid } from "https://deno.land/x/lucid_cardano/mod.ts"; Deno
 
 const lucid = await Lucid.new(
-  new Blockfrost('https://cardano-testnet.blockfrost.io/api/v0', '<projectId>'),
-  'Testnet'
+  new Blockfrost("https://cardano-testnet.blockfrost.io/api/v0", "<projectId>"),
+  "Testnet",
 );
 
 // Assumes you are in a browser environment
@@ -61,8 +79,8 @@ const api = await window.cardano.nami.enable();
 lucid.selectWallet(api);
 
 const tx = await lucid.newTx()
-    .payToAddress("addr...", {lovelace: 5000000n})
-    .complete();
+  .payToAddress("addr...", { lovelace: 5000000n })
+  .complete();
 
 const signedTx = await tx.sign().complete();
 
@@ -74,20 +92,23 @@ console.log(txHash);
 ### Test
 
 ```
-npm test
+deno task test
 ```
 
 ### Docs
 
 You can generate documentation with:
+
 ```
-npm run docs
+deno doc
 ```
-It'll be located under `/docs`.
 
 ### Compatibilty
 
-To run it in the browser Webpack 5 is recommended or any other bundler which allows for top level await and WebAssembly. If you use Webpack 5 enable in the `webpack.config.js`:
+Lucid is an ES Module, so to run it in the browser any bundler which allows for
+top level await and WebAssembly is recommended. If you use Webpack 5 enable in
+the `webpack.config.js`:
+
 ```
 experiments: {
     asyncWebAssembly: true,
@@ -96,15 +117,17 @@ experiments: {
   }
 ```
 
-To run the library in Node.js you need to set `{"type" : "module"}` in your project's `package.json`. Otherwise you will get import issues.
+To run the library in Node.js you need to set `{"type" : "module"}` in your
+project's `package.json`. Otherwise you will get import issues.
 
 <br />
 This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib).
 
-Documentation for cardano-multiplatform-lib: https://cardano-lucid.readthedocs.io/en/latest
+Documentation for cardano-multiplatform-lib:
+https://cardano-lucid.readthedocs.io/en/latest
 
 Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
 Branch: vasil
 
-Commit hash: 10465ee55f63ed4792df32e337b7351e77dad25f
+Commit hash: 9891966de6cbd82ff509c80e6440586af64a2278

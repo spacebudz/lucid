@@ -1,2 +1,1 @@
-// mod.ts file for Deno
-export * from './src/index.js';
+export * from "./src/mod.ts";

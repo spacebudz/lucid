@@ -1,5 +1,5 @@
 //@ts-ignore
-import { WalletProvider } from 'lucid-cardano';
+import { WalletProvider } from "lucid-cardano";
 
 const supportedProviders: { [key: string]: boolean } = {
   nami: true,
@@ -8,7 +8,7 @@ const supportedProviders: { [key: string]: boolean } = {
 };
 
 export const selectWalletProvider = async (
-  provider = 'nami'
+  provider = "nami",
 ): Promise<WalletProvider> => {
   if (!supportedProviders[provider]) {
     throw new Error(`Invalid Wallet Provider: ${provider}`);
@@ -16,7 +16,7 @@ export const selectWalletProvider = async (
 
   const context = window as any;
   if (!context.cardano || !context.cardano[provider]) {
-    throw new Error('cardano provider instance not found in context');
+    throw new Error("cardano provider instance not found in context");
   }
 
   const walletApi = (await context.cardano[
