@@ -32,7 +32,7 @@ npm install lucid-cardano
 For JavaScript and TypeScript
 
 ```js
-import { Lucid } from "https://deno.land/x/lucid_cardano/mod.ts";
+import { Lucid } from "https://deno.land/x/lucid/mod.ts";
 ```
 
 #### Web
@@ -67,7 +67,7 @@ browser integration usage.
 
 ```js
 import { Blockfrost, Lucid } from "lucid-cardano"; // NPM
-// import { Blockfrost, Lucid } from "https://deno.land/x/lucid_cardano/mod.ts"; Deno
+// import { Blockfrost, Lucid } from "https://deno.land/x/lucid/mod.ts"; Deno
 
 const lucid = await Lucid.new(
   new Blockfrost("https://cardano-testnet.blockfrost.io/api/v0", "<projectId>"),
