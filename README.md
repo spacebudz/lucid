@@ -34,7 +34,7 @@ $-->
 npm install lucid-cardano@vasil
 ```
 
-#### Deno
+#### Deno 🦕
 
 For JavaScript and TypeScript
 
@@ -65,7 +65,7 @@ Outputs a `dist` folder.
 
 ### Examples
 
-You can check out the [examples](./src/examples/) folder.
+View [examples](./src/examples/) folder.
 
 See [sample-ada-transfer](./src/examples/sample-ada-transfer) for end-to-end
 browser integration usage.
@@ -104,6 +104,8 @@ deno task test
 
 ### Docs
 
+[View docs](https://doc.deno.land/https://deno.land/x/lucid/mod.ts) 📖
+
 You can generate documentation with:
 
 ```
@@ -129,9 +131,6 @@ project's `package.json`. Otherwise you will get import issues.
 
 <br />
 This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib).
-
-Documentation for cardano-multiplatform-lib:
-https://cardano-lucid.readthedocs.io/en/latest
 
 Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
