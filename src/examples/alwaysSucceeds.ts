@@ -49,7 +49,7 @@ export const lockUtxo = async (
     .payToContract(alwaysSucceedAddress, { inline: Datum() }, { lovelace })
     .payToContract(alwaysSucceedAddress, {
       asHash: Datum(),
-      scriptRef: { type: "PlutusV2", script: "49480100002221200101" }, // adding plutusV2 script to output
+      scriptRef: alwaysSucceedScript, // adding plutusV2 script to output
     }, {})
     .complete();
 
