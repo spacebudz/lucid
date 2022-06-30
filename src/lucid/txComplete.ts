@@ -7,7 +7,7 @@ import { fromHex, toHex } from "../utils/mod.ts";
 export class TxComplete {
   txComplete: Core.Transaction;
   witnessSetBuilder: Core.TransactionWitnessSetBuilder;
-  private tasks: Function[];
+  private tasks: (() => Promise<void>)[];
   private lucid: Lucid;
 
   constructor(lucid: Lucid, tx: Core.Transaction) {

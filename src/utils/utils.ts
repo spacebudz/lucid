@@ -1,4 +1,3 @@
-// deno-lint-ignore-file no-empty
 import {
   decodeString,
   encodeToString,
@@ -144,7 +143,7 @@ export class Utils {
         paymentCredential,
         stakeCredential,
       };
-    } catch (_e) {}
+    } catch (_e) { /* pass */ }
     try {
       const parsedAddress = C.BaseAddress.from_address(
         C.Address.from_bech32(address),
@@ -183,7 +182,7 @@ export class Utils {
         paymentCredential,
         stakeCredential,
       };
-    } catch (_e) {}
+    } catch (_e) { /* pass */ }
 
     // Enterprise Address
     try {
@@ -211,7 +210,7 @@ export class Utils {
         },
         paymentCredential,
       };
-    } catch (_e) {}
+    } catch (_e) { /* pass */ }
 
     try {
       const parsedAddress = C.EnterpriseAddress.from_address(
@@ -238,7 +237,7 @@ export class Utils {
         },
         paymentCredential,
       };
-    } catch (_e) {}
+    } catch (_e) { /* pass */ }
 
     // Pointer Address
     try {
@@ -266,7 +265,7 @@ export class Utils {
         },
         paymentCredential,
       };
-    } catch (_e) {}
+    } catch (_e) { /* pass */ }
 
     try {
       const parsedAddress = C.PointerAddress.from_address(
@@ -293,7 +292,7 @@ export class Utils {
         },
         paymentCredential,
       };
-    } catch (_e) {}
+    } catch (_e) { /* pass */ }
 
     // Reward Address
     try {
@@ -321,7 +320,7 @@ export class Utils {
         },
         stakeCredential,
       };
-    } catch (_e) {}
+    } catch (_e) { /* pass */ }
 
     try {
       const parsedAddress = C.RewardAddress.from_address(
@@ -348,7 +347,7 @@ export class Utils {
         },
         stakeCredential,
       };
-    } catch (_e) {}
+    } catch (_e) { /* pass */ }
     throw new Error("No address type matched for: " + address);
   }
 }

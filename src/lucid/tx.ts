@@ -26,7 +26,7 @@ import { TxComplete } from "./txComplete.ts";
 
 export class Tx {
   txBuilder: Core.TransactionBuilder;
-  private tasks: Function[];
+  private tasks: (() => Promise<void>)[];
   private nftMetadata: NFTMetadata = {};
   private lucid: Lucid;
 

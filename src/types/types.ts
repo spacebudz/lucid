@@ -223,6 +223,6 @@ export type NFTMetadata = {
   [policyId: string]: {
     [assetName: string]: NFTMetadataDetails;
   };
-  // deno-lint-ignore no-explicit-any
-  version?: any; // number
+  //@ts-ignore: Cannot use map of strings and version as number in a type def
+  version?: number; // number
 };
