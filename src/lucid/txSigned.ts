@@ -1,6 +1,7 @@
 import { Core } from "../core/mod.ts";
-import { TxHash } from "../types/mod.ts";
+import { Transaction, TxHash } from "../types/mod.ts";
 import { Lucid } from "./lucid.ts";
+import { toHex } from "../utils/mod.ts";
 
 export class TxSigned {
   txSigned: Core.Transaction;
@@ -12,5 +13,10 @@ export class TxSigned {
 
   async submit(): Promise<TxHash> {
     return await this.lucid.wallet.submitTx(this.txSigned);
+  }
+
+  /** Returns the transaction in hex encoded cbor */
+  toString(): Transaction {
+    return toHex(this.txSigned.to_bytes());
   }
 }
