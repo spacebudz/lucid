@@ -457,11 +457,9 @@ export class Tx {
     return this;
   }
 
-  /**
-   * callback cannot be async
-   */
-  applyIf(condition: boolean, callback: (tx: Tx) => void) {
-    if (condition) callback(this);
+  /** Conditionally add to the transaction */
+  applyIf(condition: boolean, callback: (thisTx: Tx) => void | Promise<void>) {
+    if (condition) this.tasks.push(() => callback(this) as Promise<void>);
     return this;
   }
 
