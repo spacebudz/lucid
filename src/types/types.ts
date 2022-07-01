@@ -165,8 +165,6 @@ export interface Wallet {
   submitTx(signedTx: Core.Transaction): Promise<TxHash>;
 }
 
-export type WalletProvider = "nami" | "eternl" | "flint";
-
 /**
  * These are the arguments that conform a BuiltinData in Plutus:
  *
@@ -194,7 +192,7 @@ export type WalletProvider = "nami" | "eternl" | "flint";
 export type PlutusData =
   | string
   | bigint
-  | PlutusData[]
+  | Array<PlutusData>
   | Map<PlutusData, PlutusData>
   | Construct; // We emulate the constr like this
 

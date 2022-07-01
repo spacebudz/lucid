@@ -50,33 +50,33 @@ export class Blockfrost implements ProviderSchema {
   }
 
   async getUtxos(address: string): Promise<UTxO[]> {
-    let result: any[] = [];
+    let result: BlockfrostUtxoResult = [];
     let page = 1;
-    /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
     while (true) {
-      let pageResult = await fetch(
+      let pageResult: BlockfrostUtxoResult | BlockfrostUtxoError = await fetch(
         `${this.url}/addresses/${address}/utxos?page=${page}`,
         { headers: { project_id: this.projectId } },
       ).then((res) => res.json());
-      if (pageResult.error) {
-        if ((result as any).status_code === 400) return [];
-        else if ((result as any).status_code === 500) return [];
-        else {
+      if ((pageResult as BlockfrostUtxoError).error) {
+        if ((pageResult as BlockfrostUtxoError).status_code === 400) return [];
+        else if ((pageResult as BlockfrostUtxoError).status_code === 500) {
+          throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
+        } else {
           pageResult = [];
         }
       }
-      result = result.concat(pageResult);
-      if (pageResult.length <= 0) break;
+      result = result.concat(pageResult as BlockfrostUtxoResult);
+      if ((pageResult as BlockfrostUtxoResult).length <= 0) break;
       page++;
     }
 
-    return Promise.all(
+    return await Promise.all(
       result.map(async (r) => ({
         txHash: r.tx_hash,
         outputIndex: r.output_index,
         assets: (() => {
           const a: Assets = {};
-          r.amount.forEach((am: any) => {
+          r.amount.forEach((am) => {
             a[am.unit] = BigInt(am.quantity);
           });
           return a;
@@ -110,35 +110,36 @@ export class Blockfrost implements ProviderSchema {
             return toHex(scriptRef.to_bytes());
           })()),
       })),
-    );
+    ) as UTxO[];
   }
 
   async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
-    let result: any[] = [];
+    let result: BlockfrostUtxoResult = [];
     let page = 1;
     while (true) {
-      let pageResult = await fetch(
+      let pageResult: BlockfrostUtxoResult | BlockfrostUtxoError = await fetch(
         `${this.url}/addresses/${address}/utxos/${unit}?page=${page}`,
         { headers: { project_id: this.projectId } },
       ).then((res) => res.json());
-      if (pageResult.error) {
-        if ((result as any).status_code === 400) return [];
-        else if ((result as any).status_code === 500) return [];
-        else {
+      if ((pageResult as BlockfrostUtxoError).error) {
+        if ((pageResult as BlockfrostUtxoError).status_code === 400) return [];
+        else if ((pageResult as BlockfrostUtxoError).status_code === 500) {
+          throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
+        } else {
           pageResult = [];
         }
       }
-      result = result.concat(pageResult);
-      if (pageResult.length <= 0) break;
+      result = result.concat(pageResult as BlockfrostUtxoResult);
+      if ((pageResult as BlockfrostUtxoResult).length <= 0) break;
       page++;
     }
-    return Promise.all(
+    return await Promise.all(
       result.map(async (r) => ({
         txHash: r.tx_hash,
         outputIndex: r.output_index,
         assets: (() => {
           const a: Assets = {};
-          r.amount.forEach((am: any) => {
+          r.amount.forEach((am) => {
             a[am.unit] = BigInt(am.quantity);
           });
           return a;
@@ -172,7 +173,7 @@ export class Blockfrost implements ProviderSchema {
             return toHex(scriptRef.to_bytes());
           })()),
       })),
-    );
+    ) as UTxO[];
   }
 
   async getDatum(datumHash: DatumHash): Promise<Datum> {
@@ -188,7 +189,7 @@ export class Blockfrost implements ProviderSchema {
   }
 
   async awaitTx(txHash: TxHash): Promise<boolean> {
-    return new Promise((res) => {
+    return await new Promise((res) => {
       const confirmation = setInterval(async () => {
         const isConfirmed = await fetch(`${this.url}/txs/${txHash}`, {
           headers: { project_id: this.projectId },
@@ -223,32 +224,33 @@ export class Blockfrost implements ProviderSchema {
  *
  * The conversion is ambigious, that's why it's better to get the datum directly in cbor
  */
-export const datumJsonToCbor = (json: any): Datum => {
-  const convert = (json: any): Core.PlutusData => {
-    if (!isNaN(json.int)) {
-      return C.PlutusData.new_integer(C.BigInt.from_str(json.int.toString()));
-    } else if (json.bytes || !isNaN(json.bytes)) {
-      return C.PlutusData.new_bytes(fromHex(json.bytes));
+
+export const datumJsonToCbor = (json: DatumJson): Datum => {
+  const convert = (json: DatumJson): Core.PlutusData => {
+    if (!isNaN(json.int!)) {
+      return C.PlutusData.new_integer(C.BigInt.from_str(json.int!.toString()));
+    } else if (json.bytes || !isNaN(Number(json.bytes))) {
+      return C.PlutusData.new_bytes(fromHex(json.bytes!));
     } else if (json.map) {
       const m = C.PlutusMap.new();
-      json.map.forEach(({ v, k }: any) => {
-        m.insert(convert(k), convert(v));
+      json.map.forEach(({ k, v }: { k: unknown; v: unknown }) => {
+        m.insert(convert(k as DatumJson), convert(v as DatumJson));
       });
       return C.PlutusData.new_map(m);
     } else if (json.list) {
       const l = C.PlutusList.new();
-      json.list.forEach((v: any) => {
+      json.list.forEach((v: DatumJson) => {
         l.add(convert(v));
       });
       return C.PlutusData.new_list(l);
-    } else if (!isNaN(json.constructor)) {
+    } else if (!isNaN(json.constructor! as unknown as number)) {
       const l = C.PlutusList.new();
-      json.fields.forEach((v: any) => {
+      json.fields!.forEach((v: DatumJson) => {
         l.add(convert(v));
       });
       return C.PlutusData.new_constr_plutus_data(
         C.ConstrPlutusData.new(
-          C.BigNum.from_str(json.constructor.toString()),
+          C.BigNum.from_str(json.constructor!.toString()),
           l,
         ),
       );
@@ -257,4 +259,27 @@ export const datumJsonToCbor = (json: any): Datum => {
   };
 
   return toHex(convert(json).to_bytes());
+};
+
+type DatumJson = {
+  int?: number;
+  bytes?: string;
+  list?: Array<DatumJson>;
+  map?: Array<{ k: unknown; v: unknown }>;
+  fields?: Array<DatumJson>;
+  [constructor: string]: unknown; // number; constructor needs to be simulated like this as optional argument
+};
+
+type BlockfrostUtxoResult = Array<{
+  tx_hash: string;
+  output_index: number;
+  amount: Array<{ unit: string; quantity: string }>;
+  data_hash?: string;
+  inline_datum?: string;
+  reference_script_hash?: string;
+}>;
+
+type BlockfrostUtxoError = {
+  status_code: number;
+  error: unknown;
 };

@@ -16,8 +16,8 @@ export type WalletApi = {
   getCollateral(): Promise<string[]>;
   experimental: {
     getCollateral(): Promise<string[]>;
-    on(eventName: string, callback: Function): void;
-    off(eventName: string, callback: Function): void;
+    on(eventName: string, callback: (...args: unknown[]) => void): void;
+    off(eventName: string, callback: (...args: unknown[]) => void): void;
   };
 };
 
