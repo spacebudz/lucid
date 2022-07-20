@@ -20,7 +20,7 @@ export class MerkleTree {
 
   static async new(data: Array<Uint8Array>) {
     const buildRecursively = async (
-      data: Array<Hash>
+      data: Array<Hash>,
     ): Promise<MerkleNode | null> => {
       if (data.length <= 0) return null;
       if (data.length === 1) {
@@ -83,12 +83,12 @@ export class MerkleTree {
   static async verify(
     data: Uint8Array,
     rootHash: Hash,
-    proof: MerkleTreeProof
+    proof: MerkleTreeProof,
   ): Promise<boolean> {
     const hash = await sha256(data);
     const searchRecursively = async (
       rootHash2: Hash,
-      proof: MerkleTreeProof
+      proof: MerkleTreeProof,
     ): Promise<boolean> => {
       if (proof.length <= 0) return equals(rootHash, rootHash2);
       const [h, t] = [proof[0], proof.slice(1)];

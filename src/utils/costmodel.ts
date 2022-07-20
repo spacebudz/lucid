@@ -10,7 +10,7 @@ export const costModels = () => {
   });
   costmdls.insert(C.Language.new_plutus_v1(), costmdlV1);
 
-  // add plutus v2 TODO
+  // add plutus v2
   const costmdlV2 = C.CostModel.new_plutus_v2();
   plutusV2.forEach((cost, index) => {
     costmdlV2.set(index, C.Int.new_i32(cost));
