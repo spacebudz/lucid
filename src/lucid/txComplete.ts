@@ -94,10 +94,13 @@ export class TxComplete {
     const witnesses = this.txComplete.witness_set();
     const auxiliary_data = this.txComplete.auxiliary_data();
 
-    const inputs = body.inputs().to_js_value().map((i) => ({
-      txHash: i.transaction_id,
-      outputIndex: parseInt(i.index),
-    }));
+    const inputs = body
+      .inputs()
+      .to_js_value()
+      .map((i) => ({
+        txHash: i.transaction_id,
+        outputIndex: parseInt(i.index),
+      }));
     const outputs = (() => {
       const dummyInput = C.TransactionInput.from_json(
         JSON.stringify({ transaction_id: "0".repeat(64), index: "0" }),
@@ -135,7 +138,7 @@ export class TxComplete {
     };
   }
 
-  /** Returns the transaction in hex encoded cbor */
+  /** Returns the transaction in hex encoded CBOR */
   toString(): Transaction {
     return toHex(this.txComplete.to_bytes());
   }

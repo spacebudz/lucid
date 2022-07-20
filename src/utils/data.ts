@@ -1,5 +1,5 @@
 import { C, Core } from "../core/mod.ts";
-import { Datum, PlutusData, Redeemer, Json } from "../types/mod.ts";
+import { Datum, Json, PlutusData, Redeemer } from "../types/mod.ts";
 import { fromHex, toHex } from "./utils.ts";
 
 export class Construct {
@@ -26,8 +26,9 @@ export class Data {
             !isNaN(parseInt(data)) &&
             data.slice(-1) === "n")
         ) {
-          const bigint =
-            typeof data === "string" ? BigInt(data.slice(0, -1)) : data;
+          const bigint = typeof data === "string"
+            ? BigInt(data.slice(0, -1))
+            : data;
           return C.PlutusData.new_integer(C.BigInt.from_str(bigint.toString()));
         } else if (typeof data === "string") {
           return C.PlutusData.new_bytes(fromHex(data));
@@ -40,8 +41,8 @@ export class Data {
           return C.PlutusData.new_constr_plutus_data(
             C.ConstrPlutusData.new(
               C.BigNum.from_str(index.toString()),
-              plutusList
-            )
+              plutusList,
+            ),
           );
         } else if (data instanceof Array) {
           const plutusList = C.PlutusList.new();
@@ -111,8 +112,9 @@ export class Data {
    */
   static fromJson(json: Json): PlutusData {
     const toPlutusData = (json: Json): PlutusData => {
-      if (typeof json === "string")
+      if (typeof json === "string") {
         return toHex(new TextEncoder().encode(json));
+      }
       if (typeof json === "number") return BigInt(json);
       if (typeof json === "bigint") return json;
       if (json instanceof Array) return json.map((v) => toPlutusData(v));
@@ -142,12 +144,14 @@ export class Data {
           !isNaN(parseInt(data)) &&
           data.slice(-1) === "n")
       ) {
-        const bigint =
-          typeof data === "string" ? BigInt(data.slice(0, -1)) : data;
+        const bigint = typeof data === "string"
+          ? BigInt(data.slice(0, -1))
+          : data;
         return parseInt(bigint.toString());
       }
-      if (typeof data === "string")
+      if (typeof data === "string") {
         return new TextDecoder().decode(fromHex(data));
+      }
       if (data instanceof Array) return data.map((v) => fromPlutusData(v));
       if (data instanceof Map) {
         const tempJson: Json = {};
@@ -157,16 +161,17 @@ export class Data {
           if (
             typeof convertedKey !== "string" &&
             typeof convertedKey !== "number"
-          )
+          ) {
             throw new Error(
-              "Unsupported type (Note: Only bytes or integers can be keys of a JSON object"
+              "Unsupported type (Note: Only bytes or integers can be keys of a JSON object",
             );
+          }
           tempJson[convertedKey] = fromPlutusData(value);
         });
         return tempJson;
       }
       throw new Error(
-        "Unsupported type (Note: Constructor cannot be converted to JSON)"
+        "Unsupported type (Note: Constructor cannot be converted to JSON)",
       );
     };
     return fromPlutusData(plutusData);
@@ -175,8 +180,8 @@ export class Data {
   static empty(): Datum | Redeemer {
     return toHex(
       C.PlutusData.new_constr_plutus_data(
-        C.ConstrPlutusData.new(C.BigNum.from_str("0"), C.PlutusList.new())
-      ).to_bytes()
+        C.ConstrPlutusData.new(C.BigNum.from_str("0"), C.PlutusList.new()),
+      ).to_bytes(),
     );
   }
 }

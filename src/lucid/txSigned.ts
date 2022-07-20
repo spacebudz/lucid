@@ -15,7 +15,7 @@ export class TxSigned {
     return await this.lucid.wallet.submitTx(this.txSigned);
   }
 
-  /** Returns the transaction in hex encoded cbor */
+  /** Returns the transaction in hex encoded CBOR */
   toString(): Transaction {
     return toHex(this.txSigned.to_bytes());
   }

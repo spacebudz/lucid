@@ -35,16 +35,16 @@ export type Credential = {
   hash: KeyHash | ScriptHash;
 };
 
-/** Concatenation of Policy Id and asset name in hex */
+/** Concatenation of Policy Id and asset name in Hex */
 export type Unit = string;
 export type Assets = {
   [unit: string]: BigInt;
 };
 export type ScriptType = "Native" | "PlutusV1" | "PlutusV2";
 
-/** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
+/** Note: Plutus scripts need to be CBOR encoded. Raw compiled script without the CBOR encoding do not work.
  *
- * E.g. taking the cborHex coming from writeFileTextEnvelope works
+ * E.g. taking in the CBOR Hex string coming from writeFileTextEnvelope (Haskell) works
  */
 export type Script = { type: ScriptType; script: string };
 
@@ -57,29 +57,29 @@ export type Validator =
   | CertificateValidator
   | WithdrawalValidator;
 
-/** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
+/** Note: Plutus scripts need to be CBOR encoded. Raw compiled script without the CBOR encoding do not work.
  *
- * E.g. taking the cborHex coming from writeFileTextEnvelope works
+ * E.g. taking the CBOR Hex string coming from writeFileTextEnvelope works
  */
 export type MintingPolicy = Script;
-/** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
+/** Note: Plutus scripts need to be CBOR encoded. Raw compiled script without the CBOR encoding do not work.
  *
- * E.g. taking the cborHex coming from writeFileTextEnvelope works
+ * E.g. taking the CBOR Hex string coming from writeFileTextEnvelope works
  */
 export type SpendingValidator = Script;
-/** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
+/** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the CBOR encoding do not work.
  *
- * E.g. taking the cborHex coming from writeFileTextEnvelope works
+ * E.g. taking the CBOR Hex string coming from writeFileTextEnvelope works
  */
 export type CertificateValidator = Script;
-/** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the cbor encoding do not work.
+/** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the CBOR encoding do not work.
  *
- * E.g. taking the cborHex coming from writeFileTextEnvelope works
+ * E.g. taking the CBOR Hex string coming from writeFileTextEnvelope works
  */
 export type WithdrawalValidator = Script;
-/** bech32 */
+/** Bech32 */
 export type Address = string;
-/** bech32 */
+/** Bech32 */
 export type RewardAddress = string;
 /** Hex */
 export type PaymentKeyHash = string;
@@ -91,7 +91,7 @@ export type KeyHash = string | PaymentKeyHash | StakeKeyHash;
 export type ScriptHash = string;
 /** Hex */
 export type TxHash = string;
-/** bech32 */
+/** Bech32 */
 export type PoolId = string;
 /** Hex */
 export type Datum = string;
@@ -115,7 +115,7 @@ export type Label = number;
 export type TransactionWitnesses = string;
 /** Hex */
 export type Transaction = string;
-/** bech32 */
+/** Bech32 */
 export type PrivateKey = string;
 /** Hex */
 export type ScriptRef = string;
