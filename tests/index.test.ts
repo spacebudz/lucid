@@ -263,3 +263,34 @@ Deno.test("Basic Merkle tree", async () => {
   assert(await MerkleTree.verify(data[0], rootHash, proof));
   assertEquals(merkleTree.size(), 3);
 });
+
+Deno.test("PlutusData from JSON", () => {
+  const plutusData = Data.fromJson({
+    test: 123,
+  });
+  assertEquals(plutusData, new Map([["74657374", 123n]]));
+});
+
+Deno.test("PlutusData to JSON", () => {
+  const json = Data.toJson(new Map([["74657374", 123n]]));
+  assertEquals(json, {
+    test: 123,
+  });
+});
+
+Deno.test("JSON Metadata to CBOR Datum", () => {
+  const cborDatum = Data.to(
+    Data.fromJson({
+      test: 123,
+    })
+  );
+  console.log(cborDatum);
+  assertEquals(cborDatum, "a14474657374187b");
+});
+
+Deno.test("CBOR Datum to JSON Metadata", () => {
+  const cborDatum = Data.toJson(Data.from("a14474657374187b"));
+  assertEquals(cborDatum, {
+    test: 123,
+  });
+});

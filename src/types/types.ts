@@ -197,7 +197,8 @@ export type PlutusData =
   | Construct; // We emulate the constr like this
 
 /** JSON object */
-export type Json = unknown;
+// deno-lint-ignore no-explicit-any
+export type Json = any;
 
 /** Time in milliseconds */
 export type UnixTime = number;
