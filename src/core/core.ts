@@ -6,6 +6,11 @@ const isNode = typeof window === "undefined";
 
 if (isNode) {
   const fetch = await import(/* webpackIgnore: true */ "node-fetch" as string);
+  const { Crypto } = await import(
+    /* webpackIgnore: true */ "@peculiar/webcrypto" as string
+  );
+  // @ts-ignore : global
+  global.crypto = new Crypto();
   // @ts-ignore : global
   global.fetch = fetch.default;
   // @ts-ignore : global

@@ -20,6 +20,7 @@ await build({
     },
     dependencies: {
       "node-fetch": "^3.2.3",
+      "@peculiar/webcrypto": "^1.4.0",
     },
     main: "./esm/mod.js",
     type: "module",
@@ -58,6 +59,7 @@ await esbuild.build({
   external: [
     "./wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.js",
     "node-fetch",
+    "@peculiar/webcrypto",
   ],
 });
 esbuild.stop();
