@@ -18,29 +18,43 @@ type MerkleTreeProof = Array<{
 export class MerkleTree {
   root!: MerkleNode | null;
 
+  /** Construct Merkle tree from data, which get hashed with sha256 */
   static async new(data: Array<Uint8Array>) {
-    const buildRecursively = async (
-      data: Array<Hash>,
-    ): Promise<MerkleNode | null> => {
-      if (data.length <= 0) return null;
-      if (data.length === 1) {
-        return { node: await sha256(data[0]), left: null, right: null };
-      }
-
-      const cutoff = Math.floor(data.length / 2);
-      const [left, right] = [data.slice(0, cutoff), data.slice(cutoff)];
-      const lnode = await buildRecursively(left);
-      const rnode = await buildRecursively(right);
-      if (lnode === null || rnode === null) return null;
-      return {
-        node: await combineHash(lnode.node, rnode.node),
-        left: lnode,
-        right: rnode,
-      };
-    };
     const mt = new this();
-    mt.root = await buildRecursively(data);
+    mt.root = await this.buildRecursively(data);
     return mt;
+  }
+
+  /** Construct Merkle tree from sha256 hashes */
+  static async fromHashes(hashes: Array<Hash>) {
+    const mt = new this();
+    mt.root = await this.buildRecursively(hashes, true);
+    return mt;
+  }
+
+  private static async buildRecursively(
+    data: Array<Uint8Array>,
+    isHash?: boolean
+  ): Promise<MerkleNode | null> {
+    if (data.length <= 0) return null;
+    if (data.length === 1) {
+      return {
+        node: isHash ? data[0] : await sha256(data[0]),
+        left: null,
+        right: null,
+      };
+    }
+
+    const cutoff = Math.floor(data.length / 2);
+    const [left, right] = [data.slice(0, cutoff), data.slice(cutoff)];
+    const lnode = await this.buildRecursively(left);
+    const rnode = await this.buildRecursively(right);
+    if (lnode === null || rnode === null) return null;
+    return {
+      node: await combineHash(lnode.node, rnode.node),
+      left: lnode,
+      right: rnode,
+    };
   }
 
   rootHash(): Hash {
@@ -83,12 +97,12 @@ export class MerkleTree {
   static async verify(
     data: Uint8Array,
     rootHash: Hash,
-    proof: MerkleTreeProof,
+    proof: MerkleTreeProof
   ): Promise<boolean> {
     const hash = await sha256(data);
     const searchRecursively = async (
       rootHash2: Hash,
-      proof: MerkleTreeProof,
+      proof: MerkleTreeProof
     ): Promise<boolean> => {
       if (proof.length <= 0) return equals(rootHash, rootHash2);
       const [h, t] = [proof[0], proof.slice(1)];
