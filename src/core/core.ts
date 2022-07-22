@@ -44,7 +44,6 @@ const importForEnvironment = async (): Promise<typeof Core | null> => {
     );
     return pkg as unknown as typeof Core;
   } catch (_e) {
-    console.log(_e);
     // This only ever happens during SSR rendering
     return null;
   }
