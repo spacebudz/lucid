@@ -65,9 +65,10 @@ export class Lucid {
           ),
         )
         .blockfrost(
+          // Provider needs to be blockfrost in this case. Maybe we have better/more ways in the future to evaluate ex units
           C.Blockfrost.new(
-            provider.url + "/utils/txs/evaluate",
-            provider.projectId,
+            provider.data.url + "/utils/txs/evaluate",
+            provider.data.projectId,
           ),
         )
         .costmdls(costModels())

@@ -6,7 +6,7 @@ import {
   Datum,
   DatumHash,
   ProtocolParameters,
-  ProviderSchema,
+  Provider,
   ScriptType,
   Slot,
   TxHash,
@@ -14,17 +14,16 @@ import {
   UTxO,
 } from "../types/mod.ts";
 
-export class Blockfrost implements ProviderSchema {
-  url: string;
-  projectId: string;
+export class Blockfrost implements Provider {
+  data: { url: string; projectId: string };
+
   constructor(url: string, projectId: string) {
-    this.url = url;
-    this.projectId = projectId;
+    this.data = { url, projectId };
   }
 
   async getProtocolParameters(): Promise<ProtocolParameters> {
-    const result = await fetch(`${this.url}/epochs/latest/parameters`, {
-      headers: { project_id: this.projectId },
+    const result = await fetch(`${this.data.url}/epochs/latest/parameters`, {
+      headers: { project_id: this.data.projectId },
     }).then((res) => res.json());
 
     return {
@@ -42,8 +41,8 @@ export class Blockfrost implements ProviderSchema {
     };
   }
   async getCurrentSlot(): Promise<Slot> {
-    return await fetch(`${this.url}/blocks/latest`, {
-      headers: { project_id: this.projectId },
+    return await fetch(`${this.data.url}/blocks/latest`, {
+      headers: { project_id: this.data.projectId },
     })
       .then((res) => res.json())
       .then((res) => parseInt(res.slot));
@@ -54,8 +53,8 @@ export class Blockfrost implements ProviderSchema {
     let page = 1;
     while (true) {
       let pageResult: BlockfrostUtxoResult | BlockfrostUtxoError = await fetch(
-        `${this.url}/addresses/${address}/utxos?page=${page}`,
-        { headers: { project_id: this.projectId } },
+        `${this.data.url}/addresses/${address}/utxos?page=${page}`,
+        { headers: { project_id: this.data.projectId } },
       ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
         if ((pageResult as BlockfrostUtxoError).status_code === 400) return [];
@@ -70,7 +69,7 @@ export class Blockfrost implements ProviderSchema {
       page++;
     }
 
-    return await Promise.all(
+    return (await Promise.all(
       result.map(async (r) => ({
         txHash: r.tx_hash,
         outputIndex: r.output_index,
@@ -90,16 +89,19 @@ export class Blockfrost implements ProviderSchema {
               type,
             }: {
               type: ScriptType;
-            } = await fetch(`${this.url}/scripts/${r.reference_script_hash}`, {
-              headers: { project_id: this.projectId },
-            }).then((res) => res.json());
+            } = await fetch(
+              `${this.data.url}/scripts/${r.reference_script_hash}`,
+              {
+                headers: { project_id: this.data.projectId },
+              },
+            ).then((res) => res.json());
             // TODO: support native scripts
             if (type === "Native") {
               throw new Error("Native script ref not implemented!");
             }
             const { cbor } = await fetch(
-              `${this.url}/scripts/${r.reference_script_hash}/cbor`,
-              { headers: { project_id: this.projectId } },
+              `${this.data.url}/scripts/${r.reference_script_hash}/cbor`,
+              { headers: { project_id: this.data.projectId } },
             ).then((res) => res.json());
             const script = C.PlutusScript.from_bytes(fromHex(cbor));
             const scriptRef = C.ScriptRef.new(
@@ -110,7 +112,7 @@ export class Blockfrost implements ProviderSchema {
             return toHex(scriptRef.to_bytes());
           })()),
       })),
-    ) as UTxO[];
+    )) as UTxO[];
   }
 
   async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
@@ -118,8 +120,8 @@ export class Blockfrost implements ProviderSchema {
     let page = 1;
     while (true) {
       let pageResult: BlockfrostUtxoResult | BlockfrostUtxoError = await fetch(
-        `${this.url}/addresses/${address}/utxos/${unit}?page=${page}`,
-        { headers: { project_id: this.projectId } },
+        `${this.data.url}/addresses/${address}/utxos/${unit}?page=${page}`,
+        { headers: { project_id: this.data.projectId } },
       ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
         if ((pageResult as BlockfrostUtxoError).status_code === 400) return [];
@@ -133,7 +135,7 @@ export class Blockfrost implements ProviderSchema {
       if ((pageResult as BlockfrostUtxoResult).length <= 0) break;
       page++;
     }
-    return await Promise.all(
+    return (await Promise.all(
       result.map(async (r) => ({
         txHash: r.tx_hash,
         outputIndex: r.output_index,
@@ -153,16 +155,19 @@ export class Blockfrost implements ProviderSchema {
               type,
             }: {
               type: ScriptType;
-            } = await fetch(`${this.url}/scripts/${r.reference_script_hash}`, {
-              headers: { project_id: this.projectId },
-            }).then((res) => res.json());
+            } = await fetch(
+              `${this.data.url}/scripts/${r.reference_script_hash}`,
+              {
+                headers: { project_id: this.data.projectId },
+              },
+            ).then((res) => res.json());
             // TODO: support native scripts
             if (type === "Native") {
               throw new Error("Native script ref not implemented!");
             }
             const { cbor } = await fetch(
-              `${this.url}/scripts/${r.reference_script_hash}/cbor`,
-              { headers: { project_id: this.projectId } },
+              `${this.data.url}/scripts/${r.reference_script_hash}/cbor`,
+              { headers: { project_id: this.data.projectId } },
             ).then((res) => res.json());
             const script = C.PlutusScript.from_bytes(fromHex(cbor));
             const scriptRef = C.ScriptRef.new(
@@ -173,26 +178,29 @@ export class Blockfrost implements ProviderSchema {
             return toHex(scriptRef.to_bytes());
           })()),
       })),
-    ) as UTxO[];
+    )) as UTxO[];
   }
 
   async getDatum(datumHash: DatumHash): Promise<Datum> {
-    const datum = await fetch(`${this.url}/scripts/datum/${datumHash}`, {
-      headers: { project_id: this.projectId },
-    })
+    const datum = await fetch(
+      `${this.data.url}/scripts/datum/${datumHash}/cbor`,
+      {
+        headers: { project_id: this.data.projectId },
+      },
+    )
       .then((res) => res.json())
       .then((res) => res.json_value);
     if (!datum || datum.error) {
       throw new Error(`No datum found for datum hash: ${datumHash}`);
     }
-    return datumJsonToCbor(datum);
+    return datum.cbor;
   }
 
   async awaitTx(txHash: TxHash): Promise<boolean> {
     return await new Promise((res) => {
       const confirmation = setInterval(async () => {
-        const isConfirmed = await fetch(`${this.url}/txs/${txHash}`, {
-          headers: { project_id: this.projectId },
+        const isConfirmed = await fetch(`${this.data.url}/txs/${txHash}`, {
+          headers: { project_id: this.data.projectId },
         }).then((res) => res.json());
         if (isConfirmed && !isConfirmed.error) {
           clearInterval(confirmation);
@@ -204,11 +212,11 @@ export class Blockfrost implements ProviderSchema {
   }
 
   async submitTx(tx: Core.Transaction): Promise<TxHash> {
-    const result = await fetch(`${this.url}/tx/submit`, {
+    const result = await fetch(`${this.data.url}/tx/submit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/cbor",
-        project_id: this.projectId,
+        project_id: this.data.projectId,
       },
       body: tx.to_bytes(),
     }).then((res) => res.json());

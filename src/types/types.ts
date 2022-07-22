@@ -1,8 +1,5 @@
 import { Core } from "../core/mod.ts";
 import { Construct } from "../utils/mod.ts";
-import { Blockfrost } from "../provider/mod.ts";
-
-export type Provider = Blockfrost; // more providers can be added here
 
 export type ProtocolParameters = {
   minFeeA: number;
@@ -20,14 +17,15 @@ export type ProtocolParameters = {
 
 export type Slot = number;
 
-export interface ProviderSchema {
+export interface Provider {
+  data: { url: string; projectId: string; [key: string]: unknown };
   getProtocolParameters(): Promise<ProtocolParameters>;
-  getCurrentSlot(): Promise<Slot>;
   getUtxos(address: Address): Promise<UTxO[]>;
-  getUtxosWithUnit?(address: Address, unit: Unit): Promise<UTxO[]>;
-  getDatum?(datumHash: DatumHash): Promise<Datum>;
-  awaitTx?(txHash: TxHash): Promise<boolean>;
-  submitTx?(tx: Core.Transaction): Promise<TxHash>;
+  getCurrentSlot(): Promise<Slot>;
+  getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]>;
+  getDatum(datumHash: DatumHash): Promise<Datum>;
+  awaitTx(txHash: TxHash): Promise<boolean>;
+  submitTx(tx: Core.Transaction): Promise<TxHash>;
 }
 
 export type Credential = {
