@@ -189,11 +189,11 @@ export class Blockfrost implements Provider {
       },
     )
       .then((res) => res.json())
-      .then((res) => res.json_value);
+      .then((res) => res.cbor);
     if (!datum || datum.error) {
       throw new Error(`No datum found for datum hash: ${datumHash}`);
     }
-    return datum.cbor;
+    return datum;
   }
 
   async awaitTx(txHash: TxHash): Promise<boolean> {
