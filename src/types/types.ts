@@ -187,12 +187,15 @@ export interface Wallet {
  *
  * Note: We need to wrap it in an object to prevent circular references
  */
+
 export type PlutusData =
-  | string
+  | bytes
   | bigint
   | Array<PlutusData>
   | Map<PlutusData, PlutusData>
   | Construct; // We emulate the constr like this
+
+type bytes = string | Uint8Array;
 
 /** JSON object */
 // deno-lint-ignore no-explicit-any

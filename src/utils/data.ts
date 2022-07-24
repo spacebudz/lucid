@@ -32,6 +32,8 @@ export class Data {
           return C.PlutusData.new_integer(C.BigInt.from_str(bigint.toString()));
         } else if (typeof data === "string") {
           return C.PlutusData.new_bytes(fromHex(data));
+        } else if (data instanceof Uint8Array) {
+          return C.PlutusData.new_bytes(data);
         } else if (data instanceof Construct) {
           const { index, args } = data;
           const plutusList = C.PlutusList.new();
