@@ -22,12 +22,11 @@ import {
   UTxO,
   Validator,
 } from "../types/mod.ts";
-import { Lucid } from "../lucid/mod.ts";
 
 export class Utils {
-  private lucid: Lucid;
-  constructor(lucid: Lucid) {
-    this.lucid = lucid;
+  private network: Network;
+  constructor(network: Network) {
+    this.network = network;
   }
 
   validatorToAddress(
@@ -37,7 +36,7 @@ export class Utils {
     const validatorHash = this.validatorToScriptHash(validator);
     if (stakeCredential) {
       return C.BaseAddress.new(
-        networkToId(this.lucid.network),
+        networkToId(this.network),
         C.StakeCredential.from_scripthash(C.ScriptHash.from_hex(validatorHash)),
         stakeCredential.type === "Key"
           ? C.StakeCredential.from_keyhash(
@@ -51,7 +50,7 @@ export class Utils {
         .to_bech32(undefined);
     } else {
       return C.EnterpriseAddress.new(
-        networkToId(this.lucid.network),
+        networkToId(this.network),
         C.StakeCredential.from_scripthash(C.ScriptHash.from_hex(validatorHash)),
       )
         .to_address()
@@ -103,13 +102,13 @@ export class Utils {
   }
 
   unixTimeToSlot(unixTime: UnixTime): Slot {
-    return this.lucid.network === "Mainnet"
+    return this.network === "Mainnet"
       ? unixTimeToSlot(unixTime)
       : unixTimeToSlotTestnet(unixTime);
   }
 
   slotToUnixTime(slot: Slot): UnixTime {
-    return this.lucid.network === "Mainnet"
+    return this.network === "Mainnet"
       ? slotToUnixTime(slot)
       : slotToUnixTimeTestnet(slot);
   }

@@ -32,50 +32,62 @@ export class Lucid {
   network: Network = "Mainnet";
   utils!: Utils;
 
-  static async new(provider?: Provider, network?: Network) {
-    const lucid = new this();
-    if (network) lucid.network = network;
-    if (provider) {
-      lucid.provider = provider;
-      const protocolParameters = await provider.getProtocolParameters();
-      lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
-        .coins_per_utxo_byte(
-          C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString()),
-        )
-        .fee_algo(
-          C.LinearFee.new(
-            C.BigNum.from_str(protocolParameters.minFeeA.toString()),
-            C.BigNum.from_str(protocolParameters.minFeeB.toString()),
-          ),
-        )
-        .key_deposit(
-          C.BigNum.from_str(protocolParameters.keyDeposit.toString()),
-        )
-        .pool_deposit(
-          C.BigNum.from_str(protocolParameters.poolDeposit.toString()),
-        )
-        .max_tx_size(protocolParameters.maxTxSize)
-        .max_value_size(protocolParameters.maxValSize)
-        .collateral_percentage(protocolParameters.collateralPercentage)
-        .max_collateral_inputs(protocolParameters.maxCollateralInputs)
-        .ex_unit_prices(
-          C.ExUnitPrices.from_float(
-            protocolParameters.priceMem,
-            protocolParameters.priceStep,
-          ),
-        )
-        .blockfrost(
-          // Provider needs to be blockfrost in this case. Maybe we have better/more ways in the future to evaluate ex units
-          C.Blockfrost.new(
-            provider.data.url + "/utils/txs/evaluate",
-            provider.data.projectId,
-          ),
-        )
-        .costmdls(createCostModels(protocolParameters.costModels))
-        .build();
+  private constructor(provider?: Provider, network?: Network) {
+    if(provider){
+      this.provider = provider
     }
-    lucid.utils = new Utils(lucid);
-    return lucid;
+    if(network){
+      this.network = network
+    }
+
+  }
+  static async new(provider?: Provider, network?: Network):Promise<Lucid> {
+    const lucid = new Lucid(provider,network)
+    await lucid.init();
+    return lucid
+  }
+
+  async init(){
+
+    if (this.provider) {
+      const protocolParameters = await this.provider.getProtocolParameters();
+      this.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
+          .coins_per_utxo_byte(
+              C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString()),
+          )
+          .fee_algo(
+              C.LinearFee.new(
+                  C.BigNum.from_str(protocolParameters.minFeeA.toString()),
+                  C.BigNum.from_str(protocolParameters.minFeeB.toString()),
+              ),
+          )
+          .key_deposit(
+              C.BigNum.from_str(protocolParameters.keyDeposit.toString()),
+          )
+          .pool_deposit(
+              C.BigNum.from_str(protocolParameters.poolDeposit.toString()),
+          )
+          .max_tx_size(protocolParameters.maxTxSize)
+          .max_value_size(protocolParameters.maxValSize)
+          .collateral_percentage(protocolParameters.collateralPercentage)
+          .max_collateral_inputs(protocolParameters.maxCollateralInputs)
+          .ex_unit_prices(
+              C.ExUnitPrices.from_float(
+                  protocolParameters.priceMem,
+                  protocolParameters.priceStep,
+              ),
+          )
+          .blockfrost(
+              // Provider needs to be blockfrost in this case. Maybe we have better/more ways in the future to evaluate ex units
+              C.Blockfrost.new(
+                  this.provider.data.url + "/utils/txs/evaluate",
+                  this.provider.data.projectId,
+              ),
+          )
+          .costmdls(createCostModels(protocolParameters.costModels))
+          .build();
+    }
+    this.utils=new Utils(this.network)
   }
 
   newTx(): Tx {
