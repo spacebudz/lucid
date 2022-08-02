@@ -180,10 +180,6 @@ export class Data {
   }
 
   static empty(): Datum | Redeemer {
-    return toHex(
-      C.PlutusData.new_constr_plutus_data(
-        C.ConstrPlutusData.new(C.BigNum.from_str("0"), C.PlutusList.new()),
-      ).to_bytes(),
-    );
+    return "d87980";
   }
 }
