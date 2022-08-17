@@ -38,6 +38,7 @@ export class Blockfrost implements Provider {
       coinsPerUtxoByte: BigInt(result.coins_per_utxo_size),
       collateralPercentage: parseInt(result.collateral_percent),
       maxCollateralInputs: parseInt(result.max_collateral_inputs),
+      costModels: result.cost_models,
     };
   }
   async getCurrentSlot(): Promise<Slot> {

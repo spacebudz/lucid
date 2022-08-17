@@ -1,7 +1,7 @@
 import { C, Core } from "../core/mod.ts";
 import {
   coreToUtxo,
-  costModels,
+  createCostModels,
   fromHex,
   toHex,
   Utils,
@@ -71,7 +71,7 @@ export class Lucid {
             provider.data.projectId,
           ),
         )
-        .costmdls(costModels())
+        .costmdls(createCostModels(protocolParameters.costModels))
         .build();
     }
     lucid.utils = new Utils(lucid);

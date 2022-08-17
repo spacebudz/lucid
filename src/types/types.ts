@@ -1,18 +1,23 @@
 import { Core } from "../core/mod.ts";
 import { Construct } from "../utils/mod.ts";
 
+type CostModel = Record<string, number>;
+
+export type CostModels = Record<ScriptType, CostModel>;
+
 export type ProtocolParameters = {
   minFeeA: number;
   minFeeB: number;
   maxTxSize: number;
   maxValSize: number;
-  keyDeposit: BigInt;
-  poolDeposit: BigInt;
+  keyDeposit: bigint;
+  poolDeposit: bigint;
   priceMem: number;
   priceStep: number;
-  coinsPerUtxoByte: BigInt;
+  coinsPerUtxoByte: bigint;
   collateralPercentage: number;
   maxCollateralInputs: number;
+  costModels: CostModels;
 };
 
 export type Slot = number;
@@ -35,9 +40,7 @@ export type Credential = {
 
 /** Concatenation of Policy Id and asset name in Hex */
 export type Unit = string;
-export type Assets = {
-  [unit: string]: BigInt;
-};
+export type Assets = Record<string, bigint>;
 export type ScriptType = "Native" | "PlutusV1" | "PlutusV2";
 
 /** Note: Plutus scripts need to be CBOR encoded. Raw compiled script without the CBOR encoding do not work.
@@ -107,7 +110,7 @@ export type OutputData = { asHash?: Datum; inline?: Datum; scriptRef?: Script };
 export type DatumHash = string;
 /** Hex (Redeemer is only PlutusData, same as Datum) */
 export type Redeemer = string; // Plutus Data (same as Datum)
-export type Lovelace = BigInt;
+export type Lovelace = bigint;
 export type Label = number;
 /** Hex */
 export type TransactionWitnesses = string;
