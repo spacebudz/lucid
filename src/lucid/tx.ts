@@ -463,11 +463,11 @@ export class Tx {
     return this;
   }
 
-  async complete(option?: {
+  async complete(options?: {
     changeAddress?: Address;
     datum?: { asHash?: Datum; inline?: Datum };
   }) {
-    if (option?.datum?.asHash && option?.datum?.inline) {
+    if (options?.datum?.asHash && options?.datum?.inline) {
       throw new Error("Not allowed to set asHash and inline at the same time.");
     }
 
@@ -486,28 +486,28 @@ export class Tx {
     const utxos = await this.lucid.wallet.getUtxosCore();
 
     const changeAddress: Core.Address = C.Address.from_bech32(
-      option?.changeAddress || (await this.lucid.wallet.address()),
+      options?.changeAddress || (await this.lucid.wallet.address()),
     );
 
     this.txBuilder.add_inputs_from(utxos, changeAddress);
 
     this.txBuilder.balance(
       changeAddress,
-      option?.datum?.asHash
+      options?.datum?.asHash
         ? C.Datum.new_data_hash(
           C.hash_plutus_data(
-            C.PlutusData.from_bytes(fromHex(option.datum.asHash)),
+            C.PlutusData.from_bytes(fromHex(options.datum.asHash)),
           ),
         )
-        : option?.datum?.inline
+        : options?.datum?.inline
         ? C.Datum.new_data(
-          C.Data.new(C.PlutusData.from_bytes(fromHex(option.datum.inline))),
+          C.Data.new(C.PlutusData.from_bytes(fromHex(options.datum.inline))),
         )
         : undefined,
     );
-    if (option?.datum?.asHash) {
+    if (options?.datum?.asHash) {
       this.txBuilder.add_plutus_data(
-        C.PlutusData.from_bytes(fromHex(option.datum.asHash)),
+        C.PlutusData.from_bytes(fromHex(options.datum.asHash)),
       );
     }
 
