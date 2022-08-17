@@ -6608,9 +6608,15 @@ declare export class TransactionBuilder {
    * This should be called after adding all certs/outputs/etc and will be an error otherwise.
    * Adding a change output must be called after via TransactionBuilder::balance()
    * inputs to cover the minimum fees. This does not, however, set the txbuilder's fee.
+   *
+   * change_address is required here in order to determine the min ada requirement precisely
    * @param {TransactionUnspentOutputs} inputs
+   * @param {Address} change_address
    */
-  add_inputs_from(inputs: TransactionUnspentOutputs): void;
+  add_inputs_from(
+    inputs: TransactionUnspentOutputs,
+    change_address: Address
+  ): void;
 
   /**
    * @param {TransactionUnspentOutput} utxo
@@ -6884,10 +6890,10 @@ declare export class TransactionBuilder {
    * Make sure to call this function last after setting all other tx-body properties
    * Editing inputs, outputs, mint, etc. after change been calculated
    * might cause a mismatch in calculated fee versus the required fee
-   * @param {Address} address
+   * @param {Address} change_address
    * @param {Datum | void} datum
    */
-  balance(address: Address, datum?: Datum): void;
+  balance(change_address: Address, datum?: Datum): void;
 
   /**
    * @returns {number}

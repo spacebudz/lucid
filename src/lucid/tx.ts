@@ -489,7 +489,7 @@ export class Tx {
       option?.changeAddress || (await this.lucid.wallet.address()),
     );
 
-    this.txBuilder.add_inputs_from(utxos);
+    this.txBuilder.add_inputs_from(utxos, changeAddress);
 
     this.txBuilder.balance(
       changeAddress,

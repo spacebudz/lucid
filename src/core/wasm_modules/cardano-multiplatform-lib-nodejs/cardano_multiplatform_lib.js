@@ -14006,11 +14006,19 @@ class TransactionBuilder {
    * This should be called after adding all certs/outputs/etc and will be an error otherwise.
    * Adding a change output must be called after via TransactionBuilder::balance()
    * inputs to cover the minimum fees. This does not, however, set the txbuilder's fee.
+   *
+   * change_address is required here in order to determine the min ada requirement precisely
    * @param {TransactionUnspentOutputs} inputs
+   * @param {Address} change_address
    */
-  add_inputs_from(inputs) {
+  add_inputs_from(inputs, change_address) {
     _assertClass(inputs, TransactionUnspentOutputs);
-    wasm.transactionbuilder_add_inputs_from(this.ptr, inputs.ptr);
+    _assertClass(change_address, Address);
+    wasm.transactionbuilder_add_inputs_from(
+      this.ptr,
+      inputs.ptr,
+      change_address.ptr,
+    );
   }
   /**
    * @param {TransactionUnspentOutput} utxo
@@ -14412,18 +14420,18 @@ class TransactionBuilder {
    * Make sure to call this function last after setting all other tx-body properties
    * Editing inputs, outputs, mint, etc. after change been calculated
    * might cause a mismatch in calculated fee versus the required fee
-   * @param {Address} address
+   * @param {Address} change_address
    * @param {Datum | undefined} datum
    */
-  balance(address, datum) {
-    _assertClass(address, Address);
+  balance(change_address, datum) {
+    _assertClass(change_address, Address);
     let ptr0 = 0;
     if (!isLikeNone(datum)) {
       _assertClass(datum, Datum);
       ptr0 = datum.ptr;
       datum.ptr = 0;
     }
-    wasm.transactionbuilder_balance(this.ptr, address.ptr, ptr0);
+    wasm.transactionbuilder_balance(this.ptr, change_address.ptr, ptr0);
   }
   /**
    * @returns {number}

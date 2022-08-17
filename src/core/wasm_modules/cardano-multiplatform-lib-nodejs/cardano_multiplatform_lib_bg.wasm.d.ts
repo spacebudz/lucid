@@ -1068,7 +1068,11 @@ export function transactionbuilderconfigbuilder_blockfrost(
 ): number;
 export function transactionbuilderconfigbuilder_build(a: number): number;
 export function __wbg_transactionbuilder_free(a: number): void;
-export function transactionbuilder_add_inputs_from(a: number, b: number): void;
+export function transactionbuilder_add_inputs_from(
+  a: number,
+  b: number,
+  c: number,
+): void;
 export function transactionbuilder_add_input(
   a: number,
   b: number,
