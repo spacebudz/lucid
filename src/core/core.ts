@@ -1,4 +1,4 @@
-import type * as Core from "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.d.ts";
+import type * as Core from "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js";
 export { Core };
 
 // dnt-shim-ignore
