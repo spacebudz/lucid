@@ -42,7 +42,7 @@ Deno.test("Address type", async () => {
     C.Address.from_bech32(address),
   )!
     .to_address()
-    .to_bech32();
+    .to_bech32(undefined);
   assertEquals(address, enterpriseAddress);
   assertEquals(address, await lucid.wallet.address());
 });

@@ -97,7 +97,8 @@ export class TxComplete {
     const inputs = body
       .inputs()
       .to_js_value()
-      .map((i) => ({
+      // deno-lint-ignore no-explicit-any
+      .map((i: any) => ({
         txHash: i.transaction_id,
         outputIndex: parseInt(i.index),
       }));
