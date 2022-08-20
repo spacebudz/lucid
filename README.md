@@ -109,7 +109,7 @@ You can generate documentation with:
 deno doc
 ```
 
-### Compatibilty
+### Compatibility
 
 Lucid is an ES Module, so to run it in the browser any bundler which allows for
 top level await and WebAssembly is recommended. If you use Webpack 5 enable in
