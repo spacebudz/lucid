@@ -159,7 +159,6 @@ export class Data {
         const tempJson: Json = {};
         data.forEach((value, key) => {
           const convertedKey = fromPlutusData(key);
-          console.log(convertedKey);
           if (
             typeof convertedKey !== "string" &&
             typeof convertedKey !== "number"
