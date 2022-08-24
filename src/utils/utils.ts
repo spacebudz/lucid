@@ -103,18 +103,14 @@ export class Utils {
   }
 
   unixTimeToSlot(unixTime: UnixTime): Slot {
-    return this.lucid.network === "Mainnet"
-      ? unixTimeToSlot(unixTime)
-      : unixTimeToSlotTestnet(unixTime);
+    return unixTimeToSlot(unixTime, this.lucid.network);
   }
 
   slotToUnixTime(slot: Slot): UnixTime {
-    return this.lucid.network === "Mainnet"
-      ? slotToUnixTime(slot)
-      : slotToUnixTimeTestnet(slot);
+    return slotToUnixTime(slot, this.lucid.network);
   }
 
-  /** Address can be in bech32 or hex */
+  /** Address can be in Bech32 or Hex */
   getAddressDetails(address: string): AddressDetails {
     // Base Address
     try {
@@ -467,23 +463,55 @@ export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
 };
 
 export const networkToId = (network: Network): number => {
-  if (network === "Testnet") return 0;
-  else if (network === "Mainnet") return 1;
-  throw new Error("Network not found");
+  switch (network) {
+    case "Testnet":
+      return 0;
+    case "Preview":
+      return 0;
+    case "Preprod":
+      return 0;
+    case "Mainnet":
+      return 1;
+    default:
+      throw new Error("Network not found");
+  }
 };
 
 export const fromHex = (hex: string): Uint8Array => decodeString(hex);
 
 export const toHex = (bytes: Uint8Array): string => encodeToString(bytes);
 
-const unixTimeToSlot = (unixTime: UnixTime): Slot =>
-  Math.floor((unixTime - 1596491091000 + 4924800000) / 1000);
+/*
+It's okay to assume for now the slot duration is 1s for every era (Byron excluded).
+To convert slot to unix time and vice versa in a specific network we simply need one absolute slot and the belonging unix timestamp.
+*/
 
-const unixTimeToSlotTestnet = (unixTime: UnixTime): Slot =>
-  Math.floor((unixTime - 1564431616000 - 29937600000) / 1000);
+const slotToUnixTime = (slot: Slot, network: Network): UnixTime => {
+  switch (network) {
+    case "Testnet":
+      return 1595967616000 + (slot * 1000 - 1598400000);
+    case "Preview":
+      return 1661369430000 + (slot * 1000 - 1366230000);
+    case "Preprod":
+      return 1661369504000 + (slot * 1000 - 5686304000);
+    case "Mainnet":
+      return 1596491091000 + (slot * 1000 - 4924800000);
+    default:
+      throw new Error("Network not found");
+  }
+};
 
-const slotToUnixTime = (slot: Slot): UnixTime =>
-  1596491091000 + (slot * 1000 - 4924800000);
-
-const slotToUnixTimeTestnet = (slot: Slot): UnixTime =>
-  1564431616000 + slot * 1000 + 29937600000;
+const unixTimeToSlot = (unixTime: UnixTime, network: Network): Slot => {
+  switch (network) {
+    case "Testnet":
+      return Math.floor((unixTime - 1595967616000 + 1598400000) / 1000);
+    case "Preview":
+      return Math.floor((unixTime - 1661369430000 + 1366230000) / 1000);
+    case "Preprod":
+      return Math.floor((unixTime - 1661369504000 + 5686304000) / 1000);
+    case "Mainnet":
+      return Math.floor((unixTime - 1596491091000 + 4924800000) / 1000);
+    default:
+      throw new Error("Network not found");
+  }
+};

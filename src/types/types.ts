@@ -136,7 +136,7 @@ export type AddressType = {
   address: Address;
 };
 
-export type Network = "Mainnet" | "Testnet";
+export type Network = "Mainnet" | "Testnet" | "Preview" | "Preprod";
 
 export type AddressDetails = {
   address: AddressType;
