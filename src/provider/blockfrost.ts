@@ -5,6 +5,7 @@ import {
   Assets,
   Datum,
   DatumHash,
+  OutRef,
   ProtocolParameters,
   Provider,
   ScriptType,
@@ -70,50 +71,9 @@ export class Blockfrost implements Provider {
       page++;
     }
 
-    return (await Promise.all(
-      result.map(async (r) => ({
-        txHash: r.tx_hash,
-        outputIndex: r.output_index,
-        assets: (() => {
-          const a: Assets = {};
-          r.amount.forEach((am) => {
-            a[am.unit] = BigInt(am.quantity);
-          });
-          return a;
-        })(),
-        address,
-        datumHash: !r.inline_datum ? r.data_hash : null,
-        datum: r.inline_datum,
-        scriptRef: r.reference_script_hash &&
-          (await (async () => {
-            const {
-              type,
-            }: {
-              type: ScriptType;
-            } = await fetch(
-              `${this.data.url}/scripts/${r.reference_script_hash}`,
-              {
-                headers: { project_id: this.data.projectId },
-              },
-            ).then((res) => res.json());
-            // TODO: support native scripts
-            if (type === "Native") {
-              throw new Error("Native script ref not implemented!");
-            }
-            const { cbor } = await fetch(
-              `${this.data.url}/scripts/${r.reference_script_hash}/cbor`,
-              { headers: { project_id: this.data.projectId } },
-            ).then((res) => res.json());
-            const script = C.PlutusScript.from_bytes(fromHex(cbor));
-            const scriptRef = C.ScriptRef.new(
-              type === "PlutusV1"
-                ? C.Script.new_plutus_v1(script)
-                : C.Script.new_plutus_v2(script),
-            );
-            return toHex(scriptRef.to_bytes());
-          })()),
-      })),
-    )) as UTxO[];
+    return this.blockfrostUtxosToUtxos(
+      result.map((r) => ({ ...r, address })),
+    );
   }
 
   async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
@@ -136,50 +96,37 @@ export class Blockfrost implements Provider {
       if ((pageResult as BlockfrostUtxoResult).length <= 0) break;
       page++;
     }
-    return (await Promise.all(
-      result.map(async (r) => ({
-        txHash: r.tx_hash,
-        outputIndex: r.output_index,
-        assets: (() => {
-          const a: Assets = {};
-          r.amount.forEach((am) => {
-            a[am.unit] = BigInt(am.quantity);
-          });
-          return a;
-        })(),
-        address,
-        datumHash: !r.inline_datum ? r.data_hash : null,
-        datum: r.inline_datum,
-        scriptRef: r.reference_script_hash &&
-          (await (async () => {
-            const {
-              type,
-            }: {
-              type: ScriptType;
-            } = await fetch(
-              `${this.data.url}/scripts/${r.reference_script_hash}`,
-              {
-                headers: { project_id: this.data.projectId },
-              },
-            ).then((res) => res.json());
-            // TODO: support native scripts
-            if (type === "Native") {
-              throw new Error("Native script ref not implemented!");
-            }
-            const { cbor } = await fetch(
-              `${this.data.url}/scripts/${r.reference_script_hash}/cbor`,
-              { headers: { project_id: this.data.projectId } },
-            ).then((res) => res.json());
-            const script = C.PlutusScript.from_bytes(fromHex(cbor));
-            const scriptRef = C.ScriptRef.new(
-              type === "PlutusV1"
-                ? C.Script.new_plutus_v1(script)
-                : C.Script.new_plutus_v2(script),
-            );
-            return toHex(scriptRef.to_bytes());
-          })()),
-      })),
-    )) as UTxO[];
+
+    return this.blockfrostUtxosToUtxos(
+      result.map((r) => ({ ...r, address })),
+    );
+  }
+
+  async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
+    const queryHashes = [...new Set(outRefs.map((outRef) => outRef.txHash))];
+    const utxos = await Promise.all(queryHashes.map(async (txHash) => {
+      const result = await fetch(
+        `${this.data.url}/txs/${txHash}/utxos`,
+        { headers: { project_id: this.data.projectId } },
+      ).then((res) => res.json());
+      if (!result || result.error) {
+        throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
+      }
+      const utxosResult: BlockfrostUtxoResult = result.outputs.map((
+        // deno-lint-ignore no-explicit-any
+        r: any,
+      ) => ({
+        ...r,
+        tx_hash: txHash,
+      }));
+      return this.blockfrostUtxosToUtxos(utxosResult);
+    }));
+
+    return utxos.reduce((acc, utxos) => acc.concat(utxos), []).filter((utxo) =>
+      outRefs.some((outRef) =>
+        utxo.txHash === outRef.txHash && utxo.outputIndex === outRef.outputIndex
+      )
+    );
   }
 
   async getDatum(datumHash: DatumHash): Promise<Datum> {
@@ -226,6 +173,55 @@ export class Blockfrost implements Provider {
       else throw new Error("Could not submit transaction.");
     }
     return result;
+  }
+
+  private async blockfrostUtxosToUtxos(
+    result: BlockfrostUtxoResult,
+  ): Promise<UTxO[]> {
+    return (await Promise.all(
+      result.map(async (r) => ({
+        txHash: r.tx_hash,
+        outputIndex: r.output_index,
+        assets: (() => {
+          const a: Assets = {};
+          r.amount.forEach((am) => {
+            a[am.unit] = BigInt(am.quantity);
+          });
+          return a;
+        })(),
+        address: r.address,
+        datumHash: !r.inline_datum ? r.data_hash : null,
+        datum: r.inline_datum,
+        scriptRef: r.reference_script_hash &&
+          (await (async () => {
+            const {
+              type,
+            }: {
+              type: ScriptType;
+            } = await fetch(
+              `${this.data.url}/scripts/${r.reference_script_hash}`,
+              {
+                headers: { project_id: this.data.projectId },
+              },
+            ).then((res) => res.json());
+            // TODO: support native scripts
+            if (type === "Native") {
+              throw new Error("Native script ref not implemented!");
+            }
+            const { cbor } = await fetch(
+              `${this.data.url}/scripts/${r.reference_script_hash}/cbor`,
+              { headers: { project_id: this.data.projectId } },
+            ).then((res) => res.json());
+            const script = C.PlutusScript.from_bytes(fromHex(cbor));
+            const scriptRef = C.ScriptRef.new(
+              type === "PlutusV1"
+                ? C.Script.new_plutus_v1(script)
+                : C.Script.new_plutus_v2(script),
+            );
+            return toHex(scriptRef.to_bytes());
+          })()),
+      })),
+    )) as UTxO[];
   }
 }
 
@@ -282,6 +278,7 @@ type DatumJson = {
 type BlockfrostUtxoResult = Array<{
   tx_hash: string;
   output_index: number;
+  address: Address;
   amount: Array<{ unit: string; quantity: string }>;
   data_hash?: string;
   inline_datum?: string;

@@ -148,6 +148,14 @@ declare export function hash_transaction(
 ): TransactionHash;
 
 /**
+ * @param {Uint8Array} tx_body
+ * @returns {TransactionHash}
+ */
+declare export function hash_transaction_raw(
+  tx_body: Uint8Array
+): TransactionHash;
+
+/**
  * @param {PlutusData} plutus_data
  * @returns {DataHash}
  */
@@ -6507,13 +6515,6 @@ declare export class TransactionBody {
   mint(): Mint | void;
 
   /**
-   * This function returns the mint value of the transaction
-   * Use `.mint()` instead.
-   * @returns {Mint | void}
-   */
-  multiassets(): Mint | void;
-
-  /**
    * @param {ScriptDataHash} script_data_hash
    */
   set_script_data_hash(script_data_hash: ScriptDataHash): void;
@@ -6596,6 +6597,11 @@ declare export class TransactionBody {
     fee: BigNum,
     ttl?: BigNum
   ): TransactionBody;
+
+  /**
+   * @returns {Uint8Array | void}
+   */
+  raw(): Uint8Array | void;
 }
 /**
  */
@@ -8835,6 +8841,7 @@ export interface TransactionBodyJSON {
   inputs: TransactionInputsJSON;
   mint?: MintJSON | null;
   network_id?: NetworkIdJSON | null;
+  original_bytes?: number[] | null;
   outputs: TransactionOutputsJSON;
   reference_inputs?: TransactionInputsJSON | null;
   required_signers?: Ed25519KeyHashesJSON | null;

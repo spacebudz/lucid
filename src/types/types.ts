@@ -26,8 +26,9 @@ export interface Provider {
   data: { url: string; projectId: string; [key: string]: unknown };
   getProtocolParameters(): Promise<ProtocolParameters>;
   getUtxos(address: Address): Promise<UTxO[]>;
-  getCurrentSlot(): Promise<Slot>;
   getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]>;
+  getUtxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]>;
+  getCurrentSlot(): Promise<Slot>;
   getDatum(datumHash: DatumHash): Promise<Datum>;
   awaitTx(txHash: TxHash): Promise<boolean>;
   submitTx(tx: Core.Transaction): Promise<TxHash>;
@@ -131,6 +132,8 @@ export type UTxO = {
   scriptRef?: ScriptRef;
 };
 
+export type OutRef = { txHash: TxHash; outputIndex: number };
+
 export type AddressType = {
   type: "Base" | "Enterprise" | "Pointer" | "Reward";
   address: Address;
@@ -146,20 +149,18 @@ export type AddressDetails = {
 
 /**
  * A wallet that can be constructed from external data
- * e.g UTxOs, collateral, and address
+ * e.g UTxOs and an address
+ * It doesn't allow you to sign and submit transactions. This needs to be handled separately.
  */
 export interface ExternalWallet {
   address: Address;
   utxos?: UTxO[];
-  collateral?: UTxO[];
   rewardAddress?: RewardAddress;
 }
 
 export interface Wallet {
   address(): Promise<Address>;
   rewardAddress(): Promise<RewardAddress | undefined>;
-  getCollateral(): Promise<UTxO[]>;
-  getCollateralCore(): Promise<Core.TransactionUnspentOutput[]>;
   getUtxos(): Promise<UTxO[]>;
   getUtxosCore(): Promise<Core.TransactionUnspentOutputs>;
   signTx(tx: Core.Transaction): Promise<Core.TransactionWitnessSet>;

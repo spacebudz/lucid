@@ -148,6 +148,14 @@ declare export function hash_transaction(
 ): TransactionHash;
 
 /**
+ * @param {Uint8Array} tx_body
+ * @returns {TransactionHash}
+ */
+declare export function hash_transaction_raw(
+  tx_body: Uint8Array
+): TransactionHash;
+
+/**
  * @param {PlutusData} plutus_data
  * @returns {DataHash}
  */
@@ -6507,13 +6515,6 @@ declare export class TransactionBody {
   mint(): Mint | void;
 
   /**
-   * This function returns the mint value of the transaction
-   * Use `.mint()` instead.
-   * @returns {Mint | void}
-   */
-  multiassets(): Mint | void;
-
-  /**
    * @param {ScriptDataHash} script_data_hash
    */
   set_script_data_hash(script_data_hash: ScriptDataHash): void;
@@ -6596,6 +6597,11 @@ declare export class TransactionBody {
     fee: BigNum,
     ttl?: BigNum
   ): TransactionBody;
+
+  /**
+   * @returns {Uint8Array | void}
+   */
+  raw(): Uint8Array | void;
 }
 /**
  */
@@ -8445,7 +8451,6 @@ export interface InitOutput {
   +transactionbody_validity_start_interval: (a: number) => number;
   +transactionbody_set_mint: (a: number, b: number) => void;
   +transactionbody_mint: (a: number) => number;
-  +transactionbody_multiassets: (a: number) => number;
   +transactionbody_set_script_data_hash: (a: number, b: number) => void;
   +transactionbody_script_data_hash: (a: number) => number;
   +transactionbody_set_collateral: (a: number, b: number) => void;
@@ -8461,6 +8466,7 @@ export interface InitOutput {
   +transactionbody_set_reference_inputs: (a: number, b: number) => void;
   +transactionbody_reference_inputs: (a: number) => number;
   +transactionbody_new: (a: number, b: number, c: number, d: number) => number;
+  +transactionbody_raw: (a: number, b: number) => void;
   +__wbg_transactioninput_free: (a: number) => void;
   +transactioninput_to_bytes: (a: number, b: number) => void;
   +transactioninput_from_bytes: (a: number, b: number) => number;
@@ -9992,6 +9998,7 @@ export interface InitOutput {
   +make_vkey_witness: (a: number, b: number) => number;
   +hash_auxiliary_data: (a: number) => number;
   +hash_transaction: (a: number) => number;
+  +hash_transaction_raw: (a: number, b: number) => number;
   +hash_plutus_data: (a: number) => number;
   +hash_script_data: (a: number, b: number, c: number) => number;
   +get_implicit_input: (a: number, b: number, c: number) => number;
@@ -10502,6 +10509,7 @@ export interface TransactionBodyJSON {
   inputs: TransactionInputsJSON;
   mint?: MintJSON | null;
   network_id?: NetworkIdJSON | null;
+  original_bytes?: number[] | null;
   outputs: TransactionOutputsJSON;
   reference_inputs?: TransactionInputsJSON | null;
   required_signers?: Ed25519KeyHashesJSON | null;

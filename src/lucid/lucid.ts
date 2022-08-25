@@ -12,6 +12,7 @@ import {
   Datum,
   ExternalWallet,
   Network,
+  OutRef,
   PrivateKey,
   Provider,
   Slot,
@@ -98,6 +99,10 @@ export class Lucid {
     return this.provider.getUtxosWithUnit(address, unit);
   }
 
+  utxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]> {
+    return this.provider.getUtxosByOutRef(outRefs);
+  }
+
   awaitTx(txHash: TxHash): Promise<boolean> {
     return this.provider.awaitTx(txHash);
   }
@@ -129,24 +134,6 @@ export class Lucid {
           .to_bech32(undefined),
       // deno-lint-ignore require-await
       rewardAddress: async () => undefined,
-      getCollateral: async () => {
-        const utxos = await this.utxosAt(await this.wallet.address());
-        return utxos.filter(
-          (utxo) =>
-            Object.keys(utxo.assets).length === 1 &&
-            utxo.assets.lovelace >= 5000000n,
-        );
-      },
-      getCollateralCore: async () => {
-        const utxos = await this.utxosAt(await this.wallet.address());
-        return utxos
-          .filter(
-            (utxo) =>
-              Object.keys(utxo.assets).length === 1 &&
-              utxo.assets.lovelace >= 5000000n,
-          )
-          .map((utxo) => utxoToCore(utxo));
-      },
       getUtxos: async () => {
         return await this.utxosAt(await this.wallet.address());
       },
@@ -191,21 +178,6 @@ export class Lucid {
             .to_bech32(undefined);
         return rewardAddress;
       },
-      getCollateral: async () => {
-        const utxos = (await api.experimental.getCollateral()).map((utxo) => {
-          const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
-            fromHex(utxo),
-          );
-          return coreToUtxo(parsedUtxo);
-        });
-        return utxos;
-      },
-      getCollateralCore: async () => {
-        const utxos = (await api.experimental.getCollateral()).map((utxo) => {
-          return C.TransactionUnspentOutput.from_bytes(fromHex(utxo));
-        });
-        return utxos;
-      },
       getUtxos: async () => {
         const utxos = ((await api.getUtxos()) || []).map((utxo) => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
@@ -236,14 +208,13 @@ export class Lucid {
 
   /**
    * Emulates a CIP30 wallet by constructing it
-   * with the UTxOs, collateral and addresses.
+   * with the UTxOs and an address.
    *
    * If utxos are not set, utxos are fetched from the provided address
    */
   selectWalletFrom({
     address,
     utxos,
-    collateral,
     rewardAddress,
   }: ExternalWallet) {
     const addressDetails = this.utils.getAddressDetails(address);
@@ -277,14 +248,6 @@ export class Lucid {
           })()
           : rewardAddress;
         return rewardAddr;
-      },
-      // deno-lint-ignore require-await
-      getCollateral: async () => {
-        return collateral ? collateral : [];
-      },
-      // deno-lint-ignore require-await
-      getCollateralCore: async () => {
-        return collateral ? collateral.map((utxo) => utxoToCore(utxo)) : [];
       },
       getUtxos: async () => {
         return utxos ? utxos : await this.utxosAt(address);

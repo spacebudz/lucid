@@ -466,6 +466,7 @@ export class Tx {
   async complete(options?: {
     changeAddress?: Address;
     datum?: { asHash?: Datum; inline?: Datum };
+    coinSelection?: boolean;
   }) {
     if (options?.datum?.asHash && options?.datum?.inline) {
       throw new Error("Not allowed to set asHash and inline at the same time.");
@@ -489,7 +490,9 @@ export class Tx {
       options?.changeAddress || (await this.lucid.wallet.address()),
     );
 
-    this.txBuilder.add_inputs_from(utxos, changeAddress);
+    if (options?.coinSelection || options?.coinSelection === undefined) {
+      this.txBuilder.add_inputs_from(utxos, changeAddress);
+    }
 
     this.txBuilder.balance(
       changeAddress,
