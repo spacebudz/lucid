@@ -1,4 +1,5 @@
 import {
+  Assets,
   assetsToValue,
   C,
   Construct,
@@ -18,6 +19,7 @@ import {
   assertEquals,
   assertNotEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
+import * as fc from "https://esm.sh/fast-check@3.1.1";
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
 const lucid = await Lucid.new();
@@ -239,6 +241,36 @@ Deno.test("Value to assets", () => {
   assertEquals(BigInt(value.coin().to_str()), assets.lovelace);
 });
 
+Deno.test("Assets/value conversion property test", () => {
+  fc.assert(
+    fc.property(
+      fc.array(
+        fc.tuple(
+          fc.uint8Array({ minLength: 28, maxLength: 28 }),
+          fc.uint8Array({ minLength: 0, maxLength: 32 }),
+          fc.bigInt({ min: 0n, max: 18446744073709551615n }),
+        ),
+      ),
+      fc.bigInt({ min: 0n, max: 18446744073709551615n }),
+      (
+        assetsArray: Array<[Uint8Array, Uint8Array, bigint]>,
+        lovelace: bigint,
+      ) => {
+        const assets: Assets = assetsArray.reduce(
+          (acc, asset) => ({
+            ...acc,
+            [toHex(asset[0]) + toHex(asset[1])]: asset[2],
+          }),
+          {},
+        );
+        assets.lovelace = lovelace;
+
+        assertEquals(assets, valueToAssets(assetsToValue(assets)));
+      },
+    ),
+  );
+});
+
 Deno.test("Transaction to string/object", async () => {
   const lucid = await Lucid.new();
   const txComplete = new TxComplete(
@@ -264,6 +296,25 @@ Deno.test("Basic Merkle tree", async () => {
   assertEquals(merkleTree.size(), 3);
 });
 
+Deno.test("Merkle tree property test", async () => {
+  await fc.assert(
+    fc.asyncProperty(
+      fc.array(fc.uint8Array(), { minLength: 1 }),
+      async (data: Uint8Array[]) => {
+        const merkleTree = await MerkleTree.new(data);
+        const rootHash = merkleTree.rootHash();
+        const index = Math.floor(Math.random() * data.length);
+        const proof = await merkleTree.getProof(data[index]);
+        assert(await MerkleTree.verify(data[index], rootHash, proof));
+        assertEquals(
+          merkleTree.size(),
+          Math.max(0, data.length + (data.length - 1)),
+        );
+      },
+    ),
+  );
+});
+
 Deno.test("PlutusData from JSON", () => {
   const plutusData = Data.fromJson({
     test: 123,
@@ -284,7 +335,6 @@ Deno.test("JSON Metadata to CBOR Datum", () => {
       test: 123,
     }),
   );
-  console.log(cborDatum);
   assertEquals(cborDatum, "a14474657374187b");
 });
 
