@@ -110,7 +110,7 @@ export class Data {
 
   /** Convert conveniently a JSON object (e.g. Metadata) to PlutusData
    *
-   * Note: Constructor cannot be used here obviously
+   * Note: Constructor cannot be used here
    */
   static fromJson(json: Json): PlutusData {
     const toPlutusData = (json: Json): PlutusData => {
@@ -164,7 +164,7 @@ export class Data {
             typeof convertedKey !== "number"
           ) {
             throw new Error(
-              "Unsupported type (Note: Only bytes or integers can be keys of a JSON object",
+              "Unsupported type (Note: Only bytes or integers can be keys of a JSON object)",
             );
           }
           tempJson[convertedKey] = fromPlutusData(value);
