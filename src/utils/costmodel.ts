@@ -7,7 +7,7 @@ export const createCostModels = (costModels: CostModels) => {
   // add plutus v1
   const costmdlV1 = C.CostModel.new();
   Object.values(costModels.PlutusV1).forEach((cost, index) => {
-    costmdlV1.set(index, C.Int.new_i32(cost));
+    costmdlV1.set(index, C.Int.new(C.BigNum.from_str(cost.toString())));
   });
   costmdls.insert(C.Language.new_plutus_v1(), costmdlV1);
 
