@@ -108,10 +108,10 @@ export class Lucid {
   }
 
   async datumOf(utxo: UTxO): Promise<Datum> {
+    if (utxo.datum) return utxo.datum;
     if (!utxo.datumHash) {
       throw new Error("This UTxO does not have a datum hash.");
     }
-    if (utxo.datum) return utxo.datum;
     utxo.datum = await this.provider.getDatum(utxo.datumHash);
     return utxo.datum;
   }
