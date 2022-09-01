@@ -7,9 +7,13 @@ import {
   Data,
   datumJsonToCbor,
   fromHex,
+  fromLabel,
+  fromUnit,
   Lucid,
   MerkleTree,
   toHex,
+  toLabel,
+  toUnit,
   TxComplete,
   utxoToCore,
   valueToAssets,
@@ -345,34 +349,7 @@ Deno.test("CBOR Datum to JSON Metadata", () => {
   });
 });
 
-// TODO: add these functions to the library when CIP-0068 is finalized
-const checksum = (num: number): string =>
-  num.toString(16).split("").reduce(
-    (acc, curr) => acc + parseInt(curr, 16),
-    0x0,
-  )
-    .toString(16).padStart(2, "0");
-
-const toLabel = (num: number): string => {
-  if (num < 0 || num > 65535) {
-    throw new Error(
-      `Label ${num} out of range. Min Label: 0 - Max Label: 65535`,
-    );
-  }
-  return "0" + num.toString(16).padStart(4, "0") + checksum(num) +
-    "0";
-};
-
-const fromLabel = (label: string): number | null => {
-  if (label.length !== 8 || !(label[0] === "0" && label[7] === "0")) {
-    return null;
-  }
-  const num = parseInt(label.slice(1, 5), 16);
-  const check = label.slice(5, 7);
-  return check === checksum(num) ? num : null;
-};
-
-Deno.test("Asset name labels property test", () => {
+Deno.test("toLabel/fromLabel property test", () => {
   fc.assert(
     fc.property(fc.integer({ min: -1, max: 65536 }), (n: number) => {
       if (n < 0 || n > 65535) {
@@ -386,5 +363,23 @@ Deno.test("Asset name labels property test", () => {
         assertEquals(n, fromLabel(toLabel(n)));
       }
     }),
+  );
+});
+
+Deno.test("toUnit/fromUnit property test", () => {
+  fc.assert(
+    fc.property(
+      fc.uint8Array({ minLength: 28, maxLength: 28 }),
+      fc.string({ minLength: 0, maxLength: 10 }),
+      fc.integer({ min: 0, max: 65535 }),
+      (policyRaw: Uint8Array, nameRaw: string, label: number) => {
+        const policyId = toHex(policyRaw);
+        const name = nameRaw ? nameRaw : null;
+        assertEquals(
+          { policyId, name, label },
+          fromUnit(toUnit(policyId, name, label)),
+        );
+      },
+    ),
   );
 });

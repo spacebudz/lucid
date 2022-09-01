@@ -1,4 +1,5 @@
 import {
+  decode,
   decodeString,
   encodeToString,
 } from "https://deno.land/std@0.100.0/encoding/hex.ts";
@@ -18,6 +19,7 @@ import {
   ScriptHash,
   Slot,
   SpendingValidator,
+  Unit,
   UnixTime,
   UTxO,
   Validator,
@@ -514,4 +516,78 @@ const unixTimeToSlot = (unixTime: UnixTime, network: Network): Slot => {
     default:
       throw new Error("Network not found");
   }
+};
+
+export const hexToUtf8 = (hex: string): string =>
+  new TextDecoder().decode(decode(new TextEncoder().encode(hex)));
+
+export const utf8ToHex = (utf8: string): string =>
+  toHex(new TextEncoder().encode(utf8));
+
+// WIP!! This is not finalized yet until CIP-0067 and CIP-0068 are merged
+
+const checksum = (num: number): string =>
+  num.toString(16).split("").reduce(
+    (acc, curr) => acc + parseInt(curr, 16),
+    0x0,
+  )
+    .toString(16).padStart(2, "0");
+
+export const toLabel = (num: number): string => {
+  if (num < 0 || num > 65535) {
+    throw new Error(
+      `Label ${num} out of range: min label 0 - max label 65535.`,
+    );
+  }
+  return "0" + num.toString(16).padStart(4, "0") + checksum(num) +
+    "0";
+};
+
+export const fromLabel = (label: string): number | null => {
+  if (label.length !== 8 || !(label[0] === "0" && label[7] === "0")) {
+    return null;
+  }
+  const num = parseInt(label.slice(1, 5), 16);
+  const check = label.slice(5, 7);
+  return check === checksum(num) ? num : null;
+};
+
+/**
+ * @param name UTF-8 encoded
+ */
+export const toUnit = (
+  policyId: PolicyId,
+  name?: string | null,
+  label?: number | null,
+): Unit => {
+  const hexLabel = Number.isInteger(label) ? toLabel(label!) : "";
+  const hexName = name ? toHex(new TextEncoder().encode(name)) : "";
+  if ((hexName + hexLabel).length > 64) {
+    throw new Error("Asset name size exceeds 32 bytes.");
+  }
+  if (policyId.length !== 56) {
+    throw new Error(`Policy Id invalid: ${policyId}.`);
+  }
+  return policyId + hexLabel + hexName;
+};
+
+/**
+ * Splits unit into policy id, name and label if applicable.
+ * name will be returned in UTF-8 if possible, otherwise in HEX.
+ */
+export const fromUnit = (
+  unit: Unit,
+): { policyId: PolicyId; name: string | null; label: number | null } => {
+  const policyId = unit.slice(0, 56);
+  const label = fromLabel(unit.slice(56, 64));
+  const name = (() => {
+    const hexName = Number.isInteger(label) ? unit.slice(64) : unit.slice(56);
+    if (!hexName) return null;
+    try {
+      return hexToUtf8(hexName);
+    } catch (_e) {
+      return hexName;
+    }
+  })();
+  return { policyId, name, label };
 };
