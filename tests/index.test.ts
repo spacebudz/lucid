@@ -287,25 +287,25 @@ Deno.test("Transaction to string/object", async () => {
   assert(txObject.fee);
 });
 
-Deno.test("Basic Merkle tree", async () => {
+Deno.test("Basic Merkle tree", () => {
   const data = [new Uint8Array([0]), new Uint8Array([1])];
-  const merkleTree = await MerkleTree.new(data);
+  const merkleTree = new MerkleTree(data);
   const rootHash = merkleTree.rootHash();
-  const proof = await merkleTree.getProof(data[0]);
-  assert(await MerkleTree.verify(data[0], rootHash, proof));
+  const proof = merkleTree.getProof(data[0]);
+  assert(MerkleTree.verify(data[0], rootHash, proof));
   assertEquals(merkleTree.size(), 3);
 });
 
-Deno.test("Merkle tree property test", async () => {
-  await fc.assert(
-    fc.asyncProperty(
+Deno.test("Merkle tree property test", () => {
+  fc.assert(
+    fc.property(
       fc.array(fc.uint8Array(), { minLength: 1 }),
-      async (data: Uint8Array[]) => {
-        const merkleTree = await MerkleTree.new(data);
+      (data: Uint8Array[]) => {
+        const merkleTree = new MerkleTree(data);
         const rootHash = merkleTree.rootHash();
         const index = Math.floor(Math.random() * data.length);
-        const proof = await merkleTree.getProof(data[index]);
-        assert(await MerkleTree.verify(data[index], rootHash, proof));
+        const proof = merkleTree.getProof(data[index]);
+        assert(MerkleTree.verify(data[index], rootHash, proof));
         assertEquals(
           merkleTree.size(),
           Math.max(0, data.length + (data.length - 1)),
