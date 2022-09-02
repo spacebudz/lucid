@@ -110,7 +110,7 @@ export class Blockfrost implements Provider {
         { headers: { project_id: this.data.projectId } },
       ).then((res) => res.json());
       if (!result || result.error) {
-        throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
+        return [];
       }
       const utxosResult: BlockfrostUtxoResult = result.outputs.map((
         // deno-lint-ignore no-explicit-any
