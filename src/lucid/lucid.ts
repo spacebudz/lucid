@@ -11,6 +11,7 @@ import {
   Address,
   Datum,
   ExternalWallet,
+  KeyHash,
   Network,
   OutRef,
   PrivateKey,
@@ -25,6 +26,7 @@ import {
 } from "../types/mod.ts";
 import { Tx } from "./tx.ts";
 import { TxComplete } from "./txComplete.ts";
+import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../utils/wallet.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
@@ -117,7 +119,8 @@ export class Lucid {
   }
 
   /**
-   * Cardano Private key in bech32; not the BIP32 private key or any key that is not fully derived
+   * Cardano Private key in bech32; not the BIP32 private key or any key that is not fully derived.
+   * Only an Enteprise address (without stake credential) is derived.
    */
   selectWalletFromPrivateKey(privateKey: PrivateKey) {
     const priv = C.PrivateKey.from_bech32(privateKey);
@@ -268,5 +271,73 @@ export class Lucid {
       },
     };
     return this;
+  }
+
+  /**
+   * Select wallet from a seed phrase (e.g. 15 or 24 words). You have the option to choose between a Base address (with stake credential)
+   * and Enterprise address (without stake credential). You can also decide which account index to derive. By default account 0 is derived.
+   */
+  selectWalletFromSeed(
+    seed: string,
+    options?: { addressType?: "Base" | "Enterprise"; accountIndex?: number },
+  ) {
+    const { address, rewardAddress, paymentKey, stakeKey } = walletFromSeed(
+      seed,
+      {
+        addressType: options?.addressType,
+        accountIndex: options?.accountIndex,
+        network: this.network,
+      },
+    );
+
+    this.wallet = {
+      // deno-lint-ignore require-await
+      address: async () => address,
+      // deno-lint-ignore require-await
+      rewardAddress: async () => rewardAddress || undefined,
+      // deno-lint-ignore require-await
+      getUtxos: async () => this.utxosAt(address),
+      getUtxosCore: async () => {
+        const coreUtxos = C.TransactionUnspentOutputs.new();
+        (await this.utxosAt(address)).forEach((utxo) =>
+          coreUtxos.add(utxoToCore(utxo))
+        );
+        return coreUtxos;
+      },
+      signTx: async (tx: Core.Transaction) => {
+        const utxos = await this.utxosAt(address);
+
+        const paymentKeyHash = C.PrivateKey.from_bech32(paymentKey).to_public()
+          .hash().to_hex();
+        const stakeKeyHash = stakeKey
+          ? C.PrivateKey.from_bech32(stakeKey).to_public().hash().to_hex()
+          : "";
+        const ownKeyHashes: Array<KeyHash> = [paymentKeyHash, stakeKeyHash];
+
+        const privKeyHashMap = {
+          [paymentKeyHash]: paymentKey,
+          [stakeKeyHash]: stakeKey,
+        };
+
+        const usedKeyHashes = discoverOwnUsedTxKeyHashes(
+          tx,
+          ownKeyHashes,
+          utxos,
+        );
+
+        const txWitnessSetBuilder = C.TransactionWitnessSetBuilder.new();
+        usedKeyHashes.forEach((keyHash) => {
+          const witness = C.make_vkey_witness(
+            C.hash_transaction(tx.body()),
+            C.PrivateKey.from_bech32(privKeyHashMap[keyHash]!),
+          );
+          txWitnessSetBuilder.add_vkey(witness);
+        });
+        return txWitnessSetBuilder.build();
+      },
+      submitTx: async (tx: Core.Transaction) => {
+        return await this.provider.submitTx(tx);
+      },
+    };
   }
 }
