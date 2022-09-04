@@ -11,6 +11,7 @@ import {
   OutputData,
   PaymentKeyHash,
   PoolId,
+  PoolParams,
   Redeemer,
   RewardAddress,
   SpendingValidator,
@@ -320,6 +321,46 @@ export class Tx {
         )
         : undefined,
     );
+    return this;
+  }
+
+  // registerPool(poolParams: PoolParams) { TODO
+  //   const poolOwners = C.Ed25519KeyHashes.new();
+  //   poolParams.owners.forEach((owner) => {
+  //     const { paymentCredential } = this.lucid.utils.getAddressDetails(owner);
+  //     if (paymentCredential?.type === "Key") {
+  //       poolOwners.add(C.Ed25519KeyHash.from_hex(paymentCredential.hash));
+  //     } else throw new Error("Only key hashes allowed as pool owners.");
+  //   });
+
+  //   const relays = C.Relays.new();
+
+  //   const certificate = C.Certificate.new_pool_registration(
+  //     C.PoolRegistration.new(
+  //       C.PoolParams.new(
+  //         C.Ed25519KeyHash.from_bech32(poolParams.poolId),
+  //         C.VRFKeyHash.from_hex(poolParams.vrfKeyHash),
+  //         C.BigNum.from_str(poolParams.pledge.toString()),
+  //         C.BigNum.from_str(poolParams.cost.toString()),
+  //         "margin TODO",
+  //         C.RewardAddress.from_address(
+  //           C.Address.from_bech32(poolParams.rewardAddress),
+  //         ),
+  //         poolOwners,
+  //         relays,
+  //         undefined, // TODO
+  //       ),
+  //     ),
+  //   );
+  //   this.txBuilder.add_certificate(certificate, undefined);
+  //   return this;
+  // }
+
+  retirePool(poolId: PoolId, epoch: number) {
+    const certificate = C.Certificate.new_pool_retirement(
+      C.PoolRetirement.new(C.Ed25519KeyHash.from_bech32(poolId), epoch),
+    );
+    this.txBuilder.add_certificate(certificate, undefined);
     return this;
   }
 

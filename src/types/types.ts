@@ -91,6 +91,8 @@ export type StakeKeyHash = string;
 /** Hex */
 export type KeyHash = string | PaymentKeyHash | StakeKeyHash;
 /** Hex */
+export type VrfKeyHash = string;
+/** Hex */
 export type ScriptHash = string;
 /** Hex */
 export type TxHash = string;
@@ -246,4 +248,24 @@ export type NFTMetadata = {
   };
   //@ts-ignore: Cannot use map of strings and version as number in a type def
   version?: number; // number
+};
+
+export type PoolParams = {
+  poolId: PoolId;
+  vrfKeyHash: VrfKeyHash;
+  pledge: Lovelace;
+  cost: Lovelace;
+  margin: number;
+  rewardAddress: RewardAddress;
+  owners: Array<RewardAddress>;
+  relays: Array<Relay>;
+  metadataUrl?: string;
+};
+
+export type Relay = {
+  type: "SingleHostIp" | "SingleHostDomainName" | "MultiHost";
+  ipV4?: string;
+  ipV6?: string;
+  port?: number;
+  domainName?: string;
 };

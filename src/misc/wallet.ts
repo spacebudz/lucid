@@ -88,7 +88,7 @@ export const discoverOwnUsedTxKeyHashes = (
 ): Array<KeyHash> => {
   const usedKeyHashes = [];
 
-  //key hashes from inputs
+  // key hashes from inputs
   const inputs = tx.body().inputs();
   for (let i = 0; i < inputs.len(); i++) {
     const input = inputs.get(i);
@@ -107,7 +107,7 @@ export const discoverOwnUsedTxKeyHashes = (
 
   const txBody = tx.body();
 
-  //key hashes from certificates
+  // key hashes from certificates
   const keyHashFromCert = (txBody: Core.TransactionBody) => {
     const certs = txBody.certs();
     if (!certs) return;
@@ -138,15 +138,20 @@ export const discoverOwnUsedTxKeyHashes = (
           usedKeyHashes.push(keyHash);
         }
       } else if (cert.kind() === 3) {
-        const owners = cert
-          .as_pool_registration()
-          ?.pool_params()
-          .pool_owners();
+        const poolParams = cert
+          .as_pool_registration()?.pool_params()!;
+        const owners = poolParams
+          ?.pool_owners();
         if (!owners) break;
         for (let i = 0; i < owners.len(); i++) {
           const keyHash = toHex(owners.get(i).to_bytes());
           usedKeyHashes.push(keyHash);
         }
+        const operator = poolParams.operator().to_hex();
+        usedKeyHashes.push(operator);
+      } else if (cert.kind() === 4) {
+        const operator = cert.as_pool_retirement()!.pool_keyhash().to_hex();
+        usedKeyHashes.push(operator);
       } else if (cert.kind() === 6) {
         const instantRewards = cert
           .as_move_instantaneous_rewards_cert()
@@ -168,7 +173,21 @@ export const discoverOwnUsedTxKeyHashes = (
   };
   if (txBody.certs()) keyHashFromCert(txBody);
 
-  //key hashes from scripts
+  // key hashes from withdrawals
+
+  const withdrawals = txBody.withdrawals();
+  const keyHashFromWithdrawal = (withdrawals: Core.Withdrawals) => {
+    const rewardAddresses = withdrawals.keys();
+    for (let i = 0; i < rewardAddresses.len(); i++) {
+      const credential = rewardAddresses.get(i).payment_cred();
+      if (credential.kind() === 0) {
+        usedKeyHashes.push(credential.to_keyhash()!.to_hex());
+      }
+    }
+  };
+  if (withdrawals) keyHashFromWithdrawal(withdrawals);
+
+  // key hashes from scripts
   const scripts = tx.witness_set().native_scripts();
   const keyHashFromScript = (scripts: Core.NativeScripts) => {
     for (let i = 0; i < scripts.len(); i++) {
@@ -195,7 +214,7 @@ export const discoverOwnUsedTxKeyHashes = (
   };
   if (scripts) keyHashFromScript(scripts);
 
-  //keyHashes from required signers
+  // keyHashes from required signers
   const requiredSigners = txBody.required_signers();
   if (requiredSigners) {
     for (let i = 0; i < requiredSigners.len(); i++) {
@@ -205,7 +224,7 @@ export const discoverOwnUsedTxKeyHashes = (
     }
   }
 
-  //keyHashes from collateral
+  // keyHashes from collateral
   const collateral = txBody.collateral();
   if (collateral) {
     for (let i = 0; i < collateral.len(); i++) {
