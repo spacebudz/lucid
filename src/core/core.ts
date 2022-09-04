@@ -1,4 +1,6 @@
 import type * as Core from "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js";
+import type * as Message from "./wasm_modules/cardano-message-signing-web/cardano_message_signing.js";
+
 export { Core };
 
 // dnt-shim-ignore
@@ -21,7 +23,7 @@ if (isNode) {
   global.Response = fetch.Response;
 }
 
-const importForEnvironment = async (): Promise<typeof Core | null> => {
+const importForEnvironmentCore = async (): Promise<typeof Core | null> => {
   try {
     if (isNode) {
       return (await import(
@@ -49,4 +51,36 @@ const importForEnvironment = async (): Promise<typeof Core | null> => {
   }
 };
 
-export const C: typeof Core = (await importForEnvironment())!;
+const importForEnvironmentMessage = async (): Promise<
+  typeof Message | null
+> => {
+  try {
+    if (isNode) {
+      return (await import(
+        /* webpackIgnore: true */
+        "./wasm_modules/cardano-message-signing-nodejs/cardano_message_signing.js"
+      )) as unknown as typeof Message;
+    }
+
+    const pkg = await import(
+      "./wasm_modules/cardano-message-signing-web/cardano_message_signing.js"
+    );
+
+    await pkg.default(
+      await fetch(
+        new URL(
+          "./wasm_modules/cardano-message-signing-web/cardano_message_signing_bg.wasm",
+          import.meta.url,
+        ),
+      ),
+    );
+    return pkg as unknown as typeof Message;
+  } catch (_e) {
+    // This only ever happens during SSR rendering
+    return null;
+  }
+};
+
+export const C: typeof Core = (await importForEnvironmentCore())!;
+
+export const M: typeof Message = (await importForEnvironmentMessage())!;

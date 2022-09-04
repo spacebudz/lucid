@@ -14,6 +14,7 @@ import {
   KeyHash,
   Network,
   OutRef,
+  Payload,
   PrivateKey,
   Provider,
   Slot,
@@ -26,7 +27,11 @@ import {
 } from "../types/mod.ts";
 import { Tx } from "./tx.ts";
 import { TxComplete } from "./txComplete.ts";
-import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../utils/wallet.ts";
+import {
+  discoverOwnUsedTxKeyHashes,
+  signData,
+  walletFromSeed,
+} from "../misc/wallet.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
@@ -158,6 +163,20 @@ export class Lucid {
         txWitnessSetBuilder.add_vkey(witness);
         return txWitnessSetBuilder.build();
       },
+      // deno-lint-ignore require-await
+      signMessage: async (address: Address, payload: Payload) => {
+        const { paymentCredential, address: { hex: hexAddress } } = this.utils
+          .getAddressDetails(address);
+        const keyHash = paymentCredential?.hash;
+
+        const originalKeyHash = pubKeyHash.to_hex();
+
+        if (!keyHash || keyHash !== originalKeyHash) {
+          throw new Error(`Cannot sign message for address: ${address}.`);
+        }
+
+        return signData(hexAddress, payload, privateKey);
+      },
       submitTx: async (tx: Core.Transaction) => {
         return await this.provider.submitTx(tx);
       },
@@ -200,6 +219,10 @@ export class Lucid {
       signTx: async (tx: Core.Transaction) => {
         const witnessSet = await api.signTx(toHex(tx.to_bytes()), true);
         return C.TransactionWitnessSet.from_bytes(fromHex(witnessSet));
+      },
+      signMessage: async (address: Address, payload: Payload) => {
+        const hexAddress = toHex(C.Address.from_bech32(address).to_bytes());
+        return await api.signData(hexAddress, payload);
       },
       submitTx: async (tx: Core.Transaction) => {
         const txHash = await api.submitTx(toHex(tx.to_bytes()));
@@ -263,7 +286,11 @@ export class Lucid {
         return coreUtxos;
       },
       // deno-lint-ignore require-await
-      signTx: async (_: Core.Transaction) => {
+      signTx: async () => {
+        throw new Error("Not implemented");
+      },
+      // deno-lint-ignore require-await
+      signMessage: async () => {
         throw new Error("Not implemented");
       },
       submitTx: async (tx: Core.Transaction) => {
@@ -290,6 +317,17 @@ export class Lucid {
       },
     );
 
+    const paymentKeyHash = C.PrivateKey.from_bech32(paymentKey).to_public()
+      .hash().to_hex();
+    const stakeKeyHash = stakeKey
+      ? C.PrivateKey.from_bech32(stakeKey).to_public().hash().to_hex()
+      : "";
+
+    const privKeyHashMap = {
+      [paymentKeyHash]: paymentKey,
+      [stakeKeyHash]: stakeKey,
+    };
+
     this.wallet = {
       // deno-lint-ignore require-await
       address: async () => address,
@@ -307,17 +345,7 @@ export class Lucid {
       signTx: async (tx: Core.Transaction) => {
         const utxos = await this.utxosAt(address);
 
-        const paymentKeyHash = C.PrivateKey.from_bech32(paymentKey).to_public()
-          .hash().to_hex();
-        const stakeKeyHash = stakeKey
-          ? C.PrivateKey.from_bech32(stakeKey).to_public().hash().to_hex()
-          : "";
         const ownKeyHashes: Array<KeyHash> = [paymentKeyHash, stakeKeyHash];
-
-        const privKeyHashMap = {
-          [paymentKeyHash]: paymentKey,
-          [stakeKeyHash]: stakeKey,
-        };
 
         const usedKeyHashes = discoverOwnUsedTxKeyHashes(
           tx,
@@ -334,6 +362,25 @@ export class Lucid {
           txWitnessSetBuilder.add_vkey(witness);
         });
         return txWitnessSetBuilder.build();
+      },
+      // deno-lint-ignore require-await
+      signMessage: async (address: Address, payload: Payload) => {
+        const {
+          paymentCredential,
+          stakeCredential,
+          address: { hex: hexAddress },
+        } = this.utils
+          .getAddressDetails(address);
+
+        const keyHash = paymentCredential?.hash || stakeCredential?.hash;
+
+        const privateKey = privKeyHashMap[keyHash!];
+
+        if (!privateKey) {
+          throw new Error(`Cannot sign message for address: ${address}.`);
+        }
+
+        return signData(hexAddress, payload, privateKey);
       },
       submitTx: async (tx: Core.Transaction) => {
         return await this.provider.submitTx(tx);

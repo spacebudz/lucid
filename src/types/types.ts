@@ -121,6 +121,8 @@ export type Transaction = string;
 export type PrivateKey = string;
 /** Hex */
 export type ScriptRef = string;
+/** Hex */
+export type Payload = string;
 
 export type UTxO = {
   txHash: TxHash;
@@ -137,6 +139,8 @@ export type OutRef = { txHash: TxHash; outputIndex: number };
 export type AddressType = {
   type: "Base" | "Enterprise" | "Pointer" | "Reward";
   address: Address;
+  bech32: Address;
+  hex: string;
 };
 
 export type Network = "Mainnet" | "Testnet" | "Preview" | "Preprod";
@@ -164,6 +168,10 @@ export interface Wallet {
   getUtxos(): Promise<UTxO[]>;
   getUtxosCore(): Promise<Core.TransactionUnspentOutputs>;
   signTx(tx: Core.Transaction): Promise<Core.TransactionWitnessSet>;
+  signMessage(
+    address: Address,
+    payload: Payload,
+  ): Promise<{ signature: string; key: string }>;
   submitTx(signedTx: Core.Transaction): Promise<TxHash>;
 }
 

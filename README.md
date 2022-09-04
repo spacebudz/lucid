@@ -127,10 +127,22 @@ To run the library in Node.js you need to set `{"type" : "module"}` in your
 project's `package.json`. Otherwise you will get import issues.
 
 <br />
-This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib).
+This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib) and on top of the message-signing library.
+
+##### cardano-multiplatform-lib
 
 Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
 Branch: **vasil**
 
 Commit hash: **311e980d9fdfc02bc1942ced1778d4befcaffc2f**
+
+##### message-signing
+
+Link: https://github.com/Emurgo/message-signing
+
+Branch: **master**
+
+Commit hash: **a92757fb9c9333290e278aa32b995bcf8a3821d6**
+
+

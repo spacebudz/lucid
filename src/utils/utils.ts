@@ -25,7 +25,7 @@ import {
   Validator,
 } from "../types/mod.ts";
 import { Lucid } from "../lucid/mod.ts";
-import { generateMnemonic } from "./bip39.ts";
+import { generateMnemonic } from "../misc/bip39.ts";
 
 export class Utils {
   private lucid: Lucid;
@@ -159,6 +159,8 @@ export const getAddressDetails = (address: string): AddressDetails => {
       address: {
         type: "Base",
         address: parsedAddress.to_address().to_bech32(undefined),
+        bech32: parsedAddress.to_address().to_bech32(undefined),
+        hex: toHex(parsedAddress.to_address().to_bytes()),
       },
       paymentCredential,
       stakeCredential,
@@ -197,6 +199,8 @@ export const getAddressDetails = (address: string): AddressDetails => {
       address: {
         type: "Base",
         address: parsedAddress.to_address().to_bech32(undefined),
+        bech32: parsedAddress.to_address().to_bech32(undefined),
+        hex: toHex(parsedAddress.to_address().to_bytes()),
       },
       paymentCredential,
       stakeCredential,
@@ -226,6 +230,8 @@ export const getAddressDetails = (address: string): AddressDetails => {
       address: {
         type: "Enterprise",
         address: parsedAddress.to_address().to_bech32(undefined),
+        bech32: parsedAddress.to_address().to_bech32(undefined),
+        hex: toHex(parsedAddress.to_address().to_bytes()),
       },
       paymentCredential,
     };
@@ -253,6 +259,8 @@ export const getAddressDetails = (address: string): AddressDetails => {
       address: {
         type: "Enterprise",
         address: parsedAddress.to_address().to_bech32(undefined),
+        bech32: parsedAddress.to_address().to_bech32(undefined),
+        hex: toHex(parsedAddress.to_address().to_bytes()),
       },
       paymentCredential,
     };
@@ -281,6 +289,8 @@ export const getAddressDetails = (address: string): AddressDetails => {
       address: {
         type: "Pointer",
         address: parsedAddress.to_address().to_bech32(undefined),
+        bech32: parsedAddress.to_address().to_bech32(undefined),
+        hex: toHex(parsedAddress.to_address().to_bytes()),
       },
       paymentCredential,
     };
@@ -308,6 +318,8 @@ export const getAddressDetails = (address: string): AddressDetails => {
       address: {
         type: "Pointer",
         address: parsedAddress.to_address().to_bech32(undefined),
+        bech32: parsedAddress.to_address().to_bech32(undefined),
+        hex: toHex(parsedAddress.to_address().to_bytes()),
       },
       paymentCredential,
     };
@@ -336,6 +348,8 @@ export const getAddressDetails = (address: string): AddressDetails => {
       address: {
         type: "Reward",
         address: parsedAddress.to_address().to_bech32(undefined),
+        bech32: parsedAddress.to_address().to_bech32(undefined),
+        hex: toHex(parsedAddress.to_address().to_bytes()),
       },
       stakeCredential,
     };
@@ -363,6 +377,8 @@ export const getAddressDetails = (address: string): AddressDetails => {
       address: {
         type: "Reward",
         address: parsedAddress.to_address().to_bech32(undefined),
+        bech32: parsedAddress.to_address().to_bech32(undefined),
+        hex: toHex(parsedAddress.to_address().to_bytes()),
       },
       stakeCredential,
     };
