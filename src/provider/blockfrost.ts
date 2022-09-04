@@ -5,6 +5,7 @@ import {
   Assets,
   Datum,
   DatumHash,
+  Delegation,
   OutRef,
   ProtocolParameters,
   Provider,
@@ -127,6 +128,20 @@ export class Blockfrost implements Provider {
         utxo.txHash === outRef.txHash && utxo.outputIndex === outRef.outputIndex
       )
     );
+  }
+
+  async getDelegation(rewardAddress: string): Promise<Delegation> {
+    const result = await fetch(
+      `${this.data.url}/accounts/${rewardAddress}`,
+      { headers: { project_id: this.data.projectId } },
+    ).then((res) => res.json());
+    if (!result || result.error) {
+      return { poolId: null, rewards: 0n };
+    }
+    return {
+      poolId: result.pool_id || null,
+      rewards: BigInt(result.withdrawable_amount),
+    };
   }
 
   async getDatum(datumHash: DatumHash): Promise<Datum> {

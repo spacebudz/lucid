@@ -28,6 +28,7 @@ export interface Provider {
   getUtxos(address: Address): Promise<UTxO[]>;
   getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]>;
   getUtxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]>;
+  getDelegation(rewardAddress: RewardAddress): Promise<Delegation>;
   getCurrentSlot(): Promise<Slot>;
   getDatum(datumHash: DatumHash): Promise<Datum>;
   awaitTx(txHash: TxHash): Promise<boolean>;
@@ -151,6 +152,11 @@ export type AddressDetails = {
   stakeCredential?: Credential;
 };
 
+export type Delegation = {
+  poolId: PoolId | null;
+  rewards: Lovelace;
+};
+
 /**
  * A wallet that can be constructed from external data
  * e.g UTxOs and an address
@@ -162,16 +168,19 @@ export interface ExternalWallet {
   rewardAddress?: RewardAddress;
 }
 
+export type SignedMessage = { signature: string; key: string };
+
 export interface Wallet {
   address(): Promise<Address>;
   rewardAddress(): Promise<RewardAddress | undefined>;
   getUtxos(): Promise<UTxO[]>;
   getUtxosCore(): Promise<Core.TransactionUnspentOutputs>;
+  getDelegation(): Promise<Delegation>;
   signTx(tx: Core.Transaction): Promise<Core.TransactionWitnessSet>;
   signMessage(
-    address: Address,
+    address: Address | RewardAddress,
     payload: Payload,
-  ): Promise<{ signature: string; key: string }>;
+  ): Promise<SignedMessage>;
   submitTx(signedTx: Core.Transaction): Promise<TxHash>;
 }
 

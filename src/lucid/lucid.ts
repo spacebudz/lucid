@@ -10,6 +10,7 @@ import {
 import {
   Address,
   Datum,
+  Delegation,
   ExternalWallet,
   KeyHash,
   Network,
@@ -17,6 +18,8 @@ import {
   Payload,
   PrivateKey,
   Provider,
+  RewardAddress,
+  SignedMessage,
   Slot,
   Transaction,
   TxHash,
@@ -27,11 +30,9 @@ import {
 } from "../types/mod.ts";
 import { Tx } from "./tx.ts";
 import { TxComplete } from "./txComplete.ts";
-import {
-  discoverOwnUsedTxKeyHashes,
-  signData,
-  walletFromSeed,
-} from "../misc/wallet.ts";
+import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../misc/wallet.ts";
+import { signData, verifyData } from "../misc/signData.ts";
+import { Message } from "./message.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
@@ -94,6 +95,23 @@ export class Lucid {
     return new TxComplete(this, C.Transaction.from_bytes(fromHex(tx)));
   }
 
+  /** Signs a message. Expects the payload to be Hex encoded. */
+  newMessage(address: Address | RewardAddress, payload: Payload): Message {
+    return new Message(this, address, payload);
+  }
+
+  /** Verify a message. Expects the payload to be Hex encoded. */
+  verifyMessage(
+    address: Address | RewardAddress,
+    payload: Payload,
+    signedMessage: SignedMessage,
+  ): boolean {
+    const { address: { hex: addressHex } } = this.utils.getAddressDetails(
+      address,
+    );
+    return verifyData(addressHex, payload, signedMessage);
+  }
+
   currentSlot(): Promise<Slot> {
     return this.provider.getCurrentSlot();
   }
@@ -108,6 +126,10 @@ export class Lucid {
 
   utxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]> {
     return this.provider.getUtxosByOutRef(outRefs);
+  }
+
+  delegationAt(rewardAddress: RewardAddress): Promise<Delegation> {
+    return this.provider.getDelegation(rewardAddress);
   }
 
   awaitTx(txHash: TxHash): Promise<boolean> {
@@ -154,6 +176,10 @@ export class Lucid {
         return coreUtxos;
       },
       // deno-lint-ignore require-await
+      getDelegation: async () => {
+        return { poolId: null, rewards: 0n };
+      },
+      // deno-lint-ignore require-await
       signTx: async (tx: Core.Transaction) => {
         const witness = C.make_vkey_witness(
           C.hash_transaction(tx.body()),
@@ -164,7 +190,10 @@ export class Lucid {
         return txWitnessSetBuilder.build();
       },
       // deno-lint-ignore require-await
-      signMessage: async (address: Address, payload: Payload) => {
+      signMessage: async (
+        address: Address | RewardAddress,
+        payload: Payload,
+      ) => {
         const { paymentCredential, address: { hex: hexAddress } } = this.utils
           .getAddressDetails(address);
         const keyHash = paymentCredential?.hash;
@@ -216,11 +245,21 @@ export class Lucid {
         });
         return utxos;
       },
+      getDelegation: async () => {
+        const rewardAddr = await this.wallet.rewardAddress();
+
+        return rewardAddr
+          ? await this.delegationAt(rewardAddr)
+          : { poolId: null, rewards: 0n };
+      },
       signTx: async (tx: Core.Transaction) => {
         const witnessSet = await api.signTx(toHex(tx.to_bytes()), true);
         return C.TransactionWitnessSet.from_bytes(fromHex(witnessSet));
       },
-      signMessage: async (address: Address, payload: Payload) => {
+      signMessage: async (
+        address: Address | RewardAddress,
+        payload: Payload,
+      ) => {
         const hexAddress = toHex(C.Address.from_bech32(address).to_bytes());
         return await api.signData(hexAddress, payload);
       },
@@ -285,6 +324,13 @@ export class Lucid {
         );
         return coreUtxos;
       },
+      getDelegation: async () => {
+        const rewardAddr = await this.wallet.rewardAddress();
+
+        return rewardAddr
+          ? await this.delegationAt(rewardAddr)
+          : { poolId: null, rewards: 0n };
+      },
       // deno-lint-ignore require-await
       signTx: async () => {
         throw new Error("Not implemented");
@@ -342,6 +388,13 @@ export class Lucid {
         );
         return coreUtxos;
       },
+      getDelegation: async () => {
+        const rewardAddr = await this.wallet.rewardAddress();
+
+        return rewardAddr
+          ? await this.delegationAt(rewardAddr)
+          : { poolId: null, rewards: 0n };
+      },
       signTx: async (tx: Core.Transaction) => {
         const utxos = await this.utxosAt(address);
 
@@ -364,7 +417,10 @@ export class Lucid {
         return txWitnessSetBuilder.build();
       },
       // deno-lint-ignore require-await
-      signMessage: async (address: Address, payload: Payload) => {
+      signMessage: async (
+        address: Address | RewardAddress,
+        payload: Payload,
+      ) => {
         const {
           paymentCredential,
           stakeCredential,

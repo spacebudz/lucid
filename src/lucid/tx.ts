@@ -8,8 +8,6 @@ import {
   Label,
   Lovelace,
   MintingPolicy,
-  NFTMetadata,
-  NFTMetadataDetails,
   OutputData,
   PaymentKeyHash,
   PoolId,
@@ -17,7 +15,6 @@ import {
   RewardAddress,
   SpendingValidator,
   StakeKeyHash,
-  Unit,
   UnixTime,
   UTxO,
   WithdrawalValidator,
@@ -29,15 +26,12 @@ import { TxComplete } from "./txComplete.ts";
 export class Tx {
   txBuilder: Core.TransactionBuilder;
   private tasks: (() => Promise<void>)[];
-  private nftMetadata: NFTMetadata = {};
   private lucid: Lucid;
 
   constructor(lucid: Lucid) {
     this.lucid = lucid;
     this.txBuilder = C.TransactionBuilder.new(this.lucid.txBuilderConfig);
     this.tasks = [];
-    // deno-lint-ignore no-explicit-any
-    this.nftMetadata = { version: 2 as any };
   }
 
   /**
@@ -419,24 +413,6 @@ export class Tx {
     return this;
   }
 
-  /**
-   * Converts strings to bytes if prefixed with **'0x'**
-   *
-   * Uses version 2 of CIP-0025
-   *
-   * You don't need to add policy id and asset name to the metadata, only add the details
-   */
-  attachNFTMetadata(unit: Unit, metadata: NFTMetadataDetails) {
-    const policyId = unit.slice(0, 56);
-    const assetName = unit.slice(56);
-    this.nftMetadata["0x" + policyId] = {
-      ...(this.nftMetadata["0x" + policyId] || {}),
-      ["0x" + assetName]: metadata,
-    };
-
-    return this;
-  }
-
   attachSpendingValidator(spendingValidator: SpendingValidator) {
     attachScript(this, spendingValidator);
     return this;
@@ -474,14 +450,6 @@ export class Tx {
 
     for (const task of this.tasks) {
       await task();
-    }
-    // Add NFT metadata
-    if (Object.keys(this.nftMetadata).length > 1) {
-      this.txBuilder.add_json_metadatum_with_schema(
-        C.BigNum.from_str("721"),
-        JSON.stringify(this.nftMetadata),
-        C.MetadataJsonSchema.BasicConversions,
-      );
     }
 
     const utxos = await this.lucid.wallet.getUtxosCore();

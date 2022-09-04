@@ -10,6 +10,7 @@ import {
   Payload,
   PrivateKey,
   RewardAddress,
+  SignedMessage,
   toHex,
   UTxO,
 } from "../mod.ts";
@@ -227,72 +228,4 @@ export const discoverOwnUsedTxKeyHashes = (
   }
 
   return usedKeyHashes.filter((k) => ownKeyHashes.includes(k));
-};
-
-export const signData = (
-  addressHex: string,
-  payload: Payload,
-  privateKey: PrivateKey,
-): { signature: string; key: string } => {
-  const protectedHeaders = M.HeaderMap.new();
-  protectedHeaders.set_algorithm_id(
-    M.Label.from_algorithm_id(
-      M.AlgorithmId.EdDSA,
-    ),
-  );
-  protectedHeaders.set_header(
-    M.Label.new_text("address"),
-    M.CBORValue.new_bytes(fromHex(addressHex)),
-  );
-  const protectedSerialized = M.ProtectedHeaderMap.new(
-    protectedHeaders,
-  );
-  const unprotectedHeaders = M.HeaderMap.new();
-  const headers = M.Headers.new(
-    protectedSerialized,
-    unprotectedHeaders,
-  );
-  const builder = M.COSESign1Builder.new(
-    headers,
-    fromHex(payload),
-    false,
-  );
-  const toSign = builder.make_data_to_sign().to_bytes();
-
-  const priv = C.PrivateKey.from_bech32(privateKey);
-
-  const signedSigStruc = priv.sign(toSign).to_bytes();
-  const coseSign1 = builder.build(signedSigStruc);
-
-  const key = M.COSEKey.new(
-    M.Label.from_key_type(M.KeyType.OKP),
-  );
-  key.set_algorithm_id(
-    M.Label.from_algorithm_id(
-      M.AlgorithmId.EdDSA,
-    ),
-  );
-  key.set_header(
-    M.Label.new_int(
-      M.Int.new_negative(
-        M.BigNum.from_str("1"),
-      ),
-    ),
-    M.CBORValue.new_int(
-      M.Int.new_i32(6), //Loader.Message.CurveType.Ed25519
-    ),
-  ); // crv (-1) set to Ed25519 (6)
-  key.set_header(
-    M.Label.new_int(
-      M.Int.new_negative(
-        M.BigNum.from_str("2"),
-      ),
-    ),
-    M.CBORValue.new_bytes(priv.to_public().as_bytes()),
-  ); // x (-2) set to public key
-
-  return {
-    signature: toHex(coseSign1.to_bytes()),
-    key: toHex(key.to_bytes()),
-  };
 };
