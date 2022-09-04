@@ -1,5 +1,5 @@
 import type * as Core from "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js";
-import type * as Message from "./wasm_modules/cardano-message-signing-web/cardano_message_signing.js";
+import type * as Msg from "./wasm_modules/cardano-message-signing-web/cardano_message_signing.js";
 
 export { Core };
 
@@ -52,14 +52,14 @@ const importForEnvironmentCore = async (): Promise<typeof Core | null> => {
 };
 
 const importForEnvironmentMessage = async (): Promise<
-  typeof Message | null
+  typeof Msg | null
 > => {
   try {
     if (isNode) {
       return (await import(
         /* webpackIgnore: true */
         "./wasm_modules/cardano-message-signing-nodejs/cardano_message_signing.js"
-      )) as unknown as typeof Message;
+      )) as unknown as typeof Msg;
     }
 
     const pkg = await import(
@@ -74,7 +74,7 @@ const importForEnvironmentMessage = async (): Promise<
         ),
       ),
     );
-    return pkg as unknown as typeof Message;
+    return pkg as unknown as typeof Msg;
   } catch (_e) {
     // This only ever happens during SSR rendering
     return null;
@@ -83,4 +83,4 @@ const importForEnvironmentMessage = async (): Promise<
 
 export const C: typeof Core = (await importForEnvironmentCore())!;
 
-export const M: typeof Message = (await importForEnvironmentMessage())!;
+export const M: typeof Msg = (await importForEnvironmentMessage())!;
