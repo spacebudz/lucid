@@ -51,9 +51,7 @@ const importForEnvironmentCore = async (): Promise<typeof Core | null> => {
   }
 };
 
-const importForEnvironmentMessage = async (): Promise<
-  typeof Msg | null
-> => {
+const importForEnvironmentMessage = async (): Promise<typeof Msg | null> => {
   try {
     if (isNode) {
       return (await import(
