@@ -44,7 +44,11 @@ export function headermap_set_criticality(a: number, b: number): void;
 export function headermap_criticality(a: number): number;
 export function headermap_set_key_id(a: number, b: number, c: number): void;
 export function headermap_key_id(a: number, b: number): void;
-export function headermap_set_partial_init_vector(a: number, b: number, c: number): void;
+export function headermap_set_partial_init_vector(
+  a: number,
+  b: number,
+  c: number,
+): void;
 export function headermap_partial_init_vector(a: number, b: number): void;
 export function headermap_set_counter_signature(a: number, b: number): void;
 export function headermap_counter_signature(a: number): number;
@@ -67,20 +71,43 @@ export function __wbg_cosesign1_free(a: number): void;
 export function cosesign1_to_bytes(a: number, b: number): void;
 export function cosesign1_from_bytes(a: number, b: number): number;
 export function cosesign1_signature(a: number, b: number): void;
-export function cosesign1_signed_data(a: number, b: number, c: number, d: number, e: number): number;
-export function cosesign1_new(a: number, b: number, c: number, d: number, e: number): number;
+export function cosesign1_signed_data(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+): number;
+export function cosesign1_new(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+): number;
 export function __wbg_cosesign_free(a: number): void;
 export function cosesign_to_bytes(a: number, b: number): void;
 export function cosesign_from_bytes(a: number, b: number): number;
 export function cosesign_signatures(a: number): number;
-export function cosesign_new(a: number, b: number, c: number, d: number): number;
+export function cosesign_new(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): number;
 export function __wbg_signedmessage_free(a: number): void;
 export function signedmessage_to_bytes(a: number, b: number): void;
 export function signedmessage_from_bytes(a: number, b: number): number;
 export function signedmessage_new_cose_sign(a: number): number;
 export function signedmessage_new_cose_sign1(a: number): number;
-export function signedmessage_from_user_facing_encoding(a: number, b: number): number;
-export function signedmessage_to_user_facing_encoding(a: number, b: number): void;
+export function signedmessage_from_user_facing_encoding(
+  a: number,
+  b: number,
+): number;
+export function signedmessage_to_user_facing_encoding(
+  a: number,
+  b: number,
+): void;
 export function signedmessage_kind(a: number): number;
 export function signedmessage_as_cose_sign(a: number): number;
 export function signedmessage_as_cose_sign1(a: number): number;
@@ -93,7 +120,14 @@ export function sigstructure_sign_protected(a: number): number;
 export function sigstructure_external_aad(a: number, b: number): void;
 export function sigstructure_payload(a: number, b: number): void;
 export function sigstructure_set_sign_protected(a: number, b: number): void;
-export function sigstructure_new(a: number, b: number, c: number, d: number, e: number, f: number): number;
+export function sigstructure_new(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+  f: number,
+): number;
 export function __wbg_coseencrypt0_free(a: number): void;
 export function coseencrypt0_to_bytes(a: number, b: number): void;
 export function coseencrypt0_from_bytes(a: number, b: number): number;
@@ -115,7 +149,12 @@ export function __wbg_coseencrypt_free(a: number): void;
 export function coseencrypt_to_bytes(a: number, b: number): void;
 export function coseencrypt_from_bytes(a: number, b: number): number;
 export function coseencrypt_recipients(a: number): number;
-export function coseencrypt_new(a: number, b: number, c: number, d: number): number;
+export function coseencrypt_new(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): number;
 export function coserecipient_to_bytes(a: number, b: number): void;
 export function coserecipient_from_bytes(a: number, b: number): number;
 export function __wbg_pubkeyencryption_free(a: number): void;
@@ -133,7 +172,11 @@ export function cosekey_set_algorithm_id(a: number, b: number): void;
 export function cosekey_algorithm_id(a: number): number;
 export function cosekey_set_key_ops(a: number, b: number): void;
 export function cosekey_key_ops(a: number): number;
-export function cosekey_set_base_init_vector(a: number, b: number, c: number): void;
+export function cosekey_set_base_init_vector(
+  a: number,
+  b: number,
+  c: number,
+): void;
 export function cosekey_base_init_vector(a: number, b: number): void;
 export function cosekey_header(a: number, b: number): number;
 export function cosekey_set_header(a: number, b: number, c: number): void;
@@ -152,7 +195,11 @@ export function headermap_init_vector(a: number, b: number): void;
 export function coserecipient_new(a: number, b: number, c: number): number;
 export function labels_new(): number;
 export function cosesignatures_new(): number;
-export function headermap_set_init_vector(a: number, b: number, c: number): void;
+export function headermap_set_init_vector(
+  a: number,
+  b: number,
+  c: number,
+): void;
 export function cosesignature_headers(a: number): number;
 export function cosesign_headers(a: number): number;
 export function cosesign1_headers(a: number): number;
@@ -215,23 +262,45 @@ export function cborvalue_as_object(a: number): number;
 export function cborvalue_as_tagged(a: number): number;
 export function cborvalue_as_special(a: number): number;
 export function __wbg_cosesign1builder_free(a: number): void;
-export function cosesign1builder_new(a: number, b: number, c: number, d: number): number;
+export function cosesign1builder_new(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): number;
 export function cosesign1builder_hash_payload(a: number): void;
-export function cosesign1builder_set_external_aad(a: number, b: number, c: number): void;
+export function cosesign1builder_set_external_aad(
+  a: number,
+  b: number,
+  c: number,
+): void;
 export function cosesign1builder_make_data_to_sign(a: number): number;
 export function cosesign1builder_build(a: number, b: number, c: number): number;
-export function cosesignbuilder_new(a: number, b: number, c: number, d: number): number;
+export function cosesignbuilder_new(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): number;
 export function cosesignbuilder_make_data_to_sign(a: number): number;
 export function cosesignbuilder_build(a: number, b: number): number;
 export function __wbg_eddsa25519key_free(a: number): void;
 export function eddsa25519key_new(a: number, b: number): number;
-export function eddsa25519key_set_private_key(a: number, b: number, c: number): void;
+export function eddsa25519key_set_private_key(
+  a: number,
+  b: number,
+  c: number,
+): void;
 export function eddsa25519key_is_for_signing(a: number): void;
 export function eddsa25519key_is_for_verifying(a: number): void;
 export function eddsa25519key_build(a: number): number;
 export function __wbg_cosesignbuilder_free(a: number): void;
 export function cosesignbuilder_hash_payload(a: number): void;
-export function cosesignbuilder_set_external_aad(a: number, b: number, c: number): void;
+export function cosesignbuilder_set_external_aad(
+  a: number,
+  b: number,
+  c: number,
+): void;
 export function __wbg_bignum_free(a: number): void;
 export function bignum_to_bytes(a: number, b: number): void;
 export function bignum_from_bytes(a: number, b: number): number;
