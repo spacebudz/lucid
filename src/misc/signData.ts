@@ -1,6 +1,7 @@
 import {
   C,
   fromHex,
+  KeyHash,
   M,
   Payload,
   PrivateKey,
@@ -78,6 +79,7 @@ export const signData = (
 
 export const verifyData = (
   addressHex: string,
+  keyHash: KeyHash,
   payload: Payload,
   signedMessage: SignedMessage,
 ): boolean => {
@@ -168,6 +170,8 @@ export const verifyData = (
   const data = cose1.signed_data(undefined, undefined).to_bytes();
 
   if (cose1Address !== addressHex) return false;
+
+  if (keyHash !== publicKey.hash().to_hex()) return false;
 
   if (
     cose1AlgorithmId !== keyAlgorithmId &&

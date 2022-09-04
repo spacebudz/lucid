@@ -106,10 +106,14 @@ export class Lucid {
     payload: Payload,
     signedMessage: SignedMessage,
   ): boolean {
-    const { address: { hex: addressHex } } = this.utils.getAddressDetails(
-      address,
-    );
-    return verifyData(addressHex, payload, signedMessage);
+    const { paymentCredential, stakeCredential, address: { hex: addressHex } } =
+      this.utils.getAddressDetails(
+        address,
+      );
+    const keyHash = paymentCredential?.hash || stakeCredential?.hash;
+    if (!keyHash) throw new Error("Not a valid address provided.");
+
+    return verifyData(addressHex, keyHash, payload, signedMessage);
   }
 
   currentSlot(): Promise<Slot> {
