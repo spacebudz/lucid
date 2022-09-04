@@ -64,9 +64,6 @@ Outputs a `dist` folder
 
 [View examples](./src/examples/)
 
-See [sample-ada-transfer](./src/examples/sample-ada-transfer) for end-to-end
-browser integration usage.
-
 ### Basic usage
 
 ```js
