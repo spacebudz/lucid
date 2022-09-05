@@ -217,7 +217,7 @@ export class Tx {
   }
 
   /**
-   * Delegate to a stake pool
+   * Delegate to a stake pool.
    */
   delegateTo(
     rewardAddress: RewardAddress,
@@ -260,6 +260,7 @@ export class Tx {
     return this;
   }
 
+  /** Register a reward address in order to delegate to a pool and receive rewards. */
   registerStake(rewardAddress: RewardAddress) {
     const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
     if (
@@ -287,6 +288,7 @@ export class Tx {
     return this;
   }
 
+  /** Deregister a reward address. */
   deregisterStake(rewardAddress: RewardAddress, redeemer?: Redeemer) {
     const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
     if (
@@ -324,38 +326,45 @@ export class Tx {
     return this;
   }
 
-  // registerPool(poolParams: PoolParams) { TODO
-  //   const poolOwners = C.Ed25519KeyHashes.new();
-  //   poolParams.owners.forEach((owner) => {
-  //     const { paymentCredential } = this.lucid.utils.getAddressDetails(owner);
-  //     if (paymentCredential?.type === "Key") {
-  //       poolOwners.add(C.Ed25519KeyHash.from_hex(paymentCredential.hash));
-  //     } else throw new Error("Only key hashes allowed as pool owners.");
-  //   });
+  /** Register a stake pool. A pool deposit is required. The metadataUrl needs to be hosted already before making the registration. */
+  registerPool(poolParams: PoolParams) {
+    this.tasks.push(async () => {
+      const poolRegistration = await createPoolRegistration(
+        poolParams,
+        this.lucid,
+      );
 
-  //   const relays = C.Relays.new();
+      const certificate = C.Certificate.new_pool_registration(
+        poolRegistration,
+      );
 
-  //   const certificate = C.Certificate.new_pool_registration(
-  //     C.PoolRegistration.new(
-  //       C.PoolParams.new(
-  //         C.Ed25519KeyHash.from_bech32(poolParams.poolId),
-  //         C.VRFKeyHash.from_hex(poolParams.vrfKeyHash),
-  //         C.BigNum.from_str(poolParams.pledge.toString()),
-  //         C.BigNum.from_str(poolParams.cost.toString()),
-  //         "margin TODO",
-  //         C.RewardAddress.from_address(
-  //           C.Address.from_bech32(poolParams.rewardAddress),
-  //         ),
-  //         poolOwners,
-  //         relays,
-  //         undefined, // TODO
-  //       ),
-  //     ),
-  //   );
-  //   this.txBuilder.add_certificate(certificate, undefined);
-  //   return this;
-  // }
+      this.txBuilder.add_certificate(certificate, undefined);
+    });
+    return this;
+  }
 
+  /** Updates a stake pool. No pool deposit is required. The metadataUrl needs to be hosted already before making the update. */
+  updatePool(poolParams: PoolParams) {
+    this.tasks.push(async () => {
+      const poolRegistration = await createPoolRegistration(
+        poolParams,
+        this.lucid,
+      );
+
+      // This flag makes sure a pool deposit is not required
+      poolRegistration.set_is_update(true);
+
+      const certificate = C.Certificate.new_pool_registration(
+        poolRegistration,
+      );
+
+      this.txBuilder.add_certificate(certificate, undefined);
+    });
+    return this;
+  }
+  /** Retire a stake pool. The epoch needs to be the greater than the current epoch + 1 and less than current epoch + eMax.
+   * The pool deposit will be sent to reward address as reward after full retirement of the pool.
+   */
   retirePool(poolId: PoolId, epoch: number) {
     const certificate = C.Certificate.new_pool_retirement(
       C.PoolRetirement.new(C.Ed25519KeyHash.from_bech32(poolId), epoch),
@@ -552,4 +561,92 @@ const attachScript = (
     );
   }
   throw new Error("No variant matched.");
+};
+
+const createPoolRegistration = async (
+  poolParams: PoolParams,
+  lucid: Lucid,
+): Promise<Core.PoolRegistration> => {
+  const poolOwners = C.Ed25519KeyHashes.new();
+  poolParams.owners.forEach((owner) => {
+    const { stakeCredential } = lucid.utils.getAddressDetails(owner);
+    if (stakeCredential?.type === "Key") {
+      poolOwners.add(C.Ed25519KeyHash.from_hex(stakeCredential.hash));
+    } else throw new Error("Only key hashes allowed for pool owners.");
+  });
+
+  const metadata = poolParams.metadataUrl
+    ? await fetch(
+      poolParams.metadataUrl,
+    )
+      .then((res) => res.arrayBuffer())
+    : null;
+
+  const metadataHash = metadata
+    ? C.PoolMetadataHash.from_bytes(
+      C.hash_blake2b256(new Uint8Array(metadata)),
+    )
+    : null;
+
+  const relays = C.Relays.new();
+  poolParams.relays.forEach((relay) => {
+    switch (relay.type) {
+      case "SingleHostIp": {
+        const ipV4 = relay.ipV4
+          ? C.Ipv4.new(
+            new Uint8Array(relay.ipV4.split(".").map((b) => parseInt(b))),
+          )
+          : undefined;
+        const ipV6 = relay.ipV6
+          ? C.Ipv6.new(fromHex(relay.ipV6.replaceAll(":", "")))
+          : undefined;
+        relays.add(
+          C.Relay.new_single_host_addr(
+            C.SingleHostAddr.new(relay.port, ipV4, ipV6),
+          ),
+        );
+        break;
+      }
+      case "SingleHostDomainName": {
+        relays.add(
+          C.Relay.new_single_host_name(
+            C.SingleHostName.new(
+              relay.port,
+              C.DNSRecordAorAAAA.new(relay.domainName!),
+            ),
+          ),
+        );
+        break;
+      }
+      case "MultiHost": {
+        relays.add(
+          C.Relay.new_multi_host_name(
+            C.MultiHostName.new(C.DNSRecordSRV.new(relay.domainName!)),
+          ),
+        );
+        break;
+      }
+    }
+  });
+
+  return C.PoolRegistration.new(
+    C.PoolParams.new(
+      C.Ed25519KeyHash.from_bech32(poolParams.poolId),
+      C.VRFKeyHash.from_hex(poolParams.vrfKeyHash),
+      C.BigNum.from_str(poolParams.pledge.toString()),
+      C.BigNum.from_str(poolParams.cost.toString()),
+      C.UnitInterval.from_float(poolParams.margin),
+      C.RewardAddress.from_address(
+        C.Address.from_bech32(poolParams.rewardAddress),
+      )!,
+      poolOwners,
+      relays,
+      metadataHash
+        ? C.PoolMetadata.new(
+          C.URL.new(poolParams.metadataUrl!),
+          metadataHash,
+        )
+        : undefined,
+    ),
+  );
 };

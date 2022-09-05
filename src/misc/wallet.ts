@@ -116,10 +116,7 @@ export const discoverOwnUsedTxKeyHashes = (
       if (cert.kind() === 0) {
         const credential = cert.as_stake_registration()?.stake_credential();
         if (credential?.kind() === 0) {
-          const keyHash = toHex(
-            credential.to_keyhash()!.to_bytes(),
-          );
-          usedKeyHashes.push(keyHash);
+          // Key hash not needed for registration
         }
       } else if (cert.kind() === 1) {
         const credential = cert.as_stake_deregistration()?.stake_credential();

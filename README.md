@@ -131,7 +131,7 @@ Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
 Branch: **vasil**
 
-Commit hash: **311e980d9fdfc02bc1942ced1778d4befcaffc2f**
+Commit hash: **e3e4579f6d66a5c50aa4b8d104b56ee60a02ddad**
 
 ##### message-signing
 
@@ -139,4 +139,4 @@ Link: https://github.com/Emurgo/message-signing
 
 Branch: **master**
 
-Commit hash: **a92757fb9c9333290e278aa32b995bcf8a3821d6**
+Commit hash: **e3ed400eba98ad5ddb4d0d67c9cefe680059dc5c**

@@ -148,18 +148,22 @@ declare export function hash_transaction(
 ): TransactionHash;
 
 /**
- * @param {Uint8Array} tx_body
- * @returns {TransactionHash}
- */
-declare export function hash_transaction_raw(
-  tx_body: Uint8Array
-): TransactionHash;
-
-/**
  * @param {PlutusData} plutus_data
  * @returns {DataHash}
  */
 declare export function hash_plutus_data(plutus_data: PlutusData): DataHash;
+
+/**
+ * @param {Uint8Array} data
+ * @returns {Uint8Array}
+ */
+declare export function hash_blake2b256(data: Uint8Array): Uint8Array;
+
+/**
+ * @param {Uint8Array} data
+ * @returns {Uint8Array}
+ */
+declare export function hash_blake2b224(data: Uint8Array): Uint8Array;
 
 /**
  * @param {Redeemers} redeemers
@@ -4329,6 +4333,11 @@ declare export class PoolRegistration {
    * @returns {PoolRegistration}
    */
   static new(pool_params: PoolParams): PoolRegistration;
+
+  /**
+   * @param {boolean} update
+   */
+  set_is_update(update: boolean): void;
 }
 /**
  */
@@ -4440,6 +4449,17 @@ declare export class PrivateKey {
    * @returns {Ed25519Signature}
    */
   sign(message: Uint8Array): Ed25519Signature;
+
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {PrivateKey}
+   */
+  static from_bytes(bytes: Uint8Array): PrivateKey;
+
+  /**
+   * @returns {Uint8Array}
+   */
+  to_bytes(): Uint8Array;
 }
 /**
  */
@@ -7903,6 +7923,12 @@ declare export class UnitInterval {
    * @returns {UnitInterval}
    */
   static new(numerator: BigNum, denominator: BigNum): UnitInterval;
+
+  /**
+   * @param {number} float_number
+   * @returns {UnitInterval}
+   */
+  static from_float(float_number: number): UnitInterval;
 }
 /**
  */
@@ -8050,38 +8076,25 @@ declare export class VRFVKey {
   free(): void;
 
   /**
+   * @returns {Uint8Array}
+   */
+  to_bytes(): Uint8Array;
+
+  /**
    * @param {Uint8Array} bytes
    * @returns {VRFVKey}
    */
   static from_bytes(bytes: Uint8Array): VRFVKey;
 
   /**
+   * @returns {VRFKeyHash}
+   */
+  hash(): VRFKeyHash;
+
+  /**
    * @returns {Uint8Array}
    */
-  to_bytes(): Uint8Array;
-
-  /**
-   * @param {string} prefix
-   * @returns {string}
-   */
-  to_bech32(prefix: string): string;
-
-  /**
-   * @param {string} bech_str
-   * @returns {VRFVKey}
-   */
-  static from_bech32(bech_str: string): VRFVKey;
-
-  /**
-   * @returns {string}
-   */
-  to_hex(): string;
-
-  /**
-   * @param {string} hex
-   * @returns {VRFVKey}
-   */
-  static from_hex(hex: string): VRFVKey;
+  to_raw_key(): Uint8Array;
 }
 /**
  */
@@ -8387,6 +8400,7 @@ export interface InitOutput {
   +unitinterval_numerator: (a: number) => number;
   +unitinterval_denominator: (a: number) => number;
   +unitinterval_new: (a: number, b: number) => number;
+  +unitinterval_from_float: (a: number) => number;
   +__wbg_transaction_free: (a: number) => void;
   +transaction_to_bytes: (a: number, b: number) => void;
   +transaction_from_bytes: (a: number, b: number) => number;
@@ -8569,6 +8583,7 @@ export interface InitOutput {
   +poolregistration_from_json: (a: number, b: number) => number;
   +poolregistration_pool_params: (a: number) => number;
   +poolregistration_new: (a: number) => number;
+  +poolregistration_set_is_update: (a: number, b: number) => void;
   +__wbg_poolretirement_free: (a: number) => void;
   +poolretirement_to_bytes: (a: number, b: number) => void;
   +poolretirement_from_bytes: (a: number, b: number) => number;
@@ -9719,6 +9734,8 @@ export interface InitOutput {
   +privatekey_from_extended_bytes: (a: number, b: number) => number;
   +privatekey_from_normal_bytes: (a: number, b: number) => number;
   +privatekey_sign: (a: number, b: number, c: number) => number;
+  +privatekey_from_bytes: (a: number, b: number) => number;
+  +privatekey_to_bytes: (a: number, b: number) => void;
   +__wbg_publickey_free: (a: number) => void;
   +publickey_from_bech32: (a: number, b: number) => number;
   +publickey_to_bech32: (a: number, b: number) => void;
@@ -9896,13 +9913,6 @@ export interface InitOutput {
   +scriptdatahash_from_bech32: (a: number, b: number) => number;
   +scriptdatahash_to_hex: (a: number, b: number) => void;
   +scriptdatahash_from_hex: (a: number, b: number) => number;
-  +__wbg_vrfvkey_free: (a: number) => void;
-  +vrfvkey_from_bytes: (a: number, b: number) => number;
-  +vrfvkey_to_bytes: (a: number, b: number) => void;
-  +vrfvkey_to_bech32: (a: number, b: number, c: number, d: number) => void;
-  +vrfvkey_from_bech32: (a: number, b: number) => number;
-  +vrfvkey_to_hex: (a: number, b: number) => void;
-  +vrfvkey_from_hex: (a: number, b: number) => number;
   +__wbg_kesvkey_free: (a: number) => void;
   +kesvkey_from_bytes: (a: number, b: number) => number;
   +kesvkey_to_bytes: (a: number, b: number) => void;
@@ -9910,6 +9920,11 @@ export interface InitOutput {
   +kesvkey_from_bech32: (a: number, b: number) => number;
   +kesvkey_to_hex: (a: number, b: number) => void;
   +kesvkey_from_hex: (a: number, b: number) => number;
+  +__wbg_vrfvkey_free: (a: number) => void;
+  +vrfvkey_to_bytes: (a: number, b: number) => void;
+  +vrfvkey_from_bytes: (a: number, b: number) => number;
+  +vrfvkey_hash: (a: number) => number;
+  +vrfvkey_to_raw_key: (a: number, b: number) => void;
   +__wbg_kessignature_free: (a: number) => void;
   +kessignature_to_bytes: (a: number, b: number) => void;
   +kessignature_from_bytes: (a: number, b: number) => number;
@@ -9998,8 +10013,9 @@ export interface InitOutput {
   +make_vkey_witness: (a: number, b: number) => number;
   +hash_auxiliary_data: (a: number) => number;
   +hash_transaction: (a: number) => number;
-  +hash_transaction_raw: (a: number, b: number) => number;
   +hash_plutus_data: (a: number) => number;
+  +hash_blake2b256: (a: number, b: number, c: number) => void;
+  +hash_blake2b224: (a: number, b: number, c: number) => void;
   +hash_script_data: (a: number, b: number, c: number) => number;
   +get_implicit_input: (a: number, b: number, c: number) => number;
   +get_deposit: (a: number, b: number, c: number) => number;
@@ -10167,7 +10183,7 @@ export interface HeaderBodyJSON {
   prev_hash?: string | null;
   protocol_version: ProtocolVersionJSON;
   slot: string;
-  vrf_vkey: string;
+  vrf_vkey: VRFVKeyJSON;
 }
 export type IntJSON = string;
 export type Ipv4JSON = [number, number, number, number];
@@ -10350,6 +10366,10 @@ export interface PoolParamsJSON {
   vrf_keyhash: string;
 }
 export interface PoolRegistrationJSON {
+  /**
+   * We need this to figure out if someone registers a pool or only updates it. So that we know if we need to add the pool deposit or not.
+   */
+  is_update?: boolean | null;
   pool_params: PoolParamsJSON;
 }
 export interface PoolRetirementJSON {
@@ -10564,7 +10584,7 @@ export interface VRFCertJSON {
   proof: number[];
 }
 export type VRFKeyHashJSON = string;
-export type VRFVKeyJSON = string;
+export type VRFVKeyJSON = number[];
 export interface ValueJSON {
   coin: string;
   multiasset?: MultiAssetJSON | null;
