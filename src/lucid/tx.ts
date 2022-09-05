@@ -343,7 +343,7 @@ export class Tx {
     return this;
   }
 
-  /** Updates a stake pool. No pool deposit is required. The metadataUrl needs to be hosted already before making the update. */
+  /** Update a stake pool. No pool deposit is required. The metadataUrl needs to be hosted already before making the update. */
   updatePool(poolParams: PoolParams) {
     this.tasks.push(async () => {
       const poolRegistration = await createPoolRegistration(
