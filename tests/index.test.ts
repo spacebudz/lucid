@@ -58,7 +58,7 @@ Deno.test("No reward address", async () => {
     await lucid.wallet.address(),
   );
   assertEquals(stakeCredential, undefined);
-  assertEquals(await lucid.wallet.rewardAddress(), undefined);
+  assertEquals(await lucid.wallet.rewardAddress(), null);
 });
 
 Deno.test("Switch wallet", async () => {
