@@ -2,35 +2,39 @@
 
 ## General
 
-#### - Keep it simple.
+- #### Keep it simple.
 
-#### - Avoid external dependencies. The less dependencies the easier Lucid is interoperable between Browser, Node.js and Deno. But Deno dependencies are fine most of the time because they are mostly written in a browser compatible way.
+- #### Avoid external dependencies. The less dependencies the easier Lucid is interoperable between Browser, Node.js and Deno. But Deno dependencies are fine most of the time because they are mostly written in a browser compatible way.
 
-#### - Avoid exposing functions and arguments directly from the `cardano-multiplatform-lib` or `message-signing` library. Rather wrap them and expose types from JavaScript like `string`, `number` or `object`.
+- #### Avoid exposing functions and arguments directly from the `cardano-multiplatform-lib` or `message-signing` library. Rather wrap them and expose types from JavaScript like `string`, `number` or `object`.
 
-#### - Add tests to the `tests` folder.
+- #### Add tests to the `tests` folder.
 
-#### - Always run and test the code with the latest Deno version. Simply do `deno upgrade` to get the latest version.
+- #### Always run and test the code with the latest Deno version. Simply do `deno upgrade` to get the latest version.
+
+## Feedback
+
+- #### Contributions in the form of feedback and issue is very much welcome. Might it be a suggestion, a bug report or maybe some questions that you have. It helps improving Lucid in the long run and these are probably the best kind of contributions to start with. Do not hesitate to add thumbs up 👍 on open issues you support to show your interest.
 
 ## Style Guide
 
-### - TypeScript
+### TypeScript
 
-#### - Use TypeScript instead of JavaScript.
+- #### Use TypeScript instead of JavaScript.
 
-#### - Follow the default TypeScript styling conventions unless mentioned differently here.
+- #### Follow the default TypeScript styling conventions unless mentioned differently here.
 
-#### - Try to avoid `any` wherever you can.
+- #### Try to avoid `any` wherever you can.
 
-#### - Do not use the filename index.ts/index.js.
+- #### Do not use the filename index.ts/index.js.
 Deno does not treat "index.js" or "index.ts" in a special way. By using these filenames, it suggests that they can be left out of the module specifier when they cannot. This is confusing.
 
 If a directory of code needs a default entry point, use the filename `mod.ts`. The filename `mod.ts` follows Rust’s convention, is shorter than `index.ts`, and doesn’t come with any preconceived notions about how it might work.
 
-#### - Use underscores in folders and filenames.
+- #### Use underscores in folders and filenames.
 Example: Use `merkle_tree.ts` instead of `merkle-tree.ts` or `merkleTree.ts`.
 
-#### - Exported functions: max 2-3 args, put the rest into an options object.
+- #### Exported functions: max 2-3 args, put the rest into an options object.
 
 ```ts
 // BAD. If the second argument was not optional, it would be OKAY to do it like this.
@@ -54,7 +58,7 @@ export function resolve(
 ```
 
 
-#### - Top-level functions should not use arrow syntax.
+- #### Top-level functions should not use arrow syntax.
 
 ```ts
 // BAD.
@@ -66,7 +70,7 @@ export const add = (a : number, b : number): number => a + b;
 export function add(a: number, b: number): number { return a + b; }
 ```
 
-#### - Be explicit about types used in functions.
+- #### Be explicit about types used in functions.
 
 ```ts
 // BAD. Return type is only implicitly determined.
@@ -86,7 +90,7 @@ export function log(str: string) { console.log(str); }
 ```
 
 
-#### - Structure comments properly
+- #### Structure comments properly
 
 Single line comment:
 ```ts
@@ -126,9 +130,9 @@ Avoid JSDoc `@param`. If `@param` is used, it should not include the `type` as T
 ```
 
 
-#### - Run `deno fmt` before you commit and push any code changes.
+- #### Run `deno fmt` before you commit and push any code changes.
 
 
 ### Rust
 
-#### - Follow Rust conventions and be consistent with existing code.
+- #### Follow Rust conventions and be consistent with existing code.
