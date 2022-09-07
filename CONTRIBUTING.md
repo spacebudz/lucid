@@ -4,7 +4,7 @@
 
 #### - Keep it simple
 
-#### - Try to avoid external dependencies. The less dependencies the easier Lucid is interoperable between Browser, Node.js and Deno.
+#### - Try to avoid external dependencies. The less dependencies the easier Lucid is interoperable between Browser, Node.js and Deno. But Deno dependencies are fine most of the time because they are mostly written in a browser compatible way.
 
 ## Style Guide
 
@@ -82,9 +82,45 @@ export function log(str: string) { console.log(str); }
 
 #### - Structure comments properly
 
+Single line comment:
+```ts
+// This is a comment.
+```
+
+Multiline comment:
+```ts
+/* 
+This is a comment on line 1.
+This is a comment on line 2.
+ */
+```
+
+Single line comment to describe a function/variable:
+```ts
+/** This functions adds two numbers together. */
+export function add(a: number, b: number): number { return a + b; }
+```
+
+Multiline comment to describe a function/variable:
+```ts
+/** 
+ * This functions adds two numbers together. 
+ * This is another random comment.
+ */
+export function add(a: number, b: number): number { return a + b; }
+```
+Always end comments with a dot `.`. 
+
+Avoid JSDoc `@param`. If `@param` is used, it should not include the `type` as TypeScript is already strongly-typed:
+```ts
+/**
+ * Function with non-obvious param.
+ * @param foo Description of non-obvious parameter.
+ */
+```
+
 
 #### - Run `deno fmt` before you commit and push any code changes.
-
 
 
 ### Rust
