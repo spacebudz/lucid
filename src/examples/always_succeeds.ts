@@ -9,15 +9,15 @@ import {
 } from "../../mod.ts";
 
 /*
-AlwaysSucceeds Example
-Lock a UTxO with some ADA
-UTxO can be unlocked by anyone
-Showcasing PlutusV2
+  AlwaysSucceeds Example
+  Lock a UTxO with some ADA
+  UTxO can be unlocked by anyone
+  Showcasing PlutusV2
 
-Contract:
+  Contract:
 
-validate :: () -> () -> ScriptContext -> Bool
-validate _ _ _ = True
+  validate :: () -> () -> ScriptContext -> Bool
+  validate _ _ _ = True
  */
 
 const lucid = await Lucid.new(

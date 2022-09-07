@@ -114,8 +114,8 @@ Multiline comment:
 
 ```ts
 /*
-This is a comment on line 1.
-This is a comment on line 2.
+  This is a comment on line 1.
+  This is a comment on line 2.
  */
 ```
 

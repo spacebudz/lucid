@@ -10,10 +10,10 @@ import {
 import * as helios from "https://raw.githubusercontent.com/Hyperion-BT/Helios/v0.4.0/helios.js";
 
 /*
-MatchingPubKeyHash Example
-Lock a UTxO with a PubKeyHash
-UTxO can be unlocked by providing the same PubKeyHash in the redeemer
-Showcasing Helios; Link: https://github.com/Hyperion-BT/Helios
+  MatchingPubKeyHash Example
+  Lock a UTxO with a PubKeyHash
+  UTxO can be unlocked by providing the same PubKeyHash in the redeemer
+  Showcasing Helios; Link: https://github.com/Hyperion-BT/Helios
  */
 
 const lucid = await Lucid.new(
