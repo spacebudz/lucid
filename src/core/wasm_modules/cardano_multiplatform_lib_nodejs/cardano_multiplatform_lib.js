@@ -404,55 +404,6 @@ module.exports.decrypt_with_password = function (password, data) {
 };
 
 /**
- * @param {Transaction} tx
- * @param {LinearFee} linear_fee
- * @param {ExUnitPrices} ex_unit_prices
- * @returns {BigNum}
- */
-module.exports.min_fee = function (tx, linear_fee, ex_unit_prices) {
-  _assertClass(tx, Transaction);
-  _assertClass(linear_fee, LinearFee);
-  _assertClass(ex_unit_prices, ExUnitPrices);
-  var ret = wasm.min_fee(tx.ptr, linear_fee.ptr, ex_unit_prices.ptr);
-  return BigNum.__wrap(ret);
-};
-
-/**
- * @param {string} json
- * @param {number} schema
- * @returns {PlutusData}
- */
-module.exports.encode_json_str_to_plutus_datum = function (json, schema) {
-  var ptr0 = passStringToWasm0(
-    json,
-    wasm.__wbindgen_malloc,
-    wasm.__wbindgen_realloc,
-  );
-  var len0 = WASM_VECTOR_LEN;
-  var ret = wasm.encode_json_str_to_plutus_datum(ptr0, len0, schema);
-  return PlutusData.__wrap(ret);
-};
-
-/**
- * @param {PlutusData} datum
- * @param {number} schema
- * @returns {string}
- */
-module.exports.decode_plutus_datum_to_json_str = function (datum, schema) {
-  try {
-    const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-    _assertClass(datum, PlutusData);
-    wasm.decode_plutus_datum_to_json_str(retptr, datum.ptr, schema);
-    var r0 = getInt32Memory0()[retptr / 4 + 0];
-    var r1 = getInt32Memory0()[retptr / 4 + 1];
-    return getStringFromWasm0(r0, r1);
-  } finally {
-    wasm.__wbindgen_add_to_stack_pointer(16);
-    wasm.__wbindgen_free(r0, r1);
-  }
-};
-
-/**
  * @param {TransactionHash} tx_body_hash
  * @param {ByronAddress} addr
  * @param {LegacyDaedalusPrivateKey} key
@@ -686,6 +637,55 @@ module.exports.encode_json_str_to_native_script = function (
   return NativeScript.__wrap(ret);
 };
 
+/**
+ * @param {string} json
+ * @param {number} schema
+ * @returns {PlutusData}
+ */
+module.exports.encode_json_str_to_plutus_datum = function (json, schema) {
+  var ptr0 = passStringToWasm0(
+    json,
+    wasm.__wbindgen_malloc,
+    wasm.__wbindgen_realloc,
+  );
+  var len0 = WASM_VECTOR_LEN;
+  var ret = wasm.encode_json_str_to_plutus_datum(ptr0, len0, schema);
+  return PlutusData.__wrap(ret);
+};
+
+/**
+ * @param {PlutusData} datum
+ * @param {number} schema
+ * @returns {string}
+ */
+module.exports.decode_plutus_datum_to_json_str = function (datum, schema) {
+  try {
+    const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+    _assertClass(datum, PlutusData);
+    wasm.decode_plutus_datum_to_json_str(retptr, datum.ptr, schema);
+    var r0 = getInt32Memory0()[retptr / 4 + 0];
+    var r1 = getInt32Memory0()[retptr / 4 + 1];
+    return getStringFromWasm0(r0, r1);
+  } finally {
+    wasm.__wbindgen_add_to_stack_pointer(16);
+    wasm.__wbindgen_free(r0, r1);
+  }
+};
+
+/**
+ * @param {Transaction} tx
+ * @param {LinearFee} linear_fee
+ * @param {ExUnitPrices} ex_unit_prices
+ * @returns {BigNum}
+ */
+module.exports.min_fee = function (tx, linear_fee, ex_unit_prices) {
+  _assertClass(tx, Transaction);
+  _assertClass(linear_fee, LinearFee);
+  _assertClass(ex_unit_prices, ExUnitPrices);
+  var ret = wasm.min_fee(tx.ptr, linear_fee.ptr, ex_unit_prices.ptr);
+  return BigNum.__wrap(ret);
+};
+
 function handleError(f, args) {
   try {
     return f.apply(this, args);
@@ -800,6 +800,30 @@ module.exports.ScriptWitnessKind = Object.freeze({
   PlutusWitness: 1,
   "1": "PlutusWitness",
 });
+/**
+ * Each new language uses a different namespace for hashing its script
+ * This is because you could have a language where the same bytes have different semantics
+ * So this avoids scripts in different languages mapping to the same hash
+ * Note that the enum value here is different than the enum value for deciding the cost model of a script
+ * https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
+ */
+module.exports.ScriptHashNamespace = Object.freeze({
+  NativeScript: 0,
+  "0": "NativeScript",
+  PlutusV1: 1,
+  "1": "PlutusV1",
+  PlutusV2: 2,
+  "2": "PlutusV2",
+});
+/**
+ * Used to choose the schema for a script JSON string
+ */
+module.exports.ScriptSchema = Object.freeze({
+  Wallet: 0,
+  "0": "Wallet",
+  Node: 1,
+  "1": "Node",
+});
 /** */
 module.exports.LanguageKind = Object.freeze({
   PlutusV1: 0,
@@ -900,30 +924,6 @@ module.exports.DatumKind = Object.freeze({
   "0": "Hash",
   Data: 1,
   "1": "Data",
-});
-/**
- * Each new language uses a different namespace for hashing its script
- * This is because you could have a language where the same bytes have different semantics
- * So this avoids scripts in different languages mapping to the same hash
- * Note that the enum value here is different than the enum value for deciding the cost model of a script
- * https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
- */
-module.exports.ScriptHashNamespace = Object.freeze({
-  NativeScript: 0,
-  "0": "NativeScript",
-  PlutusV1: 1,
-  "1": "PlutusV1",
-  PlutusV2: 2,
-  "2": "PlutusV2",
-});
-/**
- * Used to choose the schema for a script JSON string
- */
-module.exports.ScriptSchema = Object.freeze({
-  Wallet: 0,
-  "0": "Wallet",
-  Node: 1,
-  "1": "Node",
 });
 /** */
 class Address {
@@ -17965,8 +17965,8 @@ module.exports.__wbindgen_memory = function () {
   return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8433 = function (arg0, arg1, arg2) {
-  var ret = makeMutClosure(arg0, arg1, 454, __wbg_adapter_32);
+module.exports.__wbindgen_closure_wrapper8443 = function (arg0, arg1, arg2) {
+  var ret = makeMutClosure(arg0, arg1, 459, __wbg_adapter_32);
   return addHeapObject(ret);
 };
 

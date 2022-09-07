@@ -1396,42 +1396,104 @@ export function scriptwitness_new_plutus_witness(a: number): number;
 export function scriptwitness_kind(a: number): number;
 export function scriptwitness_as_native_witness(a: number): number;
 export function scriptwitness_as_plutus_witness(a: number): number;
-export function __wbg_linearfee_free(a: number): void;
-export function linearfee_constant(a: number): number;
-export function linearfee_coefficient(a: number): number;
-export function linearfee_new(a: number, b: number): number;
-export function min_fee(a: number, b: number, c: number): number;
-export function __wbg_transactionoutputbuilder_free(a: number): void;
-export function transactionoutputbuilder_new(): number;
-export function transactionoutputbuilder_with_address(
+export function __wbg_transactionunspentoutput_free(a: number): void;
+export function transactionunspentoutput_to_bytes(a: number, b: number): void;
+export function transactionunspentoutput_from_bytes(
   a: number,
   b: number,
 ): number;
-export function transactionoutputbuilder_with_datum(
+export function transactionunspentoutput_new(a: number, b: number): number;
+export function transactionunspentoutput_input(a: number): number;
+export function transactionunspentoutput_output(a: number): number;
+export function transactionunspentoutput_to_legacy_bytes(
   a: number,
   b: number,
-): number;
-export function transactionoutputbuilder_next(a: number): number;
-export function __wbg_transactionoutputamountbuilder_free(a: number): void;
-export function transactionoutputamountbuilder_with_value(
-  a: number,
-  b: number,
-): number;
-export function transactionoutputamountbuilder_with_coin(
-  a: number,
-  b: number,
-): number;
-export function transactionoutputamountbuilder_with_coin_and_asset(
+): void;
+export function __wbg_transactionunspentoutputs_free(a: number): void;
+export function transactionunspentoutputs_new(): number;
+export function transactionunspentoutputs_len(a: number): number;
+export function transactionunspentoutputs_get(a: number, b: number): number;
+export function transactionunspentoutputs_add(a: number, b: number): void;
+export function __wbg_bignum_free(a: number): void;
+export function bignum_to_bytes(a: number, b: number): void;
+export function bignum_from_bytes(a: number, b: number): number;
+export function bignum_from_str(a: number, b: number): number;
+export function bignum_to_str(a: number, b: number): void;
+export function bignum_zero(): number;
+export function bignum_is_zero(a: number): number;
+export function bignum_checked_mul(a: number, b: number): number;
+export function bignum_checked_add(a: number, b: number): number;
+export function bignum_checked_sub(a: number, b: number): number;
+export function bignum_checked_div(a: number, b: number): number;
+export function bignum_checked_div_ceil(a: number, b: number): number;
+export function bignum_clamped_sub(a: number, b: number): number;
+export function bignum_compare(a: number, b: number): number;
+export function __wbg_value_free(a: number): void;
+export function value_to_bytes(a: number, b: number): void;
+export function value_from_bytes(a: number, b: number): number;
+export function value_to_json(a: number, b: number): void;
+export function value_to_js_value(a: number): number;
+export function value_from_json(a: number, b: number): number;
+export function value_new(a: number): number;
+export function value_new_from_assets(a: number): number;
+export function value_zero(): number;
+export function value_is_zero(a: number): number;
+export function value_coin(a: number): number;
+export function value_set_coin(a: number, b: number): void;
+export function value_multiasset(a: number): number;
+export function value_set_multiasset(a: number, b: number): void;
+export function value_checked_add(a: number, b: number): number;
+export function value_checked_sub(a: number, b: number): number;
+export function value_clamped_sub(a: number, b: number): number;
+export function value_compare(a: number, b: number): number;
+export function __wbg_int_free(a: number): void;
+export function int_to_bytes(a: number, b: number): void;
+export function int_from_bytes(a: number, b: number): number;
+export function int_new(a: number): number;
+export function int_new_negative(a: number): number;
+export function int_new_i32(a: number): number;
+export function int_is_positive(a: number): number;
+export function int_as_positive(a: number): number;
+export function int_as_negative(a: number): number;
+export function int_as_i32(a: number, b: number): void;
+export function int_as_i32_or_nothing(a: number, b: number): void;
+export function int_as_i32_or_fail(a: number): number;
+export function int_to_str(a: number, b: number): void;
+export function int_from_str(a: number, b: number): number;
+export function __wbg_bigint_free(a: number): void;
+export function bigint_to_bytes(a: number, b: number): void;
+export function bigint_from_bytes(a: number, b: number): number;
+export function bigint_as_u64(a: number): number;
+export function bigint_as_int(a: number): number;
+export function bigint_from_str(a: number, b: number): number;
+export function bigint_to_str(a: number, b: number): void;
+export function make_daedalus_bootstrap_witness(
   a: number,
   b: number,
   c: number,
 ): number;
-export function transactionoutputamountbuilder_with_asset_and_min_required_coin(
+export function make_icarus_bootstrap_witness(
   a: number,
   b: number,
   c: number,
 ): number;
-export function transactionoutputamountbuilder_build(a: number): number;
+export function make_vkey_witness(a: number, b: number): number;
+export function hash_auxiliary_data(a: number): number;
+export function hash_transaction(a: number): number;
+export function hash_plutus_data(a: number): number;
+export function hash_blake2b256(a: number, b: number, c: number): void;
+export function hash_blake2b224(a: number, b: number, c: number): void;
+export function hash_script_data(a: number, b: number, c: number): number;
+export function get_implicit_input(a: number, b: number, c: number): number;
+export function get_deposit(a: number, b: number, c: number): number;
+export function min_ada_required(a: number, b: number): number;
+export function encode_json_str_to_native_script(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+): number;
 export function __wbg_plutusscript_free(a: number): void;
 export function plutusscript_to_bytes(a: number, b: number): void;
 export function plutusscript_from_bytes(a: number, b: number): number;
@@ -1603,6 +1665,42 @@ export function decode_plutus_datum_to_json_str(
   b: number,
   c: number,
 ): void;
+export function __wbg_linearfee_free(a: number): void;
+export function linearfee_constant(a: number): number;
+export function linearfee_coefficient(a: number): number;
+export function linearfee_new(a: number, b: number): number;
+export function min_fee(a: number, b: number, c: number): number;
+export function __wbg_transactionoutputbuilder_free(a: number): void;
+export function transactionoutputbuilder_new(): number;
+export function transactionoutputbuilder_with_address(
+  a: number,
+  b: number,
+): number;
+export function transactionoutputbuilder_with_datum(
+  a: number,
+  b: number,
+): number;
+export function transactionoutputbuilder_next(a: number): number;
+export function __wbg_transactionoutputamountbuilder_free(a: number): void;
+export function transactionoutputamountbuilder_with_value(
+  a: number,
+  b: number,
+): number;
+export function transactionoutputamountbuilder_with_coin(
+  a: number,
+  b: number,
+): number;
+export function transactionoutputamountbuilder_with_coin_and_asset(
+  a: number,
+  b: number,
+  c: number,
+): number;
+export function transactionoutputamountbuilder_with_asset_and_min_required_coin(
+  a: number,
+  b: number,
+  c: number,
+): number;
+export function transactionoutputamountbuilder_build(a: number): number;
 export function __wbg_bip32privatekey_free(a: number): void;
 export function bip32privatekey_derive(a: number, b: number): number;
 export function bip32privatekey_from_128_xprv(a: number, b: number): number;
@@ -1886,104 +1984,6 @@ export function vrfcert_from_json(a: number, b: number): number;
 export function vrfcert_output(a: number, b: number): void;
 export function vrfcert_proof(a: number, b: number): void;
 export function vrfcert_new(a: number, b: number, c: number, d: number): number;
-export function __wbg_transactionunspentoutput_free(a: number): void;
-export function transactionunspentoutput_to_bytes(a: number, b: number): void;
-export function transactionunspentoutput_from_bytes(
-  a: number,
-  b: number,
-): number;
-export function transactionunspentoutput_new(a: number, b: number): number;
-export function transactionunspentoutput_input(a: number): number;
-export function transactionunspentoutput_output(a: number): number;
-export function transactionunspentoutput_to_legacy_bytes(
-  a: number,
-  b: number,
-): void;
-export function __wbg_transactionunspentoutputs_free(a: number): void;
-export function transactionunspentoutputs_new(): number;
-export function transactionunspentoutputs_len(a: number): number;
-export function transactionunspentoutputs_get(a: number, b: number): number;
-export function transactionunspentoutputs_add(a: number, b: number): void;
-export function __wbg_bignum_free(a: number): void;
-export function bignum_to_bytes(a: number, b: number): void;
-export function bignum_from_bytes(a: number, b: number): number;
-export function bignum_from_str(a: number, b: number): number;
-export function bignum_to_str(a: number, b: number): void;
-export function bignum_zero(): number;
-export function bignum_is_zero(a: number): number;
-export function bignum_checked_mul(a: number, b: number): number;
-export function bignum_checked_add(a: number, b: number): number;
-export function bignum_checked_sub(a: number, b: number): number;
-export function bignum_checked_div(a: number, b: number): number;
-export function bignum_checked_div_ceil(a: number, b: number): number;
-export function bignum_clamped_sub(a: number, b: number): number;
-export function bignum_compare(a: number, b: number): number;
-export function __wbg_value_free(a: number): void;
-export function value_to_bytes(a: number, b: number): void;
-export function value_from_bytes(a: number, b: number): number;
-export function value_to_json(a: number, b: number): void;
-export function value_to_js_value(a: number): number;
-export function value_from_json(a: number, b: number): number;
-export function value_new(a: number): number;
-export function value_new_from_assets(a: number): number;
-export function value_zero(): number;
-export function value_is_zero(a: number): number;
-export function value_coin(a: number): number;
-export function value_set_coin(a: number, b: number): void;
-export function value_multiasset(a: number): number;
-export function value_set_multiasset(a: number, b: number): void;
-export function value_checked_add(a: number, b: number): number;
-export function value_checked_sub(a: number, b: number): number;
-export function value_clamped_sub(a: number, b: number): number;
-export function value_compare(a: number, b: number): number;
-export function __wbg_int_free(a: number): void;
-export function int_to_bytes(a: number, b: number): void;
-export function int_from_bytes(a: number, b: number): number;
-export function int_new(a: number): number;
-export function int_new_negative(a: number): number;
-export function int_new_i32(a: number): number;
-export function int_is_positive(a: number): number;
-export function int_as_positive(a: number): number;
-export function int_as_negative(a: number): number;
-export function int_as_i32(a: number, b: number): void;
-export function int_as_i32_or_nothing(a: number, b: number): void;
-export function int_as_i32_or_fail(a: number): number;
-export function int_to_str(a: number, b: number): void;
-export function int_from_str(a: number, b: number): number;
-export function __wbg_bigint_free(a: number): void;
-export function bigint_to_bytes(a: number, b: number): void;
-export function bigint_from_bytes(a: number, b: number): number;
-export function bigint_as_u64(a: number): number;
-export function bigint_as_int(a: number): number;
-export function bigint_from_str(a: number, b: number): number;
-export function bigint_to_str(a: number, b: number): void;
-export function make_daedalus_bootstrap_witness(
-  a: number,
-  b: number,
-  c: number,
-): number;
-export function make_icarus_bootstrap_witness(
-  a: number,
-  b: number,
-  c: number,
-): number;
-export function make_vkey_witness(a: number, b: number): number;
-export function hash_auxiliary_data(a: number): number;
-export function hash_transaction(a: number): number;
-export function hash_plutus_data(a: number): number;
-export function hash_blake2b256(a: number, b: number, c: number): void;
-export function hash_blake2b224(a: number, b: number, c: number): void;
-export function hash_script_data(a: number, b: number, c: number): number;
-export function get_implicit_input(a: number, b: number, c: number): number;
-export function get_deposit(a: number, b: number, c: number): number;
-export function min_ada_required(a: number, b: number): number;
-export function encode_json_str_to_native_script(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-  e: number,
-): number;
 export function __wbindgen_malloc(a: number): number;
 export function __wbindgen_realloc(a: number, b: number, c: number): number;
 export const __wbindgen_export_2: WebAssembly.Table;

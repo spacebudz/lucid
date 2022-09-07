@@ -52,35 +52,6 @@ export function encrypt_with_password(
  */
 export function decrypt_with_password(password: string, data: string): string;
 /**
- * @param {Transaction} tx
- * @param {LinearFee} linear_fee
- * @param {ExUnitPrices} ex_unit_prices
- * @returns {BigNum}
- */
-export function min_fee(
-  tx: Transaction,
-  linear_fee: LinearFee,
-  ex_unit_prices: ExUnitPrices,
-): BigNum;
-/**
- * @param {string} json
- * @param {number} schema
- * @returns {PlutusData}
- */
-export function encode_json_str_to_plutus_datum(
-  json: string,
-  schema: number,
-): PlutusData;
-/**
- * @param {PlutusData} datum
- * @param {number} schema
- * @returns {string}
- */
-export function decode_plutus_datum_to_json_str(
-  datum: PlutusData,
-  schema: number,
-): string;
-/**
  * @param {TransactionHash} tx_body_hash
  * @param {ByronAddress} addr
  * @param {LegacyDaedalusPrivateKey} key
@@ -199,6 +170,35 @@ export function encode_json_str_to_native_script(
   self_xpub: string,
   schema: number,
 ): NativeScript;
+/**
+ * @param {string} json
+ * @param {number} schema
+ * @returns {PlutusData}
+ */
+export function encode_json_str_to_plutus_datum(
+  json: string,
+  schema: number,
+): PlutusData;
+/**
+ * @param {PlutusData} datum
+ * @param {number} schema
+ * @returns {string}
+ */
+export function decode_plutus_datum_to_json_str(
+  datum: PlutusData,
+  schema: number,
+): string;
+/**
+ * @param {Transaction} tx
+ * @param {LinearFee} linear_fee
+ * @param {ExUnitPrices} ex_unit_prices
+ * @returns {BigNum}
+ */
+export function min_fee(
+  tx: Transaction,
+  linear_fee: LinearFee,
+  ex_unit_prices: ExUnitPrices,
+): BigNum;
 /** */
 export enum CertificateKind {
   StakeRegistration,
@@ -262,6 +262,25 @@ export enum StakeCredKind {
 export enum ScriptWitnessKind {
   NativeWitness,
   PlutusWitness,
+}
+/**
+ * Each new language uses a different namespace for hashing its script
+ * This is because you could have a language where the same bytes have different semantics
+ * So this avoids scripts in different languages mapping to the same hash
+ * Note that the enum value here is different than the enum value for deciding the cost model of a script
+ * https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
+ */
+export enum ScriptHashNamespace {
+  NativeScript,
+  PlutusV1,
+  PlutusV2,
+}
+/**
+ * Used to choose the schema for a script JSON string
+ */
+export enum ScriptSchema {
+  Wallet,
+  Node,
 }
 /** */
 export enum LanguageKind {
@@ -345,25 +364,6 @@ export enum ScriptKind {
 export enum DatumKind {
   Hash,
   Data,
-}
-/**
- * Each new language uses a different namespace for hashing its script
- * This is because you could have a language where the same bytes have different semantics
- * So this avoids scripts in different languages mapping to the same hash
- * Note that the enum value here is different than the enum value for deciding the cost model of a script
- * https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
- */
-export enum ScriptHashNamespace {
-  NativeScript,
-  PlutusV1,
-  PlutusV2,
-}
-/**
- * Used to choose the schema for a script JSON string
- */
-export enum ScriptSchema {
-  Wallet,
-  Node,
 }
 /** */
 export class Address {

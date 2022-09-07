@@ -45,21 +45,23 @@ export type Unit = string;
 export type Assets = Record<string, bigint>;
 export type ScriptType = "Native" | "PlutusV1" | "PlutusV2";
 
+/** Hex */
+export type PolicyId = string;
+
 /**
  * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
  * E.g. taking in the Cbor Hex string coming from writeFileTextEnvelope (Haskell) works
  */
 export type Script = { type: ScriptType; script: string };
-
-/** Hex */
-export type PolicyId = string;
-
+/**
+ * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
+ * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
+ */
 export type Validator =
   | MintingPolicy
   | SpendingValidator
   | CertificateValidator
   | WithdrawalValidator;
-
 /**
  * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
  * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
@@ -250,4 +252,12 @@ export type Relay = {
   ipV6?: string;
   port?: number;
   domainName?: string;
+};
+
+export type NativeScript = {
+  type: "sig" | "all" | "any" | "before" | "atLeast" | "after";
+  keyHash?: KeyHash;
+  required?: number;
+  slot?: Slot;
+  scripts?: NativeScript[];
 };

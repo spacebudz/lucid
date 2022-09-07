@@ -1,10 +1,8 @@
 import {
   Blockfrost,
-  C,
   Lucid,
   MintingPolicy,
   PolicyId,
-  toHex,
   TxHash,
   Unit,
   utf8ToHex,
@@ -28,14 +26,18 @@ const { paymentCredential } = lucid.utils.getAddressDetails(
   await lucid.wallet.address(),
 );
 
-const mintingPolicy: MintingPolicy = {
-  type: "Native",
-  script: toHex(
-    C.NativeScript.new_script_pubkey(
-      C.ScriptPubkey.new(C.Ed25519KeyHash.from_hex(paymentCredential?.hash!)),
-    ).to_bytes(),
-  ),
-};
+const mintingPolicy: MintingPolicy = lucid.utils.nativeScriptFromJson(
+  {
+    type: "all",
+    scripts: [
+      { type: "sig", keyHash: paymentCredential?.hash! },
+      {
+        type: "before",
+        slot: lucid.utils.unixTimeToSlot(Date.now() + 10000),
+      },
+    ],
+  },
+);
 
 const policyId: PolicyId = lucid.utils.mintingPolicyToId(
   mintingPolicy,
@@ -49,6 +51,7 @@ export async function mintNFT(
   const tx = await lucid
     .newTx()
     .mintAssets({ [unit]: 1n })
+    .validTo(Date.now() + 1000)
     .attachMintingPolicy(mintingPolicy)
     .complete();
 
@@ -67,6 +70,7 @@ export async function burnNFT(
   const tx = await lucid
     .newTx()
     .mintAssets({ [unit]: -1n })
+    .validTo(Date.now() + 1000)
     .attachMintingPolicy(mintingPolicy)
     .complete();
 

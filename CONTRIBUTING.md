@@ -27,11 +27,17 @@
 - #### Try to avoid `any` wherever you can.
 
 - #### Do not use the filename index.ts/index.js.
-Deno does not treat "index.js" or "index.ts" in a special way. By using these filenames, it suggests that they can be left out of the module specifier when they cannot. This is confusing.
 
-If a directory of code needs a default entry point, use the filename `mod.ts`. The filename `mod.ts` follows Rust’s convention, is shorter than `index.ts`, and doesn’t come with any preconceived notions about how it might work.
+Deno does not treat "index.js" or "index.ts" in a special way. By using these
+filenames, it suggests that they can be left out of the module specifier when
+they cannot. This is confusing.
+
+If a directory of code needs a default entry point, use the filename `mod.ts`.
+The filename `mod.ts` follows Rust’s convention, is shorter than `index.ts`, and
+doesn’t come with any preconceived notions about how it might work.
 
 - #### Use underscores in folders and filenames.
+
 Example: Use `merkle_tree.ts` instead of `merkle-tree.ts` or `merkleTree.ts`.
 
 - #### Exported functions: max 2-3 args, put the rest into an options object.
@@ -41,15 +47,15 @@ Example: Use `merkle_tree.ts` instead of `merkle-tree.ts` or `merkleTree.ts`.
 export function fromSeed(
   address: string,
   addressType?: "Base" | "Enterprise",
-  accountIndex?: number
+  accountIndex?: number,
 ): string {}
 ```
 
 ```ts
 // GOOD.
 export interface SeedOptions {
-  addressType?: "Base" | "Enterprise",
-  accountIndex?: number
+  addressType?: "Base" | "Enterprise";
+  accountIndex?: number;
 }
 export function resolve(
   hostname: string,
@@ -57,71 +63,88 @@ export function resolve(
 ): string {}
 ```
 
-
 - #### Top-level functions should not use arrow syntax.
 
 ```ts
 // BAD.
-export const add = (a : number, b : number): number => a + b;
+export const add = (a: number, b: number): number => a + b;
 ```
 
 ```ts
 // GOOD.
-export function add(a: number, b: number): number { return a + b; }
+export function add(a: number, b: number): number {
+  return a + b;
+}
 ```
 
 - #### Be explicit about types used in functions.
 
 ```ts
 // BAD. Return type is only implicitly determined.
-export function add(a: number, b: number) { return a + b; }
+export function add(a: number, b: number) {
+  return a + b;
+}
 ```
 
 ```ts
 // GOOD.
-export function add(a: number, b: number): number { return a + b; }
+export function add(a: number, b: number): number {
+  return a + b;
+}
 ```
 
 But if the return type is `void` then don't explicitly mention it:
 
 ```ts
 // GOOD.
-export function log(str: string) { console.log(str); }
+export function log(str: string) {
+  console.log(str);
+}
 ```
-
 
 - #### Structure comments properly
 
 Single line comment:
+
 ```ts
 // This is a comment.
 ```
 
 Multiline comment:
+
 ```ts
-/* 
+/*
 This is a comment on line 1.
 This is a comment on line 2.
  */
 ```
 
 Single line comment to describe a function/variable:
+
 ```ts
 /** This functions adds two numbers together. */
-export function add(a: number, b: number): number { return a + b; }
+export function add(a: number, b: number): number {
+  return a + b;
+}
 ```
 
 Multiline comment to describe a function/variable:
+
 ```ts
-/** 
- * This functions adds two numbers together. 
+/**
+ * This functions adds two numbers together.
  * This is another random comment.
  */
-export function add(a: number, b: number): number { return a + b; }
+export function add(a: number, b: number): number {
+  return a + b;
+}
 ```
-Always end comments with a dot `.`. 
 
-Avoid JSDoc `@param`. If `@param` is used, it should not include the `type` as TypeScript is already strongly-typed:
+Always end comments with a dot `.`.
+
+Avoid JSDoc `@param`. If `@param` is used, it should not include the `type` as
+TypeScript is already strongly-typed:
+
 ```ts
 /**
  * Function with non-obvious param.
@@ -129,9 +152,7 @@ Avoid JSDoc `@param`. If `@param` is used, it should not include the `type` as T
  */
 ```
 
-
 - #### Run `deno fmt` before you commit and push any code changes.
-
 
 ### Rust
 

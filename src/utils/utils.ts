@@ -13,9 +13,11 @@ import {
   DatumHash,
   KeyHash,
   MintingPolicy,
+  NativeScript,
   Network,
   PolicyId,
   PrivateKey,
+  Script,
   ScriptHash,
   Slot,
   SpendingValidator,
@@ -120,6 +122,14 @@ export class Utils {
   /** Address can be in Bech32 or Hex */
   getAddressDetails(address: string): AddressDetails {
     return getAddressDetails(address);
+  }
+
+  /**
+   * Convert a native script from Json to the Hex representation.
+   * It follows this Json format: https://github.com/input-output-hk/cardano-node/blob/master/doc/reference/simple-scripts.md
+   */
+  nativeScriptFromJson(nativeScript: NativeScript): Script {
+    return nativeScriptFromJson(nativeScript);
   }
 }
 
@@ -621,4 +631,21 @@ export function fromUnit(
     }
   })();
   return { policyId, name, label };
+}
+
+/**
+ * Convert a native script from Json to the Hex representation.
+ * It follows this Json format: https://github.com/input-output-hk/cardano-node/blob/master/doc/reference/simple-scripts.md
+ */
+export function nativeScriptFromJson(nativeScript: NativeScript): Script {
+  return {
+    type: "Native",
+    script: toHex(
+      C.encode_json_str_to_native_script(
+        JSON.stringify(nativeScript),
+        "",
+        C.ScriptSchema.Node,
+      ).to_bytes(),
+    ),
+  };
 }

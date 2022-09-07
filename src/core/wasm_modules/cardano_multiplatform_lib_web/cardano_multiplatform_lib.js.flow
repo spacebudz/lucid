@@ -66,38 +66,6 @@ declare export function decrypt_with_password(
 ): string;
 
 /**
- * @param {Transaction} tx
- * @param {LinearFee} linear_fee
- * @param {ExUnitPrices} ex_unit_prices
- * @returns {BigNum}
- */
-declare export function min_fee(
-  tx: Transaction,
-  linear_fee: LinearFee,
-  ex_unit_prices: ExUnitPrices
-): BigNum;
-
-/**
- * @param {string} json
- * @param {number} schema
- * @returns {PlutusData}
- */
-declare export function encode_json_str_to_plutus_datum(
-  json: string,
-  schema: number
-): PlutusData;
-
-/**
- * @param {PlutusData} datum
- * @param {number} schema
- * @returns {string}
- */
-declare export function decode_plutus_datum_to_json_str(
-  datum: PlutusData,
-  schema: number
-): string;
-
-/**
  * @param {TransactionHash} tx_body_hash
  * @param {ByronAddress} addr
  * @param {LegacyDaedalusPrivateKey} key
@@ -232,6 +200,38 @@ declare export function encode_json_str_to_native_script(
 ): NativeScript;
 
 /**
+ * @param {string} json
+ * @param {number} schema
+ * @returns {PlutusData}
+ */
+declare export function encode_json_str_to_plutus_datum(
+  json: string,
+  schema: number
+): PlutusData;
+
+/**
+ * @param {PlutusData} datum
+ * @param {number} schema
+ * @returns {string}
+ */
+declare export function decode_plutus_datum_to_json_str(
+  datum: PlutusData,
+  schema: number
+): string;
+
+/**
+ * @param {Transaction} tx
+ * @param {LinearFee} linear_fee
+ * @param {ExUnitPrices} ex_unit_prices
+ * @returns {BigNum}
+ */
+declare export function min_fee(
+  tx: Transaction,
+  linear_fee: LinearFee,
+  ex_unit_prices: ExUnitPrices
+): BigNum;
+
+/**
  */
 
 declare export var CertificateKind: {|
@@ -326,6 +326,29 @@ declare export var ScriptWitnessKind: {|
 |};
 
 /**
+ * Each new language uses a different namespace for hashing its script
+ * This is because you could have a language where the same bytes have different semantics
+ * So this avoids scripts in different languages mapping to the same hash
+ * Note that the enum value here is different than the enum value for deciding the cost model of a script
+ * https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
+ */
+
+declare export var ScriptHashNamespace: {|
+  +NativeScript: 0, // 0
+  +PlutusV1: 1, // 1
+  +PlutusV2: 2, // 2
+|};
+
+/**
+ * Used to choose the schema for a script JSON string
+ */
+
+declare export var ScriptSchema: {|
+  +Wallet: 0, // 0
+  +Node: 1, // 1
+|};
+
+/**
  */
 
 declare export var LanguageKind: {|
@@ -386,29 +409,6 @@ declare export var ScriptKind: {|
 declare export var DatumKind: {|
   +Hash: 0, // 0
   +Data: 1, // 1
-|};
-
-/**
- * Each new language uses a different namespace for hashing its script
- * This is because you could have a language where the same bytes have different semantics
- * So this avoids scripts in different languages mapping to the same hash
- * Note that the enum value here is different than the enum value for deciding the cost model of a script
- * https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
- */
-
-declare export var ScriptHashNamespace: {|
-  +NativeScript: 0, // 0
-  +PlutusV1: 1, // 1
-  +PlutusV2: 2, // 2
-|};
-
-/**
- * Used to choose the schema for a script JSON string
- */
-
-declare export var ScriptSchema: {|
-  +Wallet: 0, // 0
-  +Node: 1, // 1
 |};
 
 /**
@@ -9516,30 +9516,90 @@ export interface InitOutput {
   +scriptwitness_kind: (a: number) => number;
   +scriptwitness_as_native_witness: (a: number) => number;
   +scriptwitness_as_plutus_witness: (a: number) => number;
-  +__wbg_linearfee_free: (a: number) => void;
-  +linearfee_constant: (a: number) => number;
-  +linearfee_coefficient: (a: number) => number;
-  +linearfee_new: (a: number, b: number) => number;
-  +min_fee: (a: number, b: number, c: number) => number;
-  +__wbg_transactionoutputbuilder_free: (a: number) => void;
-  +transactionoutputbuilder_new: () => number;
-  +transactionoutputbuilder_with_address: (a: number, b: number) => number;
-  +transactionoutputbuilder_with_datum: (a: number, b: number) => number;
-  +transactionoutputbuilder_next: (a: number) => number;
-  +__wbg_transactionoutputamountbuilder_free: (a: number) => void;
-  +transactionoutputamountbuilder_with_value: (a: number, b: number) => number;
-  +transactionoutputamountbuilder_with_coin: (a: number, b: number) => number;
-  +transactionoutputamountbuilder_with_coin_and_asset: (
+  +__wbg_transactionunspentoutput_free: (a: number) => void;
+  +transactionunspentoutput_to_bytes: (a: number, b: number) => void;
+  +transactionunspentoutput_from_bytes: (a: number, b: number) => number;
+  +transactionunspentoutput_new: (a: number, b: number) => number;
+  +transactionunspentoutput_input: (a: number) => number;
+  +transactionunspentoutput_output: (a: number) => number;
+  +transactionunspentoutput_to_legacy_bytes: (a: number, b: number) => void;
+  +__wbg_transactionunspentoutputs_free: (a: number) => void;
+  +transactionunspentoutputs_new: () => number;
+  +transactionunspentoutputs_len: (a: number) => number;
+  +transactionunspentoutputs_get: (a: number, b: number) => number;
+  +transactionunspentoutputs_add: (a: number, b: number) => void;
+  +__wbg_bignum_free: (a: number) => void;
+  +bignum_to_bytes: (a: number, b: number) => void;
+  +bignum_from_bytes: (a: number, b: number) => number;
+  +bignum_from_str: (a: number, b: number) => number;
+  +bignum_to_str: (a: number, b: number) => void;
+  +bignum_zero: () => number;
+  +bignum_is_zero: (a: number) => number;
+  +bignum_checked_mul: (a: number, b: number) => number;
+  +bignum_checked_add: (a: number, b: number) => number;
+  +bignum_checked_sub: (a: number, b: number) => number;
+  +bignum_checked_div: (a: number, b: number) => number;
+  +bignum_checked_div_ceil: (a: number, b: number) => number;
+  +bignum_clamped_sub: (a: number, b: number) => number;
+  +bignum_compare: (a: number, b: number) => number;
+  +__wbg_value_free: (a: number) => void;
+  +value_to_bytes: (a: number, b: number) => void;
+  +value_from_bytes: (a: number, b: number) => number;
+  +value_to_json: (a: number, b: number) => void;
+  +value_to_js_value: (a: number) => number;
+  +value_from_json: (a: number, b: number) => number;
+  +value_new: (a: number) => number;
+  +value_new_from_assets: (a: number) => number;
+  +value_zero: () => number;
+  +value_is_zero: (a: number) => number;
+  +value_coin: (a: number) => number;
+  +value_set_coin: (a: number, b: number) => void;
+  +value_multiasset: (a: number) => number;
+  +value_set_multiasset: (a: number, b: number) => void;
+  +value_checked_add: (a: number, b: number) => number;
+  +value_checked_sub: (a: number, b: number) => number;
+  +value_clamped_sub: (a: number, b: number) => number;
+  +value_compare: (a: number, b: number) => number;
+  +__wbg_int_free: (a: number) => void;
+  +int_to_bytes: (a: number, b: number) => void;
+  +int_from_bytes: (a: number, b: number) => number;
+  +int_new: (a: number) => number;
+  +int_new_negative: (a: number) => number;
+  +int_new_i32: (a: number) => number;
+  +int_is_positive: (a: number) => number;
+  +int_as_positive: (a: number) => number;
+  +int_as_negative: (a: number) => number;
+  +int_as_i32: (a: number, b: number) => void;
+  +int_as_i32_or_nothing: (a: number, b: number) => void;
+  +int_as_i32_or_fail: (a: number) => number;
+  +int_to_str: (a: number, b: number) => void;
+  +int_from_str: (a: number, b: number) => number;
+  +__wbg_bigint_free: (a: number) => void;
+  +bigint_to_bytes: (a: number, b: number) => void;
+  +bigint_from_bytes: (a: number, b: number) => number;
+  +bigint_as_u64: (a: number) => number;
+  +bigint_as_int: (a: number) => number;
+  +bigint_from_str: (a: number, b: number) => number;
+  +bigint_to_str: (a: number, b: number) => void;
+  +make_daedalus_bootstrap_witness: (a: number, b: number, c: number) => number;
+  +make_icarus_bootstrap_witness: (a: number, b: number, c: number) => number;
+  +make_vkey_witness: (a: number, b: number) => number;
+  +hash_auxiliary_data: (a: number) => number;
+  +hash_transaction: (a: number) => number;
+  +hash_plutus_data: (a: number) => number;
+  +hash_blake2b256: (a: number, b: number, c: number) => void;
+  +hash_blake2b224: (a: number, b: number, c: number) => void;
+  +hash_script_data: (a: number, b: number, c: number) => number;
+  +get_implicit_input: (a: number, b: number, c: number) => number;
+  +get_deposit: (a: number, b: number, c: number) => number;
+  +min_ada_required: (a: number, b: number) => number;
+  +encode_json_str_to_native_script: (
     a: number,
     b: number,
-    c: number
+    c: number,
+    d: number,
+    e: number
   ) => number;
-  +transactionoutputamountbuilder_with_asset_and_min_required_coin: (
-    a: number,
-    b: number,
-    c: number
-  ) => number;
-  +transactionoutputamountbuilder_build: (a: number) => number;
   +__wbg_plutusscript_free: (a: number) => void;
   +plutusscript_to_bytes: (a: number, b: number) => void;
   +plutusscript_from_bytes: (a: number, b: number) => number;
@@ -9698,6 +9758,30 @@ export interface InitOutput {
   +datum_as_data: (a: number) => number;
   +encode_json_str_to_plutus_datum: (a: number, b: number, c: number) => number;
   +decode_plutus_datum_to_json_str: (a: number, b: number, c: number) => void;
+  +__wbg_linearfee_free: (a: number) => void;
+  +linearfee_constant: (a: number) => number;
+  +linearfee_coefficient: (a: number) => number;
+  +linearfee_new: (a: number, b: number) => number;
+  +min_fee: (a: number, b: number, c: number) => number;
+  +__wbg_transactionoutputbuilder_free: (a: number) => void;
+  +transactionoutputbuilder_new: () => number;
+  +transactionoutputbuilder_with_address: (a: number, b: number) => number;
+  +transactionoutputbuilder_with_datum: (a: number, b: number) => number;
+  +transactionoutputbuilder_next: (a: number) => number;
+  +__wbg_transactionoutputamountbuilder_free: (a: number) => void;
+  +transactionoutputamountbuilder_with_value: (a: number, b: number) => number;
+  +transactionoutputamountbuilder_with_coin: (a: number, b: number) => number;
+  +transactionoutputamountbuilder_with_coin_and_asset: (
+    a: number,
+    b: number,
+    c: number
+  ) => number;
+  +transactionoutputamountbuilder_with_asset_and_min_required_coin: (
+    a: number,
+    b: number,
+    c: number
+  ) => number;
+  +transactionoutputamountbuilder_build: (a: number) => number;
   +__wbg_bip32privatekey_free: (a: number) => void;
   +bip32privatekey_derive: (a: number, b: number) => number;
   +bip32privatekey_from_128_xprv: (a: number, b: number) => number;
@@ -9943,90 +10027,6 @@ export interface InitOutput {
   +vrfcert_output: (a: number, b: number) => void;
   +vrfcert_proof: (a: number, b: number) => void;
   +vrfcert_new: (a: number, b: number, c: number, d: number) => number;
-  +__wbg_transactionunspentoutput_free: (a: number) => void;
-  +transactionunspentoutput_to_bytes: (a: number, b: number) => void;
-  +transactionunspentoutput_from_bytes: (a: number, b: number) => number;
-  +transactionunspentoutput_new: (a: number, b: number) => number;
-  +transactionunspentoutput_input: (a: number) => number;
-  +transactionunspentoutput_output: (a: number) => number;
-  +transactionunspentoutput_to_legacy_bytes: (a: number, b: number) => void;
-  +__wbg_transactionunspentoutputs_free: (a: number) => void;
-  +transactionunspentoutputs_new: () => number;
-  +transactionunspentoutputs_len: (a: number) => number;
-  +transactionunspentoutputs_get: (a: number, b: number) => number;
-  +transactionunspentoutputs_add: (a: number, b: number) => void;
-  +__wbg_bignum_free: (a: number) => void;
-  +bignum_to_bytes: (a: number, b: number) => void;
-  +bignum_from_bytes: (a: number, b: number) => number;
-  +bignum_from_str: (a: number, b: number) => number;
-  +bignum_to_str: (a: number, b: number) => void;
-  +bignum_zero: () => number;
-  +bignum_is_zero: (a: number) => number;
-  +bignum_checked_mul: (a: number, b: number) => number;
-  +bignum_checked_add: (a: number, b: number) => number;
-  +bignum_checked_sub: (a: number, b: number) => number;
-  +bignum_checked_div: (a: number, b: number) => number;
-  +bignum_checked_div_ceil: (a: number, b: number) => number;
-  +bignum_clamped_sub: (a: number, b: number) => number;
-  +bignum_compare: (a: number, b: number) => number;
-  +__wbg_value_free: (a: number) => void;
-  +value_to_bytes: (a: number, b: number) => void;
-  +value_from_bytes: (a: number, b: number) => number;
-  +value_to_json: (a: number, b: number) => void;
-  +value_to_js_value: (a: number) => number;
-  +value_from_json: (a: number, b: number) => number;
-  +value_new: (a: number) => number;
-  +value_new_from_assets: (a: number) => number;
-  +value_zero: () => number;
-  +value_is_zero: (a: number) => number;
-  +value_coin: (a: number) => number;
-  +value_set_coin: (a: number, b: number) => void;
-  +value_multiasset: (a: number) => number;
-  +value_set_multiasset: (a: number, b: number) => void;
-  +value_checked_add: (a: number, b: number) => number;
-  +value_checked_sub: (a: number, b: number) => number;
-  +value_clamped_sub: (a: number, b: number) => number;
-  +value_compare: (a: number, b: number) => number;
-  +__wbg_int_free: (a: number) => void;
-  +int_to_bytes: (a: number, b: number) => void;
-  +int_from_bytes: (a: number, b: number) => number;
-  +int_new: (a: number) => number;
-  +int_new_negative: (a: number) => number;
-  +int_new_i32: (a: number) => number;
-  +int_is_positive: (a: number) => number;
-  +int_as_positive: (a: number) => number;
-  +int_as_negative: (a: number) => number;
-  +int_as_i32: (a: number, b: number) => void;
-  +int_as_i32_or_nothing: (a: number, b: number) => void;
-  +int_as_i32_or_fail: (a: number) => number;
-  +int_to_str: (a: number, b: number) => void;
-  +int_from_str: (a: number, b: number) => number;
-  +__wbg_bigint_free: (a: number) => void;
-  +bigint_to_bytes: (a: number, b: number) => void;
-  +bigint_from_bytes: (a: number, b: number) => number;
-  +bigint_as_u64: (a: number) => number;
-  +bigint_as_int: (a: number) => number;
-  +bigint_from_str: (a: number, b: number) => number;
-  +bigint_to_str: (a: number, b: number) => void;
-  +make_daedalus_bootstrap_witness: (a: number, b: number, c: number) => number;
-  +make_icarus_bootstrap_witness: (a: number, b: number, c: number) => number;
-  +make_vkey_witness: (a: number, b: number) => number;
-  +hash_auxiliary_data: (a: number) => number;
-  +hash_transaction: (a: number) => number;
-  +hash_plutus_data: (a: number) => number;
-  +hash_blake2b256: (a: number, b: number, c: number) => void;
-  +hash_blake2b224: (a: number, b: number, c: number) => void;
-  +hash_script_data: (a: number, b: number, c: number) => number;
-  +get_implicit_input: (a: number, b: number, c: number) => number;
-  +get_deposit: (a: number, b: number, c: number) => number;
-  +min_ada_required: (a: number, b: number) => number;
-  +encode_json_str_to_native_script: (
-    a: number,
-    b: number,
-    c: number,
-    d: number,
-    e: number
-  ) => number;
   +__wbindgen_malloc: (a: number) => number;
   +__wbindgen_realloc: (a: number, b: number, c: number) => number;
   +__wbindgen_export_2: WebAssembly.Table;

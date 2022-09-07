@@ -139,8 +139,7 @@ Link: https://github.com/Emurgo/message-signing
 
 Branch: **master**
 
-Commit hash: **e3ed400eba98ad5ddb4d0d67c9cefe680059dc5c**
-
+Commit hash: **16dcadc69557dd7c20e62a966aaded1e051c287e**
 
 ### Contributing
 
