@@ -9,14 +9,14 @@ import {
 } from "../../mod.ts";
 
 /*
- * MatchingNumbers Example
- * Lock a UTxO with a number and some ADA
- * UTxO can be unlocked when the same number is provided in the redeemer
- *
- * Contract:
- *
- * validate :: Integer -> Integer -> ScriptContext -> Bool
- * validate a b _ = a == b
+MatchingNumbers Example
+Lock a UTxO with a number and some ADA
+UTxO can be unlocked when the same number is provided in the redeemer
+
+Contract:
+
+validate :: Integer -> Integer -> ScriptContext -> Bool
+validate a b _ = a == b
  */
 
 const lucid = await Lucid.new(

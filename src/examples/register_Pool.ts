@@ -7,14 +7,14 @@ const lucid = await Lucid.new(
 
 lucid.selectWalletFromSeed("car rare ...");
 
-//** StakePoolSigningKey_ed25519 cborHex from the cardano-cli */
+/** StakePoolSigningKey_ed25519 cborHex from the cardano-cli */
 const coldKey = C.PrivateKey.from_bytes(
   fromHex(
     "58204de30f983ed860524d00059c7f2b1d63240fba805bee043604aa7ccb13d387e9",
   ),
 );
 
-//** VrfVerificationKey_PraosVRF cborHex from the cardano-cli */
+/** VrfVerificationKey_PraosVRF cborHex from the cardano-cli */
 const vrfKeyHash = C.VRFVKey.from_bytes(
   fromHex(
     "5820c9cf07d863c8a2351662c9759ca1d9858b536bab50ad575b5de161e1af18f887",
