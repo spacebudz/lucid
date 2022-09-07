@@ -125,7 +125,7 @@ project's `package.json`. Otherwise you will get import issues.
 <br />
 This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib) and on top of the message-signing library.
 
-##### cardano-multiplatform-lib
+#### cardano-multiplatform-lib
 
 Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
@@ -133,7 +133,7 @@ Branch: **vasil**
 
 Commit hash: **e3e4579f6d66a5c50aa4b8d104b56ee60a02ddad**
 
-##### message-signing
+#### message-signing
 
 Link: https://github.com/Emurgo/message-signing
 
