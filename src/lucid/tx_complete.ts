@@ -1,7 +1,7 @@
 import { C, Core } from "../core/mod.ts";
 import { PrivateKey, Transaction, TransactionWitnesses } from "../types/mod.ts";
 import { Lucid } from "./lucid.ts";
-import { TxSigned } from "./txSigned.ts";
+import { TxSigned } from "./tx_signed.ts";
 import { coreToUtxo, fromHex, toHex } from "../utils/mod.ts";
 
 export class TxComplete {

@@ -33,40 +33,40 @@ Deno.copyFileSync("README.md", "dist/README.md");
 // copy wasm files
 // Core
 Deno.copyFileSync(
-  "src/core/wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib_bg.wasm",
-  "dist/esm/src/core/wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib_bg.wasm",
+  "src/core/wasm_modules/cardano_multiplatform_lib_nodejs/cardano_multiplatform_lib_bg.wasm",
+  "dist/esm/src/core/wasm_modules/cardano_multiplatform_lib_nodejs/cardano_multiplatform_lib_bg.wasm",
 );
 Deno.writeTextFileSync(
-  "dist/esm/src/core/wasm_modules/cardano-multiplatform-lib-nodejs/package.json",
+  "dist/esm/src/core/wasm_modules/cardano_multiplatform_lib_nodejs/package.json",
   JSON.stringify({ type: "commonjs" }),
 );
 Deno.copyFileSync(
-  "src/core/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
-  "dist/esm/src/core/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
+  "src/core/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
+  "dist/esm/src/core/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
 );
 // Message
 Deno.copyFileSync(
-  "src/core/wasm_modules/cardano-message-signing-nodejs/cardano_message_signing_bg.wasm",
-  "dist/esm/src/core/wasm_modules/cardano-message-signing-nodejs/cardano_message_signing_bg.wasm",
+  "src/core/wasm_modules/cardano_message_signing_nodejs/cardano_message_signing_bg.wasm",
+  "dist/esm/src/core/wasm_modules/cardano_message_signing_nodejs/cardano_message_signing_bg.wasm",
 );
 Deno.writeTextFileSync(
-  "dist/esm/src/core/wasm_modules/cardano-message-signing-nodejs/package.json",
+  "dist/esm/src/core/wasm_modules/cardano_message_signing_nodejs/package.json",
   JSON.stringify({ type: "commonjs" }),
 );
 Deno.copyFileSync(
-  "src/core/wasm_modules/cardano-message-signing-web/cardano_message_signing_bg.wasm",
-  "dist/esm/src/core/wasm_modules/cardano-message-signing-web/cardano_message_signing_bg.wasm",
+  "src/core/wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
+  "dist/esm/src/core/wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
 );
 
 //** Web ES Module */
 
 // Core
-Deno.mkdirSync("dist/web/wasm_modules/cardano-multiplatform-lib-web", {
+Deno.mkdirSync("dist/web/wasm_modules/cardano_multiplatform_lib_web", {
   recursive: true,
 });
 
 // Message
-Deno.mkdirSync("dist/web/wasm_modules/cardano-message-signing-web", {
+Deno.mkdirSync("dist/web/wasm_modules/cardano_message_signing_web", {
   recursive: true,
 });
 
@@ -77,8 +77,8 @@ await esbuild.build({
   outfile: "./dist/web/mod.js",
   minify: true,
   external: [
-    "./wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.js",
-    "./wasm_modules/cardano-message-signing-nodejs/cardano_message_signing.js",
+    "./wasm_modules/cardano_multiplatform_lib_nodejs/cardano_multiplatform_lib.js",
+    "./wasm_modules/cardano_message_signing_nodejs/cardano_message_signing.js",
     "node-fetch",
     "@peculiar/webcrypto",
   ],
@@ -88,11 +88,11 @@ esbuild.stop();
 // copy wasm file
 // Core
 Deno.copyFileSync(
-  "src/core/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
-  "dist/web/wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
+  "src/core/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
+  "dist/web/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
 );
 // Message
 Deno.copyFileSync(
-  "src/core/wasm_modules/cardano-message-signing-web/cardano_message_signing_bg.wasm",
-  "dist/web/wasm_modules/cardano-message-signing-web/cardano_message_signing_bg.wasm",
+  "src/core/wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
+  "dist/web/wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
 );

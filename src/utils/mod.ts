@@ -1,4 +1,4 @@
-export * from "./costmodel.ts";
+export * from "./cost_model.ts";
 export * from "./utils.ts";
 export * from "./data.ts";
-export * from "./merkletree.ts";
+export * from "./merkle_tree.ts";

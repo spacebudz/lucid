@@ -29,9 +29,9 @@ import {
   WalletApi,
 } from "../types/mod.ts";
 import { Tx } from "./tx.ts";
-import { TxComplete } from "./txComplete.ts";
+import { TxComplete } from "./tx_complete.ts";
 import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../misc/wallet.ts";
-import { signData, verifyData } from "../misc/signData.ts";
+import { signData, verifyData } from "../misc/sign_data.ts";
 import { Message } from "./message.ts";
 
 export class Lucid {

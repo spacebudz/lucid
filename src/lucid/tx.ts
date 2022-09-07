@@ -22,7 +22,7 @@ import {
 } from "../types/mod.ts";
 import { assetsToValue, fromHex, utxoToCore } from "../utils/mod.ts";
 import { Lucid } from "./lucid.ts";
-import { TxComplete } from "./txComplete.ts";
+import { TxComplete } from "./tx_complete.ts";
 
 export class Tx {
   txBuilder: Core.TransactionBuilder;

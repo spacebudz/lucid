@@ -1,5 +1,5 @@
-import type * as Core from "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js";
-import type * as Msg from "./wasm_modules/cardano-message-signing-web/cardano_message_signing.js";
+import type * as Core from "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib.js";
+import type * as Msg from "./wasm_modules/cardano_message_signing_web/cardano_message_signing.js";
 
 export { Core };
 
@@ -28,18 +28,18 @@ async function importForEnvironmentCore(): Promise<typeof Core | null> {
     if (isNode) {
       return (await import(
         /* webpackIgnore: true */
-        "./wasm_modules/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib.js"
+        "./wasm_modules/cardano_multiplatform_lib_nodejs/cardano_multiplatform_lib.js"
       )) as unknown as typeof Core;
     }
 
     const pkg = await import(
-      "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib.js"
+      "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib.js"
     );
 
     await pkg.default(
       await fetch(
         new URL(
-          "./wasm_modules/cardano-multiplatform-lib-web/cardano_multiplatform_lib_bg.wasm",
+          "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
           import.meta.url,
         ),
       ),
@@ -56,18 +56,18 @@ async function importForEnvironmentMessage(): Promise<typeof Msg | null> {
     if (isNode) {
       return (await import(
         /* webpackIgnore: true */
-        "./wasm_modules/cardano-message-signing-nodejs/cardano_message_signing.js"
+        "./wasm_modules/cardano_message_signing_nodejs/cardano_message_signing.js"
       )) as unknown as typeof Msg;
     }
 
     const pkg = await import(
-      "./wasm_modules/cardano-message-signing-web/cardano_message_signing.js"
+      "./wasm_modules/cardano_message_signing_web/cardano_message_signing.js"
     );
 
     await pkg.default(
       await fetch(
         new URL(
-          "./wasm_modules/cardano-message-signing-web/cardano_message_signing_bg.wasm",
+          "./wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
           import.meta.url,
         ),
       ),

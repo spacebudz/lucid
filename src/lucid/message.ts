@@ -6,7 +6,7 @@ import {
   RewardAddress,
   SignedMessage,
 } from "../types/mod.ts";
-import { signData } from "../misc/signData.ts";
+import { signData } from "../misc/sign_data.ts";
 import { C } from "../mod.ts";
 
 export class Message {
