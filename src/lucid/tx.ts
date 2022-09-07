@@ -35,7 +35,7 @@ export class Tx {
     this.tasks = [];
   }
 
-  /** Read data from utxos. These utxos are only referenced and not spent */
+  /** Read data from utxos. These utxos are only referenced and not spent. */
   readFrom(utxos: UTxO[]): Tx {
     this.tasks.push(async () => {
       for (const utxo of utxos) {
@@ -118,7 +118,7 @@ export class Tx {
     return this;
   }
 
-  /** Pay to a public key or native script address */
+  /** Pay to a public key or native script address. */
   payToAddress(address: Address, assets: Assets): Tx {
     const output = C.TransactionOutput.new(
       C.Address.from_bech32(address),
@@ -128,7 +128,7 @@ export class Tx {
     return this;
   }
 
-  /** Pay to a public key or native script address with datum or scriptRef */
+  /** Pay to a public key or native script address with datum or scriptRef. */
   payToAddressWithData(
     address: Address,
     outputData: Datum | OutputData,
@@ -187,7 +187,7 @@ export class Tx {
     return this;
   }
 
-  /** Pay to a plutus script address with datum or scriptRef */
+  /** Pay to a plutus script address with datum or scriptRef. */
   payToContract(
     address: Address,
     outputData: Datum | OutputData,
@@ -436,7 +436,7 @@ export class Tx {
     return this;
   }
 
-  /** Converts strings to bytes if prefixed with **'0x'** */
+  /** Converts strings to bytes if prefixed with **'0x'**. */
   attachMetadataWithConversion(label: Label, metadata: Json): Tx {
     this.txBuilder.add_json_metadatum_with_schema(
       C.BigNum.from_str(label.toString()),
@@ -466,7 +466,7 @@ export class Tx {
     return this;
   }
 
-  /** Conditionally add to the transaction */
+  /** Conditionally add to the transaction. */
   applyIf(
     condition: boolean,
     callback: (thisTx: Tx) => void | Promise<void>,

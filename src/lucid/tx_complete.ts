@@ -1,5 +1,10 @@
 import { C, Core } from "../core/mod.ts";
-import { PrivateKey, Transaction, TransactionWitnesses, TxHash } from "../types/mod.ts";
+import {
+  PrivateKey,
+  Transaction,
+  TransactionWitnesses,
+  TxHash,
+} from "../types/mod.ts";
 import { Lucid } from "./lucid.ts";
 import { TxSigned } from "./tx_signed.ts";
 import { coreToUtxo, fromHex, toHex } from "../utils/mod.ts";
@@ -136,12 +141,12 @@ export class TxComplete {
     };
   }
 
-  /** Return the transaction in Hex encoded Cbor */
+  /** Return the transaction in Hex encoded Cbor. */
   toString(): Transaction {
     return toHex(this.txComplete.to_bytes());
   }
 
-  /** Return the transaction hash */
+  /** Return the transaction hash. */
   toHash(): TxHash {
     return C.hash_transaction(this.txComplete.body()).to_hex();
   }

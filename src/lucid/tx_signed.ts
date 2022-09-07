@@ -17,12 +17,12 @@ export class TxSigned {
     );
   }
 
-  /** Returns the transaction in Hex encoded Cbor */
+  /** Returns the transaction in Hex encoded Cbor. */
   toString(): Transaction {
     return toHex(this.txSigned.to_bytes());
   }
 
-  /** Return the transaction hash */
+  /** Return the transaction hash. */
   toHash(): TxHash {
     return C.hash_transaction(this.txSigned.body()).to_hex();
   }
