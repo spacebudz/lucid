@@ -245,7 +245,7 @@ export class Blockfrost implements Provider {
  * The conversion is ambigious, that's why it's better to get the datum directly in cbor
  */
 
-export const datumJsonToCbor = (json: DatumJson): Datum => {
+export function datumJsonToCbor(json: DatumJson): Datum {
   const convert = (json: DatumJson): Core.PlutusData => {
     if (!isNaN(json.int!)) {
       return C.PlutusData.new_integer(C.BigInt.from_str(json.int!.toString()));
@@ -279,7 +279,7 @@ export const datumJsonToCbor = (json: DatumJson): Datum => {
   };
 
   return toHex(convert(json).to_bytes());
-};
+}
 
 type DatumJson = {
   int?: number;

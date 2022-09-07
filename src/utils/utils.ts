@@ -386,7 +386,7 @@ export const getAddressDetails = (address: string): AddressDetails => {
   throw new Error("No address type matched for: " + address);
 };
 
-export const valueToAssets = (value: Core.Value): Assets => {
+export function valueToAssets(value: Core.Value): Assets {
   const assets: Assets = {};
   assets["lovelace"] = BigInt(value.coin().to_str());
   const ma = value.multiasset();
@@ -405,9 +405,9 @@ export const valueToAssets = (value: Core.Value): Assets => {
     }
   }
   return assets;
-};
+}
 
-export const assetsToValue = (assets: Assets) => {
+export function assetsToValue(assets: Assets): Core.Value {
   const multiAsset = C.MultiAsset.new();
   const lovelace = assets["lovelace"];
   const units = Object.keys(assets);
@@ -434,9 +434,9 @@ export const assetsToValue = (assets: Assets) => {
   );
   if (units.length > 1 || !lovelace) value.set_multiasset(multiAsset);
   return value;
-};
+}
 
-export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
+export function utxoToCore(utxo: UTxO): Core.TransactionUnspentOutput {
   const address: Core.Address = (() => {
     try {
       return C.Address.from_bech32(utxo.address);
@@ -470,9 +470,9 @@ export const utxoToCore = (utxo: UTxO): Core.TransactionUnspentOutput => {
     ),
     output,
   );
-};
+}
 
-export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
+export function coreToUtxo(coreUtxo: Core.TransactionUnspentOutput): UTxO {
   return {
     txHash: toHex(coreUtxo.input().transaction_id().to_bytes()),
     outputIndex: parseInt(coreUtxo.input().index().to_str()),
@@ -486,9 +486,9 @@ export const coreToUtxo = (coreUtxo: Core.TransactionUnspentOutput): UTxO => {
     scriptRef: coreUtxo.output()?.script_ref() &&
       toHex(coreUtxo.output().script_ref()!.to_bytes()),
   };
-};
+}
 
-export const networkToId = (network: Network): number => {
+export function networkToId(network: Network): number {
   switch (network) {
     case "Testnet":
       return 0;
@@ -501,18 +501,22 @@ export const networkToId = (network: Network): number => {
     default:
       throw new Error("Network not found");
   }
-};
+}
 
-export const fromHex = (hex: string): Uint8Array => decodeString(hex);
+export function fromHex(hex: string): Uint8Array {
+  return decodeString(hex);
+}
 
-export const toHex = (bytes: Uint8Array): string => encodeToString(bytes);
+export function toHex(bytes: Uint8Array): string {
+  return encodeToString(bytes);
+}
 
 /*
 It's okay to assume for now the slot duration is 1s for every era (Byron excluded).
 To convert slot to unix time and vice versa in a specific network we simply need one absolute slot and the belonging unix timestamp.
 */
 
-const slotToUnixTime = (slot: Slot, network: Network): UnixTime => {
+function slotToUnixTime(slot: Slot, network: Network): UnixTime {
   switch (network) {
     case "Testnet":
       return 1595967616000 + (slot * 1000 - 1598400000);
@@ -525,9 +529,9 @@ const slotToUnixTime = (slot: Slot, network: Network): UnixTime => {
     default:
       throw new Error("Network not found");
   }
-};
+}
 
-const unixTimeToSlot = (unixTime: UnixTime, network: Network): Slot => {
+function unixTimeToSlot(unixTime: UnixTime, network: Network): Slot {
   switch (network) {
     case "Testnet":
       return Math.floor((unixTime - 1595967616000 + 1598400000) / 1000);
@@ -540,24 +544,27 @@ const unixTimeToSlot = (unixTime: UnixTime, network: Network): Slot => {
     default:
       throw new Error("Network not found");
   }
-};
+}
 
-export const hexToUtf8 = (hex: string): string =>
-  new TextDecoder().decode(decode(new TextEncoder().encode(hex)));
+export function hexToUtf8(hex: string): string {
+  return new TextDecoder().decode(decode(new TextEncoder().encode(hex)));
+}
 
-export const utf8ToHex = (utf8: string): string =>
-  toHex(new TextEncoder().encode(utf8));
+export function utf8ToHex(utf8: string): string {
+  return toHex(new TextEncoder().encode(utf8));
+}
 
 // WIP!! This is not finalized yet until CIP-0067 and CIP-0068 are merged
 
-const checksum = (num: number): string =>
-  num.toString(16).split("").reduce(
+function checksum(num: number): string {
+  return num.toString(16).split("").reduce(
     (acc, curr) => acc + parseInt(curr, 16),
     0x0,
   )
     .toString(16).padStart(2, "0");
+}
 
-export const toLabel = (num: number): string => {
+export function toLabel(num: number): string {
   if (num < 0 || num > 65535) {
     throw new Error(
       `Label ${num} out of range: min label 0 - max label 65535.`,
@@ -565,25 +572,25 @@ export const toLabel = (num: number): string => {
   }
   return "0" + num.toString(16).padStart(4, "0") + checksum(num) +
     "0";
-};
+}
 
-export const fromLabel = (label: string): number | null => {
+export function fromLabel(label: string): number | null {
   if (label.length !== 8 || !(label[0] === "0" && label[7] === "0")) {
     return null;
   }
   const num = parseInt(label.slice(1, 5), 16);
   const check = label.slice(5, 7);
   return check === checksum(num) ? num : null;
-};
+}
 
 /**
  * @param name UTF-8 encoded
  */
-export const toUnit = (
+export function toUnit(
   policyId: PolicyId,
   name?: string | null,
   label?: number | null,
-): Unit => {
+): Unit {
   const hexLabel = Number.isInteger(label) ? toLabel(label!) : "";
   const hexName = name ? toHex(new TextEncoder().encode(name)) : "";
   if ((hexName + hexLabel).length > 64) {
@@ -593,15 +600,15 @@ export const toUnit = (
     throw new Error(`Policy Id invalid: ${policyId}.`);
   }
   return policyId + hexLabel + hexName;
-};
+}
 
 /**
  * Splits unit into policy id, name and label if applicable.
  * name will be returned in UTF-8 if possible, otherwise in HEX.
  */
-export const fromUnit = (
+export function fromUnit(
   unit: Unit,
-): { policyId: PolicyId; name: string | null; label: number | null } => {
+): { policyId: PolicyId; name: string | null; label: number | null } {
   const policyId = unit.slice(0, 56);
   const label = fromLabel(unit.slice(56, 64));
   const name = (() => {
@@ -614,4 +621,4 @@ export const fromUnit = (
     }
   })();
   return { policyId, name, label };
-};
+}

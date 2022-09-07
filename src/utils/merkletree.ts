@@ -129,8 +129,10 @@ export class MerkleTree {
 
 export { concat, equals };
 
-export const sha256 = (data: Uint8Array): Hash =>
-  new Uint8Array(new Sha256().update(data).arrayBuffer());
+export function sha256(data: Uint8Array): Hash {
+  return new Uint8Array(new Sha256().update(data).arrayBuffer());
+}
 
-export const combineHash = (hash1: Hash, hash2: Hash): Hash =>
-  sha256(concat(hash1, hash2));
+export function combineHash(hash1: Hash, hash2: Hash): Hash {
+  return sha256(concat(hash1, hash2));
+}

@@ -9,11 +9,11 @@ import {
   toHex,
 } from "../mod.ts";
 
-export const signData = (
+export function signData(
   addressHex: string,
   payload: Payload,
   privateKey: PrivateKey,
-): SignedMessage => {
+): SignedMessage {
   const protectedHeaders = M.HeaderMap.new();
   protectedHeaders.set_algorithm_id(
     M.Label.from_algorithm_id(
@@ -75,14 +75,14 @@ export const signData = (
     signature: toHex(coseSign1.to_bytes()),
     key: toHex(key.to_bytes()),
   };
-};
+}
 
-export const verifyData = (
+export function verifyData(
   addressHex: string,
   keyHash: KeyHash,
   payload: Payload,
   signedMessage: SignedMessage,
-): boolean => {
+): boolean {
   const cose1 = M.COSESign1.from_bytes(fromHex(signedMessage.signature));
   const key = M.COSEKey.from_bytes(fromHex(signedMessage.key));
 
@@ -187,4 +187,4 @@ export const verifyData = (
   if (cose1Payload !== payload) return false;
 
   return publicKey.verify(data, signature);
-};
+}

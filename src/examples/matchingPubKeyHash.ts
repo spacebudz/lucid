@@ -50,7 +50,7 @@ const script: SpendingValidator = {
 
 const scriptAddress = lucid.utils.validatorToAddress(script);
 
-export const lockUtxo = async (lovelace: Lovelace): Promise<TxHash> => {
+export async function lockUtxo(lovelace: Lovelace): Promise<TxHash> {
   const { paymentCredential } = lucid.utils.getAddressDetails(
     await lucid.wallet.address(),
   );
@@ -68,9 +68,9 @@ export const lockUtxo = async (lovelace: Lovelace): Promise<TxHash> => {
   const signedTx = await tx.sign().complete();
 
   return signedTx.submit();
-};
+}
 
-export const redeemUtxo = async (): Promise<TxHash> => {
+export async function redeemUtxo(): Promise<TxHash> {
   const { paymentCredential } = lucid.utils.getAddressDetails(
     await lucid.wallet.address(),
   );
@@ -89,4 +89,4 @@ export const redeemUtxo = async (): Promise<TxHash> => {
   const signedTx = await tx.sign().complete();
 
   return signedTx.submit();
-};
+}

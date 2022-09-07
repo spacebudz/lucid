@@ -24,12 +24,12 @@ export class Message {
     this.payload = payload;
   }
 
-  /** Signs message with selected wallet. */
+  /** Sign message with selected wallet. */
   sign(): Promise<SignedMessage> {
     return this.lucid.wallet.signMessage(this.address, this.payload);
   }
 
-  /** Signs message with a separate private key. */
+  /** Sign message with a separate private key. */
   signWithPrivateKey(privateKey: PrivateKey): SignedMessage {
     const { paymentCredential, stakeCredential, address: { hex: hexAddress } } =
       this.lucid.utils.getAddressDetails(this.address);

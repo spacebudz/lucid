@@ -41,7 +41,7 @@ export class Lucid {
   network: Network = "Mainnet";
   utils!: Utils;
 
-  static async new(provider?: Provider, network?: Network) {
+  static async new(provider?: Provider, network?: Network): Promise<Lucid> {
     const lucid = new this();
     if (network) lucid.network = network;
     if (provider) {
@@ -91,7 +91,7 @@ export class Lucid {
     return new Tx(this);
   }
 
-  fromTx(tx: Transaction) {
+  fromTx(tx: Transaction): TxComplete {
     return new TxComplete(this, C.Transaction.from_bytes(fromHex(tx)));
   }
 
@@ -153,7 +153,7 @@ export class Lucid {
    * Cardano Private key in bech32; not the BIP32 private key or any key that is not fully derived.
    * Only an Enteprise address (without stake credential) is derived.
    */
-  selectWalletFromPrivateKey(privateKey: PrivateKey) {
+  selectWalletFromPrivateKey(privateKey: PrivateKey): Lucid {
     const priv = C.PrivateKey.from_bech32(privateKey);
     const pubKeyHash = priv.to_public().hash();
 
@@ -217,7 +217,7 @@ export class Lucid {
     return this;
   }
 
-  selectWallet(api: WalletApi) {
+  selectWallet(api: WalletApi): Lucid {
     this.wallet = {
       address: async () =>
         C.Address.from_bytes(
@@ -285,7 +285,7 @@ export class Lucid {
     address,
     utxos,
     rewardAddress,
-  }: ExternalWallet) {
+  }: ExternalWallet): Lucid {
     const addressDetails = this.utils.getAddressDetails(address);
     this.wallet = {
       // deno-lint-ignore require-await
@@ -357,7 +357,7 @@ export class Lucid {
   selectWalletFromSeed(
     seed: string,
     options?: { addressType?: "Base" | "Enterprise"; accountIndex?: number },
-  ) {
+  ): Lucid {
     const { address, rewardAddress, paymentKey, stakeKey } = walletFromSeed(
       seed,
       {
@@ -446,5 +446,6 @@ export class Lucid {
         return await this.provider.submitTx(tx);
       },
     };
+    return this;
   }
 }

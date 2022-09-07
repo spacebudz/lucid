@@ -38,7 +38,7 @@ export class Tx {
   /**
    * Read data from utxos. These utxos are only referenced and not spent
    */
-  readFrom(utxos: UTxO[]) {
+  readFrom(utxos: UTxO[]): Tx {
     this.tasks.push(async () => {
       for (const utxo of utxos) {
         if (utxo.datumHash && !utxo.datum) {
@@ -59,7 +59,7 @@ export class Tx {
    *
    * With redeemer a plutus script input
    */
-  collectFrom(utxos: UTxO[], redeemer?: Redeemer) {
+  collectFrom(utxos: UTxO[], redeemer?: Redeemer): Tx {
     this.tasks.push(async () => {
       for (const utxo of utxos) {
         if (utxo.datumHash && !utxo.datum) {
@@ -90,7 +90,7 @@ export class Tx {
    *
    * If the plutus script doesn't need a redeemer, you still neeed to specifiy the empty redeemer.
    */
-  mintAssets(assets: Assets, redeemer?: Redeemer) {
+  mintAssets(assets: Assets, redeemer?: Redeemer): Tx {
     const units = Object.keys(assets);
     const policyId = units[0].slice(0, 56);
     const mintAssets = C.MintAssets.new();
@@ -125,7 +125,7 @@ export class Tx {
   /**
    * Pay to a public key or native script address
    */
-  payToAddress(address: Address, assets: Assets) {
+  payToAddress(address: Address, assets: Assets): Tx {
     const output = C.TransactionOutput.new(
       C.Address.from_bech32(address),
       assetsToValue(assets),
@@ -141,7 +141,7 @@ export class Tx {
     address: Address,
     outputData: Datum | OutputData,
     assets: Assets,
-  ) {
+  ): Tx {
     if (typeof outputData === "string") {
       outputData = { asHash: outputData };
     }
@@ -202,7 +202,7 @@ export class Tx {
     address: Address,
     outputData: Datum | OutputData,
     assets: Assets,
-  ) {
+  ): Tx {
     if (typeof outputData === "string") {
       outputData = { asHash: outputData };
     }
@@ -223,7 +223,7 @@ export class Tx {
     rewardAddress: RewardAddress,
     poolId: PoolId,
     redeemer?: Redeemer,
-  ) {
+  ): Tx {
     const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
     if (
       addressDetails.address.type !== "Reward" ||
@@ -261,7 +261,7 @@ export class Tx {
   }
 
   /** Register a reward address in order to delegate to a pool and receive rewards. */
-  registerStake(rewardAddress: RewardAddress) {
+  registerStake(rewardAddress: RewardAddress): Tx {
     const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
     if (
       addressDetails.address.type !== "Reward" ||
@@ -289,7 +289,7 @@ export class Tx {
   }
 
   /** Deregister a reward address. */
-  deregisterStake(rewardAddress: RewardAddress, redeemer?: Redeemer) {
+  deregisterStake(rewardAddress: RewardAddress, redeemer?: Redeemer): Tx {
     const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
     if (
       addressDetails.address.type !== "Reward" ||
@@ -327,7 +327,7 @@ export class Tx {
   }
 
   /** Register a stake pool. A pool deposit is required. The metadataUrl needs to be hosted already before making the registration. */
-  registerPool(poolParams: PoolParams) {
+  registerPool(poolParams: PoolParams): Tx {
     this.tasks.push(async () => {
       const poolRegistration = await createPoolRegistration(
         poolParams,
@@ -344,7 +344,7 @@ export class Tx {
   }
 
   /** Update a stake pool. No pool deposit is required. The metadataUrl needs to be hosted already before making the update. */
-  updatePool(poolParams: PoolParams) {
+  updatePool(poolParams: PoolParams): Tx {
     this.tasks.push(async () => {
       const poolRegistration = await createPoolRegistration(
         poolParams,
@@ -365,7 +365,7 @@ export class Tx {
   /** Retire a stake pool. The epoch needs to be the greater than the current epoch + 1 and less than current epoch + eMax.
    * The pool deposit will be sent to reward address as reward after full retirement of the pool.
    */
-  retirePool(poolId: PoolId, epoch: number) {
+  retirePool(poolId: PoolId, epoch: number): Tx {
     const certificate = C.Certificate.new_pool_retirement(
       C.PoolRetirement.new(C.Ed25519KeyHash.from_bech32(poolId), epoch),
     );
@@ -377,7 +377,7 @@ export class Tx {
     rewardAddress: RewardAddress,
     amount: Lovelace,
     redeemer?: Redeemer,
-  ) {
+  ): Tx {
     this.txBuilder.add_withdrawal(
       C.RewardAddress.from_address(C.Address.from_bech32(rewardAddress))!,
       C.BigNum.from_str(amount.toString()),
@@ -401,7 +401,7 @@ export class Tx {
    *
    * The StakeKeyHash is taken when providing a Reward address
    */
-  addSigner(address: Address | RewardAddress) {
+  addSigner(address: Address | RewardAddress): Tx {
     const addressDetails = this.lucid.utils.getAddressDetails(address);
 
     if (!addressDetails.paymentCredential && !addressDetails.stakeCredential) {
@@ -422,14 +422,14 @@ export class Tx {
   /**
    * Add a payment or stake key hash as a required signer of the transaction.
    */
-  addSignerKey(keyHash: PaymentKeyHash | StakeKeyHash) {
+  addSignerKey(keyHash: PaymentKeyHash | StakeKeyHash): Tx {
     this.txBuilder.add_required_signer(
       C.Ed25519KeyHash.from_bytes(fromHex(keyHash)),
     );
     return this;
   }
 
-  validFrom(unixTime: UnixTime) {
+  validFrom(unixTime: UnixTime): Tx {
     const slot = this.lucid.utils.unixTimeToSlot(unixTime);
     this.txBuilder.set_validity_start_interval(
       C.BigNum.from_str(slot.toString()),
@@ -437,13 +437,13 @@ export class Tx {
     return this;
   }
 
-  validTo(unixTime: UnixTime) {
+  validTo(unixTime: UnixTime): Tx {
     const slot = this.lucid.utils.unixTimeToSlot(unixTime);
     this.txBuilder.set_ttl(C.BigNum.from_str(slot.toString()));
     return this;
   }
 
-  attachMetadata(label: Label, metadata: Json) {
+  attachMetadata(label: Label, metadata: Json): Tx {
     this.txBuilder.add_json_metadatum(
       C.BigNum.from_str(label.toString()),
       JSON.stringify(metadata),
@@ -454,7 +454,7 @@ export class Tx {
   /**
    * Converts strings to bytes if prefixed with **'0x'**
    */
-  attachMetadataWithConversion(label: Label, metadata: Json) {
+  attachMetadataWithConversion(label: Label, metadata: Json): Tx {
     this.txBuilder.add_json_metadatum_with_schema(
       C.BigNum.from_str(label.toString()),
       JSON.stringify(metadata),
@@ -463,28 +463,31 @@ export class Tx {
     return this;
   }
 
-  attachSpendingValidator(spendingValidator: SpendingValidator) {
+  attachSpendingValidator(spendingValidator: SpendingValidator): Tx {
     attachScript(this, spendingValidator);
     return this;
   }
 
-  attachMintingPolicy(mintingPolicy: MintingPolicy) {
+  attachMintingPolicy(mintingPolicy: MintingPolicy): Tx {
     attachScript(this, mintingPolicy);
     return this;
   }
 
-  attachCertificateValidator(certValidator: CertificateValidator) {
+  attachCertificateValidator(certValidator: CertificateValidator): Tx {
     attachScript(this, certValidator);
     return this;
   }
 
-  attachWithdrawalValidator(withdrawalValidator: WithdrawalValidator) {
+  attachWithdrawalValidator(withdrawalValidator: WithdrawalValidator): Tx {
     attachScript(this, withdrawalValidator);
     return this;
   }
 
   /** Conditionally add to the transaction */
-  applyIf(condition: boolean, callback: (thisTx: Tx) => void | Promise<void>) {
+  applyIf(
+    condition: boolean,
+    callback: (thisTx: Tx) => void | Promise<void>,
+  ): Tx {
     if (condition) this.tasks.push(() => callback(this) as Promise<void>);
     return this;
   }
@@ -493,7 +496,7 @@ export class Tx {
     changeAddress?: Address;
     datum?: { asHash?: Datum; inline?: Datum };
     coinSelection?: boolean;
-  }) {
+  }): Promise<TxComplete> {
     if (options?.datum?.asHash && options?.datum?.inline) {
       throw new Error("Not allowed to set asHash and inline at the same time.");
     }
@@ -539,14 +542,14 @@ export class Tx {
   }
 }
 
-const attachScript = (
+function attachScript(
   tx: Tx,
   script:
     | SpendingValidator
     | MintingPolicy
     | CertificateValidator
     | WithdrawalValidator,
-) => {
+) {
   if (script.type === "Native") {
     return tx.txBuilder.add_native_script(
       C.NativeScript.from_bytes(fromHex(script.script)),
@@ -561,12 +564,12 @@ const attachScript = (
     );
   }
   throw new Error("No variant matched.");
-};
+}
 
-const createPoolRegistration = async (
+async function createPoolRegistration(
   poolParams: PoolParams,
   lucid: Lucid,
-): Promise<Core.PoolRegistration> => {
+): Promise<Core.PoolRegistration> {
   const poolOwners = C.Ed25519KeyHashes.new();
   poolParams.owners.forEach((owner) => {
     const { stakeCredential } = lucid.utils.getAddressDetails(owner);
@@ -649,4 +652,4 @@ const createPoolRegistration = async (
         : undefined,
     ),
   );
-};
+}

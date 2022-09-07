@@ -16,7 +16,7 @@ export class TxComplete {
     this.witnessSetBuilder = C.TransactionWitnessSetBuilder.new();
     this.tasks = [];
   }
-  sign() {
+  sign(): TxComplete {
     this.tasks.push(async () => {
       const witnesses = await this.lucid.wallet.signTx(this.txComplete);
       this.witnessSetBuilder.add_existing(witnesses);
@@ -25,7 +25,7 @@ export class TxComplete {
   }
 
   /** Add an extra signature from a private key */
-  signWithPrivateKey(privateKey: PrivateKey) {
+  signWithPrivateKey(privateKey: PrivateKey): TxComplete {
     const priv = C.PrivateKey.from_bech32(privateKey);
     const witness = C.make_vkey_witness(
       C.hash_transaction(this.txComplete.body()),
@@ -63,7 +63,7 @@ export class TxComplete {
   /**
    * Signs the transaction with the given witnesses
    */
-  assemble(witnesses: TransactionWitnesses[]) {
+  assemble(witnesses: TransactionWitnesses[]): TxComplete {
     witnesses.forEach((witness) => {
       const witnessParsed = C.TransactionWitnessSet.from_bytes(
         fromHex(witness),
@@ -73,7 +73,7 @@ export class TxComplete {
     return this;
   }
 
-  async complete() {
+  async complete(): Promise<TxSigned> {
     for (const task of this.tasks) {
       await task();
     }
@@ -88,7 +88,8 @@ export class TxComplete {
   }
 
   /** **UNSTABLE** */
-  toObject() {
+  // deno-lint-ignore no-explicit-any
+  toObject(): any {
     console.info("toObject is unstable and not ready yet");
     const body = this.txComplete.body();
     const witnesses = this.txComplete.witness_set();

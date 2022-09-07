@@ -13,29 +13,31 @@ import {
 } from "../mod.ts";
 import { mnemonicToEntropy } from "./bip39.ts";
 
-export const walletFromSeed = (
+type FromSeed = {
+  address: Address;
+  rewardAddress: RewardAddress | null;
+  paymentKey: PrivateKey;
+  stakeKey: PrivateKey | null;
+};
+
+export function walletFromSeed(
   seed: string,
   options?: {
     addressType?: "Base" | "Enterprise";
     accountIndex?: number;
     network?: Network;
   },
-): {
-  address: Address;
-  rewardAddress: RewardAddress | null;
-  paymentKey: PrivateKey;
-  stakeKey: PrivateKey | null;
-} => {
+): FromSeed {
   options = {
     addressType: options?.addressType || "Base",
     accountIndex: options?.accountIndex ?? 0,
     network: options?.network || "Mainnet",
   };
 
-  const harden = (num: number) => {
+  function harden(num: number): number {
     if (typeof num !== "number") throw new Error("Type number required here!");
     return 0x80000000 + num;
-  };
+  }
 
   const entropy = mnemonicToEntropy(seed);
   const rootKey = C.Bip32PrivateKey.from_bip39_entropy(
@@ -79,13 +81,13 @@ export const walletFromSeed = (
     paymentKey: paymentKey.to_bech32(),
     stakeKey: options.addressType === "Base" ? stakeKey.to_bech32() : null,
   };
-};
+}
 
-export const discoverOwnUsedTxKeyHashes = (
+export function discoverOwnUsedTxKeyHashes(
   tx: Core.Transaction,
   ownKeyHashes: Array<KeyHash>,
   ownUtxos: Array<UTxO>,
-): Array<KeyHash> => {
+): Array<KeyHash> {
   const usedKeyHashes = [];
 
   // key hashes from inputs
@@ -108,7 +110,7 @@ export const discoverOwnUsedTxKeyHashes = (
   const txBody = tx.body();
 
   // key hashes from certificates
-  const keyHashFromCert = (txBody: Core.TransactionBody) => {
+  function keyHashFromCert(txBody: Core.TransactionBody) {
     const certs = txBody.certs();
     if (!certs) return;
     for (let i = 0; i < certs.len(); i++) {
@@ -167,13 +169,13 @@ export const discoverOwnUsedTxKeyHashes = (
         }
       }
     }
-  };
+  }
   if (txBody.certs()) keyHashFromCert(txBody);
 
   // key hashes from withdrawals
 
   const withdrawals = txBody.withdrawals();
-  const keyHashFromWithdrawal = (withdrawals: Core.Withdrawals) => {
+  function keyHashFromWithdrawal(withdrawals: Core.Withdrawals) {
     const rewardAddresses = withdrawals.keys();
     for (let i = 0; i < rewardAddresses.len(); i++) {
       const credential = rewardAddresses.get(i).payment_cred();
@@ -181,12 +183,12 @@ export const discoverOwnUsedTxKeyHashes = (
         usedKeyHashes.push(credential.to_keyhash()!.to_hex());
       }
     }
-  };
+  }
   if (withdrawals) keyHashFromWithdrawal(withdrawals);
 
   // key hashes from scripts
   const scripts = tx.witness_set().native_scripts();
-  const keyHashFromScript = (scripts: Core.NativeScripts) => {
+  function keyHashFromScript(scripts: Core.NativeScripts) {
     for (let i = 0; i < scripts.len(); i++) {
       const script = scripts.get(i);
       if (script.kind() === 0) {
@@ -208,7 +210,7 @@ export const discoverOwnUsedTxKeyHashes = (
         return;
       }
     }
-  };
+  }
   if (scripts) keyHashFromScript(scripts);
 
   // keyHashes from required signers
@@ -241,4 +243,4 @@ export const discoverOwnUsedTxKeyHashes = (
   }
 
   return usedKeyHashes.filter((k) => ownKeyHashes.includes(k));
-};
+}

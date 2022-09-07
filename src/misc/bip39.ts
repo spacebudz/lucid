@@ -10,10 +10,10 @@ const WORDLIST_REQUIRED =
   "A wordlist is required but a default could not be found.\n" +
   "Please pass a 2048 word array explicitly.";
 
-export const mnemonicToEntropy = (
+export function mnemonicToEntropy(
   mnemonic: string,
   wordlist?: Array<string>,
-) => {
+): string {
   wordlist = wordlist || DEFAULT_WORDLIST;
   if (!wordlist) {
     throw new Error(WORDLIST_REQUIRED);
@@ -53,9 +53,9 @@ export const mnemonicToEntropy = (
     throw new Error(INVALID_CHECKSUM);
   }
   return toHex(entropy);
-};
+}
 
-const randomBytes = (size: number): Uint8Array => {
+function randomBytes(size: number): Uint8Array {
   // reimplementation of: https://github.com/crypto-browserify/randombytes/blob/master/browser.js
   const MAX_UINT32 = 4294967295;
   const MAX_BYTES = 65536;
@@ -79,13 +79,13 @@ const randomBytes = (size: number): Uint8Array => {
   }
 
   return bytes;
-};
+}
 
-export const generateMnemonic = (
+export function generateMnemonic(
   strength: number,
   rng?: (size: number) => Uint8Array,
   wordlist?: Array<string>,
-) => {
+): string {
   strength = strength || 128;
   if (strength % 32 !== 0) {
     throw new TypeError(INVALID_ENTROPY);
@@ -93,9 +93,12 @@ export const generateMnemonic = (
 
   rng = rng || randomBytes;
   return entropyToMnemonic(rng(strength / 8), wordlist);
-};
+}
 
-const entropyToMnemonic = (entropy: Uint8Array, wordlist?: Array<string>) => {
+function entropyToMnemonic(
+  entropy: Uint8Array,
+  wordlist?: Array<string>,
+): string {
   wordlist = wordlist || DEFAULT_WORDLIST;
   if (!wordlist) {
     throw new Error(WORDLIST_REQUIRED);
@@ -121,9 +124,9 @@ const entropyToMnemonic = (entropy: Uint8Array, wordlist?: Array<string>) => {
   return wordlist[0] === "\u3042\u3044\u3053\u304f\u3057\u3093" // Japanese wordlist
     ? words.join("\u3000")
     : words.join(" ");
-};
+}
 
-function deriveChecksumBits(entropyBuffer: Uint8Array) {
+function deriveChecksumBits(entropyBuffer: Uint8Array): string {
   const ENT = entropyBuffer.length * 8;
   const CS = ENT / 32;
   const hash = new Sha256()
@@ -132,24 +135,24 @@ function deriveChecksumBits(entropyBuffer: Uint8Array) {
   return bytesToBinary(Array.from(hash)).slice(0, CS);
 }
 
-const lpad = (str: string, padString: string, length: number) => {
+function lpad(str: string, padString: string, length: number): string {
   while (str.length < length) {
     str = padString + str;
   }
   return str;
-};
+}
 
-const bytesToBinary = (bytes: Array<number>) => {
+function bytesToBinary(bytes: Array<number>): string {
   return bytes.map((x) => lpad(x.toString(2), "0", 8)).join("");
-};
+}
 
-const normalize = (str: string) => {
+function normalize(str: string): string {
   return (str || "").normalize("NFKD");
-};
+}
 
-const binaryToByte = (bin: string) => {
+function binaryToByte(bin: string): number {
   return parseInt(bin, 2);
-};
+}
 
 const DEFAULT_WORDLIST = [
   "abandon",

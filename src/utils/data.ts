@@ -17,7 +17,7 @@ export class Data {
    * Convert PlutusData to CBOR encoded data
    */
   static to(plutusData: PlutusData): Datum | Redeemer {
-    const serialize = (data: PlutusData) => {
+    function serialize(data: PlutusData): Core.PlutusData {
       try {
         if (
           typeof data === "bigint" ||
@@ -65,7 +65,7 @@ export class Data {
       } catch (error) {
         throw new Error("Could not serialize the data: " + error);
       }
-    };
+    }
     return toHex(serialize(plutusData).to_bytes()) as Datum | Redeemer;
   }
 
@@ -74,7 +74,7 @@ export class Data {
    */
   static from(data: Datum | Redeemer): PlutusData {
     const plutusData = C.PlutusData.from_bytes(fromHex(data));
-    const deserialize = (data: Core.PlutusData): PlutusData => {
+    function deserialize(data: Core.PlutusData): PlutusData {
       if (data.kind() === 0) {
         const constr = data.as_constr_plutus_data()!;
         const l = constr.data();
@@ -104,7 +104,7 @@ export class Data {
         return toHex(data.as_bytes()!);
       }
       throw new Error("Unsupported type");
-    };
+    }
     return deserialize(plutusData);
   }
 
@@ -113,7 +113,7 @@ export class Data {
    * Note: Constructor cannot be used here
    */
   static fromJson(json: Json): PlutusData {
-    const toPlutusData = (json: Json): PlutusData => {
+    function toPlutusData(json: Json): PlutusData {
       if (typeof json === "string") {
         return toHex(new TextEncoder().encode(json));
       }
@@ -128,7 +128,7 @@ export class Data {
         return tempMap as PlutusData;
       }
       throw new Error("Unsupported type");
-    };
+    }
     return toPlutusData(json);
   }
 
@@ -138,7 +138,7 @@ export class Data {
    * Note: Constructor cannot be used here, also only bytes/integers as JSON keys
    */
   static toJson(plutusData: PlutusData): Json {
-    const fromPlutusData = (data: PlutusData): Json => {
+    function fromPlutusData(data: PlutusData): Json {
       if (
         typeof data === "bigint" ||
         typeof data === "number" ||
@@ -174,7 +174,7 @@ export class Data {
       throw new Error(
         "Unsupported type (Note: Constructor cannot be converted to JSON)",
       );
-    };
+    }
     return fromPlutusData(plutusData);
   }
 

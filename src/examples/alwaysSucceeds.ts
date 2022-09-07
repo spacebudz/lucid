@@ -41,9 +41,9 @@ const alwaysSucceedAddress: Address = lucid.utils.validatorToAddress(
 const Datum = () => Data.empty();
 const Redeemer = () => Data.empty();
 
-export const lockUtxo = async (
+export async function lockUtxo(
   lovelace: Lovelace,
-): Promise<TxHash> => {
+): Promise<TxHash> {
   const tx = await lucid
     .newTx()
     .payToContract(alwaysSucceedAddress, { inline: Datum() }, { lovelace })
@@ -58,9 +58,9 @@ export const lockUtxo = async (
   const txHash = await signedTx.submit();
 
   return txHash;
-};
+}
 
-export const redeemUtxo = async (): Promise<TxHash> => {
+export async function redeemUtxo(): Promise<TxHash> {
   const referenceScriptUtxo = (await lucid.utxosAt(alwaysSucceedAddress)).find(
     (utxo) => Boolean(utxo.scriptRef),
   );
@@ -82,4 +82,4 @@ export const redeemUtxo = async (): Promise<TxHash> => {
   const txHash = await signedTx.submit();
 
   return txHash;
-};
+}

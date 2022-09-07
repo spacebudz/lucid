@@ -41,10 +41,10 @@ const matchingNumberAddress: Address = lucid.utils.validatorToAddress(
 const Datum = (number: number) => Data.to(BigInt(number));
 const Redeemer = (number: number) => Data.to(BigInt(number));
 
-export const lockUtxo = async (
+export async function lockUtxo(
   number: number,
   lovelace: Lovelace,
-): Promise<TxHash> => {
+): Promise<TxHash> {
   const tx = await lucid
     .newTx()
     .payToContract(matchingNumberAddress, Datum(number), { lovelace })
@@ -55,9 +55,9 @@ export const lockUtxo = async (
   const txHash = await signedTx.submit();
 
   return txHash;
-};
+}
 
-export const redeemUtxo = async (number: number): Promise<TxHash> => {
+export async function redeemUtxo(number: number): Promise<TxHash> {
   const utxo = (await lucid.utxosAt(matchingNumberAddress)).slice(-1)[0];
 
   const tx = await lucid
@@ -71,4 +71,4 @@ export const redeemUtxo = async (number: number): Promise<TxHash> => {
   const txHash = await signedTx.submit();
 
   return txHash;
-};
+}

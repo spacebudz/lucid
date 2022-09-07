@@ -23,7 +23,7 @@ if (isNode) {
   global.Response = fetch.Response;
 }
 
-const importForEnvironmentCore = async (): Promise<typeof Core | null> => {
+async function importForEnvironmentCore(): Promise<typeof Core | null> {
   try {
     if (isNode) {
       return (await import(
@@ -49,9 +49,9 @@ const importForEnvironmentCore = async (): Promise<typeof Core | null> => {
     // This only ever happens during SSR rendering
     return null;
   }
-};
+}
 
-const importForEnvironmentMessage = async (): Promise<typeof Msg | null> => {
+async function importForEnvironmentMessage(): Promise<typeof Msg | null> {
   try {
     if (isNode) {
       return (await import(
@@ -77,7 +77,7 @@ const importForEnvironmentMessage = async (): Promise<typeof Msg | null> => {
     // This only ever happens during SSR rendering
     return null;
   }
-};
+}
 
 export const C: typeof Core = (await importForEnvironmentCore())!;
 

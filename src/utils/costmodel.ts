@@ -1,7 +1,7 @@
-import { C } from "../core/mod.ts";
+import { C, Core } from "../core/mod.ts";
 import { CostModels } from "../mod.ts";
 
-export const createCostModels = (costModels: CostModels) => {
+export function createCostModels(costModels: CostModels): Core.Costmdls {
   const costmdls = C.Costmdls.new();
 
   // add plutus v1
@@ -19,4 +19,4 @@ export const createCostModels = (costModels: CostModels) => {
   costmdls.insert(C.Language.new_plutus_v2(), costmdlV2);
 
   return costmdls;
-};
+}
