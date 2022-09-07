@@ -174,7 +174,7 @@ export type SignedMessage = { signature: string; key: string };
 
 export interface Wallet {
   address(): Promise<Address>;
-  rewardAddress(): Promise<RewardAddress | undefined>;
+  rewardAddress(): Promise<RewardAddress | null>;
   getUtxos(): Promise<UTxO[]>;
   getUtxosCore(): Promise<Core.TransactionUnspentOutputs>;
   getDelegation(): Promise<Delegation>;
