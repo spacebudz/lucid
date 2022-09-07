@@ -1,8 +1,8 @@
 import { Blockfrost, C, fromHex, Lucid, PoolParams } from "../mod.ts";
 
 const lucid = await Lucid.new(
-  new Blockfrost("https://cardano-testnet.blockfrost.io/api/v0", "<projectId>"),
-  "Testnet",
+  new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
+  "Preview",
 );
 
 lucid.selectWalletFromSeed("car rare ...");

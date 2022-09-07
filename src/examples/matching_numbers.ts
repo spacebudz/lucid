@@ -20,8 +20,8 @@ validate a b _ = a == b
  */
 
 const lucid = await Lucid.new(
-  new Blockfrost("https://cardano-testnet.blockfrost.io/api/v0", "<projectId>"),
-  "Testnet",
+  new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
+  "Preview",
 );
 
 const api = await window.cardano.nami.enable();

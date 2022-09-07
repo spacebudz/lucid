@@ -40,7 +40,7 @@ export type Credential = {
   hash: KeyHash | ScriptHash;
 };
 
-/** Concatenation of Policy Id and asset name in Hex */
+/** Concatenation of policy id and asset name in Hex */
 export type Unit = string;
 export type Assets = Record<string, bigint>;
 export type ScriptType = "Native" | "PlutusV1" | "PlutusV2";

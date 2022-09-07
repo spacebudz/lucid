@@ -18,10 +18,10 @@ Showcasing Helios; Link: https://github.com/Hyperion-BT/Helios
 
 const lucid = await Lucid.new(
   new Blockfrost(
-    "https://cardano-testnet.blockfrost.io/api/v0",
+    "https://cardano-preview.blockfrost.io/api/v0",
     "<project_id>",
   ),
-  "Testnet",
+  "Preview",
 );
 
 const privateKey = "<private_key>";
