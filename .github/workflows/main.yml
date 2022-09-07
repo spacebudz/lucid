@@ -1,10 +1,5 @@
 name: CI
-on:  
-  push:
-  pull_request:
-    branches:
-      - main
-      - vasil
+on: [push]
 jobs:
   build:
     name: Build, lint, and test on Deno and ${{ matrix.os }}
