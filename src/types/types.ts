@@ -45,9 +45,9 @@ export type Unit = string;
 export type Assets = Record<string, bigint>;
 export type ScriptType = "Native" | "PlutusV1" | "PlutusV2";
 
-/** Note: Plutus scripts need to be CBOR encoded. Raw compiled script without the CBOR encoding do not work.
- *
- * E.g. taking in the CBOR Hex string coming from writeFileTextEnvelope (Haskell) works
+/**
+ * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
+ * E.g. taking in the Cbor Hex string coming from writeFileTextEnvelope (Haskell) works
  */
 export type Script = { type: ScriptType; script: string };
 
@@ -60,24 +60,24 @@ export type Validator =
   | CertificateValidator
   | WithdrawalValidator;
 
-/** Note: Plutus scripts need to be CBOR encoded. Raw compiled script without the CBOR encoding do not work.
- *
- * E.g. taking the CBOR Hex string coming from writeFileTextEnvelope works
+/**
+ * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
+ * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
  */
 export type MintingPolicy = Script;
-/** Note: Plutus scripts need to be CBOR encoded. Raw compiled script without the CBOR encoding do not work.
- *
- * E.g. taking the CBOR Hex string coming from writeFileTextEnvelope works
+/**
+ * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
+ * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
  */
 export type SpendingValidator = Script;
-/** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the CBOR encoding do not work.
- *
- * E.g. taking the CBOR Hex string coming from writeFileTextEnvelope works
+/**
+ * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
+ * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
  */
 export type CertificateValidator = Script;
-/** Note: Plutus scripts need to be cbor encoded. Raw compiled script without the CBOR encoding do not work.
- *
- * E.g. taking the CBOR Hex string coming from writeFileTextEnvelope works
+/**
+ * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
+ * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
  */
 export type WithdrawalValidator = Script;
 /** Bech32 */
@@ -101,13 +101,10 @@ export type PoolId = string;
 /** Hex */
 export type Datum = string;
 /**
- * asHash will add the datum hash to the output and the datum to the witness set
- *
- * inline will add the datum to the output
- *
- * scriptRef will add any script to the output
- *
- * You can only specify asHash or inline, not both at the same time
+ * asHash will add the datum hash to the output and the datum to the witness set.
+ * inline will add the datum to the output.
+ * scriptRef will add any script to the output.
+ * You can only specify asHash or inline, not both at the same time.
  */
 export type OutputData = { asHash?: Datum; inline?: Datum; scriptRef?: Script };
 /** Hex */
@@ -160,9 +157,8 @@ export type Delegation = {
 };
 
 /**
- * A wallet that can be constructed from external data
- * e.g UTxOs and an address
- * It doesn't allow you to sign and submit transactions. This needs to be handled separately.
+ * A wallet that can be constructed from external data e.g utxos and an address.
+ * It doesn't allow you to sign transactions/messages. This needs to be handled separately.
  */
 export interface ExternalWallet {
   address: Address;
@@ -188,8 +184,6 @@ export interface Wallet {
 
 /**
  * These are the arguments that conform a BuiltinData in Plutus:
- *
- * ```hs
  * data Data =
  *   Constr Integer [Data]
  * | Map [(Data, Data)]
@@ -198,19 +192,7 @@ export interface Wallet {
  * | B BS.ByteString
  *   deriving stock (Show, Eq, Ord, Generic)
  *   deriving anyclass (NFData)
- * ```
- * So we can define an arbitrary mapping for these types
- *
- * ```
- * bigint -> I
- * string -> B
- * Map    -> Map
- * list   -> List
- * ```
- *
- * Note: We need to wrap it in an object to prevent circular references
  */
-
 export type PlutusData =
   | bytes
   | bigint

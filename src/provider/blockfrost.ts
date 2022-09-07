@@ -240,11 +240,10 @@ export class Blockfrost implements Provider {
   }
 }
 
-/** This function is temporarily needed only, until Blockfrost returns the datum natively in cbor
- *
- * The conversion is ambigious, that's why it's better to get the datum directly in cbor
+/**
+ * This function is temporarily needed only, until Blockfrost returns the datum natively in Cbor.
+ * The conversion is ambigious, that's why it's better to get the datum directly in Cbor.
  */
-
 export function datumJsonToCbor(json: DatumJson): Datum {
   const convert = (json: DatumJson): Core.PlutusData => {
     if (!isNaN(json.int!)) {

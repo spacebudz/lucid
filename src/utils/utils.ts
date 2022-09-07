@@ -604,7 +604,7 @@ export function toUnit(
 
 /**
  * Splits unit into policy id, name and label if applicable.
- * name will be returned in UTF-8 if possible, otherwise in HEX.
+ * name will be returned in UTF-8 if possible, otherwise in Hex.
  */
 export function fromUnit(
   unit: Unit,

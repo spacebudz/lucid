@@ -35,9 +35,7 @@ export class Tx {
     this.tasks = [];
   }
 
-  /**
-   * Read data from utxos. These utxos are only referenced and not spent
-   */
+  /** Read data from utxos. These utxos are only referenced and not spent */
   readFrom(utxos: UTxO[]): Tx {
     this.tasks.push(async () => {
       for (const utxo of utxos) {
@@ -55,9 +53,8 @@ export class Tx {
   }
 
   /**
-   * A public key or native script input
-   *
-   * With redeemer a plutus script input
+   * A public key or native script input.
+   * With redeemer it's a plutus script input.
    */
   collectFrom(utxos: UTxO[], redeemer?: Redeemer): Tx {
     this.tasks.push(async () => {
@@ -84,10 +81,9 @@ export class Tx {
     return this;
   }
 
-  /** All assets should be of the same Policy Id.
-   *
-   * You can chain mintAssets events together if you need to mint assets with different Policy Ids.
-   *
+  /**
+   * All assets should be of the same policy id.
+   * You can chain mintAssets events together if you need to mint assets with different policy ids.
    * If the plutus script doesn't need a redeemer, you still neeed to specifiy the empty redeemer.
    */
   mintAssets(assets: Assets, redeemer?: Redeemer): Tx {
@@ -122,9 +118,7 @@ export class Tx {
     return this;
   }
 
-  /**
-   * Pay to a public key or native script address
-   */
+  /** Pay to a public key or native script address */
   payToAddress(address: Address, assets: Assets): Tx {
     const output = C.TransactionOutput.new(
       C.Address.from_bech32(address),
@@ -134,9 +128,7 @@ export class Tx {
     return this;
   }
 
-  /**
-   * Pay to a public key or native script address with datum or scriptRef
-   */
+  /** Pay to a public key or native script address with datum or scriptRef */
   payToAddressWithData(
     address: Address,
     outputData: Datum | OutputData,
@@ -195,9 +187,7 @@ export class Tx {
     return this;
   }
 
-  /**
-   * Pay to a plutus script address with datum or scriptRef
-   */
+  /** Pay to a plutus script address with datum or scriptRef */
   payToContract(
     address: Address,
     outputData: Datum | OutputData,
@@ -216,9 +206,7 @@ export class Tx {
     return this.payToAddressWithData(address, outputData, assets);
   }
 
-  /**
-   * Delegate to a stake pool.
-   */
+  /** Delegate to a stake pool. */
   delegateTo(
     rewardAddress: RewardAddress,
     poolId: PoolId,
@@ -362,7 +350,8 @@ export class Tx {
     });
     return this;
   }
-  /** Retire a stake pool. The epoch needs to be the greater than the current epoch + 1 and less than current epoch + eMax.
+  /**
+   * Retire a stake pool. The epoch needs to be the greater than the current epoch + 1 and less than current epoch + eMax.
    * The pool deposit will be sent to reward address as reward after full retirement of the pool.
    */
   retirePool(poolId: PoolId, epoch: number): Tx {
@@ -395,11 +384,9 @@ export class Tx {
   }
 
   /**
-   * Needs to be a public key address
-   *
-   * The PaymentKeyHash is taken when providing a Base, Enterprise or Pointer address
-   *
-   * The StakeKeyHash is taken when providing a Reward address
+   * Needs to be a public key address.
+   * The PaymentKeyHash is taken when providing a Base, Enterprise or Pointer address.
+   * The StakeKeyHash is taken when providing a Reward address.
    */
   addSigner(address: Address | RewardAddress): Tx {
     const addressDetails = this.lucid.utils.getAddressDetails(address);
@@ -419,9 +406,7 @@ export class Tx {
     return this.addSignerKey(credential.hash);
   }
 
-  /**
-   * Add a payment or stake key hash as a required signer of the transaction.
-   */
+  /** Add a payment or stake key hash as a required signer of the transaction. */
   addSignerKey(keyHash: PaymentKeyHash | StakeKeyHash): Tx {
     this.txBuilder.add_required_signer(
       C.Ed25519KeyHash.from_bytes(fromHex(keyHash)),
@@ -451,9 +436,7 @@ export class Tx {
     return this;
   }
 
-  /**
-   * Converts strings to bytes if prefixed with **'0x'**
-   */
+  /** Converts strings to bytes if prefixed with **'0x'** */
   attachMetadataWithConversion(label: Label, metadata: Json): Tx {
     this.txBuilder.add_json_metadatum_with_schema(
       C.BigNum.from_str(label.toString()),

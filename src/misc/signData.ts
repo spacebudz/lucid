@@ -59,7 +59,7 @@ export function signData(
       ),
     ),
     M.CBORValue.new_int(
-      M.Int.new_i32(6), //Loader.Message.CurveType.Ed25519
+      M.Int.new_i32(6), //M.CurveType.Ed25519
     ),
   ); // crv (-1) set to Ed25519 (6)
   key.set_header(

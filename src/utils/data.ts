@@ -13,9 +13,7 @@ export class Construct {
 }
 
 export class Data {
-  /**
-   * Convert PlutusData to CBOR encoded data
-   */
+  /** Convert PlutusData to Cbor encoded data */
   static to(plutusData: PlutusData): Datum | Redeemer {
     function serialize(data: PlutusData): Core.PlutusData {
       try {
@@ -69,9 +67,7 @@ export class Data {
     return toHex(serialize(plutusData).to_bytes()) as Datum | Redeemer;
   }
 
-  /**
-   * Convert CBOR encoded data to PlutusData
-   */
+  /** Convert Cbor encoded data to PlutusData */
   static from(data: Datum | Redeemer): PlutusData {
     const plutusData = C.PlutusData.from_bytes(fromHex(data));
     function deserialize(data: Core.PlutusData): PlutusData {
@@ -108,9 +104,9 @@ export class Data {
     return deserialize(plutusData);
   }
 
-  /** Convert conveniently a JSON object (e.g. Metadata) to PlutusData
-   *
-   * Note: Constructor cannot be used here
+  /**
+   * Convert conveniently a Json object (e.g. Metadata) to PlutusData.
+   * Note: Constructor cannot be used here.
    */
   static fromJson(json: Json): PlutusData {
     function toPlutusData(json: Json): PlutusData {
@@ -133,9 +129,8 @@ export class Data {
   }
 
   /**
-   * Convert plutusData to a JSON object
-   *
-   * Note: Constructor cannot be used here, also only bytes/integers as JSON keys
+   * Convert PlutusData to a Json object.
+   * Note: Constructor cannot be used here, also only bytes/integers as Json keys.
    */
   static toJson(plutusData: PlutusData): Json {
     function fromPlutusData(data: PlutusData): Json {

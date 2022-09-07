@@ -280,10 +280,8 @@ export class Lucid {
   }
 
   /**
-   * Emulates a CIP30 wallet by constructing it
-   * with the UTxOs and an address.
-   *
-   * If utxos are not set, utxos are fetched from the provided address
+   * Emulates a wallet by constructing it with the utxos and an address.
+   * If utxos are not set, utxos are fetched from the provided address.
    */
   selectWalletFrom({
     address,

@@ -1,4 +1,4 @@
-/* CIP-0030 */
+// CIP-0030
 export type WalletApi = {
   getNetworkId(): Promise<number>;
   getUtxos(): Promise<string[] | undefined>;
