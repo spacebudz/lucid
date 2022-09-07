@@ -33,7 +33,7 @@ const mintingPolicy: MintingPolicy = lucid.utils.nativeScriptFromJson(
       { type: "sig", keyHash: paymentCredential?.hash! },
       {
         type: "before",
-        slot: lucid.utils.unixTimeToSlot(Date.now() + 10000),
+        slot: lucid.utils.unixTimeToSlot(Date.now() + 1000000),
       },
     ],
   },
@@ -51,7 +51,7 @@ export async function mintNFT(
   const tx = await lucid
     .newTx()
     .mintAssets({ [unit]: 1n })
-    .validTo(Date.now() + 1000)
+    .validTo(Date.now() + 100000)
     .attachMintingPolicy(mintingPolicy)
     .complete();
 
@@ -70,7 +70,7 @@ export async function burnNFT(
   const tx = await lucid
     .newTx()
     .mintAssets({ [unit]: -1n })
-    .validTo(Date.now() + 1000)
+    .validTo(Date.now() + 100000)
     .attachMintingPolicy(mintingPolicy)
     .complete();
 
