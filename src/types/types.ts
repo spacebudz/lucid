@@ -1,5 +1,5 @@
 import { Core } from "../core/mod.ts";
-import { Construct } from "../utils/mod.ts";
+import { Constr } from "../utils/mod.ts";
 
 type CostModel = Record<string, number>;
 
@@ -196,13 +196,14 @@ export interface Wallet {
  *   deriving anyclass (NFData)
  */
 export type PlutusData =
-  | bytes
   | bigint
+  | Bytes
   | Array<PlutusData>
   | Map<PlutusData, PlutusData>
-  | Construct; // We emulate the constr like this
+  | Constr<PlutusData>; // We emulate the constr like this
 
-type bytes = string | Uint8Array;
+/** Hex in case of string. */
+type Bytes = string | Uint8Array;
 
 /** JSON object */
 // deno-lint-ignore no-explicit-any

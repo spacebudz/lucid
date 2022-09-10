@@ -2,13 +2,13 @@ import { C, Core } from "../core/mod.ts";
 import { Datum, Json, PlutusData, Redeemer } from "../types/mod.ts";
 import { fromHex, toHex } from "./utils.ts";
 
-export class Construct {
+export class Constr<T> {
   index: number;
-  args: PlutusData[];
+  fields: T[];
 
-  constructor(index: number, args: PlutusData[]) {
+  constructor(index: number, fields: T[]) {
     this.index = index;
-    this.args = args;
+    this.fields = fields;
   }
 }
 
@@ -32,11 +32,11 @@ export class Data {
           return C.PlutusData.new_bytes(fromHex(data));
         } else if (data instanceof Uint8Array) {
           return C.PlutusData.new_bytes(data);
-        } else if (data instanceof Construct) {
-          const { index, args } = data;
+        } else if (data instanceof Constr) {
+          const { index, fields } = data;
           const plutusList = C.PlutusList.new();
 
-          args.forEach((arg) => plutusList.add(serialize(arg)));
+          fields.forEach((field) => plutusList.add(serialize(field)));
 
           return C.PlutusData.new_constr_plutus_data(
             C.ConstrPlutusData.new(
@@ -78,7 +78,7 @@ export class Data {
         for (let i = 0; i < l.len(); i++) {
           desL.push(deserialize(l.get(i)));
         }
-        return new Construct(parseInt(constr.alternative().to_str()), desL);
+        return new Constr(parseInt(constr.alternative().to_str()), desL);
       } else if (data.kind() === 1) {
         const m = data.as_map()!;
         const desM: Map<PlutusData, PlutusData> = new Map();
