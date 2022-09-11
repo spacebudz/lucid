@@ -1,6 +1,6 @@
 import {
   Blockfrost,
-  Construct,
+  Constr,
   Data,
   Lovelace,
   Lucid,
@@ -56,7 +56,7 @@ export async function lockUtxo(lovelace: Lovelace): Promise<TxHash> {
 
   // This represents the Datum struct from the Helios on-chain code
   const datum = Data.to(
-    new Construct(0, [new Construct(0, [paymentCredential?.hash!])]),
+    new Constr(0, [new Constr(0, [paymentCredential?.hash!])]),
   );
 
   const tx = await lucid.newTx().payToContract(scriptAddress, datum, {
@@ -76,7 +76,7 @@ export async function redeemUtxo(): Promise<TxHash> {
 
   // This represents the Redeemer struct from the Helios on-chain code
   const redeemer = Data.to(
-    new Construct(0, [new Construct(0, [paymentCredential?.hash!])]),
+    new Constr(0, [new Constr(0, [paymentCredential?.hash!])]),
   );
 
   const [utxo] = await lucid.utxosAt(scriptAddress);
