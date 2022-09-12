@@ -227,14 +227,6 @@ export type NFTMetadataDetails = {
   [key: string]: unknown;
 };
 
-export type NFTMetadata = {
-  [policyId: string]: {
-    [assetName: string]: NFTMetadataDetails;
-  };
-  //@ts-ignore: Cannot use map of strings and version as number in a type def
-  version?: number; // number
-};
-
 export type PoolParams = {
   poolId: PoolId;
   vrfKeyHash: VrfKeyHash;
