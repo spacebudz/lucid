@@ -15,8 +15,8 @@
       <img src="https://img.shields.io/npm/dw/lucid-cardano?style=for-the-badge" />
     </a>
     <img src="https://img.shields.io/npm/l/lucid-cardano?style=for-the-badge" />
-    <a href="https://twitter.com/berry_ales">
-      <img src="https://img.shields.io/twitter/follow/berry_ales?style=for-the-badge&logo=twitter" />
+    <a href="https://twitter.com/spacebudzNFT">
+      <img src="https://img.shields.io/twitter/follow/spacebudzNFT?style=for-the-badge&logo=twitter" />
     </a>
   </p>
 
@@ -145,3 +145,5 @@ Commit hash: **16dcadc69557dd7c20e62a966aaded1e051c287e**
 
 Contributions and PRs are welcome!\
 The [contribution instructions](./CONTRIBUTING.md).
+
+Join us on [Discord](https://discord.com/channels/824711383185621082/1019230128275988510)!
