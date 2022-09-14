@@ -29,7 +29,6 @@ export interface Provider {
   getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]>;
   getUtxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]>;
   getDelegation(rewardAddress: RewardAddress): Promise<Delegation>;
-  getCurrentSlot(): Promise<Slot>;
   getDatum(datumHash: DatumHash): Promise<Datum>;
   awaitTx(txHash: TxHash): Promise<boolean>;
   submitTx(tx: Core.Transaction): Promise<TxHash>;

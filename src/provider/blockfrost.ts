@@ -10,7 +10,6 @@ import {
   ProtocolParameters,
   Provider,
   ScriptType,
-  Slot,
   TxHash,
   Unit,
   UTxO,
@@ -42,13 +41,6 @@ export class Blockfrost implements Provider {
       maxCollateralInputs: parseInt(result.max_collateral_inputs),
       costModels: result.cost_models,
     };
-  }
-  async getCurrentSlot(): Promise<Slot> {
-    return await fetch(`${this.data.url}/blocks/latest`, {
-      headers: { project_id: this.data.projectId },
-    })
-      .then((res) => res.json())
-      .then((res) => parseInt(res.slot));
   }
 
   async getUtxos(address: string): Promise<UTxO[]> {

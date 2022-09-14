@@ -116,8 +116,8 @@ export class Lucid {
     return verifyData(addressHex, keyHash, payload, signedMessage);
   }
 
-  currentSlot(): Promise<Slot> {
-    return this.provider.getCurrentSlot();
+  currentSlot(): Slot {
+    return this.utils.unixTimeToSlot(Date.now());
   }
 
   utxosAt(address: Address): Promise<UTxO[]> {
