@@ -275,22 +275,6 @@ Deno.test("Assets/value conversion property test", () => {
   );
 });
 
-Deno.test("Transaction to string/object", async () => {
-  const lucid = await Lucid.new();
-  const txComplete = new TxComplete(
-    lucid,
-    C.Transaction.from_bytes(
-      fromHex(
-        "84a400828258207f08241abfaeabe364fce4b6cd5f6f8608a2a5c3fca040f0933a27239f4a49f3008258200c73a703355784c879fb9a6cf2eb80bc72edf35d8d350b9b6f8cf196aadc4b1b020183a200583900a57b43858907f8745fc324eed9bdabf442a74a519ca7f70edf32c167b145504c47b692bd1892fe8555aac215667b70a794366e7ed8caff69011a00989680a300581d60b6c8794e9a7a26599440a4d0fd79cd07644d15917ff13694f1f67235011a003d090003d8184c820249480100002221200101a200581d60b6c8794e9a7a26599440a4d0fd79cd07644d15917ff13694f1f67235011b00005af2ffcf95fd021a0002bbf11285825820e7eabf0367fe570e5723079b06c3a6623b205909162058103e5a74e3b518aad0028258200c73a703355784c879fb9a6cf2eb80bc72edf35d8d350b9b6f8cf196aadc4b1b028258208b393542c042513c36de5a4ae9bfbab25cf84f362db9c13740728c7e5814f875018258207f08241abfaeabe364fce4b6cd5f6f8608a2a5c3fca040f0933a27239f4a49f300825820868429733360297adffda8fb639719f29ffd31d4f1073e88d5d4fca8e6c6095701a1008182582031ae74f8058527afb305d7495b10a99422d9337fc199e1f28044f2c477a0f946584080d3d07b10b0f786c1332062f6624a29635bd39020f5a151bccd3400e7be65982ad1fd6355b5ea24a07942fe57c89d0f233457e52aa6e421edcab24fcc672502f5f6",
-      ),
-    ),
-  );
-  const txObject = txComplete.toObject();
-  assert(txObject.inputs);
-  assert(txObject.outputs);
-  assert(txObject.fee);
-});
-
 Deno.test("Basic Merkle tree", () => {
   const data = [new Uint8Array([0]), new Uint8Array([1])];
   const merkleTree = new MerkleTree(data);

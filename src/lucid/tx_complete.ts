@@ -7,7 +7,7 @@ import {
 } from "../types/mod.ts";
 import { Lucid } from "./lucid.ts";
 import { TxSigned } from "./tx_signed.ts";
-import { coreToUtxo, fromHex, toHex } from "../utils/mod.ts";
+import { fromHex, toHex } from "../utils/mod.ts";
 
 export class TxComplete {
   txComplete: Core.Transaction;
@@ -86,59 +86,6 @@ export class TxComplete {
       this.txComplete.auxiliary_data(),
     );
     return new TxSigned(this.lucid, signedTx);
-  }
-
-  /** **UNSTABLE** */
-  // deno-lint-ignore no-explicit-any
-  toObject(): any {
-    console.info("toObject is unstable and not ready yet");
-    const body = this.txComplete.body();
-    const witnesses = this.txComplete.witness_set();
-    const auxiliary_data = this.txComplete.auxiliary_data();
-
-    const inputs = body
-      .inputs()
-      .to_js_value()
-      // deno-lint-ignore no-explicit-any
-      .map((i: any) => ({
-        txHash: i.transaction_id,
-        outputIndex: parseInt(i.index),
-      }));
-    const outputs = (() => {
-      const dummyInput = C.TransactionInput.from_json(
-        JSON.stringify({ transaction_id: "0".repeat(64), index: "0" }),
-      );
-      const outputs = [];
-      const coreOutputs = body.outputs();
-      for (let i = 0; i < body.outputs().len(); i++) {
-        const o = coreOutputs.get(i);
-        const coreUtxo = C.TransactionUnspentOutput.new(dummyInput, o);
-        const utxo = coreToUtxo(coreUtxo);
-        // @ts-ignore : txHash not needed in output
-        delete utxo["txHash"];
-        // @ts-ignore : txHash not needed in output
-        delete utxo["outputIndex"];
-        outputs.push(utxo);
-      }
-      return outputs;
-    })();
-    const fee = BigInt(body.fee().to_str());
-    const validTo = body.ttl() ? parseInt(body.ttl()!.to_str()) : "always";
-    const certificates = {};
-    const withdrawals = {};
-    const validFrom = body.validity_start_interval()
-      ? parseInt(body.validity_start_interval()!.to_str())
-      : "always";
-
-    return {
-      inputs,
-      outputs,
-      fee,
-      validTo,
-      certificates,
-      withdrawals,
-      validFrom,
-    };
   }
 
   /** Return the transaction in Hex encoded Cbor. */
