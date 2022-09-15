@@ -10,6 +10,7 @@ import {
   ProtocolParameters,
   Provider,
   ScriptType,
+  Transaction,
   TxHash,
   Unit,
   UTxO,
@@ -166,14 +167,14 @@ export class Blockfrost implements Provider {
     });
   }
 
-  async submitTx(tx: Core.Transaction): Promise<TxHash> {
+  async submitTx(tx: Transaction): Promise<TxHash> {
     const result = await fetch(`${this.data.url}/tx/submit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/cbor",
         project_id: this.data.projectId,
       },
-      body: tx.to_bytes(),
+      body: tx,
     }).then((res) => res.json());
     if (!result || result.error) {
       if (result?.status_code === 400) throw new Error(result.message);

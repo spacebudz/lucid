@@ -22,18 +22,12 @@ type FromSeed = {
 
 export function walletFromSeed(
   seed: string,
-  options?: {
+  options: {
     addressType?: "Base" | "Enterprise";
     accountIndex?: number;
     network?: Network;
-  },
+  } = { addressType: "Base", accountIndex: 0, network: "Mainnet" },
 ): FromSeed {
-  options = {
-    addressType: options?.addressType || "Base",
-    accountIndex: options?.accountIndex ?? 0,
-    network: options?.network || "Mainnet",
-  };
-
   function harden(num: number): number {
     if (typeof num !== "number") throw new Error("Type number required here!");
     return 0x80000000 + num;

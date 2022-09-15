@@ -23,7 +23,7 @@ export type ProtocolParameters = {
 export type Slot = number;
 
 export interface Provider {
-  data: { url: string; projectId: string; [key: string]: unknown };
+  data: { [key: string]: unknown };
   getProtocolParameters(): Promise<ProtocolParameters>;
   getUtxos(address: Address): Promise<UTxO[]>;
   getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]>;
@@ -31,7 +31,7 @@ export interface Provider {
   getDelegation(rewardAddress: RewardAddress): Promise<Delegation>;
   getDatum(datumHash: DatumHash): Promise<Datum>;
   awaitTx(txHash: TxHash): Promise<boolean>;
-  submitTx(tx: Core.Transaction): Promise<TxHash>;
+  submitTx(tx: Transaction): Promise<TxHash>;
 }
 
 export type Credential = {

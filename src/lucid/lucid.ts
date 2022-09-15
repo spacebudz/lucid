@@ -77,7 +77,7 @@ export class Lucid {
           // Provider needs to be blockfrost in this case. Maybe we have better/more ways in the future to evaluate ex units
           C.Blockfrost.new(
             provider.data.url + "/utils/txs/evaluate",
-            provider.data.projectId,
+            provider.data.projectId as string,
           ),
         )
         .costmdls(createCostModels(protocolParameters.costModels))
@@ -213,7 +213,7 @@ export class Lucid {
         return signData(hexAddress, payload, privateKey);
       },
       submitTx: async (tx: Core.Transaction): Promise<TxHash> => {
-        return await this.provider.submitTx(tx);
+        return await this.provider.submitTx(toHex(tx.to_bytes()));
       },
     };
     return this;
@@ -346,7 +346,7 @@ export class Lucid {
         throw new Error("Not implemented");
       },
       submitTx: async (tx: Core.Transaction): Promise<TxHash> => {
-        return await this.provider.submitTx(tx);
+        return await this.provider.submitTx(toHex(tx.to_bytes()));
       },
     };
     return this;
@@ -358,7 +358,10 @@ export class Lucid {
    */
   selectWalletFromSeed(
     seed: string,
-    options?: { addressType?: "Base" | "Enterprise"; accountIndex?: number },
+    options: { addressType?: "Base" | "Enterprise"; accountIndex?: number } = {
+      addressType: "Base",
+      accountIndex: 0,
+    },
   ): Lucid {
     const { address, rewardAddress, paymentKey, stakeKey } = walletFromSeed(
       seed,
@@ -448,7 +451,7 @@ export class Lucid {
         return signData(hexAddress, payload, privateKey);
       },
       submitTx: async (tx: Core.Transaction): Promise<TxHash> => {
-        return await this.provider.submitTx(tx);
+        return await this.provider.submitTx(toHex(tx.to_bytes()));
       },
     };
     return this;
