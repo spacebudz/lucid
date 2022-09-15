@@ -139,12 +139,24 @@ export class Utils {
   }
 }
 
+function addressFromHexOrBech32(address: string): Core.Address {
+  try {
+    return C.Address.from_bytes(fromHex(address));
+  } catch (_e) {
+    try {
+      return C.Address.from_bech32(address);
+    } catch (_e) {
+      throw new Error("Could not deserialize address.");
+    }
+  }
+}
+
 /** Address can be in Bech32 or Hex */
-export const getAddressDetails = (address: string): AddressDetails => {
+export function getAddressDetails(address: string): AddressDetails {
   // Base Address
   try {
     const parsedAddress = C.BaseAddress.from_address(
-      C.Address.from_bytes(fromHex(address)),
+      addressFromHexOrBech32(address),
     )!;
     const paymentCredential: Credential =
       parsedAddress.payment_cred().kind() === 0
@@ -172,49 +184,9 @@ export const getAddressDetails = (address: string): AddressDetails => {
         ),
       };
     return {
+      type: "Base",
+      networkId: parsedAddress.to_address().network_id(),
       address: {
-        type: "Base",
-        address: parsedAddress.to_address().to_bech32(undefined),
-        bech32: parsedAddress.to_address().to_bech32(undefined),
-        hex: toHex(parsedAddress.to_address().to_bytes()),
-      },
-      paymentCredential,
-      stakeCredential,
-    };
-  } catch (_e) { /* pass */ }
-  try {
-    const parsedAddress = C.BaseAddress.from_address(
-      C.Address.from_bech32(address),
-    )!;
-    const paymentCredential: Credential =
-      parsedAddress.payment_cred().kind() === 0
-        ? {
-          type: "Key",
-          hash: toHex(
-            parsedAddress.payment_cred().to_keyhash()!.to_bytes(),
-          ),
-        }
-        : {
-          type: "Script",
-          hash: toHex(
-            parsedAddress.payment_cred().to_scripthash()!.to_bytes(),
-          ),
-        };
-    const stakeCredential: Credential = parsedAddress.stake_cred().kind() === 0
-      ? {
-        type: "Key",
-        hash: toHex(parsedAddress.stake_cred().to_keyhash()!.to_bytes()),
-      }
-      : {
-        type: "Script",
-        hash: toHex(
-          parsedAddress.stake_cred().to_scripthash()!.to_bytes(),
-        ),
-      };
-    return {
-      address: {
-        type: "Base",
-        address: parsedAddress.to_address().to_bech32(undefined),
         bech32: parsedAddress.to_address().to_bech32(undefined),
         hex: toHex(parsedAddress.to_address().to_bytes()),
       },
@@ -226,7 +198,7 @@ export const getAddressDetails = (address: string): AddressDetails => {
   // Enterprise Address
   try {
     const parsedAddress = C.EnterpriseAddress.from_address(
-      C.Address.from_bytes(fromHex(address)),
+      addressFromHexOrBech32(address),
     )!;
     const paymentCredential: Credential =
       parsedAddress.payment_cred().kind() === 0
@@ -243,38 +215,9 @@ export const getAddressDetails = (address: string): AddressDetails => {
           ),
         };
     return {
+      type: "Enterprise",
+      networkId: parsedAddress.to_address().network_id(),
       address: {
-        type: "Enterprise",
-        address: parsedAddress.to_address().to_bech32(undefined),
-        bech32: parsedAddress.to_address().to_bech32(undefined),
-        hex: toHex(parsedAddress.to_address().to_bytes()),
-      },
-      paymentCredential,
-    };
-  } catch (_e) { /* pass */ }
-
-  try {
-    const parsedAddress = C.EnterpriseAddress.from_address(
-      C.Address.from_bech32(address),
-    )!;
-    const paymentCredential: Credential =
-      parsedAddress.payment_cred().kind() === 0
-        ? {
-          type: "Key",
-          hash: toHex(
-            parsedAddress.payment_cred().to_keyhash()!.to_bytes(),
-          ),
-        }
-        : {
-          type: "Script",
-          hash: toHex(
-            parsedAddress.payment_cred().to_scripthash()!.to_bytes(),
-          ),
-        };
-    return {
-      address: {
-        type: "Enterprise",
-        address: parsedAddress.to_address().to_bech32(undefined),
         bech32: parsedAddress.to_address().to_bech32(undefined),
         hex: toHex(parsedAddress.to_address().to_bytes()),
       },
@@ -285,7 +228,7 @@ export const getAddressDetails = (address: string): AddressDetails => {
   // Pointer Address
   try {
     const parsedAddress = C.PointerAddress.from_address(
-      C.Address.from_bytes(fromHex(address)),
+      addressFromHexOrBech32(address),
     )!;
     const paymentCredential: Credential =
       parsedAddress.payment_cred().kind() === 0
@@ -302,38 +245,9 @@ export const getAddressDetails = (address: string): AddressDetails => {
           ),
         };
     return {
+      type: "Pointer",
+      networkId: parsedAddress.to_address().network_id(),
       address: {
-        type: "Pointer",
-        address: parsedAddress.to_address().to_bech32(undefined),
-        bech32: parsedAddress.to_address().to_bech32(undefined),
-        hex: toHex(parsedAddress.to_address().to_bytes()),
-      },
-      paymentCredential,
-    };
-  } catch (_e) { /* pass */ }
-
-  try {
-    const parsedAddress = C.PointerAddress.from_address(
-      C.Address.from_bech32(address),
-    )!;
-    const paymentCredential: Credential =
-      parsedAddress.payment_cred().kind() === 0
-        ? {
-          type: "Key",
-          hash: toHex(
-            parsedAddress.payment_cred().to_keyhash()!.to_bytes(),
-          ),
-        }
-        : {
-          type: "Script",
-          hash: toHex(
-            parsedAddress.payment_cred().to_scripthash()!.to_bytes(),
-          ),
-        };
-    return {
-      address: {
-        type: "Pointer",
-        address: parsedAddress.to_address().to_bech32(undefined),
         bech32: parsedAddress.to_address().to_bech32(undefined),
         hex: toHex(parsedAddress.to_address().to_bytes()),
       },
@@ -344,7 +258,7 @@ export const getAddressDetails = (address: string): AddressDetails => {
   // Reward Address
   try {
     const parsedAddress = C.RewardAddress.from_address(
-      C.Address.from_bytes(fromHex(address)),
+      addressFromHexOrBech32(address),
     )!;
     const stakeCredential: Credential =
       parsedAddress.payment_cred().kind() === 0
@@ -361,9 +275,9 @@ export const getAddressDetails = (address: string): AddressDetails => {
           ),
         };
     return {
+      type: "Reward",
+      networkId: parsedAddress.to_address().network_id(),
       address: {
-        type: "Reward",
-        address: parsedAddress.to_address().to_bech32(undefined),
         bech32: parsedAddress.to_address().to_bech32(undefined),
         hex: toHex(parsedAddress.to_address().to_bytes()),
       },
@@ -371,36 +285,8 @@ export const getAddressDetails = (address: string): AddressDetails => {
     };
   } catch (_e) { /* pass */ }
 
-  try {
-    const parsedAddress = C.RewardAddress.from_address(
-      C.Address.from_bech32(address),
-    )!;
-    const stakeCredential: Credential =
-      parsedAddress.payment_cred().kind() === 0
-        ? {
-          type: "Key",
-          hash: toHex(
-            parsedAddress.payment_cred().to_keyhash()!.to_bytes(),
-          ),
-        }
-        : {
-          type: "Script",
-          hash: toHex(
-            parsedAddress.payment_cred().to_scripthash()!.to_bytes(),
-          ),
-        };
-    return {
-      address: {
-        type: "Reward",
-        address: parsedAddress.to_address().to_bech32(undefined),
-        bech32: parsedAddress.to_address().to_bech32(undefined),
-        hex: toHex(parsedAddress.to_address().to_bytes()),
-      },
-      stakeCredential,
-    };
-  } catch (_e) { /* pass */ }
   throw new Error("No address type matched for: " + address);
-};
+}
 
 export function valueToAssets(value: Core.Value): Assets {
   const assets: Assets = {};

@@ -20,7 +20,12 @@ import {
   UTxO,
   WithdrawalValidator,
 } from "../types/mod.ts";
-import { assetsToValue, fromHex, utxoToCore } from "../utils/mod.ts";
+import {
+  assetsToValue,
+  fromHex,
+  networkToId,
+  utxoToCore,
+} from "../utils/mod.ts";
 import { Lucid } from "./lucid.ts";
 import { TxComplete } from "./tx_complete.ts";
 
@@ -121,7 +126,7 @@ export class Tx {
   /** Pay to a public key or native script address. */
   payToAddress(address: Address, assets: Assets): Tx {
     const output = C.TransactionOutput.new(
-      C.Address.from_bech32(address),
+      addressFromWithNetworkCheck(address, this.lucid),
       assetsToValue(assets),
     );
     this.txBuilder.add_output(output);
@@ -143,7 +148,7 @@ export class Tx {
     }
 
     const output = C.TransactionOutput.new(
-      C.Address.from_bech32(address),
+      addressFromWithNetworkCheck(address, this.lucid),
       assetsToValue(assets),
     );
 
@@ -213,8 +218,9 @@ export class Tx {
     redeemer?: Redeemer,
   ): Tx {
     const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
+
     if (
-      addressDetails.address.type !== "Reward" ||
+      addressDetails.type !== "Reward" ||
       !addressDetails.stakeCredential
     ) {
       throw new Error("Not a reward address provided.");
@@ -251,8 +257,9 @@ export class Tx {
   /** Register a reward address in order to delegate to a pool and receive rewards. */
   registerStake(rewardAddress: RewardAddress): Tx {
     const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
+
     if (
-      addressDetails.address.type !== "Reward" ||
+      addressDetails.type !== "Reward" ||
       !addressDetails.stakeCredential
     ) {
       throw new Error("Not a reward address provided.");
@@ -279,8 +286,9 @@ export class Tx {
   /** Deregister a reward address. */
   deregisterStake(rewardAddress: RewardAddress, redeemer?: Redeemer): Tx {
     const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
+
     if (
-      addressDetails.address.type !== "Reward" ||
+      addressDetails.type !== "Reward" ||
       !addressDetails.stakeCredential
     ) {
       throw new Error("Not a reward address provided.");
@@ -368,7 +376,9 @@ export class Tx {
     redeemer?: Redeemer,
   ): Tx {
     this.txBuilder.add_withdrawal(
-      C.RewardAddress.from_address(C.Address.from_bech32(rewardAddress))!,
+      C.RewardAddress.from_address(
+        addressFromWithNetworkCheck(rewardAddress, this.lucid),
+      )!,
       C.BigNum.from_str(amount.toString()),
       redeemer
         ? C.ScriptWitness.new_plutus_witness(
@@ -395,7 +405,7 @@ export class Tx {
       throw new Error("Not a valid address.");
     }
 
-    const credential = addressDetails.address.type === "Reward"
+    const credential = addressDetails.type === "Reward"
       ? addressDetails.stakeCredential!
       : addressDetails.paymentCredential!;
 
@@ -490,8 +500,9 @@ export class Tx {
 
     const utxos = await this.lucid.wallet.getUtxosCore();
 
-    const changeAddress: Core.Address = C.Address.from_bech32(
+    const changeAddress: Core.Address = addressFromWithNetworkCheck(
       options?.changeAddress || (await this.lucid.wallet.address()),
+      this.lucid,
     );
 
     if (options?.coinSelection || options?.coinSelection === undefined) {
@@ -623,7 +634,7 @@ async function createPoolRegistration(
       C.BigNum.from_str(poolParams.cost.toString()),
       C.UnitInterval.from_float(poolParams.margin),
       C.RewardAddress.from_address(
-        C.Address.from_bech32(poolParams.rewardAddress),
+        addressFromWithNetworkCheck(poolParams.rewardAddress, lucid),
       )!,
       poolOwners,
       relays,
@@ -635,4 +646,19 @@ async function createPoolRegistration(
         : undefined,
     ),
   );
+}
+
+function addressFromWithNetworkCheck(
+  address: Address | RewardAddress,
+  lucid: Lucid,
+): Core.Address {
+  const addressDetails = lucid.utils.getAddressDetails(address);
+
+  const actualNetworkId = networkToId(lucid.network);
+  if (addressDetails.networkId !== actualNetworkId) {
+    throw new Error(
+      `Invalid address: Expected address with network id ${actualNetworkId}, but got ${addressDetails.networkId}`,
+    );
+  }
+  return C.Address.from_bech32(address);
 }

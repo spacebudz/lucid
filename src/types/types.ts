@@ -137,17 +137,14 @@ export type UTxO = {
 
 export type OutRef = { txHash: TxHash; outputIndex: number };
 
-export type AddressType = {
-  type: "Base" | "Enterprise" | "Pointer" | "Reward";
-  address: Address;
-  bech32: Address;
-  hex: string;
-};
+export type AddressType = "Base" | "Enterprise" | "Pointer" | "Reward";
 
 export type Network = "Mainnet" | "Testnet" | "Preview" | "Preprod";
 
 export type AddressDetails = {
-  address: AddressType;
+  type: AddressType;
+  networkId: number;
+  address: { bech32: Address; hex: string };
   paymentCredential?: Credential;
   stakeCredential?: Credential;
 };

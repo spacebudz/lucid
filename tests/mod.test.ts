@@ -42,15 +42,15 @@ Deno.test("PaymentKeyHash length", async () => {
 
 Deno.test("Address type", async () => {
   const {
-    address: { address },
+    address: { bech32 },
   } = lucid.utils.getAddressDetails(await lucid.wallet.address());
   const enterpriseAddress = C.EnterpriseAddress.from_address(
-    C.Address.from_bech32(address),
+    C.Address.from_bech32(bech32),
   )!
     .to_address()
     .to_bech32(undefined);
-  assertEquals(address, enterpriseAddress);
-  assertEquals(address, await lucid.wallet.address());
+  assertEquals(bech32, enterpriseAddress);
+  assertEquals(bech32, await lucid.wallet.address());
 });
 
 Deno.test("No reward address", async () => {
