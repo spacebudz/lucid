@@ -6922,6 +6922,12 @@ declare export class TransactionBuilder {
   balance(change_address: Address, datum?: Datum): void;
 
   /**
+   * Returns the TransactionBody.
+   * @returns {Uint8Array}
+   */
+  to_bytes(): Uint8Array;
+
+  /**
    * @returns {number}
    */
   full_size(): number;

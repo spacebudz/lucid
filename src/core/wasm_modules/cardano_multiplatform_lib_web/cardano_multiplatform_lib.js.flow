@@ -6922,6 +6922,12 @@ declare export class TransactionBuilder {
   balance(change_address: Address, datum?: Datum): void;
 
   /**
+   * Returns the TransactionBody.
+   * @returns {Uint8Array}
+   */
+  to_bytes(): Uint8Array;
+
+  /**
    * @returns {number}
    */
   full_size(): number;
@@ -9353,6 +9359,7 @@ export interface InitOutput {
   +transactionbuilder_get_deposit: (a: number) => number;
   +transactionbuilder_get_fee_if_set: (a: number) => number;
   +transactionbuilder_balance: (a: number, b: number, c: number) => void;
+  +transactionbuilder_to_bytes: (a: number, b: number) => void;
   +transactionbuilder_full_size: (a: number) => number;
   +transactionbuilder_output_sizes: (a: number, b: number) => void;
   +transactionbuilder_outputs: (a: number) => number;

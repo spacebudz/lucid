@@ -24,6 +24,7 @@ import {
   assetsToValue,
   fromHex,
   networkToId,
+  toHex,
   utxoToCore,
 } from "../utils/mod.ts";
 import { Lucid } from "./lucid.ts";
@@ -533,6 +534,18 @@ export class Tx {
       this.lucid,
       await this.txBuilder.construct(utxos, changeAddress),
     );
+  }
+
+  /** Return the current transaction body in Hex encoded Cbor. */
+  async toString(): Promise<string> {
+    let i = this.tasks.length;
+
+    while (i--) {
+      await this.tasks[i]();
+      this.tasks.splice(i, 1);
+    }
+
+    return toHex(this.txBuilder.to_bytes());
   }
 }
 
