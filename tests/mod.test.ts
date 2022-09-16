@@ -14,7 +14,6 @@ import {
   toHex,
   toLabel,
   toUnit,
-  TxComplete,
   utxoToCore,
   valueToAssets,
 } from "../src/mod.ts";
