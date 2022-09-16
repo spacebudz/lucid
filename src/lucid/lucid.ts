@@ -76,8 +76,10 @@ export class Lucid {
         .blockfrost(
           // Provider needs to be blockfrost in this case. Maybe we have better/more ways in the future to evaluate ex units
           C.Blockfrost.new(
-            provider.data.url + "/utils/txs/evaluate",
-            provider.data.projectId as string,
+            // deno-lint-ignore no-explicit-any
+            (provider as any).data.url + "/utils/txs/evaluate",
+            // deno-lint-ignore no-explicit-any
+            (provider as any).data.projectId as string,
           ),
         )
         .costmdls(createCostModels(protocolParameters.costModels))

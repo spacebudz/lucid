@@ -23,7 +23,6 @@ export type ProtocolParameters = {
 export type Slot = number;
 
 export interface Provider {
-  data: { [key: string]: unknown };
   getProtocolParameters(): Promise<ProtocolParameters>;
   getUtxos(address: Address): Promise<UTxO[]>;
   getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]>;
