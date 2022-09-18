@@ -174,7 +174,7 @@ export class Blockfrost implements Provider {
         "Content-Type": "application/cbor",
         project_id: this.data.projectId,
       },
-      body: tx,
+      body: fromHex(tx),
     }).then((res) => res.json());
     if (!result || result.error) {
       if (result?.status_code === 400) throw new Error(result.message);
