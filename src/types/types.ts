@@ -251,3 +251,8 @@ export type NativeScript = {
   slot?: Slot;
   scripts?: NativeScript[];
 };
+
+export type SlotConfig = {
+  slotLength: number; // number of milliseconds.
+  zeroTime: UnixTime;
+};

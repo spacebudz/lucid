@@ -21,6 +21,7 @@ import {
   RewardAddress,
   SignedMessage,
   Slot,
+  SlotConfig,
   Transaction,
   TxHash,
   Unit,
@@ -33,11 +34,7 @@ import { TxComplete } from "./tx_complete.ts";
 import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../misc/wallet.ts";
 import { signData, verifyData } from "../misc/sign_data.ts";
 import { Message } from "./message.ts";
-import {
-  DEFAULT_SLOT_LENGTH,
-  SlotConfig,
-  zeroTimeNetwork,
-} from "../plutus/time.ts";
+import { DEFAULT_SLOT_LENGTH, zeroTimeNetwork } from "../plutus/time.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;

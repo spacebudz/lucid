@@ -1,9 +1,4 @@
-import { Network, Slot, UnixTime } from "../types/mod.ts";
-
-export type SlotConfig = {
-  slotLength: number; // number of milliseconds.
-  zeroTime: UnixTime;
-};
+import { Network, Slot, SlotConfig, UnixTime } from "../types/mod.ts";
 
 export const zeroTimeNetwork: Record<Network, UnixTime> = {
   Mainnet: 1596059091000, // Shelley start (slotLength = 1s).
