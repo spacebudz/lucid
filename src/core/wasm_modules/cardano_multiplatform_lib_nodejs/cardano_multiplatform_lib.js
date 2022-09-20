@@ -286,6 +286,10 @@ module.exports.decode_metadatum_to_json_str = function(metadatum, schema) {
     }
 };
 
+const u32CvtShim = new Uint32Array(2);
+
+const uint64CvtShim = new BigUint64Array(u32CvtShim.buffer);
+
 let cachegetUint32Memory0 = null;
 function getUint32Memory0() {
     if (cachegetUint32Memory0 === null || cachegetUint32Memory0.buffer !== wasm.memory.buffer) {
@@ -591,7 +595,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_1364(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1366(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__h7a735230209646c7(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -14138,6 +14142,15 @@ class TransactionBuilderConfigBuilder {
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**
+    * @param {ExUnits} max_tx_ex_units
+    * @returns {TransactionBuilderConfigBuilder}
+    */
+    max_tx_ex_units(max_tx_ex_units) {
+        _assertClass(max_tx_ex_units, ExUnits);
+        var ret = wasm.transactionbuilderconfigbuilder_max_tx_ex_units(this.ptr, max_tx_ex_units.ptr);
+        return TransactionBuilderConfigBuilder.__wrap(ret);
+    }
+    /**
     * @param {Costmdls} costmdls
     * @returns {TransactionBuilderConfigBuilder}
     */
@@ -14160,6 +14173,18 @@ class TransactionBuilderConfigBuilder {
     */
     max_collateral_inputs(max_collateral_inputs) {
         var ret = wasm.transactionbuilderconfigbuilder_max_collateral_inputs(this.ptr, max_collateral_inputs);
+        return TransactionBuilderConfigBuilder.__wrap(ret);
+    }
+    /**
+    * @param {BigInt} zero_time
+    * @param {number} slot_length
+    * @returns {TransactionBuilderConfigBuilder}
+    */
+    slot_config(zero_time, slot_length) {
+        uint64CvtShim[0] = zero_time;
+        const low0 = u32CvtShim[0];
+        const high0 = u32CvtShim[1];
+        var ret = wasm.transactionbuilderconfigbuilder_slot_config(this.ptr, low0, high0, slot_length);
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**
@@ -17124,7 +17149,7 @@ module.exports.__wbg_new_c143a4f563f78c4e = function(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_1364(a, state0.b, arg0, arg1);
+                return __wbg_adapter_1366(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -17249,7 +17274,7 @@ module.exports.__wbindgen_memory = function() {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8449 = function(arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper8460 = function(arg0, arg1, arg2) {
     var ret = makeMutClosure(arg0, arg1, 459, __wbg_adapter_32);
     return addHeapObject(ret);
 };

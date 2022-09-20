@@ -28,6 +28,12 @@ import {
 } from "../types/mod.ts";
 import { Lucid } from "../lucid/mod.ts";
 import { generateMnemonic } from "../misc/bip39.ts";
+import {
+  DEFAULT_SLOT_LENGTH,
+  slotToBeginUnixTime,
+  unixTimeToEnclosingSlot,
+  zeroTimeNetwork,
+} from "../plutus/time.ts";
 
 export class Utils {
   private lucid: Lucid;
@@ -411,40 +417,6 @@ export function fromHex(hex: string): Uint8Array {
 
 export function toHex(bytes: Uint8Array): string {
   return encodeToString(bytes);
-}
-
-type SlotConfig = {
-  slotLength: number; // number of milliseconds.
-  zeroTime: UnixTime;
-};
-
-const zeroTimeNetwork: Record<Network, UnixTime> = {
-  Mainnet: 1596059091000, // Shelley start (slotLength = 1s).
-  Testnet: 1595967616000, // Shelley start (slotLength = 1s).
-  Preview: 1660003200000, // Genesis start (slotLength = 1s).
-  Preprod: 1654041600000, // Genesis start (slotLength = 1s).
-};
-
-/** Currently the slot length in each era (after Byron) is 1 second. */
-const DEFAULT_SLOT_LENGTH = 1000;
-
-function slotToBeginUnixTime(slot: Slot, slotConfig: SlotConfig): UnixTime {
-  const msAfterBegin = slot * slotConfig.slotLength;
-  return slotConfig.zeroTime + msAfterBegin;
-}
-
-// slotToBeginUnixTime and slotToEndUnixTime are identical when slotLength == 1. So we don't need to worry about this now.
-// function slotToEndUnixTime(slot: Slot, slotConfig: SlotConfig): UnixTime {
-//   return slotToBeginUnixTime(slot, slotConfig) + (slotConfig.slotLength - 1);
-// }
-
-function unixTimeToEnclosingSlot(
-  unixTime: UnixTime,
-  slotConfig: SlotConfig,
-): Slot {
-  const timePassed = unixTime - slotConfig.zeroTime;
-  const slotsPassed = Math.floor(timePassed / slotConfig.slotLength);
-  return slotsPassed;
 }
 
 export function hexToUtf8(hex: string): string {

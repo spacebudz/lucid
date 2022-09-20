@@ -17,6 +17,7 @@ import {
   utxoToCore,
   valueToAssets,
 } from "../src/mod.ts";
+import { Utils } from "../src/mod.ts";
 import {
   assert,
   assertEquals,

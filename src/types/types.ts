@@ -1,5 +1,5 @@
 import { Core } from "../core/mod.ts";
-import { Constr } from "../utils/mod.ts";
+import { Constr } from "../plutus/mod.ts";
 
 type CostModel = Record<string, number>;
 
@@ -14,6 +14,8 @@ export type ProtocolParameters = {
   poolDeposit: bigint;
   priceMem: number;
   priceStep: number;
+  maxTxExMem: bigint;
+  maxTxExSteps: bigint;
   coinsPerUtxoByte: bigint;
   collateralPercentage: number;
   maxCollateralInputs: number;
@@ -47,13 +49,13 @@ export type ScriptType = "Native" | "PlutusV1" | "PlutusV2";
 export type PolicyId = string;
 
 /**
- * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
- * E.g. taking in the Cbor Hex string coming from writeFileTextEnvelope (Haskell) works
+ * Plutus scripts need to be double Cbor encoded.
+ * Raw compiled scripts without any Cbor encoding do not work.
  */
 export type Script = { type: ScriptType; script: string };
 /**
- * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
- * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
+ * Plutus scripts need to be double Cbor encoded.
+ * Raw compiled scripts without any Cbor encoding do not work.
  */
 export type Validator =
   | MintingPolicy
@@ -61,23 +63,23 @@ export type Validator =
   | CertificateValidator
   | WithdrawalValidator;
 /**
- * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
- * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
+ * Plutus scripts need to be double Cbor encoded.
+ * Raw compiled scripts without any Cbor encoding do not work.
  */
 export type MintingPolicy = Script;
 /**
- * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
- * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
+ * Plutus scripts need to be double Cbor encoded.
+ * Raw compiled scripts without any Cbor encoding do not work.
  */
 export type SpendingValidator = Script;
 /**
- * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
- * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
+ * Plutus scripts need to be double Cbor encoded.
+ * Raw compiled scripts without any Cbor encoding do not work.
  */
 export type CertificateValidator = Script;
 /**
- * Note: Plutus scripts need to be Cbor encoded. Raw compiled script without the Cbor encoding do not work.
- * E.g. taking the Cbor Hex string coming from writeFileTextEnvelope works
+ * Plutus scripts need to be double Cbor encoded.
+ * Raw compiled scripts without any Cbor encoding do not work.
  */
 export type WithdrawalValidator = Script;
 /** Bech32 */

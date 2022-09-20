@@ -5761,6 +5761,11 @@ export class TransactionBuilderConfigBuilder {
 */
   ex_unit_prices(ex_unit_prices: ExUnitPrices): TransactionBuilderConfigBuilder;
 /**
+* @param {ExUnits} max_tx_ex_units
+* @returns {TransactionBuilderConfigBuilder}
+*/
+  max_tx_ex_units(max_tx_ex_units: ExUnits): TransactionBuilderConfigBuilder;
+/**
 * @param {Costmdls} costmdls
 * @returns {TransactionBuilderConfigBuilder}
 */
@@ -5775,6 +5780,12 @@ export class TransactionBuilderConfigBuilder {
 * @returns {TransactionBuilderConfigBuilder}
 */
   max_collateral_inputs(max_collateral_inputs: number): TransactionBuilderConfigBuilder;
+/**
+* @param {BigInt} zero_time
+* @param {number} slot_length
+* @returns {TransactionBuilderConfigBuilder}
+*/
+  slot_config(zero_time: BigInt, slot_length: number): TransactionBuilderConfigBuilder;
 /**
 * @param {Blockfrost} blockfrost
 * @returns {TransactionBuilderConfigBuilder}

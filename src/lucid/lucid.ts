@@ -33,6 +33,11 @@ import { TxComplete } from "./tx_complete.ts";
 import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../misc/wallet.ts";
 import { signData, verifyData } from "../misc/sign_data.ts";
 import { Message } from "./message.ts";
+import {
+  DEFAULT_SLOT_LENGTH,
+  SlotConfig,
+  zeroTimeNetwork,
+} from "../plutus/time.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
@@ -47,6 +52,10 @@ export class Lucid {
     if (provider) {
       lucid.provider = provider;
       const protocolParameters = await provider.getProtocolParameters();
+      const slotConfig: SlotConfig = {
+        zeroTime: zeroTimeNetwork[lucid.network],
+        slotLength: DEFAULT_SLOT_LENGTH,
+      };
       lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
         .coins_per_utxo_byte(
           C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString()),
@@ -67,11 +76,21 @@ export class Lucid {
         .max_value_size(protocolParameters.maxValSize)
         .collateral_percentage(protocolParameters.collateralPercentage)
         .max_collateral_inputs(protocolParameters.maxCollateralInputs)
+        .max_tx_ex_units(
+          C.ExUnits.new(
+            C.BigNum.from_str(protocolParameters.maxTxExMem.toString()),
+            C.BigNum.from_str(protocolParameters.maxTxExSteps.toString()),
+          ),
+        )
         .ex_unit_prices(
           C.ExUnitPrices.from_float(
             protocolParameters.priceMem,
             protocolParameters.priceStep,
           ),
+        )
+        .slot_config(
+          C.BigInt.from_str(slotConfig.zeroTime.toString()),
+          slotConfig.slotLength,
         )
         .blockfrost(
           // Provider needs to be blockfrost in this case. Maybe we have better/more ways in the future to evaluate ex units

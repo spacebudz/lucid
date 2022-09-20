@@ -1,6 +1,6 @@
 import { C, Core } from "../core/mod.ts";
 import { Datum, Json, PlutusData, Redeemer } from "../types/mod.ts";
-import { fromHex, toHex } from "./utils.ts";
+import { fromHex, toHex } from "../utils/utils.ts";
 
 export class Constr<T> {
   index: number;
