@@ -5781,11 +5781,11 @@ export class TransactionBuilderConfigBuilder {
 */
   max_collateral_inputs(max_collateral_inputs: number): TransactionBuilderConfigBuilder;
 /**
-* @param {BigInt} zero_time
+* @param {BigNum} zero_time
 * @param {number} slot_length
 * @returns {TransactionBuilderConfigBuilder}
 */
-  slot_config(zero_time: BigInt, slot_length: number): TransactionBuilderConfigBuilder;
+  slot_config(zero_time: BigNum, slot_length: number): TransactionBuilderConfigBuilder;
 /**
 * @param {Blockfrost} blockfrost
 * @returns {TransactionBuilderConfigBuilder}
@@ -7697,7 +7697,7 @@ export interface InitOutput {
   readonly transactionbuilderconfigbuilder_costmdls: (a: number, b: number) => number;
   readonly transactionbuilderconfigbuilder_collateral_percentage: (a: number, b: number) => number;
   readonly transactionbuilderconfigbuilder_max_collateral_inputs: (a: number, b: number) => number;
-  readonly transactionbuilderconfigbuilder_slot_config: (a: number, b: number, c: number, d: number) => number;
+  readonly transactionbuilderconfigbuilder_slot_config: (a: number, b: number, c: number) => number;
   readonly transactionbuilderconfigbuilder_blockfrost: (a: number, b: number) => number;
   readonly transactionbuilderconfigbuilder_build: (a: number) => number;
   readonly __wbg_transactionbuilder_free: (a: number) => void;

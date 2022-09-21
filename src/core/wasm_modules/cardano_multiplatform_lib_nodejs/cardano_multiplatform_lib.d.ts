@@ -5781,11 +5781,11 @@ export class TransactionBuilderConfigBuilder {
 */
   max_collateral_inputs(max_collateral_inputs: number): TransactionBuilderConfigBuilder;
 /**
-* @param {BigInt} zero_time
+* @param {BigNum} zero_time
 * @param {number} slot_length
 * @returns {TransactionBuilderConfigBuilder}
 */
-  slot_config(zero_time: BigInt, slot_length: number): TransactionBuilderConfigBuilder;
+  slot_config(zero_time: BigNum, slot_length: number): TransactionBuilderConfigBuilder;
 /**
 * @param {Blockfrost} blockfrost
 * @returns {TransactionBuilderConfigBuilder}

@@ -806,7 +806,7 @@ export function transactionbuilderconfigbuilder_max_tx_ex_units(a: number, b: nu
 export function transactionbuilderconfigbuilder_costmdls(a: number, b: number): number;
 export function transactionbuilderconfigbuilder_collateral_percentage(a: number, b: number): number;
 export function transactionbuilderconfigbuilder_max_collateral_inputs(a: number, b: number): number;
-export function transactionbuilderconfigbuilder_slot_config(a: number, b: number, c: number, d: number): number;
+export function transactionbuilderconfigbuilder_slot_config(a: number, b: number, c: number): number;
 export function transactionbuilderconfigbuilder_blockfrost(a: number, b: number): number;
 export function transactionbuilderconfigbuilder_build(a: number): number;
 export function __wbg_transactionbuilder_free(a: number): void;

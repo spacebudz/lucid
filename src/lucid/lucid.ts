@@ -86,7 +86,7 @@ export class Lucid {
           ),
         )
         .slot_config(
-          C.BigInt.from_str(slotConfig.zeroTime.toString()),
+          C.BigNum.from_str(slotConfig.zeroTime.toString()),
           slotConfig.slotLength,
         )
         .blockfrost(

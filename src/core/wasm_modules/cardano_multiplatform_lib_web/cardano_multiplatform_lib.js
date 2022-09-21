@@ -284,10 +284,6 @@ export function decode_metadatum_to_json_str(metadatum, schema) {
     }
 }
 
-const u32CvtShim = new Uint32Array(2);
-
-const uint64CvtShim = new BigUint64Array(u32CvtShim.buffer);
-
 let cachegetUint32Memory0 = null;
 function getUint32Memory0() {
     if (cachegetUint32Memory0 === null || cachegetUint32Memory0.buffer !== wasm.memory.buffer) {
@@ -14056,15 +14052,13 @@ export class TransactionBuilderConfigBuilder {
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**
-    * @param {BigInt} zero_time
+    * @param {BigNum} zero_time
     * @param {number} slot_length
     * @returns {TransactionBuilderConfigBuilder}
     */
     slot_config(zero_time, slot_length) {
-        uint64CvtShim[0] = zero_time;
-        const low0 = u32CvtShim[0];
-        const high0 = u32CvtShim[1];
-        var ret = wasm.transactionbuilderconfigbuilder_slot_config(this.ptr, low0, high0, slot_length);
+        _assertClass(zero_time, BigNum);
+        var ret = wasm.transactionbuilderconfigbuilder_slot_config(this.ptr, zero_time.ptr, slot_length);
         return TransactionBuilderConfigBuilder.__wrap(ret);
     }
     /**
@@ -17105,7 +17099,7 @@ async function init(input) {
         var ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper8460 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper8453 = function(arg0, arg1, arg2) {
         var ret = makeMutClosure(arg0, arg1, 459, __wbg_adapter_32);
         return addHeapObject(ret);
     };
