@@ -146,4 +146,5 @@ Commit hash: **16dcadc69557dd7c20e62a966aaded1e051c287e**
 Contributions and PRs are welcome!\
 The [contribution instructions](./CONTRIBUTING.md).
 
-Join us on [Discord](https://discord.com/channels/824711383185621082/1019230128275988510)!
+Join us on
+[Discord](https://discord.com/channels/824711383185621082/1019230128275988510)!
