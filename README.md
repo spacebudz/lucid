@@ -24,10 +24,12 @@
 
 ### Get started
 
+##### Note: Mainnet works only with Lucid version `@0.3.5` until 10/22/2022, 09:44 PM (UTC). Afterwards it's compatible with the latest version.
+
 #### NPM
 
 ```
-npm install lucid-cardano@vasil
+npm install lucid-cardano
 ```
 
 #### Deno 🦕
@@ -35,14 +37,14 @@ npm install lucid-cardano@vasil
 For JavaScript and TypeScript
 
 ```js
-import { Lucid } from "https://deno.land/x/lucid@0.6.0/mod.ts";
+import { Lucid } from "https://deno.land/x/lucid@0.6.1/mod.ts";
 ```
 
 #### Web
 
 ```html
 <script type="module">
-import { Lucid } from "https://unpkg.com/lucid-cardano@0.6.0/web/mod.js"
+import { Lucid } from "https://unpkg.com/lucid-cardano@0.6.1/web/mod.js"
 // ...
 </script>
 ```
@@ -66,7 +68,7 @@ Outputs a `dist` folder
 ### Basic usage
 
 ```js
-// import { Blockfrost, Lucid } from "https://deno.land/x/lucid@0.6.0/mod.ts"; Deno
+// import { Blockfrost, Lucid } from "https://deno.land/x/lucid@0.6.1/mod.ts"; Deno
 import { Blockfrost, Lucid } from "lucid-cardano"; // NPM
 
 const lucid = await Lucid.new(
