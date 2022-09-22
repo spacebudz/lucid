@@ -1,31 +1,32 @@
-import Core from 'core/types';
-import { C } from '../core';
-import { fromHex, toHex } from '../utils';
+import { C, Core } from "../core/mod.ts";
+import { fromHex, toHex } from "../utils/mod.ts";
 import {
   Address,
   Assets,
   Datum,
   DatumHash,
+  Delegation,
+  OutRef,
   ProtocolParameters,
-  ProviderSchema,
-  Slot,
+  Provider,
+  ScriptType,
+  Transaction,
   TxHash,
   Unit,
   UTxO,
-} from '../types';
+} from "../types/mod.ts";
 
-export class Blockfrost implements ProviderSchema {
-  url: string;
-  projectId: string;
+export class Blockfrost implements Provider {
+  data: { url: string; projectId: string };
+
   constructor(url: string, projectId: string) {
-    this.url = url;
-    this.projectId = projectId;
+    this.data = { url, projectId };
   }
 
   async getProtocolParameters(): Promise<ProtocolParameters> {
-    const result = await fetch(`${this.url}/epochs/latest/parameters`, {
-      headers: { project_id: this.projectId },
-    }).then(res => res.json());
+    const result = await fetch(`${this.data.url}/epochs/latest/parameters`, {
+      headers: { project_id: this.data.projectId },
+    }).then((res) => res.json());
 
     return {
       minFeeA: parseInt(result.min_fee_a),
@@ -36,103 +37,129 @@ export class Blockfrost implements ProviderSchema {
       poolDeposit: BigInt(result.pool_deposit),
       priceMem: parseFloat(result.price_mem),
       priceStep: parseFloat(result.price_step),
-      coinsPerUtxoWord: BigInt(result.coins_per_utxo_word),
+      maxTxExMem: BigInt(result.max_tx_ex_mem),
+      maxTxExSteps: BigInt(result.max_tx_ex_steps),
+      coinsPerUtxoByte: BigInt(result.coins_per_utxo_size),
+      collateralPercentage: parseInt(result.collateral_percent),
+      maxCollateralInputs: parseInt(result.max_collateral_inputs),
+      costModels: result.cost_models,
     };
-  }
-  async getCurrentSlot(): Promise<Slot> {
-    return await fetch(`${this.url}/blocks/latest`, {
-      headers: { project_id: this.projectId },
-    })
-      .then(res => res.json())
-      .then(res => parseInt(res.slot));
   }
 
   async getUtxos(address: string): Promise<UTxO[]> {
-    let result: any[] = [];
+    let result: BlockfrostUtxoResult = [];
     let page = 1;
-    /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
     while (true) {
-      let pageResult = await fetch(
-        `${this.url}/addresses/${address}/utxos?page=${page}`,
-        { headers: { project_id: this.projectId } }
-      ).then(res => res.json());
-      if (pageResult.error) {
-        if ((result as any).status_code === 400) return [];
-        else if ((result as any).status_code === 500) return [];
-        else {
+      let pageResult: BlockfrostUtxoResult | BlockfrostUtxoError = await fetch(
+        `${this.data.url}/addresses/${address}/utxos?page=${page}`,
+        { headers: { project_id: this.data.projectId } },
+      ).then((res) => res.json());
+      if ((pageResult as BlockfrostUtxoError).error) {
+        if ((pageResult as BlockfrostUtxoError).status_code === 400) return [];
+        else if ((pageResult as BlockfrostUtxoError).status_code === 500) {
+          throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
+        } else {
           pageResult = [];
         }
       }
-      result = result.concat(pageResult);
-      if (pageResult.length <= 0) break;
+      result = result.concat(pageResult as BlockfrostUtxoResult);
+      if ((pageResult as BlockfrostUtxoResult).length <= 0) break;
       page++;
     }
-    return result.map(r => ({
-      txHash: r.tx_hash,
-      outputIndex: r.output_index,
-      assets: (() => {
-        const a: Assets = {};
-        r.amount.forEach((am: any) => {
-          a[am.unit] = BigInt(am.quantity);
-        });
-        return a;
-      })(),
-      address,
-      datumHash: r.data_hash,
-    }));
+
+    return this.blockfrostUtxosToUtxos(
+      result.map((r) => ({ ...r, address })),
+    );
   }
 
   async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
-    let result: any[] = [];
+    let result: BlockfrostUtxoResult = [];
     let page = 1;
     while (true) {
-      let pageResult = await fetch(
-        `${this.url}/addresses/${address}/utxos/${unit}?page=${page}`,
-        { headers: { project_id: this.projectId } }
-      ).then(res => res.json());
-      if (pageResult.error) {
-        if ((result as any).status_code === 400) return [];
-        else if ((result as any).status_code === 500) return [];
-        else {
+      let pageResult: BlockfrostUtxoResult | BlockfrostUtxoError = await fetch(
+        `${this.data.url}/addresses/${address}/utxos/${unit}?page=${page}`,
+        { headers: { project_id: this.data.projectId } },
+      ).then((res) => res.json());
+      if ((pageResult as BlockfrostUtxoError).error) {
+        if ((pageResult as BlockfrostUtxoError).status_code === 400) return [];
+        else if ((pageResult as BlockfrostUtxoError).status_code === 500) {
+          throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
+        } else {
           pageResult = [];
         }
       }
-      result = result.concat(pageResult);
-      if (pageResult.length <= 0) break;
+      result = result.concat(pageResult as BlockfrostUtxoResult);
+      if ((pageResult as BlockfrostUtxoResult).length <= 0) break;
       page++;
     }
-    return result.map(r => ({
-      txHash: r.tx_hash,
-      outputIndex: r.output_index,
-      assets: (() => {
-        const a: Assets = {};
-        r.amount.forEach((am: any) => {
-          a[am.unit] = BigInt(am.quantity);
-        });
-        return a;
-      })(),
-      address,
-      datumHash: r.data_hash,
+
+    return this.blockfrostUtxosToUtxos(
+      result.map((r) => ({ ...r, address })),
+    );
+  }
+
+  async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
+    const queryHashes = [...new Set(outRefs.map((outRef) => outRef.txHash))];
+    const utxos = await Promise.all(queryHashes.map(async (txHash) => {
+      const result = await fetch(
+        `${this.data.url}/txs/${txHash}/utxos`,
+        { headers: { project_id: this.data.projectId } },
+      ).then((res) => res.json());
+      if (!result || result.error) {
+        return [];
+      }
+      const utxosResult: BlockfrostUtxoResult = result.outputs.map((
+        // deno-lint-ignore no-explicit-any
+        r: any,
+      ) => ({
+        ...r,
+        tx_hash: txHash,
+      }));
+      return this.blockfrostUtxosToUtxos(utxosResult);
     }));
+
+    return utxos.reduce((acc, utxos) => acc.concat(utxos), []).filter((utxo) =>
+      outRefs.some((outRef) =>
+        utxo.txHash === outRef.txHash && utxo.outputIndex === outRef.outputIndex
+      )
+    );
+  }
+
+  async getDelegation(rewardAddress: string): Promise<Delegation> {
+    const result = await fetch(
+      `${this.data.url}/accounts/${rewardAddress}`,
+      { headers: { project_id: this.data.projectId } },
+    ).then((res) => res.json());
+    if (!result || result.error) {
+      return { poolId: null, rewards: 0n };
+    }
+    return {
+      poolId: result.pool_id || null,
+      rewards: BigInt(result.withdrawable_amount),
+    };
   }
 
   async getDatum(datumHash: DatumHash): Promise<Datum> {
-    const datum = await fetch(`${this.url}/scripts/datum/${datumHash}`, {
-      headers: { project_id: this.projectId },
-    })
-      .then(res => res.json())
-      .then(res => res.json_value);
-    if (!datum || datum.error)
+    const datum = await fetch(
+      `${this.data.url}/scripts/datum/${datumHash}/cbor`,
+      {
+        headers: { project_id: this.data.projectId },
+      },
+    )
+      .then((res) => res.json())
+      .then((res) => res.cbor);
+    if (!datum || datum.error) {
       throw new Error(`No datum found for datum hash: ${datumHash}`);
-    return datumJsonToCbor(datum);
+    }
+    return datum;
   }
 
   async awaitTx(txHash: TxHash): Promise<boolean> {
-    return new Promise(res => {
+    return await new Promise((res) => {
       const confirmation = setInterval(async () => {
-        const isConfirmed = await fetch(`${this.url}/txs/${txHash}`, {
-          headers: { project_id: this.projectId },
-        }).then(res => res.json());
+        const isConfirmed = await fetch(`${this.data.url}/txs/${txHash}`, {
+          headers: { project_id: this.data.projectId },
+        }).then((res) => res.json());
         if (isConfirmed && !isConfirmed.error) {
           clearInterval(confirmation);
           res(true);
@@ -142,59 +169,132 @@ export class Blockfrost implements ProviderSchema {
     });
   }
 
-  async submitTx(tx: Core.Transaction): Promise<TxHash> {
-    const result = await fetch(`${this.url}/tx/submit`, {
-      method: 'POST',
+  async submitTx(tx: Transaction): Promise<TxHash> {
+    const result = await fetch(`${this.data.url}/tx/submit`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/cbor',
-        project_id: this.projectId,
+        "Content-Type": "application/cbor",
+        project_id: this.data.projectId,
       },
-      body: tx.to_bytes(),
-    }).then(res => res.json());
+      body: fromHex(tx),
+    }).then((res) => res.json());
     if (!result || result.error) {
       if (result?.status_code === 400) throw new Error(result.message);
-      else throw new Error('Could not submit transaction.');
+      else throw new Error("Could not submit transaction.");
     }
     return result;
   }
+
+  private async blockfrostUtxosToUtxos(
+    result: BlockfrostUtxoResult,
+  ): Promise<UTxO[]> {
+    return (await Promise.all(
+      result.map(async (r) => ({
+        txHash: r.tx_hash,
+        outputIndex: r.output_index,
+        assets: (() => {
+          const a: Assets = {};
+          r.amount.forEach((am) => {
+            a[am.unit] = BigInt(am.quantity);
+          });
+          return a;
+        })(),
+        address: r.address,
+        datumHash: !r.inline_datum ? r.data_hash : null,
+        datum: r.inline_datum,
+        scriptRef: r.reference_script_hash &&
+          (await (async () => {
+            const {
+              type,
+            }: {
+              type: ScriptType;
+            } = await fetch(
+              `${this.data.url}/scripts/${r.reference_script_hash}`,
+              {
+                headers: { project_id: this.data.projectId },
+              },
+            ).then((res) => res.json());
+            // TODO: support native scripts
+            if (type === "Native") {
+              throw new Error("Native script ref not implemented!");
+            }
+            const { cbor } = await fetch(
+              `${this.data.url}/scripts/${r.reference_script_hash}/cbor`,
+              { headers: { project_id: this.data.projectId } },
+            ).then((res) => res.json());
+            const script = C.PlutusScript.from_bytes(fromHex(cbor));
+            const scriptRef = C.ScriptRef.new(
+              type === "PlutusV1"
+                ? C.Script.new_plutus_v1(script)
+                : C.Script.new_plutus_v2(script),
+            );
+            return toHex(scriptRef.to_bytes());
+          })()),
+      })),
+    )) as UTxO[];
+  }
 }
 
-/** This function is temporarily needed only, until Blockfrost returns the datum natively in cbor
- *
- * The conversion is ambigious, that's why it's better to get the datum directly in cbor
+/**
+ * This function is temporarily needed only, until Blockfrost returns the datum natively in Cbor.
+ * The conversion is ambigious, that's why it's better to get the datum directly in Cbor.
  */
-export const datumJsonToCbor = (json: any): Datum => {
-  const convert = (json: any): Core.PlutusData => {
-    if (!isNaN(json.int)) {
-      return C.PlutusData.new_integer(C.BigInt.from_str(json.int.toString()));
-    } else if (json.bytes || !isNaN(json.bytes)) {
-      return C.PlutusData.new_bytes(fromHex(json.bytes));
+export function datumJsonToCbor(json: DatumJson): Datum {
+  const convert = (json: DatumJson): Core.PlutusData => {
+    if (!isNaN(json.int!)) {
+      return C.PlutusData.new_integer(C.BigInt.from_str(json.int!.toString()));
+    } else if (json.bytes || !isNaN(Number(json.bytes))) {
+      return C.PlutusData.new_bytes(fromHex(json.bytes!));
     } else if (json.map) {
       const m = C.PlutusMap.new();
-      json.map.forEach(({ v, k }: any) => {
-        m.insert(convert(k), convert(v));
+      json.map.forEach(({ k, v }: { k: unknown; v: unknown }) => {
+        m.insert(convert(k as DatumJson), convert(v as DatumJson));
       });
       return C.PlutusData.new_map(m);
     } else if (json.list) {
       const l = C.PlutusList.new();
-      json.list.forEach((v: any) => {
+      json.list.forEach((v: DatumJson) => {
         l.add(convert(v));
       });
       return C.PlutusData.new_list(l);
-    } else if (!isNaN(json.constructor)) {
+    } else if (!isNaN(json.constructor! as unknown as number)) {
       const l = C.PlutusList.new();
-      json.fields.forEach((v: any) => {
+      json.fields!.forEach((v: DatumJson) => {
         l.add(convert(v));
       });
       return C.PlutusData.new_constr_plutus_data(
         C.ConstrPlutusData.new(
-          C.BigNum.from_str(json.constructor.toString()),
-          l
-        )
+          C.BigNum.from_str(json.constructor!.toString()),
+          l,
+        ),
       );
     }
-    throw new Error('Unsupported type');
+    throw new Error("Unsupported type");
   };
 
   return toHex(convert(json).to_bytes());
+}
+
+type DatumJson = {
+  int?: number;
+  bytes?: string;
+  list?: Array<DatumJson>;
+  map?: Array<{ k: unknown; v: unknown }>;
+  fields?: Array<DatumJson>;
+  [constructor: string]: unknown; // number; constructor needs to be simulated like this as optional argument
+};
+
+type BlockfrostUtxoResult = Array<{
+  tx_hash: string;
+  output_index: number;
+  address: Address;
+  amount: Array<{ unit: string; quantity: string }>;
+  data_hash?: string;
+  inline_datum?: string;
+  reference_script_hash?: string;
+}>;
+
+type BlockfrostUtxoError = {
+  status_code: number;
+  error: unknown;
 };
