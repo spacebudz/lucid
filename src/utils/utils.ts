@@ -70,6 +70,46 @@ export class Utils {
     }
   }
 
+  credentialToAddress(
+    paymentCredential: Credential,
+    stakeCredential?: Credential,
+  ): Address {
+    if (stakeCredential) {
+      return C.BaseAddress.new(
+        networkToId(this.lucid.network),
+        paymentCredential.type === "Key"
+          ? C.StakeCredential.from_keyhash(
+            C.Ed25519KeyHash.from_hex(paymentCredential.hash),
+          )
+          : C.StakeCredential.from_scripthash(
+            C.ScriptHash.from_hex(paymentCredential.hash),
+          ),
+        stakeCredential.type === "Key"
+          ? C.StakeCredential.from_keyhash(
+            C.Ed25519KeyHash.from_hex(stakeCredential.hash),
+          )
+          : C.StakeCredential.from_scripthash(
+            C.ScriptHash.from_hex(stakeCredential.hash),
+          ),
+      )
+        .to_address()
+        .to_bech32(undefined);
+    } else {
+      return C.EnterpriseAddress.new(
+        networkToId(this.lucid.network),
+        paymentCredential.type === "Key"
+          ? C.StakeCredential.from_keyhash(
+            C.Ed25519KeyHash.from_hex(paymentCredential.hash),
+          )
+          : C.StakeCredential.from_scripthash(
+            C.ScriptHash.from_hex(paymentCredential.hash),
+          ),
+      )
+        .to_address()
+        .to_bech32(undefined);
+    }
+  }
+
   validatorToScriptHash(validator: Validator): ScriptHash {
     if (validator.type === "Native") {
       return C.NativeScript.from_bytes(fromHex(validator.script))
