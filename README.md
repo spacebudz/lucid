@@ -24,7 +24,7 @@
 
 ### Get started
 
-##### Note: Mainnet works only with Lucid version `@0.3.5` until 10/22/2022, 09:44 PM (UTC). Afterwards it's compatible with the latest version.
+##### Note: Mainnet works only with Lucid `@0.3.5` until 09/22/2022, 09:44 PM (UTC). Afterwards it's compatible with the latest version.
 
 #### NPM
 
