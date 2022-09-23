@@ -8,6 +8,7 @@ import {
   Address,
   AddressDetails,
   Assets,
+  CertificateValidator,
   Credential,
   Datum,
   DatumHash,
@@ -17,6 +18,7 @@ import {
   Network,
   PolicyId,
   PrivateKey,
+  RewardAddress,
   Script,
   ScriptHash,
   Slot,
@@ -25,6 +27,7 @@ import {
   UnixTime,
   UTxO,
   Validator,
+  WithdrawalValidator,
 } from "../types/mod.ts";
 import { Lucid } from "../lucid/mod.ts";
 import { generateMnemonic } from "../misc/bip39.ts";
@@ -108,6 +111,33 @@ export class Utils {
         .to_address()
         .to_bech32(undefined);
     }
+  }
+
+  validatorToRewardAddress(
+    validator: CertificateValidator | WithdrawalValidator,
+  ): RewardAddress {
+    const validatorHash = this.validatorToScriptHash(validator);
+    return C.RewardAddress.new(
+      networkToId(this.lucid.network),
+      C.StakeCredential.from_scripthash(C.ScriptHash.from_hex(validatorHash)),
+    )
+      .to_address()
+      .to_bech32(undefined);
+  }
+
+  credentialToRewardAddress(stakeCredential: Credential): RewardAddress {
+    return C.RewardAddress.new(
+      networkToId(this.lucid.network),
+      stakeCredential.type === "Key"
+        ? C.StakeCredential.from_keyhash(
+          C.Ed25519KeyHash.from_hex(stakeCredential.hash),
+        )
+        : C.StakeCredential.from_scripthash(
+          C.ScriptHash.from_hex(stakeCredential.hash),
+        ),
+    )
+      .to_address()
+      .to_bech32(undefined);
   }
 
   validatorToScriptHash(validator: Validator): ScriptHash {
