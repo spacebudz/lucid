@@ -32,10 +32,9 @@ import {
 import { Lucid } from "../lucid/mod.ts";
 import { generateMnemonic } from "../misc/bip39.ts";
 import {
-  DEFAULT_SLOT_LENGTH,
+  SLOT_CONFIG_NETWORK,
   slotToBeginUnixTime,
   unixTimeToEnclosingSlot,
-  zeroTimeNetwork,
 } from "../plutus/time.ts";
 
 export class Utils {
@@ -188,17 +187,14 @@ export class Utils {
   }
 
   unixTimeToSlot(unixTime: UnixTime): Slot {
-    return unixTimeToEnclosingSlot(unixTime, {
-      slotLength: DEFAULT_SLOT_LENGTH,
-      zeroTime: zeroTimeNetwork[this.lucid.network],
-    });
+    return unixTimeToEnclosingSlot(
+      unixTime,
+      SLOT_CONFIG_NETWORK[this.lucid.network],
+    );
   }
 
   slotToUnixTime(slot: Slot): UnixTime {
-    return slotToBeginUnixTime(slot, {
-      slotLength: DEFAULT_SLOT_LENGTH,
-      zeroTime: zeroTimeNetwork[this.lucid.network],
-    });
+    return slotToBeginUnixTime(slot, SLOT_CONFIG_NETWORK[this.lucid.network]);
   }
 
   /** Address can be in Bech32 or Hex */

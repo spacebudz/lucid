@@ -7068,11 +7068,13 @@ declare export class TransactionBuilderConfigBuilder {
 
   /**
    * @param {BigNum} zero_time
+   * @param {BigNum} zero_slot
    * @param {number} slot_length
    * @returns {TransactionBuilderConfigBuilder}
    */
   slot_config(
     zero_time: BigNum,
+    zero_slot: BigNum,
     slot_length: number
   ): TransactionBuilderConfigBuilder;
 
@@ -9300,7 +9302,8 @@ export interface InitOutput {
   +transactionbuilderconfigbuilder_slot_config: (
     a: number,
     b: number,
-    c: number
+    c: number,
+    d: number
   ) => number;
   +transactionbuilderconfigbuilder_blockfrost: (a: number, b: number) => number;
   +transactionbuilderconfigbuilder_build: (a: number) => number;

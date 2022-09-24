@@ -24,8 +24,6 @@
 
 ### Get started
 
-##### Note: Mainnet works only with Lucid `@0.3.5` until 09/22/2022, 09:44 PM (UTC). Afterwards it's compatible with the latest version.
-
 #### NPM
 
 ```
@@ -133,7 +131,7 @@ Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
 Branch: **vasil**
 
-Commit hash: **c98565c4f262ed44dafb2161e05aa46dee13ce9e**
+Commit hash: **09abea3151da76c232866871562fcbeaa9f1815d**
 
 #### message-signing
 

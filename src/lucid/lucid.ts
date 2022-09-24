@@ -21,7 +21,6 @@ import {
   RewardAddress,
   SignedMessage,
   Slot,
-  SlotConfig,
   Transaction,
   TxHash,
   Unit,
@@ -34,7 +33,7 @@ import { TxComplete } from "./tx_complete.ts";
 import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../misc/wallet.ts";
 import { signData, verifyData } from "../misc/sign_data.ts";
 import { Message } from "./message.ts";
-import { DEFAULT_SLOT_LENGTH, zeroTimeNetwork } from "../plutus/time.ts";
+import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
@@ -49,10 +48,7 @@ export class Lucid {
     if (provider) {
       lucid.provider = provider;
       const protocolParameters = await provider.getProtocolParameters();
-      const slotConfig: SlotConfig = {
-        zeroTime: zeroTimeNetwork[lucid.network],
-        slotLength: DEFAULT_SLOT_LENGTH,
-      };
+      const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
       lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
         .coins_per_utxo_byte(
           C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString()),
@@ -87,6 +83,7 @@ export class Lucid {
         )
         .slot_config(
           C.BigNum.from_str(slotConfig.zeroTime.toString()),
+          C.BigNum.from_str(slotConfig.zeroSlot.toString()),
           slotConfig.slotLength,
         )
         .blockfrost(
