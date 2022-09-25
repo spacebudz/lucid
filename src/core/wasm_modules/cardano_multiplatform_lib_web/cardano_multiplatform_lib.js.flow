@@ -66,6 +66,18 @@ declare export function decrypt_with_password(
 ): string;
 
 /**
+ * @param {Transaction} tx
+ * @param {LinearFee} linear_fee
+ * @param {ExUnitPrices} ex_unit_prices
+ * @returns {BigNum}
+ */
+declare export function min_fee(
+  tx: Transaction,
+  linear_fee: LinearFee,
+  ex_unit_prices: ExUnitPrices
+): BigNum;
+
+/**
  * @param {TransactionHash} tx_body_hash
  * @param {ByronAddress} addr
  * @param {LegacyDaedalusPrivateKey} key
@@ -218,18 +230,6 @@ declare export function decode_plutus_datum_to_json_str(
   datum: PlutusData,
   schema: number
 ): string;
-
-/**
- * @param {Transaction} tx
- * @param {LinearFee} linear_fee
- * @param {ExUnitPrices} ex_unit_prices
- * @returns {BigNum}
- */
-declare export function min_fee(
-  tx: Transaction,
-  linear_fee: LinearFee,
-  ex_unit_prices: ExUnitPrices
-): BigNum;
 
 /**
  */
@@ -6956,11 +6956,13 @@ declare export class TransactionBuilder {
    * NOTE: is_valid set to true
    * @param {TransactionUnspentOutputs | void} collateral_utxos
    * @param {Address | void} collateral_change_address
+   * @param {boolean | void} native_uplc
    * @returns {Promise<Transaction>}
    */
   construct(
     collateral_utxos?: TransactionUnspentOutputs,
-    collateral_change_address?: Address
+    collateral_change_address?: Address,
+    native_uplc?: boolean
   ): Promise<Transaction>;
 
   /**
@@ -9391,7 +9393,12 @@ export interface InitOutput {
   +transactionbuilder_full_size: (a: number) => number;
   +transactionbuilder_output_sizes: (a: number, b: number) => void;
   +transactionbuilder_outputs: (a: number) => number;
-  +transactionbuilder_construct: (a: number, b: number, c: number) => number;
+  +transactionbuilder_construct: (
+    a: number,
+    b: number,
+    c: number,
+    d: number
+  ) => number;
   +transactionbuilder_build_tx: (a: number) => number;
   +transactionbuilder_min_fee: (a: number) => number;
   +__wbg_networkinfo_free: (a: number) => void;
@@ -9531,6 +9538,11 @@ export interface InitOutput {
     d: number,
     e: number
   ) => void;
+  +__wbg_linearfee_free: (a: number) => void;
+  +linearfee_constant: (a: number) => number;
+  +linearfee_coefficient: (a: number) => number;
+  +linearfee_new: (a: number, b: number) => number;
+  +min_fee: (a: number, b: number, c: number) => number;
   +__wbg_blockfrost_free: (a: number) => void;
   +blockfrost_new: (a: number, b: number, c: number, d: number) => number;
   +blockfrost_url: (a: number, b: number) => void;
@@ -9793,11 +9805,6 @@ export interface InitOutput {
   +datum_as_data: (a: number) => number;
   +encode_json_str_to_plutus_datum: (a: number, b: number, c: number) => number;
   +decode_plutus_datum_to_json_str: (a: number, b: number, c: number) => void;
-  +__wbg_linearfee_free: (a: number) => void;
-  +linearfee_constant: (a: number) => number;
-  +linearfee_coefficient: (a: number) => number;
-  +linearfee_new: (a: number, b: number) => number;
-  +min_fee: (a: number, b: number, c: number) => number;
   +__wbg_transactionoutputbuilder_free: (a: number) => void;
   +transactionoutputbuilder_new: () => number;
   +transactionoutputbuilder_with_address: (a: number, b: number) => number;
@@ -10065,7 +10072,7 @@ export interface InitOutput {
   +__wbindgen_malloc: (a: number) => number;
   +__wbindgen_realloc: (a: number, b: number, c: number) => number;
   +__wbindgen_export_2: WebAssembly.Table;
-  +_dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__haaf4f94fe6f806b8: (
+  +_dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h0ccbd9467399eb6b: (
     a: number,
     b: number,
     c: number
@@ -10073,7 +10080,7 @@ export interface InitOutput {
   +__wbindgen_add_to_stack_pointer: (a: number) => number;
   +__wbindgen_free: (a: number, b: number) => void;
   +__wbindgen_exn_store: (a: number) => void;
-  +wasm_bindgen__convert__closures__invoke2_mut__h7a735230209646c7: (
+  +wasm_bindgen__convert__closures__invoke2_mut__h6a929cf27a4d54a4: (
     a: number,
     b: number,
     c: number,

@@ -490,6 +490,7 @@ export class Tx {
     changeAddress?: Address;
     datum?: { asHash?: Datum; inline?: Datum };
     coinSelection?: boolean;
+    nativeUplc?: boolean;
   }): Promise<TxComplete> {
     if (options?.datum?.asHash && options?.datum?.inline) {
       throw new Error("Not allowed to set asHash and inline at the same time.");
@@ -532,7 +533,7 @@ export class Tx {
 
     return new TxComplete(
       this.lucid,
-      await this.txBuilder.construct(utxos, changeAddress),
+      await this.txBuilder.construct(utxos, changeAddress, options?.nativeUplc),
     );
   }
 

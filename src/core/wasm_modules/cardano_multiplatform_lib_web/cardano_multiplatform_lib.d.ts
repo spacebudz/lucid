@@ -37,6 +37,13 @@ export function encrypt_with_password(password: string, salt: string, nonce: str
 */
 export function decrypt_with_password(password: string, data: string): string;
 /**
+* @param {Transaction} tx
+* @param {LinearFee} linear_fee
+* @param {ExUnitPrices} ex_unit_prices
+* @returns {BigNum}
+*/
+export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
+/**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
 * @param {LegacyDaedalusPrivateKey} key
@@ -135,13 +142,6 @@ export function encode_json_str_to_plutus_datum(json: string, schema: number): P
 * @returns {string}
 */
 export function decode_plutus_datum_to_json_str(datum: PlutusData, schema: number): string;
-/**
-* @param {Transaction} tx
-* @param {LinearFee} linear_fee
-* @param {ExUnitPrices} ex_unit_prices
-* @returns {BigNum}
-*/
-export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
 /**
 */
 export enum CertificateKind {
@@ -5694,9 +5694,10 @@ export class TransactionBuilder {
 * NOTE: is_valid set to true
 * @param {TransactionUnspentOutputs | undefined} collateral_utxos
 * @param {Address | undefined} collateral_change_address
+* @param {boolean | undefined} native_uplc
 * @returns {Promise<Transaction>}
 */
-  construct(collateral_utxos?: TransactionUnspentOutputs, collateral_change_address?: Address): Promise<Transaction>;
+  construct(collateral_utxos?: TransactionUnspentOutputs, collateral_change_address?: Address, native_uplc?: boolean): Promise<Transaction>;
 /**
 * Returns full Transaction object with the body and the auxiliary data
 * NOTE: witness_set will contain all mint_scripts if any been added or set
@@ -7748,7 +7749,7 @@ export interface InitOutput {
   readonly transactionbuilder_full_size: (a: number) => number;
   readonly transactionbuilder_output_sizes: (a: number, b: number) => void;
   readonly transactionbuilder_outputs: (a: number) => number;
-  readonly transactionbuilder_construct: (a: number, b: number, c: number) => number;
+  readonly transactionbuilder_construct: (a: number, b: number, c: number, d: number) => number;
   readonly transactionbuilder_build_tx: (a: number) => number;
   readonly transactionbuilder_min_fee: (a: number) => number;
   readonly __wbg_networkinfo_free: (a: number) => void;
@@ -7857,6 +7858,11 @@ export interface InitOutput {
   readonly transactionwitnesssetbuilder_build: (a: number) => number;
   readonly encrypt_with_password: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
   readonly decrypt_with_password: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly __wbg_linearfee_free: (a: number) => void;
+  readonly linearfee_constant: (a: number) => number;
+  readonly linearfee_coefficient: (a: number) => number;
+  readonly linearfee_new: (a: number, b: number) => number;
+  readonly min_fee: (a: number, b: number, c: number) => number;
   readonly __wbg_blockfrost_free: (a: number) => void;
   readonly blockfrost_new: (a: number, b: number, c: number, d: number) => number;
   readonly blockfrost_url: (a: number, b: number) => void;
@@ -8113,11 +8119,6 @@ export interface InitOutput {
   readonly datum_as_data: (a: number) => number;
   readonly encode_json_str_to_plutus_datum: (a: number, b: number, c: number) => number;
   readonly decode_plutus_datum_to_json_str: (a: number, b: number, c: number) => void;
-  readonly __wbg_linearfee_free: (a: number) => void;
-  readonly linearfee_constant: (a: number) => number;
-  readonly linearfee_coefficient: (a: number) => number;
-  readonly linearfee_new: (a: number, b: number) => number;
-  readonly min_fee: (a: number, b: number, c: number) => number;
   readonly __wbg_transactionoutputbuilder_free: (a: number) => void;
   readonly transactionoutputbuilder_new: () => number;
   readonly transactionoutputbuilder_with_address: (a: number, b: number) => number;
@@ -8335,11 +8336,11 @@ export interface InitOutput {
   readonly __wbindgen_malloc: (a: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__haaf4f94fe6f806b8: (a: number, b: number, c: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h0ccbd9467399eb6b: (a: number, b: number, c: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_free: (a: number, b: number) => void;
   readonly __wbindgen_exn_store: (a: number) => void;
-  readonly wasm_bindgen__convert__closures__invoke2_mut__h7a735230209646c7: (a: number, b: number, c: number, d: number) => void;
+  readonly wasm_bindgen__convert__closures__invoke2_mut__h6a929cf27a4d54a4: (a: number, b: number, c: number, d: number) => void;
 }
 
 /**

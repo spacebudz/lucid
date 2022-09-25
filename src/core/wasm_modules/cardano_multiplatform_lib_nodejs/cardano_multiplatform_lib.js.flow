@@ -66,6 +66,18 @@ declare export function decrypt_with_password(
 ): string;
 
 /**
+ * @param {Transaction} tx
+ * @param {LinearFee} linear_fee
+ * @param {ExUnitPrices} ex_unit_prices
+ * @returns {BigNum}
+ */
+declare export function min_fee(
+  tx: Transaction,
+  linear_fee: LinearFee,
+  ex_unit_prices: ExUnitPrices
+): BigNum;
+
+/**
  * @param {TransactionHash} tx_body_hash
  * @param {ByronAddress} addr
  * @param {LegacyDaedalusPrivateKey} key
@@ -218,18 +230,6 @@ declare export function decode_plutus_datum_to_json_str(
   datum: PlutusData,
   schema: number
 ): string;
-
-/**
- * @param {Transaction} tx
- * @param {LinearFee} linear_fee
- * @param {ExUnitPrices} ex_unit_prices
- * @returns {BigNum}
- */
-declare export function min_fee(
-  tx: Transaction,
-  linear_fee: LinearFee,
-  ex_unit_prices: ExUnitPrices
-): BigNum;
 
 /**
  */
@@ -6956,11 +6956,13 @@ declare export class TransactionBuilder {
    * NOTE: is_valid set to true
    * @param {TransactionUnspentOutputs | void} collateral_utxos
    * @param {Address | void} collateral_change_address
+   * @param {boolean | void} native_uplc
    * @returns {Promise<Transaction>}
    */
   construct(
     collateral_utxos?: TransactionUnspentOutputs,
-    collateral_change_address?: Address
+    collateral_change_address?: Address,
+    native_uplc?: boolean
   ): Promise<Transaction>;
 
   /**
