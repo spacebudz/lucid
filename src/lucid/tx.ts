@@ -533,7 +533,11 @@ export class Tx {
 
     return new TxComplete(
       this.lucid,
-      await this.txBuilder.construct(utxos, changeAddress, options?.nativeUplc),
+      await this.txBuilder.construct(
+        utxos,
+        changeAddress,
+        options?.nativeUplc === undefined ? true : options?.nativeUplc,
+      ),
     );
   }
 

@@ -87,8 +87,7 @@ export class Lucid {
           slotConfig.slotLength,
         )
         .blockfrost(
-          // Provider needs to be blockfrost in this case. Maybe we have better/more ways in the future to evaluate ex units.
-          // We have Aiken now as experimental native plutus core engine, but we still support blockfrost in case of bugs.
+          // We have Aiken now as native plutus core engine (primary), but we still support blockfrost (secondary) in case of bugs.
           C.Blockfrost.new(
             // deno-lint-ignore no-explicit-any
             ((provider as any)?.data?.url || "") + "/utils/txs/evaluate",
