@@ -31,6 +31,7 @@ import {
 } from "../types/mod.ts";
 import { Lucid } from "../lucid/mod.ts";
 import { generateMnemonic } from "../misc/bip39.ts";
+import { crc8 } from "../misc/crc8.ts";
 import {
   SLOT_CONFIG_NETWORK,
   slotToBeginUnixTime,
@@ -495,35 +496,33 @@ export function utf8ToHex(utf8: string): string {
 
 // WIP!! This is not finalized yet until CIP-0067 and CIP-0068 are merged
 
-function checksum(num: number): string {
-  return num.toString(16).split("").reduce(
-    (acc, curr) => acc + parseInt(curr, 16),
-    0x0,
-  )
-    .toString(16).padStart(2, "0");
+/** Padded number in Hex. */
+function checksum(num: string): string {
+  return crc8(fromHex(num)).toString(16).padStart(2, "0");
 }
 
 export function toLabel(num: number): string {
-  if (num < 0 || num > 65535) {
+  if (num <= 0 || num > 65535) {
     throw new Error(
-      `Label ${num} out of range: min label 0 - max label 65535.`,
+      `Label ${num} out of range: min label 1 - max label 65535.`,
     );
   }
-  return "0" + num.toString(16).padStart(4, "0") + checksum(num) +
-    "0";
+  const numHex = num.toString(16).padStart(4, "0");
+  return "0" + numHex + checksum(numHex) + "0";
 }
 
 export function fromLabel(label: string): number | null {
   if (label.length !== 8 || !(label[0] === "0" && label[7] === "0")) {
     return null;
   }
-  const num = parseInt(label.slice(1, 5), 16);
+  const numHex = label.slice(1, 5);
+  const num = parseInt(numHex, 16);
   const check = label.slice(5, 7);
-  return check === checksum(num) ? num : null;
+  return check === checksum(numHex) ? num : null;
 }
 
 /**
- * @param name UTF-8 encoded
+ * @param name Hex encoded
  */
 export function toUnit(
   policyId: PolicyId,
@@ -531,14 +530,13 @@ export function toUnit(
   label?: number | null,
 ): Unit {
   const hexLabel = Number.isInteger(label) ? toLabel(label!) : "";
-  const hexName = name ? toHex(new TextEncoder().encode(name)) : "";
-  if ((hexName + hexLabel).length > 64) {
+  if ((name + hexLabel).length > 64) {
     throw new Error("Asset name size exceeds 32 bytes.");
   }
   if (policyId.length !== 56) {
-    throw new Error(`Policy Id invalid: ${policyId}.`);
+    throw new Error(`Policy id invalid: ${policyId}.`);
   }
-  return policyId + hexLabel + hexName;
+  return policyId + hexLabel + name;
 }
 
 /**
