@@ -227,8 +227,8 @@ export class Lucid {
 
         return signData(hexAddress, payload, privateKey);
       },
-      submitTx: async (tx: Core.Transaction): Promise<TxHash> => {
-        return await this.provider.submitTx(toHex(tx.to_bytes()));
+      submitTx: async (tx: Transaction): Promise<TxHash> => {
+        return await this.provider.submitTx(tx);
       },
     };
     return this;
@@ -286,8 +286,8 @@ export class Lucid {
         const hexAddress = toHex(C.Address.from_bech32(address).to_bytes());
         return await api.signData(hexAddress, payload);
       },
-      submitTx: async (tx: Core.Transaction): Promise<TxHash> => {
-        const txHash = await api.submitTx(toHex(tx.to_bytes()));
+      submitTx: async (tx: Transaction): Promise<TxHash> => {
+        const txHash = await api.submitTx(tx);
         return txHash;
       },
     };
@@ -360,8 +360,8 @@ export class Lucid {
       signMessage: async (): Promise<SignedMessage> => {
         throw new Error("Not implemented");
       },
-      submitTx: async (tx: Core.Transaction): Promise<TxHash> => {
-        return await this.provider.submitTx(toHex(tx.to_bytes()));
+      submitTx: async (tx: Transaction): Promise<TxHash> => {
+        return await this.provider.submitTx(tx);
       },
     };
     return this;
@@ -465,8 +465,8 @@ export class Lucid {
 
         return signData(hexAddress, payload, privateKey);
       },
-      submitTx: async (tx: Core.Transaction): Promise<TxHash> => {
-        return await this.provider.submitTx(toHex(tx.to_bytes()));
+      submitTx: async (tx: Transaction): Promise<TxHash> => {
+        return await this.provider.submitTx(tx);
       },
     };
     return this;

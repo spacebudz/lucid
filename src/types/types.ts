@@ -178,7 +178,7 @@ export interface Wallet {
     address: Address | RewardAddress,
     payload: Payload,
   ): Promise<SignedMessage>;
-  submitTx(signedTx: Core.Transaction): Promise<TxHash>;
+  submitTx(signedTx: Transaction): Promise<TxHash>;
 }
 
 /**
