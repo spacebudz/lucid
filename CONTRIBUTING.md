@@ -57,8 +57,8 @@ export interface SeedOptions {
   addressType?: "Base" | "Enterprise";
   accountIndex?: number;
 }
-export function resolve(
-  hostname: string,
+export function fromSeed(
+  address: string,
   options: SeedOptions = {},
 ): string {}
 ```
@@ -140,7 +140,7 @@ export function add(a: number, b: number): number {
 }
 ```
 
-Always end comments with a dot `.`.
+Always end comments with a dot `.` (If they are just a few words then it's not necessary).
 
 Avoid JSDoc `@param`. If `@param` is used, it should not include the `type` as
 TypeScript is already strongly-typed:
