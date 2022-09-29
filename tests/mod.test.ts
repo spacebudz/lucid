@@ -17,7 +17,6 @@ import {
   utxoToCore,
   valueToAssets,
 } from "../src/mod.ts";
-import { Utils } from "../src/mod.ts";
 import {
   assert,
   assertEquals,
@@ -336,7 +335,7 @@ Deno.test("CBOR Datum to JSON Metadata", () => {
 Deno.test("toLabel/fromLabel property test", () => {
   fc.assert(
     fc.property(fc.integer({ min: -1, max: 65536 }), (n: number) => {
-      if (n < 0 || n > 65535) {
+      if (n <= 0 || n > 65535) {
         try {
           fromLabel(toLabel(n));
           assert(false);
@@ -354,14 +353,14 @@ Deno.test("toUnit/fromUnit property test", () => {
   fc.assert(
     fc.property(
       fc.uint8Array({ minLength: 28, maxLength: 28 }),
-      fc.string({ minLength: 0, maxLength: 10 }),
-      fc.integer({ min: 0, max: 65535 }),
-      (policyRaw: Uint8Array, nameRaw: string, label: number) => {
+      fc.uint8Array({ minLength: 0, maxLength: 10 }),
+      fc.integer({ min: 1, max: 65535 }),
+      (policyRaw: Uint8Array, nameRaw: Uint8Array, label: number) => {
         const policyId = toHex(policyRaw);
-        const name = nameRaw ? nameRaw : null;
+        const name = nameRaw.length > 0 ? toHex(nameRaw) : null;
         assertEquals(
-          { policyId, name, label },
           fromUnit(toUnit(policyId, name, label)),
+          { policyId, name, label },
         );
       },
     ),

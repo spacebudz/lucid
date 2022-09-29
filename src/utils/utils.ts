@@ -530,13 +530,14 @@ export function toUnit(
   label?: number | null,
 ): Unit {
   const hexLabel = Number.isInteger(label) ? toLabel(label!) : "";
-  if ((name + hexLabel).length > 64) {
+  const n = name ? name : "";
+  if ((n + hexLabel).length > 64) {
     throw new Error("Asset name size exceeds 32 bytes.");
   }
   if (policyId.length !== 56) {
     throw new Error(`Policy id invalid: ${policyId}.`);
   }
-  return policyId + hexLabel + name;
+  return policyId + hexLabel + n;
 }
 
 /**
@@ -550,12 +551,7 @@ export function fromUnit(
   const label = fromLabel(unit.slice(56, 64));
   const name = (() => {
     const hexName = Number.isInteger(label) ? unit.slice(64) : unit.slice(56);
-    if (!hexName) return null;
-    try {
-      return hexToUtf8(hexName);
-    } catch (_e) {
-      return hexName;
-    }
+    return hexName || null;
   })();
   return { policyId, name, label };
 }
