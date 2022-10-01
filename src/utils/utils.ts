@@ -502,7 +502,7 @@ function checksum(num: string): string {
 }
 
 export function toLabel(num: number): string {
-  if (num <= 0 || num > 65535) {
+  if (num < 0 || num > 65535) {
     throw new Error(
       `Label ${num} out of range: min label 1 - max label 65535.`,
     );
