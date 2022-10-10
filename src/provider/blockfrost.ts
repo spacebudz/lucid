@@ -55,11 +55,10 @@ export class Blockfrost implements Provider {
         { headers: { project_id: this.data.projectId } },
       ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
-        if ((pageResult as BlockfrostUtxoError).status_code === 400) return [];
-        else if ((pageResult as BlockfrostUtxoError).status_code === 500) {
-          throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
+        if ((pageResult as BlockfrostUtxoError).status_code === 404) {
+          return [];
         } else {
-          pageResult = [];
+          throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
         }
       }
       result = result.concat(pageResult as BlockfrostUtxoResult);
@@ -81,11 +80,10 @@ export class Blockfrost implements Provider {
         { headers: { project_id: this.data.projectId } },
       ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
-        if ((pageResult as BlockfrostUtxoError).status_code === 400) return [];
-        else if ((pageResult as BlockfrostUtxoError).status_code === 500) {
-          throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
+        if ((pageResult as BlockfrostUtxoError).status_code === 404) {
+          return [];
         } else {
-          pageResult = [];
+          throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
         }
       }
       result = result.concat(pageResult as BlockfrostUtxoResult);
