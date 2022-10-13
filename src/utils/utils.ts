@@ -18,6 +18,7 @@ import {
   Network,
   PolicyId,
   PrivateKey,
+  PublicKey,
   RewardAddress,
   Script,
   ScriptHash,
@@ -492,6 +493,10 @@ export function hexToUtf8(hex: string): string {
 
 export function utf8ToHex(utf8: string): string {
   return toHex(new TextEncoder().encode(utf8));
+}
+
+export function toPublic(privateKey: PrivateKey): PublicKey {
+  return C.PrivateKey.from_bech32(privateKey).to_public().to_bech32();
 }
 
 // WIP!! This is not finalized yet until CIP-0067 and CIP-0068 are merged

@@ -121,6 +121,8 @@ export type TransactionWitnesses = string;
 export type Transaction = string;
 /** Bech32 */
 export type PrivateKey = string;
+/** Bech32 */
+export type PublicKey = string;
 /** Hex */
 export type ScriptRef = string;
 /** Hex */
