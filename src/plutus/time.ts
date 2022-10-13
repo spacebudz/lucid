@@ -8,9 +8,8 @@ export const SLOT_CONFIG_NETWORK: Record<
   Testnet: { zeroTime: 1595967616000, zeroSlot: 1598400, slotLength: 1000 }, // Starting at Shelley era
   Preview: { zeroTime: 1660003200000, zeroSlot: 0, slotLength: 1000 }, // Starting at Shelley era
   Preprod: {
-    zeroTime: 1654041600000 +
-      1641599000, // Config start time is not accurate for some reason? Adding this offset, makes it very accurate. Only happens on Preprod network although.
-    zeroSlot: 0,
+    zeroTime: 1654041600000 + 1728000000,
+    zeroSlot: 86400,
     slotLength: 1000,
   }, // Starting at Shelley era
 };
