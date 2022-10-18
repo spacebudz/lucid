@@ -495,11 +495,9 @@ export function utf8ToHex(utf8: string): string {
   return toHex(new TextEncoder().encode(utf8));
 }
 
-export function toPublic(privateKey: PrivateKey): PublicKey {
+export function toPublicKey(privateKey: PrivateKey): PublicKey {
   return C.PrivateKey.from_bech32(privateKey).to_public().to_bech32();
 }
-
-// WIP!! This is not finalized yet until CIP-0067 and CIP-0068 are merged
 
 /** Padded number in Hex. */
 function checksum(num: string): string {
@@ -547,7 +545,7 @@ export function toUnit(
 
 /**
  * Splits unit into policy id, name and label if applicable.
- * name will be returned in UTF-8 if possible, otherwise in Hex.
+ * name will be returned in Hex.
  */
 export function fromUnit(
   unit: Unit,

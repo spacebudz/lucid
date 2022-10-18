@@ -17271,7 +17271,7 @@ module.exports.__wbindgen_memory = function() {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8398 = function(arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper8397 = function(arg0, arg1, arg2) {
     var ret = makeMutClosure(arg0, arg1, 442, __wbg_adapter_32);
     return addHeapObject(ret);
 };
