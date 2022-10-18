@@ -50,10 +50,11 @@ export class Blockfrost implements Provider {
     let result: BlockfrostUtxoResult = [];
     let page = 1;
     while (true) {
-      let pageResult: BlockfrostUtxoResult | BlockfrostUtxoError = await fetch(
-        `${this.data.url}/addresses/${address}/utxos?page=${page}`,
-        { headers: { project_id: this.data.projectId } },
-      ).then((res) => res.json());
+      const pageResult: BlockfrostUtxoResult | BlockfrostUtxoError =
+        await fetch(
+          `${this.data.url}/addresses/${address}/utxos?page=${page}`,
+          { headers: { project_id: this.data.projectId } },
+        ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
         if ((pageResult as BlockfrostUtxoError).status_code === 404) {
           return [];
@@ -75,10 +76,11 @@ export class Blockfrost implements Provider {
     let result: BlockfrostUtxoResult = [];
     let page = 1;
     while (true) {
-      let pageResult: BlockfrostUtxoResult | BlockfrostUtxoError = await fetch(
-        `${this.data.url}/addresses/${address}/utxos/${unit}?page=${page}`,
-        { headers: { project_id: this.data.projectId } },
-      ).then((res) => res.json());
+      const pageResult: BlockfrostUtxoResult | BlockfrostUtxoError =
+        await fetch(
+          `${this.data.url}/addresses/${address}/utxos/${unit}?page=${page}`,
+          { headers: { project_id: this.data.projectId } },
+        ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
         if ((pageResult as BlockfrostUtxoError).status_code === 404) {
           return [];
