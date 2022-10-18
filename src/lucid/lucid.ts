@@ -242,12 +242,13 @@ export class Lucid {
         ).to_bech32(undefined),
       rewardAddress: async (): Promise<RewardAddress | null> => {
         const [rewardAddressHex] = await api.getRewardAddresses();
-        const rewardAddress = rewardAddressHex ??
-          C.RewardAddress.from_address(
+        const rewardAddress = rewardAddressHex
+          ? C.RewardAddress.from_address(
             C.Address.from_bytes(fromHex(rewardAddressHex)),
           )!
             .to_address()
-            .to_bech32(undefined);
+            .to_bech32(undefined)
+          : null;
         return rewardAddress;
       },
       getUtxos: async (): Promise<UTxO[]> => {
