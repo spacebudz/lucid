@@ -79,7 +79,11 @@ export async function redeemUtxo(): Promise<TxHash> {
     new Constr(0, [new Constr(0, [paymentCredential?.hash!])]),
   );
 
-  const [utxo] = await lucid.utxosAt(scriptAddress);
+  const datumHash = lucid.utils.datumToHash(redeemer);
+
+  const utxos = await lucid.utxosAt(scriptAddress);
+
+  const utxo = utxos.find((utxo) => utxo.datumHash === datumHash);
 
   const tx = await lucid.newTx().collectFrom([utxo], redeemer)
     .attachSpendingValidator(script)
