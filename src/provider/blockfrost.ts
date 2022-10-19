@@ -222,7 +222,7 @@ export class Blockfrost implements Provider {
               `${this.data.url}/scripts/${r.reference_script_hash}/cbor`,
               { headers: { project_id: this.data.projectId } },
             ).then((res) => res.json());
-            const script = C.PlutusScript.from_bytes(fromHex(cbor));
+            const script = C.PlutusScript.new(fromHex(cbor));
             const scriptRef = C.ScriptRef.new(
               type === "PlutusV1"
                 ? C.Script.new_plutus_v1(script)

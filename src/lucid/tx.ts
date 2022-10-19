@@ -477,12 +477,20 @@ export class Tx {
     return this;
   }
 
-  /** Conditionally add to the transaction. */
+  /** Conditionally apply to the transaction. */
   applyIf(
     condition: boolean,
     callback: (thisTx: Tx) => void | Promise<void>,
   ): Tx {
     if (condition) this.tasks.push(() => callback(this) as Promise<void>);
+    return this;
+  }
+
+  /** Apply to the transaction. */
+  apply(
+    callback: (thisTx: Tx) => void | Promise<void>,
+  ): Tx {
+    this.tasks.push(() => callback(this) as Promise<void>);
     return this;
   }
 
