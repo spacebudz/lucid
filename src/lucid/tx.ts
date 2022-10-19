@@ -45,7 +45,7 @@ export class Tx {
   readFrom(utxos: UTxO[]): Tx {
     this.tasks.push(async () => {
       for (const utxo of utxos) {
-        if (utxo.datumHash && !utxo.datum) {
+        if (utxo.datumHash) {
           utxo.datum = await this.lucid.datumOf(utxo);
           // Add datum to witness set, so it can be read from validators
           const plutusData = C.PlutusData.from_bytes(fromHex(utxo.datum!));
