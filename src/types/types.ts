@@ -42,7 +42,7 @@ export type Credential = {
 
 /** Concatenation of policy id and asset name in Hex */
 export type Unit = string;
-export type Assets = Record<string, bigint>;
+export type Assets = Record<Unit | "lovelace", bigint>;
 export type ScriptType = "Native" | "PlutusV1" | "PlutusV2";
 
 /** Hex */
