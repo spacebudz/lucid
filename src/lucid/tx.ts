@@ -495,6 +495,7 @@ export class Tx {
   }
 
   async complete(options?: {
+    utxos?: TransactionUnspentOutputs;
     changeAddress?: Address;
     datum?: { asHash?: Datum; inline?: Datum };
     coinSelection?: boolean;
@@ -508,7 +509,7 @@ export class Tx {
       await task();
     }
 
-    const utxos = await this.lucid.wallet.getUtxosCore();
+    const utxos = options?.utxos || await this.lucid.wallet.getUtxosCore();
 
     const changeAddress: Core.Address = addressFromWithNetworkCheck(
       options?.changeAddress || (await this.lucid.wallet.address()),
