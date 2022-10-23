@@ -44,6 +44,12 @@ export function decrypt_with_password(password: string, data: string): string;
 */
 export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
 /**
+* @param {PlutusList} params
+* @param {PlutusScript} plutus_script
+* @returns {PlutusScript}
+*/
+export function apply_params_to_plutus_script(params: PlutusList, plutus_script: PlutusScript): PlutusScript;
+/**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
 * @param {LegacyDaedalusPrivateKey} key
@@ -7867,6 +7873,7 @@ export interface InitOutput {
   readonly blockfrost_new: (a: number, b: number, c: number, d: number) => number;
   readonly blockfrost_url: (a: number, b: number) => void;
   readonly blockfrost_project_id: (a: number, b: number) => void;
+  readonly apply_params_to_plutus_script: (a: number, b: number) => number;
   readonly __wbg_plutuswitness_free: (a: number) => void;
   readonly plutuswitness_new: (a: number, b: number, c: number) => number;
   readonly plutuswitness_new_plutus_v2: (a: number, b: number, c: number) => number;

@@ -44,6 +44,12 @@ export function decrypt_with_password(password: string, data: string): string;
 */
 export function min_fee(tx: Transaction, linear_fee: LinearFee, ex_unit_prices: ExUnitPrices): BigNum;
 /**
+* @param {PlutusList} params
+* @param {PlutusScript} plutus_script
+* @returns {PlutusScript}
+*/
+export function apply_params_to_plutus_script(params: PlutusList, plutus_script: PlutusScript): PlutusScript;
+/**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
 * @param {LegacyDaedalusPrivateKey} key

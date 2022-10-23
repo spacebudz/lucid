@@ -362,6 +362,20 @@ module.exports.min_fee = function(tx, linear_fee, ex_unit_prices) {
 };
 
 /**
+* @param {PlutusList} params
+* @param {PlutusScript} plutus_script
+* @returns {PlutusScript}
+*/
+module.exports.apply_params_to_plutus_script = function(params, plutus_script) {
+    _assertClass(params, PlutusList);
+    _assertClass(plutus_script, PlutusScript);
+    var ptr0 = plutus_script.ptr;
+    plutus_script.ptr = 0;
+    var ret = wasm.apply_params_to_plutus_script(params.ptr, ptr0);
+    return PlutusScript.__wrap(ret);
+};
+
+/**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
 * @param {LegacyDaedalusPrivateKey} key
@@ -591,7 +605,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_1366(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1367(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__h6a929cf27a4d54a4(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -17146,7 +17160,7 @@ module.exports.__wbg_new_c143a4f563f78c4e = function(arg0, arg1) {
             const a = state0.a;
             state0.a = 0;
             try {
-                return __wbg_adapter_1366(a, state0.b, arg0, arg1);
+                return __wbg_adapter_1367(a, state0.b, arg0, arg1);
             } finally {
                 state0.a = a;
             }
@@ -17271,7 +17285,7 @@ module.exports.__wbindgen_memory = function() {
     return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8397 = function(arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper8398 = function(arg0, arg1, arg2) {
     var ret = makeMutClosure(arg0, arg1, 442, __wbg_adapter_32);
     return addHeapObject(ret);
 };

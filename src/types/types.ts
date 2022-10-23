@@ -43,7 +43,8 @@ export type Credential = {
 /** Concatenation of policy id and asset name in Hex */
 export type Unit = string;
 export type Assets = Record<Unit | "lovelace", bigint>;
-export type ScriptType = "Native" | "PlutusV1" | "PlutusV2";
+export type ScriptType = "Native" | PlutusVersion;
+export type PlutusVersion = "PlutusV1" | "PlutusV2";
 
 /** Hex */
 export type PolicyId = string;
@@ -212,7 +213,7 @@ export type Json = any;
 export type UnixTime = number;
 
 type NFTFile = {
-  name: string;
+  name?: string;
   mediaType: string;
   src: string | string[];
 };

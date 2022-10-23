@@ -16,6 +16,7 @@ import {
   MintingPolicy,
   NativeScript,
   Network,
+  PlutusData,
   PolicyId,
   PrivateKey,
   PublicKey,
@@ -38,6 +39,7 @@ import {
   slotToBeginUnixTime,
   unixTimeToEnclosingSlot,
 } from "../plutus/time.ts";
+import { Data } from "../plutus/data.ts";
 
 export class Utils {
   private lucid: Lucid;
@@ -574,4 +576,16 @@ export function nativeScriptFromJson(nativeScript: NativeScript): Script {
       ).to_bytes(),
     ),
   };
+}
+
+export function applyParamsToScript(
+  plutusScript: string,
+  ...params: PlutusData[]
+): string {
+  return toHex(
+    C.apply_params_to_plutus_script(
+      C.PlutusList.from_bytes(fromHex(Data.to(params))),
+      C.PlutusScript.from_bytes(fromHex(plutusScript)),
+    ).to_bytes(),
+  );
 }

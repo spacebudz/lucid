@@ -78,6 +78,16 @@ declare export function min_fee(
 ): BigNum;
 
 /**
+ * @param {PlutusList} params
+ * @param {PlutusScript} plutus_script
+ * @returns {PlutusScript}
+ */
+declare export function apply_params_to_plutus_script(
+  params: PlutusList,
+  plutus_script: PlutusScript
+): PlutusScript;
+
+/**
  * @param {TransactionHash} tx_body_hash
  * @param {ByronAddress} addr
  * @param {LegacyDaedalusPrivateKey} key
@@ -9547,6 +9557,7 @@ export interface InitOutput {
   +blockfrost_new: (a: number, b: number, c: number, d: number) => number;
   +blockfrost_url: (a: number, b: number) => void;
   +blockfrost_project_id: (a: number, b: number) => void;
+  +apply_params_to_plutus_script: (a: number, b: number) => number;
   +__wbg_plutuswitness_free: (a: number) => void;
   +plutuswitness_new: (a: number, b: number, c: number) => number;
   +plutuswitness_new_plutus_v2: (a: number, b: number, c: number) => number;

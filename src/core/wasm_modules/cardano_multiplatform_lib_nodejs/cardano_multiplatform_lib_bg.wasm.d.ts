@@ -974,6 +974,7 @@ export function __wbg_blockfrost_free(a: number): void;
 export function blockfrost_new(a: number, b: number, c: number, d: number): number;
 export function blockfrost_url(a: number, b: number): void;
 export function blockfrost_project_id(a: number, b: number): void;
+export function apply_params_to_plutus_script(a: number, b: number): number;
 export function __wbg_plutuswitness_free(a: number): void;
 export function plutuswitness_new(a: number, b: number, c: number): number;
 export function plutuswitness_new_plutus_v2(a: number, b: number, c: number): number;
