@@ -85,6 +85,8 @@ export async function redeemUtxo(): Promise<TxHash> {
 
   const utxo = utxos.find((utxo) => utxo.datumHash === datumHash);
 
+  if (!utxo) throw new Error("UTxO not found.");
+
   const tx = await lucid.newTx().collectFrom([utxo], redeemer)
     .attachSpendingValidator(script)
     .complete();
