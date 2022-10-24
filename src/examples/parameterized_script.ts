@@ -9,11 +9,6 @@ import {
   utf8ToHex,
 } from "../mod.ts";
 
-/*
-    MintSimpleNFT Example
-    Mint or burn a simple NFT.
-   */
-
 const lucid = await Lucid.new(
   new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
   "Preview",
