@@ -63,6 +63,10 @@ Outputs a `dist` folder
 
 [View examples](./src/examples/)
 
+### More Examples
+
+* [Basic Next,js Blockfrost Proxy API Example](https://github.com/GGAlanSmithee/cardano-lucid-blockfrost-proxy-example)
+
 ### Basic usage
 
 ```js
