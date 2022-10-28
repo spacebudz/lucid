@@ -12,15 +12,15 @@ if (isNode) {
     /* webpackIgnore: true */ "@peculiar/webcrypto" as string
   );
   // @ts-ignore : global
-  global.crypto = new Crypto();
+  if (!global.crypto) global.crypto = new Crypto();
   // @ts-ignore : global
-  global.fetch = fetch.default;
+  if (!global.fetch) global.fetch = fetch.default;
   // @ts-ignore : global
-  global.Headers = fetch.Headers;
+  if (!global.Headers) global.Headers = fetch.Headers;
   // @ts-ignore : global
-  global.Request = fetch.Request;
+  if (!global.Request) global.Request = fetch.Request;
   // @ts-ignore : global
-  global.Response = fetch.Response;
+  if (!global.Response) global.Response = fetch.Response;
 }
 
 async function importForEnvironmentCore(): Promise<typeof Core | null> {
