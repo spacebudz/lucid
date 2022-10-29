@@ -104,20 +104,7 @@ export class GraphQL implements Provider {
     const UTxOsQuery = `
     query UTxOsByAddress($address: String!) {
       utxos(where: { address: { _eq: $address } }) {
-        txHash
-        index
-        value
-        datum {
-          hash
-          bytes
-        }
-        tokens {
-          asset {
-            policyId
-            assetName
-          }
-          quantity
-        }
+        ${UTxOFields}
       }
     }`;
     const fullGraphqlQuery = {
@@ -149,7 +136,8 @@ export class GraphQL implements Provider {
         return a;
       })(),
       address,
-      datumHash: "",
+      datumHash: r.datum?.hash,
+      datum: r.datum?.bytes,
     }));
   }
 
@@ -172,23 +160,7 @@ export class GraphQL implements Provider {
         }
       }
     }) {
-      txHash
-      index
-      value
-      datum {
-        hash
-        bytes
-      }
-      transactionOutput {
-        address
-      }
-      tokens {
-        asset {
-          policyId
-          assetName
-        }
-        quantity
-      }
+      ${UTxOFields}
     }
   }`;
 
@@ -224,7 +196,8 @@ export class GraphQL implements Provider {
         return a;
       })(),
       address,
-      datumHash: "",
+      datumHash: r.datum?.hash,
+      datum: r.datum?.bytes,
     }));
   }
 
@@ -278,23 +251,7 @@ export class GraphQL implements Provider {
           }
         }
       }) {
-        txHash
-        index
-        value
-        datum {
-          hash
-          bytes
-        }
-        tokens {
-          asset {
-            policyId
-            assetName
-          }
-          quantity
-        }
-        transactionOutput {
-          address
-        }
+        ${UTxOFields}
       }
     }`;
 
@@ -391,6 +348,26 @@ export class GraphQL implements Provider {
   }
 }
 
+const UTxOFields = `
+  txHash
+  index
+  value
+  datum {
+    hash
+    bytes
+  }
+  tokens {
+    asset {
+      policyId
+      assetName
+    }
+    quantity
+  }
+  transactionOutput {
+    address
+  }
+`
+
 type ProtocolParamsGQL = {
   minFeeA: number;
   minFeeB: number;
@@ -412,6 +389,10 @@ type UtxosGraphql = {
   txHash: string;
   index: number;
   value: string;
+  datum: {
+    hash: string;
+    bytes: string
+  }
   tokens: {
     asset: {
       policyId: string;
@@ -444,7 +425,8 @@ function graphqlSchemaUtxosToUtxos(utxos: UtxosGraphql): UTxO[] {
       a["lovelace"] = BigInt(r.value);
       return a;
     })(),
-    datumHash: "",
     address: r.transactionOutput.address,
+    datumHash: r.datum?.hash,
+    datum: r.datum?.bytes,
   }));
 }
