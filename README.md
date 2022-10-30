@@ -64,7 +64,6 @@ Outputs a `dist` folder
 - [Basic examples](./src/examples/)
 - [Next.js Blockfrost Proxy API Example](https://github.com/GGAlanSmithee/cardano-lucid-blockfrost-proxy-example)
 
-
 ### Basic usage
 
 ```js
@@ -148,5 +147,4 @@ Commit hash: **16dcadc69557dd7c20e62a966aaded1e051c287e**
 Contributions and PRs are welcome!\
 The [contribution instructions](./CONTRIBUTING.md).
 
-Join us on
-[Discord](https://discord.gg/82MWs63Tdm)!
+Join us on [Discord](https://discord.gg/82MWs63Tdm)!

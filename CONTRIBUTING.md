@@ -140,7 +140,8 @@ export function add(a: number, b: number): number {
 }
 ```
 
-Always end comments with a dot `.` (If they are just a few words then it's not necessary).
+Always end comments with a dot `.` (If they are just a few words then it's not
+necessary).
 
 Avoid JSDoc `@param`. If `@param` is used, it should not include the `type` as
 TypeScript is already strongly-typed:
