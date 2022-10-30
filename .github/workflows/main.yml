@@ -19,5 +19,8 @@ jobs:
       - name: Build
         run: deno task build
 
+      - name: Lint
+        run: deno lint
+
       - name: Test
         run: deno task test
