@@ -3,7 +3,7 @@ import { Constr } from "../plutus/mod.ts";
 
 type CostModel = Record<string, number>;
 
-export type CostModels = Record<ScriptType, CostModel>;
+export type CostModels = Record<PlutusVersion, CostModel>;
 
 export type ProtocolParameters = {
   minFeeA: number;

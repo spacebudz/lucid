@@ -90,9 +90,9 @@ export class Lucid {
           // We have Aiken now as native plutus core engine (primary), but we still support blockfrost (secondary) in case of bugs.
           C.Blockfrost.new(
             // deno-lint-ignore no-explicit-any
-            ((provider as any)?.data?.url || "") + "/utils/txs/evaluate",
+            ((provider as any)?.url || "") + "/utils/txs/evaluate",
             // deno-lint-ignore no-explicit-any
-            (provider as any)?.data?.projectId || "",
+            (provider as any)?.projectId || "",
           ),
         )
         .costmdls(createCostModels(protocolParameters.costModels))
@@ -100,6 +100,21 @@ export class Lucid {
     }
     lucid.utils = new Utils(lucid);
     return lucid;
+  }
+
+  /**
+   * Switch provider and/or network.
+   * If provider or network unset, no overwriting happens. Provider or network from current instance are taken then.
+   */
+  async switchProvider(provider?: Provider, network?: Network): Promise<Lucid> {
+    const lucid = await Lucid.new(
+      provider,
+      network,
+    );
+    this.txBuilderConfig = lucid.txBuilderConfig;
+    this.provider = provider || this.provider;
+    this.network = network || this.network;
+    return this;
   }
 
   newTx(): Tx {
