@@ -21,6 +21,7 @@ await build({
     dependencies: {
       "node-fetch": "^3.2.3",
       "@peculiar/webcrypto": "^1.4.0",
+      "ws": "^8.10.0",
     },
     main: "./esm/mod.js",
     type: "module",
@@ -81,6 +82,7 @@ await esbuild.build({
     "./wasm_modules/cardano_message_signing_nodejs/cardano_message_signing.js",
     "node-fetch",
     "@peculiar/webcrypto",
+    "ws",
   ],
 });
 esbuild.stop();

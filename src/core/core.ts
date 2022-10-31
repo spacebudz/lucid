@@ -11,6 +11,12 @@ if (isNode) {
   const { Crypto } = await import(
     /* webpackIgnore: true */ "@peculiar/webcrypto" as string
   );
+  const WebSocket = await import(
+    /* webpackIgnore: true */ "ws" as string
+  );
+
+  // @ts-ignore : global
+  if (!global.WebSocket) global.WebSocket = WebSocket;
   // @ts-ignore : global
   if (!global.crypto) global.crypto = new Crypto();
   // @ts-ignore : global

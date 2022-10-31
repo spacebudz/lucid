@@ -134,9 +134,9 @@ export type UTxO = {
   outputIndex: number;
   assets: Assets;
   address: Address;
-  datumHash?: DatumHash;
-  datum?: Datum;
-  scriptRef?: ScriptRef;
+  datumHash?: DatumHash | null;
+  datum?: Datum | null;
+  scriptRef?: ScriptRef | null;
 };
 
 export type OutRef = { txHash: TxHash; outputIndex: number };

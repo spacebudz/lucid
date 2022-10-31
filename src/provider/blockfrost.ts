@@ -21,9 +21,9 @@ export class Blockfrost implements Provider {
   url: string;
   projectId: string;
 
-  constructor(url: string, projectId: string) {
+  constructor(url: string, projectId?: string) {
     this.url = url;
-    this.projectId = projectId;
+    this.projectId = projectId || "";
   }
 
   async getProtocolParameters(): Promise<ProtocolParameters> {
@@ -157,8 +157,8 @@ export class Blockfrost implements Provider {
     return datum;
   }
 
-  async awaitTx(txHash: TxHash): Promise<boolean> {
-    return await new Promise((res) => {
+  awaitTx(txHash: TxHash): Promise<boolean> {
+    return new Promise((res) => {
       const confirmation = setInterval(async () => {
         const isConfirmed = await fetch(`${this.url}/txs/${txHash}`, {
           headers: { project_id: this.projectId },
@@ -203,7 +203,7 @@ export class Blockfrost implements Provider {
           return a;
         })(),
         address: r.address,
-        datumHash: !r.inline_datum ? r.data_hash : null,
+        datumHash: !r.inline_datum ? r.data_hash : undefined,
         datum: r.inline_datum,
         scriptRef: r.reference_script_hash &&
           (await (async () => {
