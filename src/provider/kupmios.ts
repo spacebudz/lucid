@@ -93,6 +93,7 @@ export class Kupmios implements Provider {
       .then((res) => res.json());
     return this.kupmiosUtxosToUtxos(result);
   }
+
   async getUtxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]> {
     const queryHashes = [...new Set(outRefs.map((outRef) => outRef.txHash))];
 
@@ -109,6 +110,7 @@ export class Kupmios implements Provider {
       )
     );
   }
+
   async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
     const { stakeCredential } = getAddressDetails(rewardAddress);
     const client = await this.ogmiosWsp("Query", {
@@ -132,6 +134,7 @@ export class Kupmios implements Provider {
       }, { once: true });
     });
   }
+
   async getDatum(datumHash: DatumHash): Promise<Datum> {
     const result = await fetch(
       `${this.kupoUrl}/datums/${datumHash}`,
