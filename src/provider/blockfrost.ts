@@ -1,5 +1,5 @@
 import { C, Core } from "../core/mod.ts";
-import { fromHex, toHex } from "../utils/mod.ts";
+import { fromHex, getAddressDetails, toHex } from "../utils/mod.ts";
 import {
   Address,
   Assets,
@@ -49,13 +49,17 @@ export class Blockfrost implements Provider {
     };
   }
 
-  async getUtxos(address: string): Promise<UTxO[]> {
+  async getUtxos(address: Address): Promise<UTxO[]> {
+    const { paymentCredential } = getAddressDetails(address);
+    const credentialBech32 = paymentCredential?.type === "Key"
+      ? C.Ed25519KeyHash.from_hex(paymentCredential!.hash).to_bech32("addr_vkh")
+      : C.ScriptHash.from_hex(paymentCredential!.hash).to_bech32("addr_vkh"); // should be 'script' (CIP-0005)
     let result: BlockfrostUtxoResult = [];
     let page = 1;
     while (true) {
       const pageResult: BlockfrostUtxoResult | BlockfrostUtxoError =
         await fetch(
-          `${this.url}/addresses/${address}/utxos?page=${page}`,
+          `${this.url}/addresses/${credentialBech32}/utxos?page=${page}`,
           { headers: { project_id: this.projectId } },
         ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
@@ -76,12 +80,16 @@ export class Blockfrost implements Provider {
   }
 
   async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
+    const { paymentCredential } = getAddressDetails(address);
+    const credentialBech32 = paymentCredential?.type === "Key"
+      ? C.Ed25519KeyHash.from_hex(paymentCredential!.hash).to_bech32("addr_vkh")
+      : C.ScriptHash.from_hex(paymentCredential!.hash).to_bech32("addr_vkh"); // should be 'script' (CIP-0005)
     let result: BlockfrostUtxoResult = [];
     let page = 1;
     while (true) {
       const pageResult: BlockfrostUtxoResult | BlockfrostUtxoError =
         await fetch(
-          `${this.url}/addresses/${address}/utxos/${unit}?page=${page}`,
+          `${this.url}/addresses/${credentialBech32}/utxos/${unit}?page=${page}`,
           { headers: { project_id: this.projectId } },
         ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {

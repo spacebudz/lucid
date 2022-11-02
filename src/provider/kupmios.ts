@@ -78,17 +78,21 @@ export class Kupmios implements Provider {
   }
 
   async getUtxos(address: Address): Promise<UTxO[]> {
-    const result = await fetch(`${this.kupoUrl}/matches/${address}?unspent`)
+    const { paymentCredential } = getAddressDetails(address);
+    const result = await fetch(
+      `${this.kupoUrl}/matches/${paymentCredential!.hash}/*?unspent`,
+    )
       .then((res) => res.json());
     return this.kupmiosUtxosToUtxos(result);
   }
 
   async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
+    const { paymentCredential } = getAddressDetails(address);
     const { policyId, name } = fromUnit(unit);
     const result = await fetch(
-      `${this.kupoUrl}/matches/${address}?unspent&policy_id=${policyId}${
-        name ? `&asset_name=${name}` : ""
-      }`,
+      `${this.kupoUrl}/matches/${
+        paymentCredential!.hash
+      }/*?unspent&policy_id=${policyId}${name ? `&asset_name=${name}` : ""}`,
     )
       .then((res) => res.json());
     return this.kupmiosUtxosToUtxos(result);
