@@ -23,6 +23,7 @@ import {
   RewardAddress,
   Script,
   ScriptHash,
+  ScriptType,
   Slot,
   SpendingValidator,
   Unit,
@@ -414,6 +415,52 @@ export function assetsToValue(assets: Assets): Core.Value {
   return value;
 }
 
+export function fromScriptRef(scriptRef: Core.ScriptRef): Script {
+  const kind = scriptRef.get().kind();
+  switch (kind) {
+    case 0:
+      return {
+        type: "Native",
+        script: toHex(scriptRef.get().as_native()!.to_bytes()),
+      };
+    case 1:
+      return {
+        type: "PlutusV1",
+        script: toHex(scriptRef.get().as_plutus_v1()!.to_bytes()),
+      };
+    case 2:
+      return {
+        type: "PlutusV2",
+        script: toHex(scriptRef.get().as_plutus_v2()!.to_bytes()),
+      };
+    default:
+      throw new Error("No variant matched.");
+  }
+}
+
+export function toScriptRef(script: Script): Core.ScriptRef {
+  switch (script.type) {
+    case "Native":
+      return C.ScriptRef.new(
+        C.Script.new_native(C.NativeScript.from_bytes(fromHex(script.script))),
+      );
+    case "PlutusV1":
+      return C.ScriptRef.new(
+        C.Script.new_plutus_v1(
+          C.PlutusScript.from_bytes(fromHex(script.script)),
+        ),
+      );
+    case "PlutusV2":
+      return C.ScriptRef.new(
+        C.Script.new_plutus_v2(
+          C.PlutusScript.from_bytes(fromHex(script.script)),
+        ),
+      );
+    default:
+      throw new Error("No variant matched.");
+  }
+}
+
 export function utxoToCore(utxo: UTxO): Core.TransactionUnspentOutput {
   const address: Core.Address = (() => {
     try {
@@ -438,7 +485,7 @@ export function utxoToCore(utxo: UTxO): Core.TransactionUnspentOutput {
   }
 
   if (utxo.scriptRef) {
-    output.set_script_ref(C.ScriptRef.from_bytes(fromHex(utxo.scriptRef)));
+    output.set_script_ref(toScriptRef(utxo.scriptRef));
   }
 
   return C.TransactionUnspentOutput.new(
@@ -462,7 +509,7 @@ export function coreToUtxo(coreUtxo: Core.TransactionUnspentOutput): UTxO {
     datum: coreUtxo.output()?.datum()?.as_data() &&
       toHex(coreUtxo.output().datum()!.as_data()!.to_bytes()),
     scriptRef: coreUtxo.output()?.script_ref() &&
-      toHex(coreUtxo.output().script_ref()!.to_bytes()),
+      fromScriptRef(coreUtxo.output().script_ref()!),
   };
 }
 

@@ -217,8 +217,6 @@ export class Blockfrost implements Provider {
           (await (async () => {
             const {
               type,
-            }: {
-              type: ScriptType;
             } = await fetch(
               `${this.url}/scripts/${r.reference_script_hash}`,
               {
@@ -226,20 +224,17 @@ export class Blockfrost implements Provider {
               },
             ).then((res) => res.json());
             // TODO: support native scripts
-            if (type === "Native") {
+            if (type === "Native" || type === "native") {
               throw new Error("Native script ref not implemented!");
             }
-            const { cbor } = await fetch(
+            const { cbor: script } = await fetch(
               `${this.url}/scripts/${r.reference_script_hash}/cbor`,
               { headers: { project_id: this.projectId } },
             ).then((res) => res.json());
-            const script = C.PlutusScript.from_bytes(fromHex(cbor));
-            const scriptRef = C.ScriptRef.new(
-              type === "PlutusV1"
-                ? C.Script.new_plutus_v1(script)
-                : C.Script.new_plutus_v2(script),
-            );
-            return toHex(scriptRef.to_bytes());
+            return {
+              type: type === "plutusV1" ? "PlutusV1" : "PlutusV2",
+              script,
+            };
           })()),
       })),
     )) as UTxO[];

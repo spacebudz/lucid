@@ -210,23 +210,17 @@ export class Kupmios implements Provider {
             ).then((res) => res.json());
 
             if (language === "native") {
-              const s = C.NativeScript.from_bytes(fromHex(script));
-              const scriptRef = C.ScriptRef.new(
-                C.Script.new_native(s),
-              );
-              return toHex(scriptRef.to_bytes());
+              return { type: "Native", script };
             } else if (language === "plutus:v1") {
-              const s = C.PlutusScript.new(fromHex(script));
-              const scriptRef = C.ScriptRef.new(
-                C.Script.new_plutus_v1(s),
-              );
-              return toHex(scriptRef.to_bytes());
+              return {
+                type: "PlutusV1",
+                script: toHex(C.PlutusScript.new(fromHex(script)).to_bytes()),
+              };
             } else if (language === "plutus:v2") {
-              const s = C.PlutusScript.new(fromHex(script));
-              const scriptRef = C.ScriptRef.new(
-                C.Script.new_plutus_v2(s),
-              );
-              return toHex(scriptRef.to_bytes());
+              return {
+                type: "PlutusV2",
+                script: toHex(C.PlutusScript.new(fromHex(script)).to_bytes()),
+              };
             }
           })()),
       }) as UTxO

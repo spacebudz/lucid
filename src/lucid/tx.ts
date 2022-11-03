@@ -25,6 +25,7 @@ import {
   fromHex,
   networkToId,
   toHex,
+  toScriptRef,
   utxoToCore,
 } from "../utils/mod.ts";
 import { Lucid } from "./lucid.ts";
@@ -163,31 +164,7 @@ export class Tx {
     }
     const script = outputData.scriptRef;
     if (script) {
-      if (script.type === "Native") {
-        output.set_script_ref(
-          C.ScriptRef.new(
-            C.Script.new_native(
-              C.NativeScript.from_bytes(fromHex(script.script)),
-            ),
-          ),
-        );
-      } else if (script.type === "PlutusV1") {
-        output.set_script_ref(
-          C.ScriptRef.new(
-            C.Script.new_plutus_v1(
-              C.PlutusScript.from_bytes(fromHex(script.script)),
-            ),
-          ),
-        );
-      } else if (script.type === "PlutusV2") {
-        output.set_script_ref(
-          C.ScriptRef.new(
-            C.Script.new_plutus_v2(
-              C.PlutusScript.from_bytes(fromHex(script.script)),
-            ),
-          ),
-        );
-      }
+      output.set_script_ref(toScriptRef(script));
     }
     this.txBuilder.add_output(output);
     return this;

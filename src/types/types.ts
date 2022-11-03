@@ -136,7 +136,7 @@ export type UTxO = {
   address: Address;
   datumHash?: DatumHash | null;
   datum?: Datum | null;
-  scriptRef?: ScriptRef | null;
+  scriptRef?: Script | null;
 };
 
 export type OutRef = { txHash: TxHash; outputIndex: number };
