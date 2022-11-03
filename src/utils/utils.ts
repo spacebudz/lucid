@@ -23,7 +23,6 @@ import {
   RewardAddress,
   Script,
   ScriptHash,
-  ScriptType,
   Slot,
   SpendingValidator,
   Unit,

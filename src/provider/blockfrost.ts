@@ -10,7 +10,6 @@ import {
   ProtocolParameters,
   Provider,
   RewardAddress,
-  ScriptType,
   Transaction,
   TxHash,
   Unit,
