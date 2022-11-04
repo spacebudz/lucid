@@ -27,6 +27,7 @@ export class Kupmios implements Provider {
   constructor(kupoUrl: string, ogmiosUrl: string) {
     this.kupoUrl = kupoUrl;
     this.ogmiosUrl = ogmiosUrl;
+    console.warn("The provider is not fully ready yet!");
   }
 
   async getProtocolParameters(): Promise<ProtocolParameters> {
