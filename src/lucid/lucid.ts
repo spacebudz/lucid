@@ -114,6 +114,7 @@ export class Lucid {
     this.txBuilderConfig = lucid.txBuilderConfig;
     this.provider = provider || this.provider;
     this.network = network || this.network;
+    this.wallet = lucid.wallet;
     return this;
   }
 
