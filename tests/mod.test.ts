@@ -358,9 +358,10 @@ Deno.test("toUnit/fromUnit property test", () => {
       (policyRaw: Uint8Array, nameRaw: Uint8Array, label: number) => {
         const policyId = toHex(policyRaw);
         const name = nameRaw.length > 0 ? toHex(nameRaw) : null;
+        const assetName = toLabel(label) + (name || "");
         assertEquals(
           fromUnit(toUnit(policyId, name, label)),
-          { policyId, name, label },
+          { policyId, assetName, name, label },
         );
       },
     ),

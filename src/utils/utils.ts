@@ -592,19 +592,25 @@ export function toUnit(
 }
 
 /**
- * Splits unit into policy id, name and label if applicable.
+ * Splits unit into policy id, asset name (entire asset name), name (asset name without label) and label if applicable.
  * name will be returned in Hex.
  */
 export function fromUnit(
   unit: Unit,
-): { policyId: PolicyId; name: string | null; label: number | null } {
+): {
+  policyId: PolicyId;
+  assetName: string | null;
+  name: string | null;
+  label: number | null;
+} {
   const policyId = unit.slice(0, 56);
+  const assetName = unit.slice(56) || null;
   const label = fromLabel(unit.slice(56, 64));
   const name = (() => {
     const hexName = Number.isInteger(label) ? unit.slice(64) : unit.slice(56);
     return hexName || null;
   })();
-  return { policyId, name, label };
+  return { policyId, assetName, name, label };
 }
 
 /**
