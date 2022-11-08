@@ -33,7 +33,7 @@ import { TxComplete } from "./tx_complete.ts";
 
 export class Tx {
   txBuilder: Core.TransactionBuilder;
-  private tasks: (() => Promise<void>)[];
+  private tasks: (() => unknown)[];
   private lucid: Lucid;
 
   constructor(lucid: Lucid) {
@@ -457,17 +457,17 @@ export class Tx {
   /** Conditionally apply to the transaction. */
   applyIf(
     condition: boolean,
-    callback: (thisTx: Tx) => void | Promise<void>,
+    callback: (thisTx: Tx) => unknown,
   ): Tx {
-    if (condition) this.tasks.push(() => callback(this) as Promise<void>);
+    if (condition) this.tasks.push(() => callback(this));
     return this;
   }
 
   /** Apply to the transaction. */
   apply(
-    callback: (thisTx: Tx) => void | Promise<void>,
+    callback: (thisTx: Tx) => unknown,
   ): Tx {
-    this.tasks.push(() => callback(this) as Promise<void>);
+    this.tasks.push(() => callback(this));
     return this;
   }
 
