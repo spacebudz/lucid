@@ -26,8 +26,13 @@ export type Slot = number;
 
 export interface Provider {
   getProtocolParameters(): Promise<ProtocolParameters>;
+  /** Query UTxOs by the payment credential of the address */
   getUtxos(address: Address): Promise<UTxO[]>;
+  /** Query UTxOs by the payment credential of the address filtered by a specific unit. */
   getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]>;
+  /** Query a UTxO by a unit. It needs to be an NFT (or optionally the entire supply in one UTxO). */
+  getUtxoByUnit(unit: Unit): Promise<UTxO>;
+  /** Query UTxOs by the output reference (tx hash and index). */
   getUtxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]>;
   getDelegation(rewardAddress: RewardAddress): Promise<Delegation>;
   getDatum(datumHash: DatumHash): Promise<Datum>;

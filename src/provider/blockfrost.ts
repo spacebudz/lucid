@@ -108,6 +108,30 @@ export class Blockfrost implements Provider {
     );
   }
 
+  async getUtxoByUnit(unit: Unit): Promise<UTxO> {
+    const addresses = await fetch(
+      `${this.url}/assets/${unit}/addresses?count=2`,
+      { headers: { project_id: this.projectId } },
+    ).then((res) => res.json());
+
+    if (!addresses || addresses.error) {
+      throw new Error("Unit not found.");
+    }
+    if (addresses.length > 1) {
+      throw new Error("Unit needs to be an NFT or only held by one address.");
+    }
+
+    const address = addresses[0].address;
+
+    const utxos = await this.getUtxosWithUnit(address, unit);
+
+    if (utxos.length > 1) {
+      throw new Error("Unit needs to be an NFT or only held by one address.");
+    }
+
+    return utxos[0];
+  }
+
   async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
     const queryHashes = [...new Set(outRefs.map((outRef) => outRef.txHash))];
     const utxos = await Promise.all(queryHashes.map(async (txHash) => {

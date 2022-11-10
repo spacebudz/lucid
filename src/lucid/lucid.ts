@@ -159,6 +159,11 @@ export class Lucid {
     return this.provider.getUtxosWithUnit(address, unit);
   }
 
+  /** Unit needs to be an NFT (or optionally the entire supply in one UTxO). */
+  utxoByUnit(unit: Unit): Promise<UTxO> {
+    return this.provider.getUtxoByUnit(unit);
+  }
+
   utxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]> {
     return this.provider.getUtxosByOutRef(outRefs);
   }
