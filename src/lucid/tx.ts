@@ -34,7 +34,7 @@ import { TxComplete } from "./tx_complete.ts";
 export class Tx {
   txBuilder: Core.TransactionBuilder;
   /** Stores the tx instructions, which get executed after calling .complete() */
-  private tasks: (() => unknown)[];
+  private tasks: ((that: Tx) => unknown)[];
   private lucid: Lucid;
 
   constructor(lucid: Lucid) {
@@ -45,16 +45,16 @@ export class Tx {
 
   /** Read data from utxos. These utxos are only referenced and not spent. */
   readFrom(utxos: UTxO[]): Tx {
-    this.tasks.push(async () => {
+    this.tasks.push(async (that) => {
       for (const utxo of utxos) {
         if (utxo.datumHash) {
-          utxo.datum = await this.lucid.datumOf(utxo);
+          utxo.datum = await that.lucid.datumOf(utxo);
           // Add datum to witness set, so it can be read from validators
           const plutusData = C.PlutusData.from_bytes(fromHex(utxo.datum!));
-          this.txBuilder.add_plutus_data(plutusData);
+          that.txBuilder.add_plutus_data(plutusData);
         }
         const coreUtxo = utxoToCore(utxo);
-        this.txBuilder.add_reference_input(coreUtxo);
+        that.txBuilder.add_reference_input(coreUtxo);
       }
     });
     return this;
@@ -65,13 +65,13 @@ export class Tx {
    * With redeemer it's a plutus script input.
    */
   collectFrom(utxos: UTxO[], redeemer?: Redeemer): Tx {
-    this.tasks.push(async () => {
+    this.tasks.push(async (that) => {
       for (const utxo of utxos) {
         if (utxo.datumHash && !utxo.datum) {
-          utxo.datum = await this.lucid.datumOf(utxo);
+          utxo.datum = await that.lucid.datumOf(utxo);
         }
         const coreUtxo = utxoToCore(utxo);
-        this.txBuilder.add_input(
+        that.txBuilder.add_input(
           coreUtxo,
           (redeemer as undefined) &&
             C.ScriptWitness.new_plutus_witness(
@@ -95,7 +95,7 @@ export class Tx {
    * If the plutus script doesn't need a redeemer, you still neeed to specifiy the empty redeemer.
    */
   mintAssets(assets: Assets, redeemer?: Redeemer): Tx {
-    this.tasks.push(() => {
+    this.tasks.push((that) => {
       const units = Object.keys(assets);
       const policyId = units[0].slice(0, 56);
       const mintAssets = C.MintAssets.new();
@@ -111,7 +111,7 @@ export class Tx {
         );
       });
       const scriptHash = C.ScriptHash.from_bytes(fromHex(policyId));
-      this.txBuilder.add_mint(
+      that.txBuilder.add_mint(
         scriptHash,
         mintAssets,
         redeemer
@@ -130,12 +130,12 @@ export class Tx {
 
   /** Pay to a public key or native script address. */
   payToAddress(address: Address, assets: Assets): Tx {
-    this.tasks.push(() => {
+    this.tasks.push((that) => {
       const output = C.TransactionOutput.new(
-        addressFromWithNetworkCheck(address, this.lucid),
+        addressFromWithNetworkCheck(address, that.lucid),
         assetsToValue(assets),
       );
-      this.txBuilder.add_output(output);
+      that.txBuilder.add_output(output);
     });
     return this;
   }
@@ -146,7 +146,7 @@ export class Tx {
     outputData: Datum | OutputData,
     assets: Assets,
   ): Tx {
-    this.tasks.push(() => {
+    this.tasks.push((that) => {
       if (typeof outputData === "string") {
         outputData = { asHash: outputData };
       }
@@ -158,14 +158,14 @@ export class Tx {
       }
 
       const output = C.TransactionOutput.new(
-        addressFromWithNetworkCheck(address, this.lucid),
+        addressFromWithNetworkCheck(address, that.lucid),
         assetsToValue(assets),
       );
 
       if (outputData.asHash) {
         const plutusData = C.PlutusData.from_bytes(fromHex(outputData.asHash));
         output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
-        this.txBuilder.add_plutus_data(plutusData);
+        that.txBuilder.add_plutus_data(plutusData);
       } else if (outputData.inline) {
         const plutusData = C.PlutusData.from_bytes(fromHex(outputData.inline));
         output.set_datum(C.Datum.new_data(C.Data.new(plutusData)));
@@ -174,7 +174,7 @@ export class Tx {
       if (script) {
         output.set_script_ref(toScriptRef(script));
       }
-      this.txBuilder.add_output(output);
+      that.txBuilder.add_output(output);
     });
     return this;
   }
@@ -203,8 +203,8 @@ export class Tx {
     poolId: PoolId,
     redeemer?: Redeemer,
   ): Tx {
-    this.tasks.push(() => {
-      const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
+    this.tasks.push((that) => {
+      const addressDetails = that.lucid.utils.getAddressDetails(rewardAddress);
 
       if (
         addressDetails.type !== "Reward" ||
@@ -224,7 +224,7 @@ export class Tx {
           ),
         );
 
-      this.txBuilder.add_certificate(
+      that.txBuilder.add_certificate(
         C.Certificate.new_stake_delegation(
           C.StakeDelegation.new(
             credential,
@@ -247,8 +247,8 @@ export class Tx {
 
   /** Register a reward address in order to delegate to a pool and receive rewards. */
   registerStake(rewardAddress: RewardAddress): Tx {
-    this.tasks.push(() => {
-      const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
+    this.tasks.push((that) => {
+      const addressDetails = that.lucid.utils.getAddressDetails(rewardAddress);
 
       if (
         addressDetails.type !== "Reward" ||
@@ -268,7 +268,7 @@ export class Tx {
           ),
         );
 
-      this.txBuilder.add_certificate(
+      that.txBuilder.add_certificate(
         C.Certificate.new_stake_registration(
           C.StakeRegistration.new(credential),
         ),
@@ -280,8 +280,8 @@ export class Tx {
 
   /** Deregister a reward address. */
   deregisterStake(rewardAddress: RewardAddress, redeemer?: Redeemer): Tx {
-    this.tasks.push(() => {
-      const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
+    this.tasks.push((that) => {
+      const addressDetails = that.lucid.utils.getAddressDetails(rewardAddress);
 
       if (
         addressDetails.type !== "Reward" ||
@@ -301,7 +301,7 @@ export class Tx {
           ),
         );
 
-      this.txBuilder.add_certificate(
+      that.txBuilder.add_certificate(
         C.Certificate.new_stake_deregistration(
           C.StakeDeregistration.new(credential),
         ),
@@ -321,27 +321,27 @@ export class Tx {
 
   /** Register a stake pool. A pool deposit is required. The metadataUrl needs to be hosted already before making the registration. */
   registerPool(poolParams: PoolParams): Tx {
-    this.tasks.push(async () => {
+    this.tasks.push(async (that) => {
       const poolRegistration = await createPoolRegistration(
         poolParams,
-        this.lucid,
+        that.lucid,
       );
 
       const certificate = C.Certificate.new_pool_registration(
         poolRegistration,
       );
 
-      this.txBuilder.add_certificate(certificate, undefined);
+      that.txBuilder.add_certificate(certificate, undefined);
     });
     return this;
   }
 
   /** Update a stake pool. No pool deposit is required. The metadataUrl needs to be hosted already before making the update. */
   updatePool(poolParams: PoolParams): Tx {
-    this.tasks.push(async () => {
+    this.tasks.push(async (that) => {
       const poolRegistration = await createPoolRegistration(
         poolParams,
-        this.lucid,
+        that.lucid,
       );
 
       // This flag makes sure a pool deposit is not required
@@ -351,7 +351,7 @@ export class Tx {
         poolRegistration,
       );
 
-      this.txBuilder.add_certificate(certificate, undefined);
+      that.txBuilder.add_certificate(certificate, undefined);
     });
     return this;
   }
@@ -360,11 +360,11 @@ export class Tx {
    * The pool deposit will be sent to reward address as reward after full retirement of the pool.
    */
   retirePool(poolId: PoolId, epoch: number): Tx {
-    this.tasks.push(() => {
+    this.tasks.push((that) => {
       const certificate = C.Certificate.new_pool_retirement(
         C.PoolRetirement.new(C.Ed25519KeyHash.from_bech32(poolId), epoch),
       );
-      this.txBuilder.add_certificate(certificate, undefined);
+      that.txBuilder.add_certificate(certificate, undefined);
     });
     return this;
   }
@@ -374,10 +374,10 @@ export class Tx {
     amount: Lovelace,
     redeemer?: Redeemer,
   ): Tx {
-    this.tasks.push(() => {
-      this.txBuilder.add_withdrawal(
+    this.tasks.push((that) => {
+      that.txBuilder.add_withdrawal(
         C.RewardAddress.from_address(
-          addressFromWithNetworkCheck(rewardAddress, this.lucid),
+          addressFromWithNetworkCheck(rewardAddress, that.lucid),
         )!,
         C.BigNum.from_str(amount.toString()),
         redeemer
@@ -420,8 +420,8 @@ export class Tx {
 
   /** Add a payment or stake key hash as a required signer of the transaction. */
   addSignerKey(keyHash: PaymentKeyHash | StakeKeyHash): Tx {
-    this.tasks.push(() => {
-      this.txBuilder.add_required_signer(
+    this.tasks.push((that) => {
+      that.txBuilder.add_required_signer(
         C.Ed25519KeyHash.from_bytes(fromHex(keyHash)),
       );
     });
@@ -429,9 +429,9 @@ export class Tx {
   }
 
   validFrom(unixTime: UnixTime): Tx {
-    this.tasks.push(() => {
-      const slot = this.lucid.utils.unixTimeToSlot(unixTime);
-      this.txBuilder.set_validity_start_interval(
+    this.tasks.push((that) => {
+      const slot = that.lucid.utils.unixTimeToSlot(unixTime);
+      that.txBuilder.set_validity_start_interval(
         C.BigNum.from_str(slot.toString()),
       );
     });
@@ -439,16 +439,16 @@ export class Tx {
   }
 
   validTo(unixTime: UnixTime): Tx {
-    this.tasks.push(() => {
-      const slot = this.lucid.utils.unixTimeToSlot(unixTime);
-      this.txBuilder.set_ttl(C.BigNum.from_str(slot.toString()));
+    this.tasks.push((that) => {
+      const slot = that.lucid.utils.unixTimeToSlot(unixTime);
+      that.txBuilder.set_ttl(C.BigNum.from_str(slot.toString()));
     });
     return this;
   }
 
   attachMetadata(label: Label, metadata: Json): Tx {
-    this.tasks.push(() => {
-      this.txBuilder.add_json_metadatum(
+    this.tasks.push((that) => {
+      that.txBuilder.add_json_metadatum(
         C.BigNum.from_str(label.toString()),
         JSON.stringify(metadata),
       );
@@ -458,8 +458,8 @@ export class Tx {
 
   /** Converts strings to bytes if prefixed with **'0x'**. */
   attachMetadataWithConversion(label: Label, metadata: Json): Tx {
-    this.tasks.push(() => {
-      this.txBuilder.add_json_metadatum_with_schema(
+    this.tasks.push((that) => {
+      that.txBuilder.add_json_metadatum_with_schema(
         C.BigNum.from_str(label.toString()),
         JSON.stringify(metadata),
         C.MetadataJsonSchema.BasicConversions,
@@ -469,29 +469,29 @@ export class Tx {
   }
 
   attachSpendingValidator(spendingValidator: SpendingValidator): Tx {
-    this.tasks.push(() => {
-      attachScript(this, spendingValidator);
+    this.tasks.push((that) => {
+      attachScript(that, spendingValidator);
     });
     return this;
   }
 
   attachMintingPolicy(mintingPolicy: MintingPolicy): Tx {
-    this.tasks.push(() => {
-      attachScript(this, mintingPolicy);
+    this.tasks.push((that) => {
+      attachScript(that, mintingPolicy);
     });
     return this;
   }
 
   attachCertificateValidator(certValidator: CertificateValidator): Tx {
-    this.tasks.push(() => {
-      attachScript(this, certValidator);
+    this.tasks.push((that) => {
+      attachScript(that, certValidator);
     });
     return this;
   }
 
   attachWithdrawalValidator(withdrawalValidator: WithdrawalValidator): Tx {
-    this.tasks.push(() => {
-      attachScript(this, withdrawalValidator);
+    this.tasks.push((that) => {
+      attachScript(that, withdrawalValidator);
     });
     return this;
   }
@@ -501,7 +501,7 @@ export class Tx {
     condition: boolean,
     callback: (thisTx: Tx) => unknown,
   ): Tx {
-    if (condition) this.tasks.push(() => callback(this));
+    if (condition) this.tasks.push((that) => callback(that));
     return this;
   }
 
@@ -509,7 +509,7 @@ export class Tx {
   apply(
     callback: (thisTx: Tx) => unknown,
   ): Tx {
-    this.tasks.push(() => callback(this));
+    this.tasks.push((that) => callback(that));
     return this;
   }
 
@@ -530,7 +530,7 @@ export class Tx {
     }
 
     for (const task of this.tasks) {
-      await task();
+      await task(this);
     }
 
     const utxos = await this.lucid.wallet.getUtxosCore();
@@ -579,7 +579,7 @@ export class Tx {
     let i = this.tasks.length;
 
     while (i--) {
-      await this.tasks[i]();
+      await this.tasks[i](this);
       this.tasks.splice(i, 1);
     }
 
