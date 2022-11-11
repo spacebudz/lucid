@@ -33,6 +33,7 @@ import { TxComplete } from "./tx_complete.ts";
 
 export class Tx {
   txBuilder: Core.TransactionBuilder;
+  /** Stores the tx instructions, which get executed after calling .complete() */
   private tasks: (() => unknown)[];
   private lucid: Lucid;
 
@@ -94,44 +95,48 @@ export class Tx {
    * If the plutus script doesn't need a redeemer, you still neeed to specifiy the empty redeemer.
    */
   mintAssets(assets: Assets, redeemer?: Redeemer): Tx {
-    const units = Object.keys(assets);
-    const policyId = units[0].slice(0, 56);
-    const mintAssets = C.MintAssets.new();
-    units.forEach((unit) => {
-      if (unit.slice(0, 56) !== policyId) {
-        throw new Error(
-          "Only one Policy Id allowed. You can chain multiple mintAssets events together if you need to mint assets with different Policy Ids.",
+    this.tasks.push(() => {
+      const units = Object.keys(assets);
+      const policyId = units[0].slice(0, 56);
+      const mintAssets = C.MintAssets.new();
+      units.forEach((unit) => {
+        if (unit.slice(0, 56) !== policyId) {
+          throw new Error(
+            "Only one Policy Id allowed. You can chain multiple mintAssets functions together if you need to mint assets with different Policy Ids.",
+          );
+        }
+        mintAssets.insert(
+          C.AssetName.new(fromHex(unit.slice(56))),
+          C.Int.from_str(assets[unit].toString()),
         );
-      }
-      mintAssets.insert(
-        C.AssetName.new(fromHex(unit.slice(56))),
-        C.Int.from_str(assets[unit].toString()),
+      });
+      const scriptHash = C.ScriptHash.from_bytes(fromHex(policyId));
+      this.txBuilder.add_mint(
+        scriptHash,
+        mintAssets,
+        redeemer
+          ? C.ScriptWitness.new_plutus_witness(
+            C.PlutusWitness.new(
+              C.PlutusData.from_bytes(fromHex(redeemer!)),
+              undefined,
+              undefined,
+            ),
+          )
+          : undefined,
       );
     });
-    const scriptHash = C.ScriptHash.from_bytes(fromHex(policyId));
-    this.txBuilder.add_mint(
-      scriptHash,
-      mintAssets,
-      redeemer
-        ? C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(
-            C.PlutusData.from_bytes(fromHex(redeemer!)),
-            undefined,
-            undefined,
-          ),
-        )
-        : undefined,
-    );
     return this;
   }
 
   /** Pay to a public key or native script address. */
   payToAddress(address: Address, assets: Assets): Tx {
-    const output = C.TransactionOutput.new(
-      addressFromWithNetworkCheck(address, this.lucid),
-      assetsToValue(assets),
-    );
-    this.txBuilder.add_output(output);
+    this.tasks.push(() => {
+      const output = C.TransactionOutput.new(
+        addressFromWithNetworkCheck(address, this.lucid),
+        assetsToValue(assets),
+      );
+      this.txBuilder.add_output(output);
+    });
     return this;
   }
 
@@ -141,32 +146,36 @@ export class Tx {
     outputData: Datum | OutputData,
     assets: Assets,
   ): Tx {
-    if (typeof outputData === "string") {
-      outputData = { asHash: outputData };
-    }
+    this.tasks.push(() => {
+      if (typeof outputData === "string") {
+        outputData = { asHash: outputData };
+      }
 
-    if (outputData.asHash && outputData.inline) {
-      throw new Error("Not allowed to set asHash and inline at the same time.");
-    }
+      if (outputData.asHash && outputData.inline) {
+        throw new Error(
+          "Not allowed to set asHash and inline at the same time.",
+        );
+      }
 
-    const output = C.TransactionOutput.new(
-      addressFromWithNetworkCheck(address, this.lucid),
-      assetsToValue(assets),
-    );
+      const output = C.TransactionOutput.new(
+        addressFromWithNetworkCheck(address, this.lucid),
+        assetsToValue(assets),
+      );
 
-    if (outputData.asHash) {
-      const plutusData = C.PlutusData.from_bytes(fromHex(outputData.asHash));
-      output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
-      this.txBuilder.add_plutus_data(plutusData);
-    } else if (outputData.inline) {
-      const plutusData = C.PlutusData.from_bytes(fromHex(outputData.inline));
-      output.set_datum(C.Datum.new_data(C.Data.new(plutusData)));
-    }
-    const script = outputData.scriptRef;
-    if (script) {
-      output.set_script_ref(toScriptRef(script));
-    }
-    this.txBuilder.add_output(output);
+      if (outputData.asHash) {
+        const plutusData = C.PlutusData.from_bytes(fromHex(outputData.asHash));
+        output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
+        this.txBuilder.add_plutus_data(plutusData);
+      } else if (outputData.inline) {
+        const plutusData = C.PlutusData.from_bytes(fromHex(outputData.inline));
+        output.set_datum(C.Datum.new_data(C.Data.new(plutusData)));
+      }
+      const script = outputData.scriptRef;
+      if (script) {
+        output.set_script_ref(toScriptRef(script));
+      }
+      this.txBuilder.add_output(output);
+    });
     return this;
   }
 
@@ -185,7 +194,6 @@ export class Tx {
         "No datum set. Script output becomes unspendable without datum.",
       );
     }
-
     return this.payToAddressWithData(address, outputData, assets);
   }
 
@@ -195,108 +203,119 @@ export class Tx {
     poolId: PoolId,
     redeemer?: Redeemer,
   ): Tx {
-    const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
+    this.tasks.push(() => {
+      const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
 
-    if (
-      addressDetails.type !== "Reward" ||
-      !addressDetails.stakeCredential
-    ) {
-      throw new Error("Not a reward address provided.");
-    }
-    const credential = addressDetails.stakeCredential.type === "Key"
-      ? C.StakeCredential.from_keyhash(
-        C.Ed25519KeyHash.from_bytes(
-          fromHex(addressDetails.stakeCredential.hash),
-        ),
-      )
-      : C.StakeCredential.from_scripthash(
-        C.ScriptHash.from_bytes(
-          fromHex(addressDetails.stakeCredential.hash),
-        ),
-      );
-
-    this.txBuilder.add_certificate(
-      C.Certificate.new_stake_delegation(
-        C.StakeDelegation.new(credential, C.Ed25519KeyHash.from_bech32(poolId)),
-      ),
-      redeemer
-        ? C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(
-            C.PlutusData.from_bytes(fromHex(redeemer!)),
-            undefined,
-            undefined,
+      if (
+        addressDetails.type !== "Reward" ||
+        !addressDetails.stakeCredential
+      ) {
+        throw new Error("Not a reward address provided.");
+      }
+      const credential = addressDetails.stakeCredential.type === "Key"
+        ? C.StakeCredential.from_keyhash(
+          C.Ed25519KeyHash.from_bytes(
+            fromHex(addressDetails.stakeCredential.hash),
           ),
         )
-        : undefined,
-    );
+        : C.StakeCredential.from_scripthash(
+          C.ScriptHash.from_bytes(
+            fromHex(addressDetails.stakeCredential.hash),
+          ),
+        );
+
+      this.txBuilder.add_certificate(
+        C.Certificate.new_stake_delegation(
+          C.StakeDelegation.new(
+            credential,
+            C.Ed25519KeyHash.from_bech32(poolId),
+          ),
+        ),
+        redeemer
+          ? C.ScriptWitness.new_plutus_witness(
+            C.PlutusWitness.new(
+              C.PlutusData.from_bytes(fromHex(redeemer!)),
+              undefined,
+              undefined,
+            ),
+          )
+          : undefined,
+      );
+    });
     return this;
   }
 
   /** Register a reward address in order to delegate to a pool and receive rewards. */
   registerStake(rewardAddress: RewardAddress): Tx {
-    const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
+    this.tasks.push(() => {
+      const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
 
-    if (
-      addressDetails.type !== "Reward" ||
-      !addressDetails.stakeCredential
-    ) {
-      throw new Error("Not a reward address provided.");
-    }
-    const credential = addressDetails.stakeCredential.type === "Key"
-      ? C.StakeCredential.from_keyhash(
-        C.Ed25519KeyHash.from_bytes(
-          fromHex(addressDetails.stakeCredential.hash),
+      if (
+        addressDetails.type !== "Reward" ||
+        !addressDetails.stakeCredential
+      ) {
+        throw new Error("Not a reward address provided.");
+      }
+      const credential = addressDetails.stakeCredential.type === "Key"
+        ? C.StakeCredential.from_keyhash(
+          C.Ed25519KeyHash.from_bytes(
+            fromHex(addressDetails.stakeCredential.hash),
+          ),
+        )
+        : C.StakeCredential.from_scripthash(
+          C.ScriptHash.from_bytes(
+            fromHex(addressDetails.stakeCredential.hash),
+          ),
+        );
+
+      this.txBuilder.add_certificate(
+        C.Certificate.new_stake_registration(
+          C.StakeRegistration.new(credential),
         ),
-      )
-      : C.StakeCredential.from_scripthash(
-        C.ScriptHash.from_bytes(
-          fromHex(addressDetails.stakeCredential.hash),
-        ),
+        undefined,
       );
-
-    this.txBuilder.add_certificate(
-      C.Certificate.new_stake_registration(C.StakeRegistration.new(credential)),
-      undefined,
-    );
+    });
     return this;
   }
 
   /** Deregister a reward address. */
   deregisterStake(rewardAddress: RewardAddress, redeemer?: Redeemer): Tx {
-    const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
+    this.tasks.push(() => {
+      const addressDetails = this.lucid.utils.getAddressDetails(rewardAddress);
 
-    if (
-      addressDetails.type !== "Reward" ||
-      !addressDetails.stakeCredential
-    ) {
-      throw new Error("Not a reward address provided.");
-    }
-    const credential = addressDetails.stakeCredential.type === "Key"
-      ? C.StakeCredential.from_keyhash(
-        C.Ed25519KeyHash.from_bytes(
-          fromHex(addressDetails.stakeCredential.hash),
-        ),
-      )
-      : C.StakeCredential.from_scripthash(
-        C.ScriptHash.from_bytes(
-          fromHex(addressDetails.stakeCredential.hash),
-        ),
-      );
-
-    this.txBuilder.add_certificate(
-      C.Certificate.new_stake_deregistration(
-        C.StakeDeregistration.new(credential),
-      ),
-      redeemer
-        ? C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(
-            C.PlutusData.from_bytes(fromHex(redeemer!)),
-            undefined,
-            undefined,
+      if (
+        addressDetails.type !== "Reward" ||
+        !addressDetails.stakeCredential
+      ) {
+        throw new Error("Not a reward address provided.");
+      }
+      const credential = addressDetails.stakeCredential.type === "Key"
+        ? C.StakeCredential.from_keyhash(
+          C.Ed25519KeyHash.from_bytes(
+            fromHex(addressDetails.stakeCredential.hash),
           ),
         )
-        : undefined,
-    );
+        : C.StakeCredential.from_scripthash(
+          C.ScriptHash.from_bytes(
+            fromHex(addressDetails.stakeCredential.hash),
+          ),
+        );
+
+      this.txBuilder.add_certificate(
+        C.Certificate.new_stake_deregistration(
+          C.StakeDeregistration.new(credential),
+        ),
+        redeemer
+          ? C.ScriptWitness.new_plutus_witness(
+            C.PlutusWitness.new(
+              C.PlutusData.from_bytes(fromHex(redeemer!)),
+              undefined,
+              undefined,
+            ),
+          )
+          : undefined,
+      );
+    });
     return this;
   }
 
@@ -341,10 +360,12 @@ export class Tx {
    * The pool deposit will be sent to reward address as reward after full retirement of the pool.
    */
   retirePool(poolId: PoolId, epoch: number): Tx {
-    const certificate = C.Certificate.new_pool_retirement(
-      C.PoolRetirement.new(C.Ed25519KeyHash.from_bech32(poolId), epoch),
-    );
-    this.txBuilder.add_certificate(certificate, undefined);
+    this.tasks.push(() => {
+      const certificate = C.Certificate.new_pool_retirement(
+        C.PoolRetirement.new(C.Ed25519KeyHash.from_bech32(poolId), epoch),
+      );
+      this.txBuilder.add_certificate(certificate, undefined);
+    });
     return this;
   }
 
@@ -353,21 +374,23 @@ export class Tx {
     amount: Lovelace,
     redeemer?: Redeemer,
   ): Tx {
-    this.txBuilder.add_withdrawal(
-      C.RewardAddress.from_address(
-        addressFromWithNetworkCheck(rewardAddress, this.lucid),
-      )!,
-      C.BigNum.from_str(amount.toString()),
-      redeemer
-        ? C.ScriptWitness.new_plutus_witness(
-          C.PlutusWitness.new(
-            C.PlutusData.from_bytes(fromHex(redeemer!)),
-            undefined,
-            undefined,
-          ),
-        )
-        : undefined,
-    );
+    this.tasks.push(() => {
+      this.txBuilder.add_withdrawal(
+        C.RewardAddress.from_address(
+          addressFromWithNetworkCheck(rewardAddress, this.lucid),
+        )!,
+        C.BigNum.from_str(amount.toString()),
+        redeemer
+          ? C.ScriptWitness.new_plutus_witness(
+            C.PlutusWitness.new(
+              C.PlutusData.from_bytes(fromHex(redeemer!)),
+              undefined,
+              undefined,
+            ),
+          )
+          : undefined,
+      );
+    });
     return this;
   }
 
@@ -379,7 +402,9 @@ export class Tx {
   addSigner(address: Address | RewardAddress): Tx {
     const addressDetails = this.lucid.utils.getAddressDetails(address);
 
-    if (!addressDetails.paymentCredential && !addressDetails.stakeCredential) {
+    if (
+      !addressDetails.paymentCredential && !addressDetails.stakeCredential
+    ) {
       throw new Error("Not a valid address.");
     }
 
@@ -390,67 +415,84 @@ export class Tx {
     if (credential.type === "Script") {
       throw new Error("Only key hashes are allowed as signers.");
     }
-
     return this.addSignerKey(credential.hash);
   }
 
   /** Add a payment or stake key hash as a required signer of the transaction. */
   addSignerKey(keyHash: PaymentKeyHash | StakeKeyHash): Tx {
-    this.txBuilder.add_required_signer(
-      C.Ed25519KeyHash.from_bytes(fromHex(keyHash)),
-    );
+    this.tasks.push(() => {
+      this.txBuilder.add_required_signer(
+        C.Ed25519KeyHash.from_bytes(fromHex(keyHash)),
+      );
+    });
     return this;
   }
 
   validFrom(unixTime: UnixTime): Tx {
-    const slot = this.lucid.utils.unixTimeToSlot(unixTime);
-    this.txBuilder.set_validity_start_interval(
-      C.BigNum.from_str(slot.toString()),
-    );
+    this.tasks.push(() => {
+      const slot = this.lucid.utils.unixTimeToSlot(unixTime);
+      this.txBuilder.set_validity_start_interval(
+        C.BigNum.from_str(slot.toString()),
+      );
+    });
     return this;
   }
 
   validTo(unixTime: UnixTime): Tx {
-    const slot = this.lucid.utils.unixTimeToSlot(unixTime);
-    this.txBuilder.set_ttl(C.BigNum.from_str(slot.toString()));
+    this.tasks.push(() => {
+      const slot = this.lucid.utils.unixTimeToSlot(unixTime);
+      this.txBuilder.set_ttl(C.BigNum.from_str(slot.toString()));
+    });
     return this;
   }
 
   attachMetadata(label: Label, metadata: Json): Tx {
-    this.txBuilder.add_json_metadatum(
-      C.BigNum.from_str(label.toString()),
-      JSON.stringify(metadata),
-    );
+    this.tasks.push(() => {
+      this.txBuilder.add_json_metadatum(
+        C.BigNum.from_str(label.toString()),
+        JSON.stringify(metadata),
+      );
+    });
     return this;
   }
 
   /** Converts strings to bytes if prefixed with **'0x'**. */
   attachMetadataWithConversion(label: Label, metadata: Json): Tx {
-    this.txBuilder.add_json_metadatum_with_schema(
-      C.BigNum.from_str(label.toString()),
-      JSON.stringify(metadata),
-      C.MetadataJsonSchema.BasicConversions,
-    );
+    this.tasks.push(() => {
+      this.txBuilder.add_json_metadatum_with_schema(
+        C.BigNum.from_str(label.toString()),
+        JSON.stringify(metadata),
+        C.MetadataJsonSchema.BasicConversions,
+      );
+    });
     return this;
   }
 
   attachSpendingValidator(spendingValidator: SpendingValidator): Tx {
-    attachScript(this, spendingValidator);
+    this.tasks.push(() => {
+      attachScript(this, spendingValidator);
+    });
     return this;
   }
 
   attachMintingPolicy(mintingPolicy: MintingPolicy): Tx {
-    attachScript(this, mintingPolicy);
+    this.tasks.push(() => {
+      attachScript(this, mintingPolicy);
+    });
     return this;
   }
 
   attachCertificateValidator(certValidator: CertificateValidator): Tx {
-    attachScript(this, certValidator);
+    this.tasks.push(() => {
+      attachScript(this, certValidator);
+    });
     return this;
   }
 
   attachWithdrawalValidator(withdrawalValidator: WithdrawalValidator): Tx {
-    attachScript(this, withdrawalValidator);
+    this.tasks.push(() => {
+      attachScript(this, withdrawalValidator);
+    });
     return this;
   }
 
@@ -468,6 +510,12 @@ export class Tx {
     callback: (thisTx: Tx) => unknown,
   ): Tx {
     this.tasks.push(() => callback(this));
+    return this;
+  }
+
+  /** Compose transactions (Similar to apply, but applies a tx object to the current tx instead). */
+  compose(tx: Tx): Tx {
+    this.tasks = this.tasks.concat(tx.tasks);
     return this;
   }
 
