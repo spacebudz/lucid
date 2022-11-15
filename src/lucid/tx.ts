@@ -529,8 +529,10 @@ export class Tx {
       throw new Error("Not allowed to set asHash and inline at the same time.");
     }
 
-    for (const task of this.tasks) {
+    let task = this.tasks.pop();
+    while (task) {
       await task(this);
+      task = this.tasks.pop();
     }
 
     const utxos = await this.lucid.wallet.getUtxosCore();
@@ -576,11 +578,10 @@ export class Tx {
 
   /** Return the current transaction body in Hex encoded Cbor. */
   async toString(): Promise<string> {
-    let i = this.tasks.length;
-
-    while (i--) {
-      await this.tasks[i](this);
-      this.tasks.splice(i, 1);
+    let task = this.tasks.pop();
+    while (task) {
+      await task(this);
+      task = this.tasks.pop();
     }
 
     return toHex(this.txBuilder.to_bytes());
