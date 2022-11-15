@@ -545,10 +545,8 @@ export class Tx {
       );
     }
 
-    let task = this.tasks.pop();
-    while (task) {
+    for (const task of this.tasks) {
       await task(this);
-      task = this.tasks.pop();
     }
 
     const utxos = await this.lucid.wallet.getUtxosCore();
@@ -608,10 +606,11 @@ export class Tx {
 
   /** Return the current transaction body in Hex encoded Cbor. */
   async toString(): Promise<string> {
-    let task = this.tasks.pop();
-    while (task) {
-      await task(this);
-      task = this.tasks.pop();
+    let i = this.tasks.length;
+
+    while (i--) {
+      await this.tasks[i](this);
+      this.tasks.splice(i, 1);
     }
 
     return toHex(this.txBuilder.to_bytes());

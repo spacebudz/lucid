@@ -1,8 +1,7 @@
 {
-  "name": "lucid-cardano",
+  "name": "@jpg-store/lucid-cardano",
   "version": "0.7.9",
   "license": "MIT",
-  "author": "Alessandro Konrad",
-  "description": "Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript, Deno and Node.js.",
-  "repository": "https://github.com/spacebudz/lucid"
+  "description": "This is a fork of the original Lucid repo compiled into CommonJS. For more information check https://github.com/spacebudz/lucid",
+  "repository": "https://github.com/jpg-store/lucid"
 }
