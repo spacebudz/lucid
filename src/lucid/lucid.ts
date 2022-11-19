@@ -23,7 +23,7 @@ import {
   Slot,
   Transaction,
   TxHash,
-  Unit,
+  AssetClass,
   UTxO,
   Wallet,
   WalletApi,
@@ -155,13 +155,13 @@ export class Lucid {
     return this.provider.getUtxos(address);
   }
 
-  utxosAtWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
-    return this.provider.getUtxosWithUnit(address, unit);
+  utxosAtWithAsset(address: Address, asset: AssetClass): Promise<UTxO[]> {
+    return this.provider.getUtxosWithAsset(address, asset);
   }
 
-  /** Unit needs to be an NFT (or optionally the entire supply in one UTxO). */
-  utxoByUnit(unit: Unit): Promise<UTxO> {
-    return this.provider.getUtxoByUnit(unit);
+  /** Asset needs to be an NFT (or optionally the entire supply in one UTxO). */
+  utxoByAsset(asset: AssetClass): Promise<UTxO> {
+    return this.provider.getUtxoByAssetClass(asset);
   }
 
   utxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]> {

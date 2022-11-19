@@ -1,6 +1,6 @@
 import {
   Assets,
-  assetsToValue,
+  valueToCore,
   C,
   Constr,
   coreToUtxo,
@@ -8,14 +8,14 @@ import {
   datumJsonToCbor,
   fromHex,
   fromLabel,
-  fromUnit,
+  fromAssetClass,
   Lucid,
   MerkleTree,
   toHex,
   toLabel,
-  toUnit,
+  toAssetClass,
   utxoToCore,
-  valueToAssets,
+  valueFromCore,
 } from "../src/mod.ts";
 import {
   assert,
@@ -228,19 +228,19 @@ Deno.test("json datum to cbor datum", () => {
   assertEquals(cborDatum, datumJsonToCbor(jsonDatum));
 });
 
-Deno.test("Assets to value", () => {
+Deno.test("AssetValue to Core.Value", () => {
   const unit = "0".repeat(56);
   const assets = { lovelace: 5000000n, [unit]: 8n };
 
-  const value = assetsToValue(assets);
+  const value = valueToCore(assets);
   assertEquals(BigInt(value.coin().to_str()), assets.lovelace);
   assertEquals(value.multiasset()!.len(), 1);
 });
 
-Deno.test("Value to assets", () => {
+Deno.test("Core.Value to AssetValue", () => {
   const value = C.Value.new(C.BigNum.from_str("5000000"));
 
-  const assets = valueToAssets(value);
+  const assets = valueFromCore(value);
   assertEquals(BigInt(value.coin().to_str()), assets.lovelace);
 });
 
@@ -268,7 +268,7 @@ Deno.test("Assets/value conversion property test", () => {
         );
         assets.lovelace = lovelace;
 
-        assertEquals(assets, valueToAssets(assetsToValue(assets)));
+        assertEquals(assets, valueFromCore(valueToCore(assets)));
       },
     ),
   );
@@ -349,7 +349,7 @@ Deno.test("toLabel/fromLabel property test", () => {
   );
 });
 
-Deno.test("toUnit/fromUnit property test", () => {
+Deno.test("toAssetClass/fromAssetClass property test", () => {
   fc.assert(
     fc.property(
       fc.uint8Array({ minLength: 28, maxLength: 28 }),
@@ -360,7 +360,7 @@ Deno.test("toUnit/fromUnit property test", () => {
         const name = nameRaw.length > 0 ? toHex(nameRaw) : null;
         const assetName = toLabel(label) + (name || "");
         assertEquals(
-          fromUnit(toUnit(policyId, name, label)),
+          fromAssetClass(toAssetClass(policyId, name, label)),
           { policyId, assetName, name, label },
         );
       },

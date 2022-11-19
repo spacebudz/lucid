@@ -7,7 +7,7 @@ import { C, Core } from "../core/mod.ts";
 import {
   Address,
   AddressDetails,
-  Assets,
+  AssetValue,
   CertificateValidator,
   Credential,
   Datum,
@@ -25,7 +25,7 @@ import {
   ScriptHash,
   Slot,
   SpendingValidator,
-  Unit,
+  AssetClass,
   UnixTime,
   UTxO,
   Validator,
@@ -364,10 +364,10 @@ export function getAddressDetails(address: string): AddressDetails {
   throw new Error("No address type matched for: " + address);
 }
 
-export function valueToAssets(value: Core.Value): Assets {
-  const assets: Assets = {};
-  assets["lovelace"] = BigInt(value.coin().to_str());
-  const ma = value.multiasset();
+export function valueFromCore(coreValue: Core.Value): AssetValue {
+  const assets: AssetValue = {};
+  assets["lovelace"] = BigInt(coreValue.coin().to_str());
+  const ma = coreValue.multiasset();
   if (ma) {
     const multiAssets = ma.keys();
     for (let j = 0; j < multiAssets.len(); j++) {
@@ -377,40 +377,40 @@ export function valueToAssets(value: Core.Value): Assets {
       for (let k = 0; k < assetNames.len(); k++) {
         const policyAsset = assetNames.get(k);
         const quantity = policyAssets.get(policyAsset)!;
-        const unit = toHex(policy.to_bytes()) + toHex(policyAsset.name());
-        assets[unit] = BigInt(quantity.to_str());
+        const asset = toHex(policy.to_bytes()) + toHex(policyAsset.name());
+        assets[asset] = BigInt(quantity.to_str());
       }
     }
   }
   return assets;
 }
 
-export function assetsToValue(assets: Assets): Core.Value {
-  const multiAsset = C.MultiAsset.new();
-  const lovelace = assets["lovelace"];
-  const units = Object.keys(assets);
+export function valueToCore(value: AssetValue): Core.Value {
+  const coreMultiAsset = C.MultiAsset.new();
+  const lovelace = value["lovelace"];
+  const assets = Object.keys(value);
   const policies = Array.from(
     new Set(
-      units
-        .filter((unit) => unit !== "lovelace")
-        .map((unit) => unit.slice(0, 56)),
+      assets
+        .filter((asset) => asset !== "lovelace")
+        .map((asset) => asset.slice(0, 56)),
     ),
   );
   policies.forEach((policy) => {
-    const policyUnits = units.filter((unit) => unit.slice(0, 56) === policy);
-    const assetsValue = C.Assets.new();
-    policyUnits.forEach((unit) => {
-      assetsValue.insert(
-        C.AssetName.new(fromHex(unit.slice(56))),
-        C.BigNum.from_str(assets[unit].toString()),
+    const policyAssets = assets.filter((assetClass) => assetClass.slice(0, 56) === policy);
+    const coreAssets = C.Assets.new();
+    policyAssets.forEach((asset) => {
+      coreAssets.insert(
+        C.AssetName.new(fromHex(asset.slice(56))),
+        C.BigNum.from_str(assets[asset].toString()),
       );
     });
-    multiAsset.insert(C.ScriptHash.from_bytes(fromHex(policy)), assetsValue);
+    coreMultiAsset.insert(C.ScriptHash.from_bytes(fromHex(policy)), coreAssets);
   });
-  const value = C.Value.new(
+  const coreValue = C.Value.new(
     C.BigNum.from_str(lovelace ? lovelace.toString() : "0"),
   );
-  if (units.length > 1 || !lovelace) value.set_multiasset(multiAsset);
+  if (assets.length > 1 || !lovelace) coreValue.set_multiasset(coreMultiAsset);
   return value;
 }
 
@@ -468,7 +468,7 @@ export function utxoToCore(utxo: UTxO): Core.TransactionUnspentOutput {
       return C.ByronAddress.from_base58(utxo.address).to_address();
     }
   })();
-  const output = C.TransactionOutput.new(address, assetsToValue(utxo.assets));
+  const output = C.TransactionOutput.new(address, valueToCore(utxo.assets));
   if (utxo.datumHash) {
     output.set_datum(
       C.Datum.new_data_hash(C.DataHash.from_bytes(fromHex(utxo.datumHash))),
@@ -500,7 +500,7 @@ export function coreToUtxo(coreUtxo: Core.TransactionUnspentOutput): UTxO {
   return {
     txHash: toHex(coreUtxo.input().transaction_id().to_bytes()),
     outputIndex: parseInt(coreUtxo.input().index().to_str()),
-    assets: valueToAssets(coreUtxo.output().amount()),
+    value: valueFromCore(coreUtxo.output().amount()),
     address: coreUtxo.output().address().as_byron()
       ? coreUtxo.output().address().as_byron()?.to_base58()!
       : coreUtxo.output().address().to_bech32(undefined),
@@ -575,11 +575,11 @@ export function fromLabel(label: string): number | null {
 /**
  * @param name Hex encoded
  */
-export function toUnit(
+export function toAssetClass(
   policyId: PolicyId,
   name?: string | null,
   label?: number | null,
-): Unit {
+): AssetClass {
   const hexLabel = Number.isInteger(label) ? toLabel(label!) : "";
   const n = name ? name : "";
   if ((n + hexLabel).length > 64) {
@@ -595,19 +595,19 @@ export function toUnit(
  * Splits unit into policy id, asset name (entire asset name), name (asset name without label) and label if applicable.
  * name will be returned in Hex.
  */
-export function fromUnit(
-  unit: Unit,
+export function fromAssetClass(
+  asset: AssetClass,
 ): {
   policyId: PolicyId;
   assetName: string | null;
   name: string | null;
   label: number | null;
 } {
-  const policyId = unit.slice(0, 56);
-  const assetName = unit.slice(56) || null;
-  const label = fromLabel(unit.slice(56, 64));
+  const policyId = asset.slice(0, 56);
+  const assetName = asset.slice(56) || null;
+  const label = fromLabel(asset.slice(56, 64));
   const name = (() => {
-    const hexName = Number.isInteger(label) ? unit.slice(64) : unit.slice(56);
+    const hexName = Number.isInteger(label) ? asset.slice(64) : asset.slice(56);
     return hexName || null;
   })();
   return { policyId, assetName, name, label };

@@ -28,10 +28,10 @@ export interface Provider {
   getProtocolParameters(): Promise<ProtocolParameters>;
   /** Query UTxOs by the payment credential of the address */
   getUtxos(address: Address): Promise<UTxO[]>;
-  /** Query UTxOs by the payment credential of the address filtered by a specific unit. */
-  getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]>;
-  /** Query a UTxO by a unit. It needs to be an NFT (or optionally the entire supply in one UTxO). */
-  getUtxoByUnit(unit: Unit): Promise<UTxO>;
+  /** Query UTxOs by the payment credential of the address filtered by a specific asset. */
+  getUtxosWithAsset(address: Address, asset: AssetClass): Promise<UTxO[]>;
+  /** Query a UTxO by an asset. It needs to be an NFT (or optionally the entire supply in one UTxO). */
+  getUtxoByAsset(asset: AssetClass): Promise<UTxO>;
   /** Query UTxOs by the output reference (tx hash and index). */
   getUtxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]>;
   getDelegation(rewardAddress: RewardAddress): Promise<Delegation>;
@@ -46,8 +46,8 @@ export type Credential = {
 };
 
 /** Concatenation of policy id and asset name in Hex */
-export type Unit = string;
-export type Assets = Record<Unit | "lovelace", bigint>;
+export type AssetClass = string;
+export type AssetValue = Record<AssetClass | "lovelace", bigint>;
 export type ScriptType = "Native" | PlutusVersion;
 export type PlutusVersion = "PlutusV1" | "PlutusV2";
 

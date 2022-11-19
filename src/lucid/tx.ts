@@ -1,7 +1,7 @@
 import { C, Core } from "../core/mod.ts";
 import {
   Address,
-  Assets,
+  AssetValue,
   CertificateValidator,
   Datum,
   Json,
@@ -21,7 +21,7 @@ import {
   WithdrawalValidator,
 } from "../types/mod.ts";
 import {
-  assetsToValue,
+  valueToCore,
   fromHex,
   networkToId,
   toHex,
@@ -94,20 +94,20 @@ export class Tx {
    * You can chain mintAssets functions together if you need to mint assets with different policy ids.
    * If the plutus script doesn't need a redeemer, you still need to specifiy the empty redeemer.
    */
-  mintAssets(assets: Assets, redeemer?: Redeemer): Tx {
+   mintValue(value: AssetValue, redeemer?: Redeemer): Tx {
     this.tasks.push((that) => {
-      const units = Object.keys(assets);
-      const policyId = units[0].slice(0, 56);
+      const assets = Object.keys(value);
+      const policyId = assets[0].slice(0, 56);
       const mintAssets = C.MintAssets.new();
-      units.forEach((unit) => {
-        if (unit.slice(0, 56) !== policyId) {
+      assets.forEach((asset) => {
+        if (asset.slice(0, 56) !== policyId) {
           throw new Error(
             "Only one Policy Id allowed. You can chain multiple mintAssets functions together if you need to mint assets with different Policy Ids.",
           );
         }
         mintAssets.insert(
-          C.AssetName.new(fromHex(unit.slice(56))),
-          C.Int.from_str(assets[unit].toString()),
+          C.AssetName.new(fromHex(asset.slice(56))),
+          C.Int.from_str(assets[asset].toString()),
         );
       });
       const scriptHash = C.ScriptHash.from_bytes(fromHex(policyId));
@@ -129,11 +129,11 @@ export class Tx {
   }
 
   /** Pay to a public key or native script address. */
-  payToAddress(address: Address, assets: Assets): Tx {
+  payToAddress(address: Address, value: AssetValue): Tx {
     this.tasks.push((that) => {
       const output = C.TransactionOutput.new(
         addressFromWithNetworkCheck(address, that.lucid),
-        assetsToValue(assets),
+        valueToCore(value),
       );
       that.txBuilder.add_output(output);
     });
@@ -144,7 +144,7 @@ export class Tx {
   payToAddressWithData(
     address: Address,
     outputData: Datum | OutputData,
-    assets: Assets,
+    value: AssetValue,
   ): Tx {
     this.tasks.push((that) => {
       if (typeof outputData === "string") {
@@ -159,7 +159,7 @@ export class Tx {
 
       const output = C.TransactionOutput.new(
         addressFromWithNetworkCheck(address, that.lucid),
-        assetsToValue(assets),
+        valueToCore(value),
       );
 
       if (outputData.asHash) {
@@ -183,7 +183,7 @@ export class Tx {
   payToContract(
     address: Address,
     outputData: Datum | OutputData,
-    assets: Assets,
+    value: AssetValue,
   ): Tx {
     if (typeof outputData === "string") {
       outputData = { asHash: outputData };
@@ -194,7 +194,7 @@ export class Tx {
         "No datum set. Script output becomes unspendable without datum.",
       );
     }
-    return this.payToAddressWithData(address, outputData, assets);
+    return this.payToAddressWithData(address, outputData, value);
   }
 
   /** Delegate to a stake pool. */

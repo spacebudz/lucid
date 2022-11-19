@@ -4,7 +4,7 @@ import {
   MintingPolicy,
   PolicyId,
   TxHash,
-  Unit,
+  AssetClass,
   utf8ToHex,
 } from "../mod.ts";
 
@@ -46,11 +46,11 @@ const policyId: PolicyId = lucid.utils.mintingPolicyToId(
 export async function mintNFT(
   name: string,
 ): Promise<TxHash> {
-  const unit: Unit = policyId + utf8ToHex(name);
+  const asset: AssetClass = policyId + utf8ToHex(name);
 
   const tx = await lucid
     .newTx()
-    .mintAssets({ [unit]: 1n })
+    .mintValue({ [asset]: 1n })
     .validTo(Date.now() + 100000)
     .attachMintingPolicy(mintingPolicy)
     .complete();
@@ -65,11 +65,11 @@ export async function mintNFT(
 export async function burnNFT(
   name: string,
 ): Promise<TxHash> {
-  const unit: Unit = policyId + utf8ToHex(name);
+  const asset: AssetClass = policyId + utf8ToHex(name);
 
   const tx = await lucid
     .newTx()
-    .mintAssets({ [unit]: -1n })
+    .mintValue({ [asset]: -1n })
     .validTo(Date.now() + 100000)
     .attachMintingPolicy(mintingPolicy)
     .complete();

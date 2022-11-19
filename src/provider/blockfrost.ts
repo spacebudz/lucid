@@ -2,7 +2,7 @@ import { C, Core } from "../core/mod.ts";
 import { fromHex, getAddressDetails, toHex } from "../utils/mod.ts";
 import {
   Address,
-  Assets,
+  AssetValue,
   Datum,
   DatumHash,
   Delegation,
@@ -12,7 +12,7 @@ import {
   RewardAddress,
   Transaction,
   TxHash,
-  Unit,
+  AssetClass,
   UTxO,
 } from "../types/mod.ts";
 
@@ -78,7 +78,7 @@ export class Blockfrost implements Provider {
     );
   }
 
-  async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
+  async getUtxosWithAsset(address: Address, asset: AssetClass): Promise<UTxO[]> {
     const { paymentCredential } = getAddressDetails(address);
     const credentialBech32 = paymentCredential?.type === "Key"
       ? C.Ed25519KeyHash.from_hex(paymentCredential!.hash).to_bech32("addr_vkh")
@@ -88,7 +88,7 @@ export class Blockfrost implements Provider {
     while (true) {
       const pageResult: BlockfrostUtxoResult | BlockfrostUtxoError =
         await fetch(
-          `${this.url}/addresses/${credentialBech32}/utxos/${unit}?page=${page}`,
+          `${this.url}/addresses/${credentialBech32}/utxos/${asset}?page=${page}`,
           { headers: { project_id: this.projectId } },
         ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
@@ -108,25 +108,25 @@ export class Blockfrost implements Provider {
     );
   }
 
-  async getUtxoByUnit(unit: Unit): Promise<UTxO> {
+  async getUtxoByAsset(asset: AssetClass): Promise<UTxO> {
     const addresses = await fetch(
-      `${this.url}/assets/${unit}/addresses?count=2`,
+      `${this.url}/assets/${asset}/addresses?count=2`,
       { headers: { project_id: this.projectId } },
     ).then((res) => res.json());
 
     if (!addresses || addresses.error) {
-      throw new Error("Unit not found.");
+      throw new Error("Asset not found.");
     }
     if (addresses.length > 1) {
-      throw new Error("Unit needs to be an NFT or only held by one address.");
+      throw new Error("Asset needs to be an NFT or only held by one address.");
     }
 
     const address = addresses[0].address;
 
-    const utxos = await this.getUtxosWithUnit(address, unit);
+    const utxos = await this.getUtxosWithAsset(address, asset);
 
     if (utxos.length > 1) {
-      throw new Error("Unit needs to be an NFT or only held by one address.");
+      throw new Error("Asset needs to be an NFT or only held by one address.");
     }
 
     return utxos[0];
@@ -227,7 +227,7 @@ export class Blockfrost implements Provider {
         txHash: r.tx_hash,
         outputIndex: r.output_index,
         assets: (() => {
-          const a: Assets = {};
+          const a: AssetValue = {};
           r.amount.forEach((am) => {
             a[am.unit] = BigInt(am.quantity);
           });

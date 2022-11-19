@@ -1,6 +1,6 @@
 import {
   Address,
-  Assets,
+  AssetValue,
   Datum,
   DatumHash,
   Delegation,
@@ -10,11 +10,11 @@ import {
   RewardAddress,
   Transaction,
   TxHash,
-  Unit,
+  AssetClass,
   UTxO,
 } from "../types/mod.ts";
 import { C } from "../core/mod.ts";
-import { fromHex, fromUnit, getAddressDetails, toHex } from "../utils/mod.ts";
+import { fromHex, fromAssetClass, getAddressDetails, toHex } from "../utils/mod.ts";
 
 export class Kupmios implements Provider {
   kupoUrl: string;
@@ -87,9 +87,9 @@ export class Kupmios implements Provider {
     return this.kupmiosUtxosToUtxos(result);
   }
 
-  async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
+  async getUtxosWithAsset(address: Address, asset: AssetClass): Promise<UTxO[]> {
     const { paymentCredential } = getAddressDetails(address);
-    const { policyId, assetName } = fromUnit(unit);
+    const { policyId, assetName } = fromAssetClass(asset);
     const result = await fetch(
       `${this.kupoUrl}/matches/${
         paymentCredential!.hash
@@ -101,8 +101,8 @@ export class Kupmios implements Provider {
     return this.kupmiosUtxosToUtxos(result);
   }
 
-  async getUtxoByUnit(unit: Unit): Promise<UTxO> {
-    const { policyId, assetName } = fromUnit(unit);
+  async getUtxoByAsset(asset: AssetClass): Promise<UTxO> {
+    const { policyId, assetName } = fromAssetClass(asset);
     const result = await fetch(
       `${this.kupoUrl}/matches/${policyId}.${
         assetName ? `${assetName}` : "*"
@@ -113,7 +113,7 @@ export class Kupmios implements Provider {
     const utxos = await this.kupmiosUtxosToUtxos(result);
 
     if (utxos.length > 1) {
-      throw new Error("Unit needs to be an NFT or only held by one address.");
+      throw new Error("AssetClass needs to be an NFT or only held by one address.");
     }
 
     return utxos[0];
@@ -213,8 +213,8 @@ export class Kupmios implements Provider {
         outputIndex: parseInt(utxo.output_index),
         address: utxo.address,
         assets: (() => {
-          const a: Assets = { lovelace: BigInt(utxo.value.coins) };
-          Object.keys(utxo.value.assets).forEach((unit) => {
+          const a: AssetValue = { lovelace: BigInt(utxo.value.coins) };
+          Object.keys(utxo.value.value).forEach((unit) => {
             a[unit.replace(".", "")] = BigInt(utxo.value.assets[unit]);
           });
           return a;
