@@ -365,8 +365,8 @@ export function getAddressDetails(address: string): AddressDetails {
 }
 
 export function valueFromCore(coreValue: Core.Value): AssetValue {
-  const assets: AssetValue = {};
-  assets["lovelace"] = BigInt(coreValue.coin().to_str());
+  const value: AssetValue = {};
+  value["lovelace"] = BigInt(coreValue.coin().to_str());
   const ma = coreValue.multiasset();
   if (ma) {
     const multiAssets = ma.keys();
@@ -378,11 +378,11 @@ export function valueFromCore(coreValue: Core.Value): AssetValue {
         const policyAsset = assetNames.get(k);
         const quantity = policyAssets.get(policyAsset)!;
         const asset = toHex(policy.to_bytes()) + toHex(policyAsset.name());
-        assets[asset] = BigInt(quantity.to_str());
+        value[asset] = BigInt(quantity.to_str());
       }
     }
   }
-  return assets;
+  return value;
 }
 
 export function valueToCore(value: AssetValue): Core.Value {
@@ -468,7 +468,7 @@ export function utxoToCore(utxo: UTxO): Core.TransactionUnspentOutput {
       return C.ByronAddress.from_base58(utxo.address).to_address();
     }
   })();
-  const output = C.TransactionOutput.new(address, valueToCore(utxo.assets));
+  const output = C.TransactionOutput.new(address, valueToCore(utxo.value));
   if (utxo.datumHash) {
     output.set_datum(
       C.Datum.new_data_hash(C.DataHash.from_bytes(fromHex(utxo.datumHash))),
@@ -592,7 +592,7 @@ export function toAssetClass(
 }
 
 /**
- * Splits unit into policy id, asset name (entire asset name), name (asset name without label) and label if applicable.
+ * Splits asset into policy id, asset name (entire asset name), name (asset name without label) and label if applicable.
  * name will be returned in Hex.
  */
 export function fromAssetClass(

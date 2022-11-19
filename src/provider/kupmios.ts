@@ -212,10 +212,10 @@ export class Kupmios implements Provider {
         txHash: utxo.transaction_id,
         outputIndex: parseInt(utxo.output_index),
         address: utxo.address,
-        assets: (() => {
+        value: (() => {
           const a: AssetValue = { lovelace: BigInt(utxo.value.coins) };
-          Object.keys(utxo.value.value).forEach((unit) => {
-            a[unit.replace(".", "")] = BigInt(utxo.value.assets[unit]);
+          Object.keys(utxo.value.assets).forEach((asset) => {
+            a[asset.replace(".", "")] = BigInt(utxo.value.assets[asset]);
           });
           return a;
         })(),

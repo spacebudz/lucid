@@ -137,7 +137,7 @@ export type Payload = string;
 export type UTxO = {
   txHash: TxHash;
   outputIndex: number;
-  assets: Assets;
+  value: AssetValue;
   address: Address;
   datumHash?: DatumHash | null;
   datum?: Datum | null;

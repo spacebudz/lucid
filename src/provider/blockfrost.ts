@@ -226,7 +226,7 @@ export class Blockfrost implements Provider {
       result.map(async (r) => ({
         txHash: r.tx_hash,
         outputIndex: r.output_index,
-        assets: (() => {
+        value: (() => {
           const a: AssetValue = {};
           r.amount.forEach((am) => {
             a[am.unit] = BigInt(am.quantity);

@@ -1,5 +1,5 @@
 import {
-  Assets,
+  AssetValue,
   valueToCore,
   C,
   Constr,
@@ -229,8 +229,8 @@ Deno.test("json datum to cbor datum", () => {
 });
 
 Deno.test("AssetValue to Core.Value", () => {
-  const unit = "0".repeat(56);
-  const assets = { lovelace: 5000000n, [unit]: 8n };
+  const asset = "0".repeat(56);
+  const assets = { lovelace: 5000000n, [asset]: 8n };
 
   const value = valueToCore(assets);
   assertEquals(BigInt(value.coin().to_str()), assets.lovelace);
@@ -259,7 +259,7 @@ Deno.test("Assets/value conversion property test", () => {
         assetsArray: Array<[Uint8Array, Uint8Array, bigint]>,
         lovelace: bigint,
       ) => {
-        const assets: Assets = assetsArray.reduce(
+        const assets: AssetValue = assetsArray.reduce(
           (acc, asset) => ({
             ...acc,
             [toHex(asset[0]) + toHex(asset[1])]: asset[2],
