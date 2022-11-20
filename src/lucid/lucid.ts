@@ -203,7 +203,7 @@ export class Lucid {
           .to_address()
           .to_bech32(undefined),
       // deno-lint-ignore require-await
-      unusedAddress: async (): Promise<Address> => null,
+      unusedAddress: async (): Promise<Address | null> => null,
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> => null,
       getUtxos: async (): Promise<UTxO[]> => {
@@ -267,7 +267,7 @@ export class Lucid {
           : null;
         return address;
       },
-      unusedAddress: async (): Promise<Address> => {
+      unusedAddress: async (): Promise<Address | null> => {
         const [unusedAddressHex] = await api.getUnusedAddresses();
         const unusedAddress = unusedAddressHex
           ? C.Address.from_bytes(fromHex(unusedAddressHex)).to_bech32(undefined)
@@ -343,7 +343,7 @@ export class Lucid {
       // deno-lint-ignore require-await
       address: async (): Promise<Address> => address,
       // deno-lint-ignore require-await
-      unusedAddress: async (): Promise<Address> => null,
+      unusedAddress: async (): Promise<Address | null> => null,
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> => {
         const rewardAddr = !rewardAddress && addressDetails.stakeCredential
@@ -436,7 +436,7 @@ export class Lucid {
       // deno-lint-ignore require-await
       address: async (): Promise<Address> => address,
       // deno-lint-ignore require-await
-      unusedAddress: async (): Promise<Address> => null,
+      unusedAddress: async (): Promise<Address | null> => null,
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> =>
         rewardAddress || null,
