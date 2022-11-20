@@ -205,10 +205,11 @@ export class Lucid {
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> => null,
       getUtxos: async (): Promise<UTxO[]> => {
-        return await this.utxosAt(await this.wallet.address());
+        const address = await this.wallet.address();
+        return address ? this.utxosAt(address) : [];
       },
       getUtxosCore: async (): Promise<Core.TransactionUnspentOutputs> => {
-        const utxos = await this.utxosAt(await this.wallet.address());
+        const utxos = await this.wallet.getUtxos();
         const coreUtxos = C.TransactionUnspentOutputs.new();
         utxos.forEach((utxo) => {
           coreUtxos.add(utxoToCore(utxo));
@@ -257,7 +258,7 @@ export class Lucid {
 
   selectWallet(api: WalletApi): Lucid {
     this.wallet = {
-      address: async (): Promise<Address> => {
+      address: async (): Promise<Address | null> => {
         const [addressHex] = await api.getUsedAddresses();
         const address = addressHex
           ? C.Address.from_bytes(fromHex(addressHex)).to_bech32(undefined)

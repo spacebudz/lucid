@@ -537,8 +537,14 @@ export class Tx {
 
     const utxos = await this.lucid.wallet.getUtxosCore();
 
+    const address = await this.lucid.wallet.address();
+    
+    if (!address) {
+      throw new Error("No address available."); // todo, use unused address
+    }
+
     const changeAddress: Core.Address = addressFromWithNetworkCheck(
-      options?.changeAddress || (await this.lucid.wallet.address()),
+      options?.changeAddress || address,
       this.lucid,
     );
 
