@@ -257,10 +257,13 @@ export class Lucid {
 
   selectWallet(api: WalletApi): Lucid {
     this.wallet = {
-      address: async (): Promise<Address> =>
-        C.Address.from_bytes(
-          fromHex((await api.getUsedAddresses())[0]),
-        ).to_bech32(undefined),
+      address: async (): Promise<Address> => {
+        const [addressHex] = await api.getUsedAddresses();
+        const address = addressHex
+          ? C.Address.from_bytes(fromHex(addressHex)).to_bech32(undefined)
+          : null;
+        return address
+      },
       rewardAddress: async (): Promise<RewardAddress | null> => {
         const [rewardAddressHex] = await api.getRewardAddresses();
         const rewardAddress = rewardAddressHex
