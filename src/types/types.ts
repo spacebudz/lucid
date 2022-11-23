@@ -109,12 +109,22 @@ export type PoolId = string;
 /** Hex */
 export type Datum = string;
 /**
- * asHash will add the datum hash to the output and the datum to the witness set.
- * inline will add the datum to the output.
- * scriptRef will add any script to the output.
- * You can only specify asHash or inline, not both at the same time.
+ * **hash** adds the datum hash to the output.
+ *
+ * **asHash** hashes the datum and adds the datum hash to the output and the datum to the witness set.
+ *
+ * **inline** adds the datum to the output.
+ *
+ * **scriptRef** will add any script to the output.
+ *
+ * You can either specify **hash**, **asHash** or **inline**, only one option is allowed.
  */
-export type OutputData = { asHash?: Datum; inline?: Datum; scriptRef?: Script };
+export type OutputData = {
+  hash?: DatumHash;
+  asHash?: Datum;
+  inline?: Datum;
+  scriptRef?: Script;
+};
 /** Hex */
 export type DatumHash = string;
 /** Hex (Redeemer is only PlutusData, same as Datum) */

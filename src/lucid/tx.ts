@@ -151,9 +151,12 @@ export class Tx {
         outputData = { asHash: outputData };
       }
 
-      if (outputData.asHash && outputData.inline) {
+      if (
+        [outputData.hash, outputData.asHash, outputData.inline].filter((b) => b)
+          .length > 1
+      ) {
         throw new Error(
-          "Not allowed to set asHash and inline at the same time.",
+          "Not allowed to set hash, asHash and inline at the same time.",
         );
       }
 
@@ -162,7 +165,11 @@ export class Tx {
         assetsToValue(assets),
       );
 
-      if (outputData.asHash) {
+      if (outputData.hash) {
+        output.set_datum(
+          C.Datum.new_data_hash(C.DataHash.from_hex(outputData.hash)),
+        );
+      } else if (outputData.asHash) {
         const plutusData = C.PlutusData.from_bytes(fromHex(outputData.asHash));
         output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
         that.txBuilder.add_plutus_data(plutusData);
@@ -170,6 +177,7 @@ export class Tx {
         const plutusData = C.PlutusData.from_bytes(fromHex(outputData.inline));
         output.set_datum(C.Datum.new_data(C.Data.new(plutusData)));
       }
+
       const script = outputData.scriptRef;
       if (script) {
         output.set_script_ref(toScriptRef(script));
@@ -189,7 +197,7 @@ export class Tx {
       outputData = { asHash: outputData };
     }
 
-    if (!(outputData.asHash || outputData.inline)) {
+    if (!(outputData.hash || outputData.asHash || outputData.inline)) {
       throw new Error(
         "No datum set. Script output becomes unspendable without datum.",
       );
@@ -520,13 +528,21 @@ export class Tx {
   }
 
   async complete(options?: {
-    changeAddress?: Address;
-    datum?: { asHash?: Datum; inline?: Datum };
+    change?: { address?: Address; outputData?: OutputData };
     coinSelection?: boolean;
     nativeUplc?: boolean;
   }): Promise<TxComplete> {
-    if (options?.datum?.asHash && options?.datum?.inline) {
-      throw new Error("Not allowed to set asHash and inline at the same time.");
+    if (
+      [
+        options?.change?.outputData?.hash,
+        options?.change?.outputData?.asHash,
+        options?.change?.outputData?.inline,
+      ].filter((b) => b)
+        .length > 1
+    ) {
+      throw new Error(
+        "Not allowed to set hash, asHash and inline at the same time.",
+      );
     }
 
     let task = this.tasks.pop();
@@ -538,7 +554,7 @@ export class Tx {
     const utxos = await this.lucid.wallet.getUtxosCore();
 
     const changeAddress: Core.Address = addressFromWithNetworkCheck(
-      options?.changeAddress || (await this.lucid.wallet.address()),
+      options?.change?.address || (await this.lucid.wallet.address()),
       this.lucid,
     );
 
@@ -548,23 +564,37 @@ export class Tx {
 
     this.txBuilder.balance(
       changeAddress,
-      options?.datum?.asHash
-        ? C.Datum.new_data_hash(
-          C.hash_plutus_data(
-            C.PlutusData.from_bytes(fromHex(options.datum.asHash)),
-          ),
-        )
-        : options?.datum?.inline
-        ? C.Datum.new_data(
-          C.Data.new(C.PlutusData.from_bytes(fromHex(options.datum.inline))),
-        )
-        : undefined,
+      (() => {
+        if (options?.change?.outputData?.hash) {
+          return C.Datum.new_data_hash(
+            C.DataHash.from_hex(
+              options.change.outputData.hash,
+            ),
+          );
+        } else if (options?.change?.outputData?.asHash) {
+          this.txBuilder.add_plutus_data(
+            C.PlutusData.from_bytes(fromHex(options.change.outputData.asHash)),
+          );
+          return C.Datum.new_data_hash(
+            C.hash_plutus_data(
+              C.PlutusData.from_bytes(
+                fromHex(options.change.outputData.asHash),
+              ),
+            ),
+          );
+        } else if (options?.change?.outputData?.inline) {
+          return C.Datum.new_data(
+            C.Data.new(
+              C.PlutusData.from_bytes(
+                fromHex(options.change.outputData.inline),
+              ),
+            ),
+          );
+        } else {
+          return undefined;
+        }
+      })(),
     );
-    if (options?.datum?.asHash) {
-      this.txBuilder.add_plutus_data(
-        C.PlutusData.from_bytes(fromHex(options.datum.asHash)),
-      );
-    }
 
     return new TxComplete(
       this.lucid,
