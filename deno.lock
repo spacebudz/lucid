@@ -265,6 +265,7 @@
     "https://esm.sh/v89/pure-rand@5.0.1/lib/types/generator/XorShift.d.ts": "985cd9560f565c0d64388e84bddda6ead92519910f0626f48843a04db2f6263a",
     "https://esm.sh/v89/pure-rand@5.0.1/lib/types/generator/XoroShiro.d.ts": "2f57798ee7ece2c806781ce6de8770956685b75a0801a9e8fabcbd178178b116",
     "https://esm.sh/v89/pure-rand@5.0.1/lib/types/pure-rand-default.d.ts": "5eecbe4c23e8e1d3328e5983691edae8d634ec7f1b3b060585ad56ca06ed4b6e",
-    "https://esm.sh/v89/pure-rand@5.0.1/lib/types/pure-rand.d.ts": "5df44747df1dce00a2140c078637ade9812852628aa9358ac133176eee97259f"
+    "https://esm.sh/v89/pure-rand@5.0.1/lib/types/pure-rand.d.ts": "5df44747df1dce00a2140c078637ade9812852628aa9358ac133176eee97259f",
+    "https://raw.githubusercontent.com/Hyperion-BT/Helios/v0.6.5/helios.js": "de8381661be56d66767ba58ab32921c59d4448f66fd30c43c2f8a29ea62fb059"
   }
 }

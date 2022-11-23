@@ -27,7 +27,6 @@ export class Kupmios implements Provider {
   constructor(kupoUrl: string, ogmiosUrl: string) {
     this.kupoUrl = kupoUrl;
     this.ogmiosUrl = ogmiosUrl;
-    console.warn("The provider is not fully ready yet!");
   }
 
   async getProtocolParameters(): Promise<ProtocolParameters> {
@@ -207,8 +206,8 @@ export class Kupmios implements Provider {
 
   private kupmiosUtxosToUtxos(utxos: unknown): Promise<UTxO[]> {
     // deno-lint-ignore no-explicit-any
-    return Promise.all((utxos as any).map(async (utxo: any) =>
-      ({
+    return Promise.all((utxos as any).map(async (utxo: any) => {
+      return ({
         txHash: utxo.transaction_id,
         outputIndex: parseInt(utxo.output_index),
         address: utxo.address,
@@ -219,8 +218,10 @@ export class Kupmios implements Provider {
           });
           return a;
         })(),
-        datumHash: utxo.datum_hash || null,
-        datum: null,
+        datumHash: utxo?.datum_type === "hash" ? utxo.datum_hash : null,
+        datum: utxo?.datum_type === "inline"
+          ? await this.getDatum(utxo.datum_hash)
+          : null,
         scriptRef: utxo.script_hash &&
           (await (async () => {
             const {
@@ -244,8 +245,8 @@ export class Kupmios implements Provider {
               };
             }
           })()),
-      }) as UTxO
-    ));
+      }) as UTxO;
+    }));
   }
 
   private async ogmiosWsp(
