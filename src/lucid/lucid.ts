@@ -203,8 +203,6 @@ export class Lucid {
           .to_address()
           .to_bech32(undefined),
       // deno-lint-ignore require-await
-      unusedAddress: async (): Promise<Address | null> => null,
-      // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> => null,
       getUtxos: async (): Promise<UTxO[]> => {
         const address = await this.wallet.address();
@@ -259,20 +257,23 @@ export class Lucid {
   }
 
   selectWallet(api: WalletApi): Lucid {
+    const getAddressHex = async () => {
+      const [addressHex] = await api.getUsedAddresses();
+
+      if (addressHex) return addressHex;
+
+      const [unusedAddressHex] = await api.getUnusedAddresses();
+
+      return unusedAddressHex;
+    }
+
     this.wallet = {
       address: async (): Promise<Address | null> => {
-        const [addressHex] = await api.getUsedAddresses();
+        const addressHex = await getAddressHex();
         const address = addressHex
           ? C.Address.from_bytes(fromHex(addressHex)).to_bech32(undefined)
           : null;
         return address;
-      },
-      unusedAddress: async (): Promise<Address | null> => {
-        const [unusedAddressHex] = await api.getUnusedAddresses();
-        const unusedAddress = unusedAddressHex
-          ? C.Address.from_bytes(fromHex(unusedAddressHex)).to_bech32(undefined)
-          : null;
-        return unusedAddress;
       },
       rewardAddress: async (): Promise<RewardAddress | null> => {
         const [rewardAddressHex] = await api.getRewardAddresses();
@@ -342,8 +343,6 @@ export class Lucid {
     this.wallet = {
       // deno-lint-ignore require-await
       address: async (): Promise<Address> => address,
-      // deno-lint-ignore require-await
-      unusedAddress: async (): Promise<Address | null> => null,
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> => {
         const rewardAddr = !rewardAddress && addressDetails.stakeCredential
@@ -435,8 +434,6 @@ export class Lucid {
     this.wallet = {
       // deno-lint-ignore require-await
       address: async (): Promise<Address> => address,
-      // deno-lint-ignore require-await
-      unusedAddress: async (): Promise<Address | null> => null,
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> =>
         rewardAddress || null,
