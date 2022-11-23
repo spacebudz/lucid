@@ -256,10 +256,18 @@ export class Lucid {
   }
 
   selectWallet(api: WalletApi): Lucid {
+    const getAddressHex = async () => {
+      const [addressHex] = await api.getUsedAddresses();
+      if (addressHex) return addressHex;
+
+      const [unusedAddressHex] = await api.getUnusedAddresses();
+      return unusedAddressHex;
+    }
+
     this.wallet = {
       address: async (): Promise<Address> =>
         C.Address.from_bytes(
-          fromHex((await api.getUsedAddresses())[0]),
+          fromHex(await getAddressHex())
         ).to_bech32(undefined),
       rewardAddress: async (): Promise<RewardAddress | null> => {
         const [rewardAddressHex] = await api.getRewardAddresses();
