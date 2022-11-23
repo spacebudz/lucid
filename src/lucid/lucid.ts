@@ -205,11 +205,10 @@ export class Lucid {
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> => null,
       getUtxos: async (): Promise<UTxO[]> => {
-        const address = await this.wallet.address();
-        return address ? this.utxosAt(address) : [];
+        return await this.utxosAt(await this.wallet.address());
       },
       getUtxosCore: async (): Promise<Core.TransactionUnspentOutputs> => {
-        const utxos = await this.wallet.getUtxos();
+        const utxos = await this.utxosAt(await this.wallet.address());
         const coreUtxos = C.TransactionUnspentOutputs.new();
         utxos.forEach((utxo) => {
           coreUtxos.add(utxoToCore(utxo));
@@ -259,22 +258,17 @@ export class Lucid {
   selectWallet(api: WalletApi): Lucid {
     const getAddressHex = async () => {
       const [addressHex] = await api.getUsedAddresses();
-
       if (addressHex) return addressHex;
 
       const [unusedAddressHex] = await api.getUnusedAddresses();
-
       return unusedAddressHex;
     }
 
     this.wallet = {
-      address: async (): Promise<Address | null> => {
-        const addressHex = await getAddressHex();
-        const address = addressHex
-          ? C.Address.from_bytes(fromHex(addressHex)).to_bech32(undefined)
-          : null;
-        return address;
-      },
+      address: async (): Promise<Address> => 
+        C.Address.from_bytes(
+          fromHex(await getAddressHex())
+        ).to_bech32(undefined),
       rewardAddress: async (): Promise<RewardAddress | null> => {
         const [rewardAddressHex] = await api.getRewardAddresses();
         const rewardAddress = rewardAddressHex

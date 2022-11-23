@@ -29,12 +29,8 @@ const lucid = await Lucid.new();
 lucid.selectWalletFromPrivateKey(privateKey);
 
 Deno.test("PaymentKeyHash length", async () => {
-  const address = await lucid.wallet.address();
-
-  assertNotEquals(address, null);
-
   const { paymentCredential } = lucid.utils.getAddressDetails(
-    address as string,
+    await lucid.wallet.address(),
   );
   if (paymentCredential) {
     assertEquals(fromHex(paymentCredential.hash).length, 28);
@@ -44,13 +40,9 @@ Deno.test("PaymentKeyHash length", async () => {
 });
 
 Deno.test("Address type", async () => {
-  const address = await lucid.wallet.address();
-
-  assertNotEquals(address, null);
-
   const {
     address: { bech32 },
-  } = lucid.utils.getAddressDetails(address as string);
+  } = lucid.utils.getAddressDetails(await lucid.wallet.address());
   const enterpriseAddress = C.EnterpriseAddress.from_address(
     C.Address.from_bech32(bech32),
   )!
@@ -61,12 +53,8 @@ Deno.test("Address type", async () => {
 });
 
 Deno.test("No reward address", async () => {
-  const address = await lucid.wallet.address();
-
-  assertNotEquals(address, null);
-
   const { stakeCredential } = lucid.utils.getAddressDetails(
-    address as string,
+    await lucid.wallet.address(),
   );
   assertEquals(stakeCredential, undefined);
   assertEquals(await lucid.wallet.rewardAddress(), null);

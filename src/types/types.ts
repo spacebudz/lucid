@@ -176,7 +176,7 @@ export interface ExternalWallet {
 export type SignedMessage = { signature: string; key: string };
 
 export interface Wallet {
-  address(): Promise<Address | null>;
+  address(): Promise<Address>;
   rewardAddress(): Promise<RewardAddress | null>;
   getUtxos(): Promise<UTxO[]>;
   getUtxosCore(): Promise<Core.TransactionUnspentOutputs>;
