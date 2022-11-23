@@ -265,7 +265,7 @@ export class Lucid {
     }
 
     this.wallet = {
-      address: async (): Promise<Address> => 
+      address: async (): Promise<Address> =>
         C.Address.from_bytes(
           fromHex(await getAddressHex())
         ).to_bech32(undefined),
