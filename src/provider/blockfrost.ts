@@ -256,11 +256,22 @@ export class Blockfrost implements Provider {
             ).then((res) => res.json());
             return {
               type: type === "plutusV1" ? "PlutusV1" : "PlutusV2",
-              script,
+              script: tryToDoubleCborEncodedScript(script),
             };
           })()),
       })),
     )) as UTxO[];
+  }
+}
+
+export function tryToDoubleCborEncodedScript(script: string): string {
+  try {
+    C.PlutusScript.from_bytes(
+      C.PlutusScript.from_bytes(fromHex(script)).bytes(),
+    );
+    return script;
+  } catch (_e) {
+    return toHex(C.PlutusScript.new(fromHex(script)).to_bytes());
   }
 }
 
