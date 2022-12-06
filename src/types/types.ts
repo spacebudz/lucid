@@ -5,6 +5,13 @@ type CostModel = Record<string, number>;
 
 export type CostModels = Record<PlutusVersion, CostModel>;
 
+export interface Configuration {
+  enableChangeSplitting: boolean;
+  changeNativeAssetChunkSize: number;
+  changeMinUtxo: string;
+  changeCollateral: string;
+}
+
 export type ProtocolParameters = {
   minFeeA: number;
   minFeeB: number;
@@ -223,6 +230,29 @@ type Bytes = string | Uint8Array;
 /** JSON object */
 // deno-lint-ignore no-explicit-any
 export type Json = any;
+
+/**
+ * These are the arguments that conform a BuiltinData in Plutus:
+ *
+ * ```hs
+ * data Data =
+ *   Constr Integer [Data]
+ * | Map [(Data, Data)]
+ * | List [Data]
+ * | I Integer
+ * | B BS.ByteString
+ *   deriving stock (Show, Eq, Ord, Generic)
+ *   deriving anyclass (NFData)
+ * ```
+ * So we can define an arbitrary mapping for these types
+ *
+ *```
+ * bigint -> I
+ * string -> B
+ * Map    -> Map
+ * list   -> List
+ * ```
+ *
 
 /** Time in milliseconds */
 export type UnixTime = number;
