@@ -77,10 +77,7 @@ export class Data {
           );
         } else if (data instanceof Array) {
           const plutusList = C.PlutusList.new();
-          data.forEach((arg) => 
-              plutusList.add(serialize(Field.unpack(arg)))
-            );
-
+          Field.forEach(data, (arg) => plutusList.add(serialize(arg)))
           return C.PlutusData.new_list(plutusList);
         } else if (data instanceof Map) {
           const plutusMap = C.PlutusMap.new();
