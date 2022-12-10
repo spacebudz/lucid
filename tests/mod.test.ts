@@ -23,6 +23,7 @@ import {
   assertNotEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import * as fc from "https://esm.sh/fast-check@3.1.1";
+import { genPlutusData, stripFieldsAndBytes } from "../src/utils/test.ts";
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
 const lucid = await Lucid.new();
@@ -112,10 +113,64 @@ Deno.test("(De)serialize map", () => {
   const datum = Data.to(m);
   assertEquals(m, Data.from(datum) as Map<unknown, unknown>);
 });
+
 Deno.test("More complex datum structure", () => {
   const data = [new Constr(1, [new Map([[2n, 3n]])])];
   const datum = Data.to(data);
   assertEquals(data, Data.from(datum));
+});
+
+Deno.test("Quickcheck style (de)serialization & shape matching", () => {
+  let noShapeErrs = new Map<string, number>();
+  let shapeErrs = new Map<string, number>();
+  let otherErrs = new Map<string, number>();
+  let numCorrect = 0;
+  const iterations = 10000;
+  for (let i = 0; i < iterations; i++) {
+    console.log(i);
+    let data = undefined;
+    let datum = undefined;
+    try {
+      data = genPlutusData(4, 20);
+      datum = Data.to(data);
+      let correct = 1;
+      try {
+        assertEquals(stripFieldsAndBytes(data), Data.from(datum)); // without shapes
+      } catch(err) {
+        const e = (err as Error).message;
+        const num = noShapeErrs.get(e);
+        noShapeErrs.set(e, num ? num + 1 : 1);
+        correct = 0;
+      }
+      try {
+        assertEquals(data, Data.from(datum, data)); // with shapes
+      } catch(err) {
+        const e = (err as Error).message;
+        const num = shapeErrs.get(e);
+        shapeErrs.set(e, num ? num + 1 : 1);
+        correct = 0;
+      }
+      numCorrect += correct;
+    } catch(err) {
+      const e = (err as Error).message;
+      const num = otherErrs.get(e);
+      otherErrs.set(e, num ? num + 1 : 1);
+    }
+  }
+  noShapeErrs.forEach((num: number, err: string) => {
+    console.error(num + " x " + err);
+  })
+  console.log(" ==> noShapeErrs - total: " + noShapeErrs.size)
+  shapeErrs.forEach((num: number, err: string) => {
+    console.error(num + " x " + err);
+  })
+  console.log(" ==> shapeErrs - total: " + shapeErrs.size)
+  otherErrs.forEach((num: number, err: string) => {
+    console.error(num + " x " + err);
+  })
+  console.log(" ==> otherErrs - total: " + otherErrs.size)
+  console.log(numCorrect + " x correct")
+  assertEquals(numCorrect, iterations)
 });
 
 Deno.test("json datum to cbor datum", () => {

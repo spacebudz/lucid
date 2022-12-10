@@ -123,9 +123,13 @@ export class Data {
     }
 
     function deserializeMap(data: Core.PlutusData, shape?: Shape): Map<PlutusData, PlutusData> {
-      assert(shape === undefined || shape instanceof Map<Shape, Shape>, "expected Map");
       const m = data.as_map()!;
-      assert(shape === undefined || (shape as Map<Shape, Shape>).keys.length === m.len(), "wrong Map size");
+      if (shape) {
+        assert(shape instanceof Map<Shape, Shape>, "expected Map");
+        assert(
+          shape.size === m.len(), 
+          "wrong Map size ")// + m.len() + " vs " + shape.size + "\n" + m + "\n" + shape );
+      }
       const desM: Map<PlutusData, PlutusData> = new Map();
       const keys = m.keys();
       const shapeKeys = shape ? (shape as Map<Shape, Shape>).keys() : undefined
@@ -179,7 +183,8 @@ export class Data {
     }
 
     function deserializeBytes(data: Core.PlutusData, shape?: Shape): Bytes {
-      assert(shape === undefined || typeof shape === "string" || shape instanceof Uint8Array, "expected ByteString");
+      if (shape instanceof Uint8Array) return data.as_bytes()!;
+      assert(shape === undefined || typeof shape === "string", "expected ByteString");
       return toHex(data.as_bytes()!);
     }
 
