@@ -1,5 +1,5 @@
 import { Core } from "../core/mod.ts";
-import { Constr } from "../plutus/mod.ts";
+import { Constr, Field } from "../plutus/mod.ts";
 
 type CostModel = Record<string, number>;
 
@@ -216,13 +216,10 @@ export type PlutusData =
   | Array<PlutusData>
   | Map<PlutusData, PlutusData>
   | Constr<PlutusData> // We emulate the constr like this
-  | RecordData<PlutusData>; //Same rep as Array<PlutusData>, but we want to discuss record syntax
+  | Array<Field<PlutusData>>; //Same rep as Array<PlutusData>, but we want to discuss record syntax
 
 /** Hex in case of string. */
 export type Bytes = string | Uint8Array;
-
-/** Array to preserve ordering */
-export type RecordData<T> = Array<[string, T]>
 
 /** JSON object */
 // deno-lint-ignore no-explicit-any

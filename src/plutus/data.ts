@@ -1,5 +1,5 @@
 import { C, Core } from "../core/mod.ts";
-import { Datum, Json, PlutusData, Redeemer, Bytes, RecordData } from "../types/mod.ts";
+import { Datum, Json, PlutusData, Redeemer, Bytes } from "../types/mod.ts";
 import { fromHex, toHex } from "../utils/utils.ts";
 import { assert } from "https://deno.land/std@0.167.0/testing/asserts.ts";
 
@@ -13,13 +13,21 @@ export class Constr<T> {
   }
 }
 
+export class Field<T> {
+  key: string;
+  value: T;
+
+  constructor(key: string, value: T) {
+    this.key = key;
+    this.value = value;
+  }
+
+  static unpack<T>(data: T | Field<T>): T {
+    return data instanceof Field ? data.value : data
+  }
+}
+
 export type Shape = PlutusData
-  // | "bigint"
-  // | "Bytes"
-  // | Array<Shape>
-  // | Map<Shape, Shape>
-  // | Constr<Shape> // We emulate the constr like this
-  // | RecordData<Shape>; //Same rep as Array<PlutusData>, but we want to discuss record syntax
 
 export class Data {
   /** Convert PlutusData to Cbor encoded data */
@@ -55,8 +63,9 @@ export class Data {
           );
         } else if (data instanceof Array) {
           const plutusList = C.PlutusList.new();
-
-          data.forEach((arg) => plutusList.add(serialize(arg)));
+          data.forEach((arg) => 
+              plutusList.add(serialize(Field.unpack(arg)))
+            );
 
           return C.PlutusData.new_list(plutusList);
         } else if (data instanceof Map) {
@@ -122,32 +131,29 @@ export class Data {
       return desM;
     }
 
-    function deserializeRecord(data: Core.PlutusData, shape: RecordData<Shape>): RecordData<PlutusData> {
-      const l = data.as_list()!;
-      assert(shape.length === l.len(), "wrong Record size");
-  
-      const desR: RecordData<PlutusData> = [];
-      for (let i = 0; i < l.len(); i++) {
-        desR.push([
-          shape[i][0],
-          deserialize(l.get(i),shape[i][1])
-        ]);
-      }
-      return desR;
-    }
-
-    function deserializeList(data: Core.PlutusData, shape?: Shape): Array<PlutusData> {
-      if (shape instanceof Array<[string, Shape]>) return deserializeRecord(data, shape);
+    function deserializeList(data: Core.PlutusData, shape?: Shape): Array<PlutusData> | Array<Field<PlutusData>> {
       const l = data.as_list()!;
       if (shape) {
-        assert(shape instanceof Array<Shape>, "expected List");
-        assert((shape as Array<Shape>).length === l.len(), "wrong List size");
+        assert(shape instanceof Array, "expected List");
+        assert(shape.length === l.len(), "wrong List size");
+        if (shape[0] instanceof Field) {
+          const desR: Array<Field<Shape>> = [];
+          for (let i = 0; i < l.len(); i++) {
+            const field = shape[i];
+            assert(field instanceof Field<Shape>, "expected only Fields in Array")
+            desR.push(new Field(
+              field.key,
+              deserialize(l.get(i), field.value)
+            ));
+          }
+          return desR;
+        }
       }
       const desL: PlutusData[] = [];
       for (let i = 0; i < l.len(); i++) {
         desL.push(deserialize(
             l.get(i),
-            shape ? shape[i] : undefined
+            shape ? (shape as Array<PlutusData>)[i] : undefined
           ));
       }
       return desL;
@@ -228,7 +234,7 @@ export class Data {
       if (typeof data === "string") {
         return new TextDecoder().decode(fromHex(data));
       }
-      if (data instanceof Array) return data.map((v) => fromPlutusData(v));
+      if (data instanceof Array) return data.map((v) => fromPlutusData(Field.unpack(v)));
       if (data instanceof Map) {
         const tempJson: Json = {};
         data.forEach((value, key) => {
