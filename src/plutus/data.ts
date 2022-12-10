@@ -1,6 +1,7 @@
 import { C, Core } from "../core/mod.ts";
-import { Datum, Json, PlutusData, Redeemer } from "../types/mod.ts";
+import { Datum, Json, PlutusData, Redeemer, Bytes, RecordData } from "../types/mod.ts";
 import { fromHex, toHex } from "../utils/utils.ts";
+import { assert } from "https://deno.land/std@0.167.0/testing/asserts.ts";
 
 export class Constr<T> {
   index: number;
@@ -11,6 +12,14 @@ export class Constr<T> {
     this.fields = fields;
   }
 }
+
+export type Shape = PlutusData
+  // | "bigint"
+  // | "Bytes"
+  // | Array<Shape>
+  // | Map<Shape, Shape>
+  // | Constr<Shape> // We emulate the constr like this
+  // | RecordData<Shape>; //Same rep as Array<PlutusData>, but we want to discuss record syntax
 
 export class Data {
   /** Convert PlutusData to Cbor encoded data */
@@ -68,40 +77,110 @@ export class Data {
   }
 
   /** Convert Cbor encoded data to PlutusData */
-  static from(data: Datum | Redeemer): PlutusData {
+  static from(data: Datum | Redeemer, shape?: Shape): PlutusData {
     const plutusData = C.PlutusData.from_bytes(fromHex(data));
-    function deserialize(data: Core.PlutusData): PlutusData {
-      if (data.kind() === 0) {
-        const constr = data.as_constr_plutus_data()!;
-        const l = constr.data();
-        const desL = [];
-        for (let i = 0; i < l.len(); i++) {
-          desL.push(deserialize(l.get(i)));
-        }
-        return new Constr(parseInt(constr.alternative().to_str()), desL);
-      } else if (data.kind() === 1) {
-        const m = data.as_map()!;
-        const desM: Map<PlutusData, PlutusData> = new Map();
-        const keys = m.keys();
-        for (let i = 0; i < keys.len(); i++) {
-          desM.set(deserialize(keys.get(i)), deserialize(m.get(keys.get(i))!));
-        }
-        return desM;
-      } else if (data.kind() === 2) {
-        const l = data.as_list()!;
-        const desL = [];
-        for (let i = 0; i < l.len(); i++) {
-          desL.push(deserialize(l.get(i)));
-        }
-        return desL;
-      } else if (data.kind() === 3) {
-        return BigInt(data.as_integer()!.to_str());
-      } else if (data.kind() === 4) {
-        return toHex(data.as_bytes()!);
+
+    function deserializeConstr(data: Core.PlutusData, shape?: Shape): Constr<PlutusData> {
+      const constr = data.as_constr_plutus_data()!;
+      const index = parseInt(constr.alternative().to_str());
+      const l = constr.data();
+      if (shape) {
+        assert(shape instanceof Constr<Shape>, "expected Constr");
+        assert((shape as Constr<Shape>).index === index, "wrong Constr index");
+        assert((shape as Constr<Shape>).fields.length === l.len(), "wrong Constr size");
       }
-      throw new Error("Unsupported type");
+      const desL: PlutusData[] = [];
+      for (let i = 0; i < l.len(); i++) {
+        desL.push(deserialize(
+            l.get(i),
+            shape ? (shape as Constr<Shape>).fields[i] : undefined
+          ));
+      }
+      return new Constr(index, desL);
     }
-    return deserialize(plutusData);
+
+    function deserializeMap(data: Core.PlutusData, shape?: Shape): Map<PlutusData, PlutusData> {
+      assert(shape === undefined || shape instanceof Map<Shape, Shape>, "expected Map");
+      const m = data.as_map()!;
+      assert(shape === undefined || (shape as Map<Shape, Shape>).keys.length === m.len(), "wrong Map size");
+      const desM: Map<PlutusData, PlutusData> = new Map();
+      const keys = m.keys();
+      const shapeKeys = shape ? (shape as Map<Shape, Shape>).keys() : undefined
+      for (let i = 0; i < keys.len(); i++) {
+        const kShape = shapeKeys?.next().value
+        const vShape = shape ? (shape as Map<Shape, Shape>).get(kShape) : undefined
+        const k = deserialize(
+            keys.get(i),
+            kShape
+          );
+        const v = deserialize(
+            m.get(keys.get(i))!,
+            vShape
+          );
+        desM.set(k, v);
+      }
+      return desM;
+    }
+
+    function deserializeRecord(data: Core.PlutusData, shape: RecordData<Shape>): RecordData<PlutusData> {
+      const l = data.as_list()!;
+      assert(shape.length === l.len(), "wrong Record size");
+  
+      const desR: RecordData<PlutusData> = [];
+      for (let i = 0; i < l.len(); i++) {
+        desR.push([
+          shape[i][0],
+          deserialize(l.get(i),shape[i][1])
+        ]);
+      }
+      return desR;
+    }
+
+    function deserializeList(data: Core.PlutusData, shape?: Shape): Array<PlutusData> {
+      if (shape instanceof Array<[string, Shape]>) return deserializeRecord(data, shape);
+      const l = data.as_list()!;
+      if (shape) {
+        assert(shape instanceof Array<Shape>, "expected List");
+        assert((shape as Array<Shape>).length === l.len(), "wrong List size");
+      }
+      const desL: PlutusData[] = [];
+      for (let i = 0; i < l.len(); i++) {
+        desL.push(deserialize(
+            l.get(i),
+            shape ? shape[i] : undefined
+          ));
+      }
+      return desL;
+    }
+
+    function deserializeInteger(data: Core.PlutusData, shape?: Shape): bigint {
+      assert(shape === undefined || typeof shape === "bigint", "expected Integer");
+      return BigInt(data.as_integer()!.to_str());
+    }
+
+    function deserializeBytes(data: Core.PlutusData, shape?: Shape): Bytes {
+      assert(shape === undefined || typeof shape === "string" || shape instanceof Uint8Array, "expected ByteString");
+      return toHex(data.as_bytes()!);
+    }
+
+    function deserialize(data: Core.PlutusData, shape?: Shape): PlutusData {
+      switch (data.kind()) {
+        case 0:
+          return deserializeConstr(data, shape);
+        case 1:
+          return deserializeMap(data, shape);
+        case 2:
+          return deserializeList(data, shape);
+        case 3:
+          return deserializeInteger(data, shape);
+        case 4:
+          return deserializeBytes(data, shape);
+        default:
+          throw new Error("Unsupported type");
+      }
+    }
+
+    return deserialize(plutusData, shape);
   }
 
   /**
