@@ -120,7 +120,7 @@ Deno.test("More complex datum structure", () => {
   assertEquals(data, Data.from(datum));
 });
 
-Deno.test("Quickcheck style (de)serialization & shape matching", () => {
+Deno.test("(de)serialization & shape matching property tests", () => {
   let noShapeErrs = new Map<string, number>();
   let shapeErrs = new Map<string, number>();
   let otherErrs = new Map<string, number>();

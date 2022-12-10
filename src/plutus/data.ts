@@ -128,7 +128,7 @@ export class Data {
         assert(shape instanceof Map<Shape, Shape>, "expected Map");
         assert(
           shape.size === m.len(), 
-          "wrong Map size ")// + m.len() + " vs " + shape.size + "\n" + m + "\n" + shape );
+          "wrong Map size: " + m.len() + " vs. " + shape.size);
       }
       const desM: Map<PlutusData, PlutusData> = new Map();
       const keys = m.keys();
