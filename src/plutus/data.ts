@@ -25,6 +25,20 @@ export class Field<T> {
   static unpack<T>(data: T | Field<T>): T {
     return data instanceof Field ? data.value : data
   }
+
+  static forEach<T>(l: Array<T> | Array<Field<T>>, fn: (arg0: T) => void): void {
+    if (l[0] instanceof Field) {
+      l.forEach((arg) => {
+        assert(arg instanceof Field, "expected only Fields in Array");
+        fn(arg.value);
+      })
+    } else {
+      l.forEach((arg) => {
+        assert(!(arg instanceof Field), "expected no Fields in Array");
+        fn(arg);
+      })
+    }
+  }
 }
 
 export type Shape = PlutusData
