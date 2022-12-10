@@ -27,6 +27,9 @@ export class Field<T> {
   }
 
   static forEach<T>(l: Array<T> | Array<Field<T>>, fn: (arg0: T) => void): void {
+    if (l.length === 0) {
+      return;
+    }
     if (l[0] instanceof Field) {
       l.forEach((arg) => {
         assert(arg instanceof Field, "expected only Fields in Array");
@@ -147,7 +150,7 @@ export class Data {
       if (shape) {
         assert(shape instanceof Array, "expected List");
         assert(shape.length === l.len(), "wrong List size");
-        if (shape[0] instanceof Field) {
+        if (shape.length > 0 && shape[0] instanceof Field) {
           const desR: Array<Field<Shape>> = [];
           for (let i = 0; i < l.len(); i++) {
             const field = shape[i];
