@@ -125,7 +125,7 @@ Deno.test("Quickcheck style (de)serialization & shape matching", () => {
   let shapeErrs = new Map<string, number>();
   let otherErrs = new Map<string, number>();
   let numCorrect = 0;
-  const iterations = 10000;
+  const iterations = 1000;
   for (let i = 0; i < iterations; i++) {
     console.log(i);
     let data = undefined;
