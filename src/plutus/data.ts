@@ -121,7 +121,7 @@ export class Data {
         } else if (data instanceof Object) { // interpreting as record types
           return serialize(Object.values(data))
         }
-        throw new Error("Unsupported type");
+        throw new Error("Unsupported type: " + JSON.stringify(data));
       } catch (error) {
         throw new Error("Could not serialize the data: " + error);
       }
@@ -241,13 +241,13 @@ export class Data {
   }
 
   private static deserializeInteger(data: Core.PlutusData, shape: Shape): bigint {
-    assert(shape === undefined || typeof shape === "bigint", "expected Integer");
+    assert(shape === undefined || typeof shape === "bigint", "expected Integer, got " + JSON.stringify(data));
     return BigInt(data.as_integer()!.to_str());
   }
 
   private static deserializeBytes(data: Core.PlutusData, shape: Shape): Bytes {
     if (shape instanceof Uint8Array) return data.as_bytes()!;
-    assert(shape === undefined || typeof shape === "string", "expected ByteString");
+    assert(shape === undefined || typeof shape === "string", "expected ByteString, got " + JSON.stringify(data));
     return toHex(data.as_bytes()!);
   }
 
