@@ -169,24 +169,6 @@ export function genPlutusData(maxDepth: number, maxLength: number): [Shape, Plut
     const generator = maxDepth > 0 ? chooseGenerator() : choosePrimitiveGenerator()
 
     return generator(newMaxDepth, newMaxLength)
-
-    // const choice = Math.floor(Math.random() * numChoices)
-    // switch (choice) {
-    //     case 1:
-    //         return genString(maxLength)
-    //     case 2:
-    //         return genInteger(maxLength)
-    //     case 3:
-    //         return genList(newMaxDepth, newMaxLength)
-    //     case 4:
-    //         return genMap(newMaxDepth, newMaxLength)
-    //     case 5:
-    //         return genConstr(newMaxDepth, newMaxLength)
-    //     case 6:
-    //         return genRecord(newMaxDepth, newMaxLength)
-    //     default:
-    //         return genUint8Array(maxLength)
-    // }
 }
 
 export function strip(data: PlutusData): PlutusData {
