@@ -1,4 +1,4 @@
-import { Constr, Data, ListLike, Shape, UnsizedList, UnsizedMap } from "../plutus/data.ts"
+import { Constr, Data, Shape, UnsizedConstr, UnsizedList, UnsizedMap } from "../plutus/data.ts"
 import { List, PlutusData, RecordType } from "../types/types.ts"
 import { toHex, fromHex } from "./utils.ts"
 
@@ -120,6 +120,14 @@ function genConstr(maxDepth: number, maxLength: number): [Constr<Shape>, Constr<
     return [shape, c]
 }
 
+function genUnsizedConstr(maxDepth: number, maxLength: number): [UnsizedConstr<Shape>, Constr<PlutusData>] {
+    const [fieldsShape, fields] = genUnsizedList(maxDepth, maxLength)
+    const index = genNumber(maxLength)
+    const shape = new UnsizedConstr(index, fieldsShape.elemShape)
+    const c = new Constr(index, fields)
+    return [shape, c]
+}
+
 function genRecord(maxDepth: number, maxLength: number): [RecordType<Shape>, RecordType<PlutusData>] {
     const r: RecordType<PlutusData> = {}
     const shape: RecordType<Shape> = {}
@@ -149,6 +157,7 @@ export function chooseGenerator() {
         genMap,
         genUnsizedMap,
         genConstr,
+        genUnsizedConstr,
         genRecord
     ])
 }
