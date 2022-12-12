@@ -1,5 +1,5 @@
 import { Core } from "../core/mod.ts";
-import { Constr, Field } from "../plutus/mod.ts";
+import { Constr } from "../plutus/mod.ts";
 
 type CostModel = Record<string, number>;
 
@@ -210,13 +210,17 @@ export interface Wallet {
  *   deriving stock (Show, Eq, Ord, Generic)
  *   deriving anyclass (NFData)
  */
+// @ts-ignore: TODO fix circular reference
 export type PlutusData =
   | bigint
   | Bytes
-  | Array<PlutusData>
+  | List<PlutusData>
   | Map<PlutusData, PlutusData>
   | Constr<PlutusData> // We emulate the constr like this
-  | Array<Field<PlutusData>>; //Same rep as Array<PlutusData>, but we want to discuss record syntax
+  | RecordType<PlutusData>; // To represent record syntax. Represented as lists onchain.
+
+export type List<T> = Array<T>
+export type RecordType<T> = Record<string, T>
 
 /** Hex in case of string. */
 export type Bytes = string | Uint8Array;

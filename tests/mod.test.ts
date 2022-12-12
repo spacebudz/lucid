@@ -23,7 +23,7 @@ import {
   assertNotEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import * as fc from "https://esm.sh/fast-check@3.1.1";
-import { genPlutusData, stripFieldsAndBytes } from "../src/utils/test.ts";
+import { genPlutusData, strip } from "../src/utils/test.ts";
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
 const lucid = await Lucid.new();
@@ -121,9 +121,9 @@ Deno.test("More complex datum structure", () => {
 });
 
 Deno.test("(de)serialization & shape matching property tests", () => {
-  let noShapeErrs = new Map<string, number>();
-  let shapeErrs = new Map<string, number>();
-  let otherErrs = new Map<string, number>();
+  const noShapeErrs = new Map<string, number>();
+  const shapeErrs = new Map<string, number>();
+  const otherErrs = new Map<string, number>();
   let numCorrect = 0;
   const iterations = 1000;
   for (let i = 0; i < iterations; i++) {
@@ -135,7 +135,7 @@ Deno.test("(de)serialization & shape matching property tests", () => {
       datum = Data.to(data);
       let correct = 1;
       try {
-        assertEquals(stripFieldsAndBytes(data), Data.from(datum)); // without shapes
+        assertEquals(strip(data), Data.from(datum)); // without shapes
       } catch(err) {
         const e = (err as Error).message;
         const num = noShapeErrs.get(e);
