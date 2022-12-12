@@ -23,7 +23,7 @@ import {
   assertNotEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import * as fc from "https://esm.sh/fast-check@3.1.1";
-import { genPlutusData, strip } from "../src/utils/test.ts";
+import { genPlutusData, strip } from "../src/utils/testing.ts";
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
 const lucid = await Lucid.new();
