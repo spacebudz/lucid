@@ -24,18 +24,32 @@ export class Alternative<T> {
 }
 
 export class UnsizedConstr<T> {
-  index!: number;
-  fieldShape!: T;
+  index: number;
+  fieldShape: T;
+
+  constructor(index: number, fieldShape: T) {
+    this.index = index;
+    this.fieldShape = fieldShape;
+  }
 }
 
 export class UnsizedList<T> {
-  elemShape!: T;
+  elemShape: T;
+
+  constructor(elemShape: T) {
+    this.elemShape = elemShape;
+  }
 }
 
 
 export class UnsizedMap<Tk, Tv> {
-  keyShape!: Tk;
-  valueShape!: Tv;
+  keyShape: Tk;
+  valueShape: Tv;
+
+  constructor(keyShape: Tk, valueShape: Tv) {
+    this.keyShape = keyShape;
+    this.valueShape = valueShape;
+  }
 }
 
 // Seems we need Unsized* to represent containers of arbitrary size yet uniform content types.
@@ -56,9 +70,9 @@ export type Shape =
   | UnsizedList<Shape>
   | SumType<Shape>;
 
-type ListLike<T> = List<T> | RecordType<T> | UnsizedList<T>
-type MapLike<Tk, Tv> = Map<Tk, Tv> | UnsizedMap<Tk, Tv>
-type SumType<T> = Array<Alternative<T>>
+export type ListLike<T> = List<T> | RecordType<T> | UnsizedList<T>
+export type MapLike<Tk, Tv> = Map<Tk, Tv> | UnsizedMap<Tk, Tv>
+export type SumType<T> = Array<Alternative<T>>
 
 export class Data {
   /** Convert PlutusData to Cbor encoded data */

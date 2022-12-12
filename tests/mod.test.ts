@@ -128,10 +128,11 @@ Deno.test("(de)serialization & shape matching property tests", () => {
   const iterations = 1000;
   for (let i = 0; i < iterations; i++) {
     console.log(i);
-    let data = undefined;
-    let datum = undefined;
+    let shape;
+    let data;
+    let datum;
     try {
-      data = genPlutusData(4, 20);
+      [shape, data] = genPlutusData(1, 20);
       datum = Data.to(data);
       let correct = 1;
       try {
@@ -143,7 +144,7 @@ Deno.test("(de)serialization & shape matching property tests", () => {
         correct = 0;
       }
       try {
-        assertEquals(data, Data.from(datum, data)); // with shapes
+        assertEquals(data, Data.from(datum, shape)); // with shapes
       } catch(err) {
         const e = (err as Error).message;
         const num = shapeErrs.get(e);
