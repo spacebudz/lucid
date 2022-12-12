@@ -140,14 +140,15 @@ function genRecord(maxDepth: number, maxLength: number): [RecordType<Shape>, Rec
     return [shape, r]
 }
 
-export function choosePrimitiveGenerator() {
+function choosePrimitiveGenerator() {
     return randomChoice([
         //genUint8Array,
         genString,
         genInteger
     ])
 }
-export function chooseGenerator() {
+
+function chooseGenerator() {
     return randomChoice([
         //genUint8Array,
         genString,

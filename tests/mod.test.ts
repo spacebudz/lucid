@@ -125,7 +125,7 @@ Deno.test("(de)serialization & shape matching property tests", () => {
   const shapeErrs = new Map<string, number>();
   const otherErrs = new Map<string, number>();
   let numCorrect = 0;
-  const iterations = 100;
+  const iterations = 1000;
   for (let i = 0; i < iterations; i++) {
     console.log(i);
     let shape;
