@@ -32,8 +32,8 @@ function genChar(): string {
 
 function genString(maxLength: number): [string, string] {
     const l: string[] = []
-    const length =  8 * Math.floor(maxLength * Math.random())
-    for (let i = 0; i < length; i++) {
+    const maxi =  8 * Math.floor(maxLength * Math.random())
+    for (let i = 0; i < maxi; i++) {
         l.push(genChar())
     }
     const s = l.join("")
@@ -48,7 +48,8 @@ function genUint8Array(maxLength: number): [Uint8Array, Uint8Array] {
 function genList(maxLength: number, maxDepth: number): [Array<Shape>, Array<PlutusData>] {
     const l: Array<PlutusData> = []
     const shape: Array<Shape> = []
-    for (let i = 0; i < maxLength * Math.random(); i++) {
+    const maxi = maxLength * Math.random()
+    for (let i = 0; i < maxi; i++) {
         const [elemShape, elem] = genPlutusData(maxLength, maxDepth)
         shape.push(elemShape)
         l.push(elem)
@@ -61,7 +62,8 @@ function genUnsizedList(maxLength: number): [UnsizedList<Shape>, List<PlutusData
     const l: Array<PlutusData> = []
     let elemShape
     let elem
-    for (let i = 0; i < maxLength * Math.random(); i++) {
+    const maxi = maxLength * Math.random()
+    for (let i = 0; i < maxi; i++) {
         [elemShape, elem] = generator(maxLength) 
         l.push(elem)
     }
@@ -73,7 +75,8 @@ function genMap(maxLength: number, maxDepth: number): [Map<Shape, Shape>, Map<Pl
     const m = new Map<PlutusData, PlutusData>()
     const shape = new Map<Shape, Shape>()
     const keyStrings: string[] = []
-    for (let i = 0; i < maxLength * Math.random(); i++) {
+    const maxi = maxLength * Math.random()
+    for (let i = 0; i < maxi; i++) {
         const [keyShape, key] = genPlutusData(maxLength, maxDepth)
         const keyString = Data.to(key)
         if (!keyStrings.includes(keyString)) {
@@ -96,7 +99,8 @@ function genUnsizedMap(maxLength: number): [UnsizedMap<Shape, Shape>, Map<Plutus
     let valueShape
     let value
     const keyStrings: string[] = []
-    for (let i = 0; i < maxLength * Math.random(); i++) {
+    const maxi = maxLength * Math.random()
+    for (let i = 0; i < maxi; i++) {
         [keyShape, key] = keyGenerator(maxLength)
         const keyString = Data.to(key)
         if (!keyStrings.includes(keyString)) {
@@ -131,7 +135,8 @@ function genUnsizedConstr(maxLength: number): [UnsizedConstr<Shape>, Constr<Plut
 function genRecord(maxLength: number, maxDepth: number): [RecordType<Shape>, RecordType<PlutusData>] {
     const r: RecordType<PlutusData> = {}
     const shape: RecordType<Shape> = {}
-    for (let i = 0; i < maxLength * Math.random(); i++) {
+    const maxi = maxLength * Math.random()
+    for (let i = 0; i < maxi; i++) {
         const [fieldShape, field] = genPlutusData(maxLength, maxDepth)
         const [nameShape, name] = genString(maxLength)
         shape[nameShape] = fieldShape
@@ -143,13 +148,15 @@ function genRecord(maxLength: number, maxDepth: number): [RecordType<Shape>, Rec
 function genUnsizedValue(maxLength: number): [UnsizedMap<string, UnsizedMap<string, bigint>>, Map<string, Map<string, bigint>>] {
     const v = new Map<string, Map<string, bigint>>()
     const ccys: string[] = []
-    for (let i = 0; i < maxLength * Math.random(); i++) {
+    const maxi = maxLength * Math.random()
+    for (let i = 0; i < maxi; i++) {
         const ccy = genString(maxLength)[1]
         if (!ccys.includes(ccy)) {
             ccys.push(ccy)
             const tknMap = new Map<string, bigint>()
             const tkns: string[] = []
-            for (let j = 0; j < maxLength * Math.random(); j++) {
+            const maxj = maxLength * Math.random()
+            for (let j = 0; j < maxj; j++) {
                 const tkn = genString(maxLength)[1]
                 const amnt = genInteger(maxLength)[1]
                 if (!tkns.includes(tkn)) {
