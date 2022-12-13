@@ -123,7 +123,7 @@ export class Data {
         }
         throw new Error("Unsupported type: " + JSON.stringify(data));
       } catch (error) {
-        throw new Error("Could not serialize the data: " + error);
+        throw new Error(`Could not serialize ${JSON.stringify(data)}: ${error}`);
       }
     }
     return toHex(serialize(plutusData).to_bytes()) as Datum | Redeemer;
