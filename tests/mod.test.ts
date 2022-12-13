@@ -137,7 +137,7 @@ Deno.test("(de)serialization & shape matching property tests", () => {
       let correct = 1;
       try {
         assertEquals(strip(data), Data.from(datum)); // without shapes
-      } catch(err) {
+      } catch (err) {
         const e = (err as Error).message;
         const num = noShapeErrs.get(e);
         noShapeErrs.set(e, num ? num + 1 : 1);
@@ -145,14 +145,14 @@ Deno.test("(de)serialization & shape matching property tests", () => {
       }
       try {
         assertEquals(data, Data.from(datum, shape)); // with shapes
-      } catch(err) {
+      } catch (err) {
         const e = (err as Error).message;
         const num = shapeErrs.get(e);
         shapeErrs.set(e, num ? num + 1 : 1);
         correct = 0;
       }
       numCorrect += correct;
-    } catch(err) {
+    } catch (err) {
       const e = (err as Error).message;
       const num = otherErrs.get(e);
       otherErrs.set(e, num ? num + 1 : 1);
@@ -160,18 +160,18 @@ Deno.test("(de)serialization & shape matching property tests", () => {
   }
   noShapeErrs.forEach((num: number, err: string) => {
     console.error(num + " x " + err);
-  })
-  console.log(" ==> noShapeErrs - total: " + noShapeErrs.size)
+  });
+  console.log(" ==> noShapeErrs - total: " + noShapeErrs.size);
   shapeErrs.forEach((num: number, err: string) => {
     console.error(num + " x " + err);
-  })
-  console.log(" ==> shapeErrs - total: " + shapeErrs.size)
+  });
+  console.log(" ==> shapeErrs - total: " + shapeErrs.size);
   otherErrs.forEach((num: number, err: string) => {
     console.error(num + " x " + err);
-  })
-  console.log(" ==> otherErrs - total: " + otherErrs.size)
-  console.log(numCorrect + " x correct")
-  assertEquals(numCorrect, iterations)
+  });
+  console.log(" ==> otherErrs - total: " + otherErrs.size);
+  console.log(numCorrect + " x correct");
+  assertEquals(numCorrect, iterations);
 });
 
 Deno.test("json datum to cbor datum", () => {

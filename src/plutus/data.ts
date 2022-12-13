@@ -1,5 +1,13 @@
 import { C, Core } from "../core/mod.ts";
-import { Datum, Json, PlutusData, Redeemer, Bytes, RecordType, List } from "../types/mod.ts";
+import {
+  Bytes,
+  Datum,
+  Json,
+  List,
+  PlutusData,
+  RecordType,
+  Redeemer,
+} from "../types/mod.ts";
 import { fromHex, toHex } from "../utils/utils.ts";
 import { assert } from "https://deno.land/std@0.167.0/testing/asserts.ts";
 
@@ -41,7 +49,6 @@ export class UnsizedList<T> {
   }
 }
 
-
 export class UnsizedMap<Tk, Tv> {
   keyShape: Tk;
   valueShape: Tv;
@@ -70,9 +77,9 @@ export type Shape =
   | UnsizedList<Shape>
   | SumType<Shape>;
 
-export type ListLike<T> = List<T> | RecordType<T> | UnsizedList<T>
-export type MapLike<Tk, Tv> = Map<Tk, Tv> | UnsizedMap<Tk, Tv>
-export type SumType<T> = Array<Alternative<T>>
+export type ListLike<T> = List<T> | RecordType<T> | UnsizedList<T>;
+export type MapLike<Tk, Tv> = Map<Tk, Tv> | UnsizedMap<Tk, Tv>;
+export type SumType<T> = Array<Alternative<T>>;
 
 export class Data {
   /** Convert PlutusData to Cbor encoded data */
@@ -108,7 +115,7 @@ export class Data {
           );
         } else if (data instanceof Array) {
           const plutusList = C.PlutusList.new();
-          data.forEach((arg) => plutusList.add(serialize(arg)))
+          data.forEach((arg) => plutusList.add(serialize(arg)));
           return C.PlutusData.new_list(plutusList);
         } else if (data instanceof Map) {
           const plutusMap = C.PlutusMap.new();
@@ -119,17 +126,22 @@ export class Data {
 
           return C.PlutusData.new_map(plutusMap);
         } else if (data instanceof Object) { // interpreting as record types
-          return serialize(Object.values(data))
+          return serialize(Object.values(data));
         }
         throw new Error("Unsupported type: " + JSON.stringify(data));
       } catch (error) {
-        throw new Error(`Could not serialize ${JSON.stringify(data)}: ${error}`);
+        throw new Error(
+          `Could not serialize ${JSON.stringify(data)}: ${error}`,
+        );
       }
     }
     return toHex(serialize(plutusData).to_bytes()) as Datum | Redeemer;
   }
 
-  private static deserializeRecord(l: Core.PlutusList, shape: RecordType<Shape>): RecordType<PlutusData> {
+  private static deserializeRecord(
+    l: Core.PlutusList,
+    shape: RecordType<Shape>,
+  ): RecordType<PlutusData> {
     const fields: string[] = Object.keys(shape);
     const shapes: Shape[] = Object.values(shape);
     assert(l.len() === fields.length, "unexpected Record size");
@@ -140,12 +152,19 @@ export class Data {
     return desR;
   }
 
-  private static deserializeSum(index: number, fields: Core.PlutusList, shape: SumType<Shape>): RecordType<PlutusData> {
+  private static deserializeSum(
+    index: number,
+    fields: Core.PlutusList,
+    shape: SumType<Shape>,
+  ): RecordType<PlutusData> {
     assert(index < shape.length, "sum type Constr index out of bounds");
     return Data.deserializeRecord(fields, shape[index]);
   }
-  
-  private static deserializeConstr(data: Core.PlutusData, shape?: Shape): Constr<PlutusData> | RecordType<PlutusData> {
+
+  private static deserializeConstr(
+    data: Core.PlutusData,
+    shape?: Shape,
+  ): Constr<PlutusData> | RecordType<PlutusData> {
     const constr = data.as_constr_plutus_data()!;
     const index = parseInt(constr.alternative().to_str());
     const fields = constr.data();
@@ -162,21 +181,24 @@ export class Data {
       } else if (shape instanceof Array<Alternative<Shape>>) {
         return Data.deserializeSum(index, fields, shape);
       } else {
-        throw "expected Constr"
+        throw "expected Constr";
       }
     }
 
     const desL: PlutusData[] = [];
     for (let i = 0; i < fields.len(); i++) {
       desL.push(Data.deserialize(
-          fields.get(i),
-          getInnerShape(i)
-        ));
+        fields.get(i),
+        getInnerShape(i),
+      ));
     }
     return new Constr(index, desL);
   }
 
-  private static deserializeMap(data: Core.PlutusData, shape?: MapLike<Shape, Shape>): Map<PlutusData, PlutusData> {
+  private static deserializeMap(
+    data: Core.PlutusData,
+    shape?: MapLike<Shape, Shape>,
+  ): Map<PlutusData, PlutusData> {
     const m = data.as_map()!;
 
     let getKeyShape: () => Shape = () => undefined;
@@ -198,22 +220,25 @@ export class Data {
     const desM: Map<PlutusData, PlutusData> = new Map();
     const keys = m.keys();
     for (let i = 0; i < keys.len(); i++) {
-      const kShape = getKeyShape()
-      const vShape = getValueShape(kShape)
+      const kShape = getKeyShape();
+      const vShape = getValueShape(kShape);
       const k = Data.deserialize(
-          keys.get(i),
-          kShape
-        );
+        keys.get(i),
+        kShape,
+      );
       const v = Data.deserialize(
-          m.get(keys.get(i))!,
-          vShape
-        );
+        m.get(keys.get(i))!,
+        vShape,
+      );
       desM.set(k, v);
     }
     return desM;
   }
 
-  private static deserializeList(data: Core.PlutusData, shape?: ListLike<Shape>): List<PlutusData> | RecordType<PlutusData> {
+  private static deserializeList(
+    data: Core.PlutusData,
+    shape?: ListLike<Shape>,
+  ): List<PlutusData> | RecordType<PlutusData> {
     const l = data.as_list()!;
 
     let getInnerShape: (i: number) => Shape = () => undefined;
@@ -229,25 +254,34 @@ export class Data {
         throw "expected List";
       }
     }
-    
+
     const desL: PlutusData[] = [];
     for (let i = 0; i < l.len(); i++) {
       desL.push(Data.deserialize(
-          l.get(i),
-          getInnerShape(i)
-        ));
+        l.get(i),
+        getInnerShape(i),
+      ));
     }
     return desL;
   }
 
-  private static deserializeInteger(data: Core.PlutusData, shape: Shape): bigint {
-    assert(shape === undefined || typeof shape === "bigint", "expected Integer, got " + JSON.stringify(data));
+  private static deserializeInteger(
+    data: Core.PlutusData,
+    shape: Shape,
+  ): bigint {
+    assert(
+      shape === undefined || typeof shape === "bigint",
+      "expected Integer, got " + JSON.stringify(data),
+    );
     return BigInt(data.as_integer()!.to_str());
   }
 
   private static deserializeBytes(data: Core.PlutusData, shape: Shape): Bytes {
     if (shape instanceof Uint8Array) return data.as_bytes()!;
-    assert(shape === undefined || typeof shape === "string", "expected ByteString, got " + JSON.stringify(data));
+    assert(
+      shape === undefined || typeof shape === "string",
+      "expected ByteString, got " + JSON.stringify(data),
+    );
     return toHex(data.as_bytes()!);
   }
 
@@ -336,7 +370,7 @@ export class Data {
         });
         return tempJson;
       }
-      if (data instanceof Object) return fromPlutusData(Object.values(data)) // interpreting as records
+      if (data instanceof Object) return fromPlutusData(Object.values(data)); // interpreting as records
       throw new Error(
         "Unsupported type (Note: Constructor cannot be converted to JSON)",
       );

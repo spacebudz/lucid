@@ -219,8 +219,8 @@ export type PlutusData =
   | Constr<PlutusData> // We emulate the constr like this
   | RecordType<PlutusData>; // To represent record syntax. Represented as lists onchain.
 
-export type List<T> = Array<T>
-export type RecordType<T> = Record<string, T>
+export type List<T> = Array<T>;
+export type RecordType<T> = Record<string, T>;
 
 /** Hex in case of string. */
 export type Bytes = string | Uint8Array;
