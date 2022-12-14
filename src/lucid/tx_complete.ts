@@ -29,7 +29,7 @@ export class TxComplete {
     return this;
   }
 
-  /** Add an extra signature from a private key */
+  /** Add an extra signature from a private key. */
   signWithPrivateKey(privateKey: PrivateKey): TxComplete {
     const priv = C.PrivateKey.from_bech32(privateKey);
     const witness = C.make_vkey_witness(
@@ -40,7 +40,7 @@ export class TxComplete {
     return this;
   }
 
-  /** Sign the transaction and return the witnesses that were just made */
+  /** Sign the transaction and return the witnesses that were just made. */
   async partialSign(): Promise<TransactionWitnesses> {
     const witnesses = await this.lucid.wallet.signTx(this.txComplete);
     this.witnessSetBuilder.add_existing(witnesses);
@@ -63,7 +63,7 @@ export class TxComplete {
     return toHex(witnesses.build().to_bytes());
   }
 
-  /** Sign the transaction with the given witnesses */
+  /** Sign the transaction with the given witnesses. */
   assemble(witnesses: TransactionWitnesses[]): TxComplete {
     witnesses.forEach((witness) => {
       const witnessParsed = C.TransactionWitnessSet.from_bytes(
