@@ -1,6 +1,7 @@
 import {
   applyParamsToScript,
   Blockfrost,
+  Data,
   Lucid,
   MintingPolicy,
   PolicyId,
@@ -37,7 +38,7 @@ export async function mint(
 
   const tx = await lucid
     .newTx()
-    .mintAssets({ [unit]: 1n })
+    .mintAssets({ [unit]: 1n }, Data.empty())
     .attachMintingPolicy(mintingPolicy)
     .complete();
 
