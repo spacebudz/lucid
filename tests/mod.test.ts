@@ -105,6 +105,12 @@ Deno.test("Deserialize plutus data", () => {
   assertEquals(data, Data.to(desData));
 });
 
+Deno.test("(De)serialize plutus bigint data", () => {
+  const data = 42n
+  const datum = Data.to(data)
+  assertEquals(data, Data.from(datum))
+})
+
 Deno.test("(De)serialize map", () => {
   const m = new Map();
   m.set(2n, 1n);
