@@ -73,9 +73,7 @@ export class Blockfrost implements Provider {
       page++;
     }
 
-    return this.blockfrostUtxosToUtxos(
-      result.map((r) => ({ ...r, address })),
-    );
+    return this.blockfrostUtxosToUtxos(result);
   }
 
   async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
@@ -103,9 +101,7 @@ export class Blockfrost implements Provider {
       page++;
     }
 
-    return this.blockfrostUtxosToUtxos(
-      result.map((r) => ({ ...r, address })),
-    );
+    return this.blockfrostUtxosToUtxos(result);
   }
 
   async getUtxoByUnit(unit: Unit): Promise<UTxO> {
