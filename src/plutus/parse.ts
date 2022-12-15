@@ -17,11 +17,6 @@ export interface PType {
 }
 
 export type PLifted<T extends PType> = ReturnType<T[`plift`]>;
-// export type PData = PLifted<PType>
-
-// export interface PConstanted {
-//   new (name: string): MyClass;
-// }
 
 /** the most general type. Similar to any or undefined.
  * TODO consider type checks in the functions still.
