@@ -518,9 +518,9 @@ export class Tx {
     return this;
   }
 
-  /** Compose transactions (Similar to apply, but applies a tx object to the current tx instead). */
-  compose(tx: Tx): Tx {
-    this.tasks = this.tasks.concat(tx.tasks);
+  /** Compose transactions. */
+  compose(tx: Tx | null): Tx {
+    if (tx) this.tasks = this.tasks.concat(tx.tasks);
     return this;
   }
 
@@ -542,8 +542,10 @@ export class Tx {
       );
     }
 
-    for (const task of this.tasks) {
+    let task = this.tasks.shift();
+    while (task) {
       await task(this);
+      task = this.tasks.shift();
     }
 
     const utxos = await this.lucid.wallet.getUtxosCore();
@@ -601,11 +603,10 @@ export class Tx {
 
   /** Return the current transaction body in Hex encoded Cbor. */
   async toString(): Promise<string> {
-    let i = this.tasks.length;
-
-    while (i--) {
-      await this.tasks[i](this);
-      this.tasks.splice(i, 1);
+    let task = this.tasks.shift();
+    while (task) {
+      await task(this);
+      task = this.tasks.shift();
     }
 
     return toHex(this.txBuilder.to_bytes());
