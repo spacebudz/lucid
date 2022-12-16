@@ -26,7 +26,7 @@ export type Slot = number;
 
 export interface Provider {
   getProtocolParameters(): Promise<ProtocolParameters>;
-  /** Query UTxOs by the payment credential of the address */
+  /** Query UTxOs by the payment credential of the address. */
   getUtxos(address: Address): Promise<UTxO[]>;
   /** Query UTxOs by the payment credential of the address filtered by a specific unit. */
   getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]>;
@@ -45,7 +45,7 @@ export type Credential = {
   hash: KeyHash | ScriptHash;
 };
 
-/** Concatenation of policy id and asset name in Hex */
+/** Concatenation of policy id and asset name in Hex. */
 export type Unit = string;
 export type Assets = Record<Unit | "lovelace", bigint>;
 export type ScriptType = "Native" | PlutusVersion;
