@@ -504,26 +504,9 @@ export class Tx {
     return this;
   }
 
-  /** Conditionally apply to the transaction. */
-  applyIf(
-    condition: boolean,
-    callback: (thisTx: Tx) => unknown,
-  ): Tx {
-    if (condition) this.tasks.push((that) => callback(that));
-    return this;
-  }
-
-  /** Apply to the transaction. */
-  apply(
-    callback: (thisTx: Tx) => unknown,
-  ): Tx {
-    this.tasks.push((that) => callback(that));
-    return this;
-  }
-
-  /** Compose transactions (Similar to apply, but applies a tx object to the current tx instead). */
-  compose(tx: Tx): Tx {
-    this.tasks = this.tasks.concat(tx.tasks);
+  /** Compose transactions. */
+  compose(tx: Tx | null): Tx {
+    if (tx) this.tasks = this.tasks.concat(tx.tasks);
     return this;
   }
 
@@ -545,10 +528,10 @@ export class Tx {
       );
     }
 
-    let task = this.tasks.pop();
+    let task = this.tasks.shift();
     while (task) {
       await task(this);
-      task = this.tasks.pop();
+      task = this.tasks.shift();
     }
 
     const utxos = await this.lucid.wallet.getUtxosCore();
@@ -608,10 +591,10 @@ export class Tx {
 
   /** Return the current transaction body in Hex encoded Cbor. */
   async toString(): Promise<string> {
-    let task = this.tasks.pop();
+    let task = this.tasks.shift();
     while (task) {
       await task(this);
-      task = this.tasks.pop();
+      task = this.tasks.shift();
     }
 
     return toHex(this.txBuilder.to_bytes());
