@@ -41,7 +41,7 @@ export class ExtConstr<T> {
     this.fields = fields;
   }
 }
-// @ts-ignore
+// @ts-ignore TODO fix recursive type declaration
 export type ExtPlutusData =
   | bigint
   | string
@@ -126,7 +126,7 @@ export function stripConstr(data: ExtPlutusData): ExtPlutusData {
   }
 }
 
-export function maybeNdef(value: any) {
+export function maybeNdef<T>(value: T) {
   if (Math.random() > ndefChance) {
     return value;
   } else {
@@ -337,7 +337,6 @@ export function genPExample() {
       "tkn": new PByteString(),
       "amnt": new PInteger(),
     },
-    // @ts-ignore
     Example,
   );
 }
