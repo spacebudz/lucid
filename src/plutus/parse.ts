@@ -22,39 +22,54 @@ export type PLifted<T extends PType> = ReturnType<T[`plift`]>;
  * TODO consider type checks in the functions still.
  */
 export class PData implements PType {
+  constructor(
+    public asserts?: ((d: PlutusData) => void)[],
+  ) {}
   public plift(data: PlutusData): PLifted<PType> {
+    if (this.asserts) this.asserts.forEach((a) => a(data));
     return data;
   }
   public pconstant(data: PLifted<PType>): PlutusData {
+    // if (this.asserts) this.asserts.forEach((a) => a(data)); // TODO FIXME
     return data;
   }
 }
 
 export class PInteger implements PType {
+  constructor(
+    public asserts?: ((i: bigint) => void)[],
+  ) {}
   public plift = (i: bigint): bigint => {
     assert(
       typeof i === `bigint`,
       `plift: expected Integer: ${i}`,
     );
+    if (this.asserts) this.asserts.forEach((a) => a(i));
     return i;
   };
   public pconstant = (data: bigint): bigint => {
     assert(typeof data === `bigint`, `pconstant: expected Integer`);
+    if (this.asserts) this.asserts.forEach((a) => a(data));
     return data;
   };
 }
 
 export class PByteString implements PType {
+  constructor(
+    public asserts?: ((s: string) => void)[],
+  ) {}
   public plift = (s: string): string => {
     assert(
       typeof s === `string`,
       `plift: expected String: ${s}`,
     );
+    if (this.asserts) this.asserts.forEach((a) => a(s));
     return s;
   };
 
   public pconstant = (data: string): string => {
     assert(typeof data === `string`, `pconstant: expected String: ${data}`);
+    if (this.asserts) this.asserts.forEach((a) => a(data));
     return data;
   };
 }
@@ -70,7 +85,7 @@ export class PList<T extends PType> implements PType {
     assert(l instanceof Array, `List.plift: expected List: ${l}`);
     assert(!this.length || this.length === l.length, `plift: wrong length`);
     const l_ = l.map((elem) => this.pelem.plift(elem));
-    if (this.asserts) this.asserts.forEach((assert) => assert(l_));
+    if (this.asserts) this.asserts.forEach((a) => a(l_));
     return l_;
   };
 
@@ -80,7 +95,7 @@ export class PList<T extends PType> implements PType {
       !this.length || this.length === data.length,
       `pconstant: wrong length`,
     );
-    if (this.asserts) this.asserts.forEach((assert) => assert(data));
+    if (this.asserts) this.asserts.forEach((a) => a(data));
     return data.map(this.pelem.pconstant);
   };
 }
@@ -105,7 +120,7 @@ export class PMap<K extends PType, V extends PType> implements PType {
     m.forEach((value: PlutusData, key: PlutusData) => {
       p.set(this.pkey.plift(key), this.pvalue.plift(value));
     });
-    if (this.asserts) this.asserts.forEach((assert) => assert(p));
+    if (this.asserts) this.asserts.forEach((a) => a(p));
     return p;
   };
 
@@ -114,7 +129,7 @@ export class PMap<K extends PType, V extends PType> implements PType {
   ): Map<PlutusData, PlutusData> => {
     assert(data instanceof Map, `pconstant: expected Map`);
     assert(!this.size || this.size === data.size, `pconstant: wrong size`);
-    if (this.asserts) this.asserts.forEach((assert) => assert(data));
+    if (this.asserts) this.asserts.forEach((a) => a(data));
     const m = new Map<PLifted<K>, PLifted<V>>();
     data.forEach((value, key) => {
       m.set(key, value);
@@ -181,7 +196,7 @@ export class PRecord implements PType {
   constructor(
     public pfields: Record<string, PType>,
     public plifted?: { new (...params: any): Record<string, PLifted<PType>> },
-    public asserts?: ((self: Record<string, PLifted<PType>>) => void)[],
+    public asserts?: ((o: Record<string, PLifted<PType>>) => void)[],
   ) {}
 
   public plift = (l: Array<PlutusData>): Record<string, PLifted<PType>> => {
