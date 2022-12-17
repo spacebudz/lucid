@@ -1,18 +1,20 @@
-import { Constr, Data, PlutusData } from "../src/mod.ts";
+// TODO consider generating wrong cases as well
+
 import {
+  Constr,
+  Data,
   PByteString,
   PConstr,
   PData,
   PInteger,
   PLifted,
   PList,
+  PlutusData,
   PMap,
   PRecord,
   PSum,
   PType,
-} from "../src/plutus/parse.ts";
-
-// TODO consider generating wrong cases as well
+} from "../mod.ts";
 
 const zeroChance = 0.1;
 const ndefChance = 0.1;
@@ -21,16 +23,16 @@ const maxStringBytes = 100;
 export const gMaxLength = 12;
 export const gMaxDepth = 2;
 
-function randomChoice<T>(alternatives: T[]): T {
+export function randomChoice<T>(alternatives: T[]): T {
   return randomIndexedChoice(alternatives)[0];
 }
 
-function randomIndexedChoice<T>(alternatives: T[]): [T, number] {
+export function randomIndexedChoice<T>(alternatives: T[]): [T, number] {
   const choice = Math.floor(Math.random() * alternatives.length);
   return [alternatives[choice], choice];
 }
 
-class ExtConstr<T> {
+export class ExtConstr<T> {
   index: number;
   fields: Record<string, T>;
 
@@ -124,7 +126,7 @@ export function stripConstr(data: ExtPlutusData): ExtPlutusData {
   }
 }
 
-function maybeNdef(value: any) {
+export function maybeNdef(value: any) {
   if (Math.random() > ndefChance) {
     return value;
   } else {
@@ -132,7 +134,7 @@ function maybeNdef(value: any) {
   }
 }
 
-function genInteger(maxValue: number): number {
+export function genInteger(maxValue: number): number {
   if (Math.random() > zeroChance) {
     return Math.floor(Math.random() * maxValue);
   } else {
@@ -140,7 +142,7 @@ function genInteger(maxValue: number): number {
   }
 }
 
-function genString(alph: string): string {
+export function genString(alph: string): string {
   function genChar(): string {
     const choice = Math.floor(Math.random() * (alph.length + 10));
     if (choice < alph.length) {
@@ -158,18 +160,18 @@ function genString(alph: string): string {
   return s;
 }
 
-function genName(): string {
+export function genName(): string {
   const lower = "abcdefghijklmnopqrstuvwxyz";
   const upper = lower.toUpperCase();
   const alph = lower + upper; // TODO special characters
   return genString(alph);
 }
 
-function genByteString(): string {
+export function genByteString(): string {
   return genString("abcdef");
 }
 
-function genList(plist: PList<PType>): Array<ExtPlutusData> {
+export function genList(plist: PList<PType>): Array<ExtPlutusData> {
   const length = plist.length ? plist.length : genInteger(gMaxLength);
   const l = new Array<ExtPlutusData>();
   for (let i = 0; i < length; i++) {
@@ -178,7 +180,9 @@ function genList(plist: PList<PType>): Array<ExtPlutusData> {
   return l;
 }
 
-function genMap(pmap: PMap<PType, PType>): Map<ExtPlutusData, ExtPlutusData> {
+export function genMap(
+  pmap: PMap<PType, PType>,
+): Map<ExtPlutusData, ExtPlutusData> {
   const size = pmap.size ? pmap.size : genInteger(gMaxLength);
   const m = new Map<ExtPlutusData, ExtPlutusData>();
   const keyStrings = new Array<string>();
@@ -194,20 +198,22 @@ function genMap(pmap: PMap<PType, PType>): Map<ExtPlutusData, ExtPlutusData> {
   return m;
 }
 
-function genExtConstr(pconstr: PConstr): ExtConstr<ExtPlutusData> {
+export function genExtConstr(pconstr: PConstr): ExtConstr<ExtPlutusData> {
   const record = genRecord(pconstr.pfields);
   //   const fields = Object.values(record);
   return new ExtConstr(pconstr.index, record);
 }
 
-function genSum(psum: PSum): Constr<ExtPlutusData> {
+export function genSum(psum: PSum): Constr<ExtPlutusData> {
   const [precord, index] = randomIndexedChoice(psum.pconstrs);
   const record = genRecord(precord);
   const fields = Object.values(record);
   return new Constr(index, fields);
 }
 
-function genRecord(precord: PRecord): Example | Record<string, ExtPlutusData> {
+export function genRecord(
+  precord: PRecord,
+): Example | Record<string, ExtPlutusData> {
   if (precord.plifted) {
     return new Example(
       genByteString(),
@@ -255,24 +261,27 @@ export function genPPrimitive(): PType {
   return generator();
 }
 
-function genPData(): PData {
+export function genPData(): PData {
   return new PData();
 }
-function genPInteger(): PInteger {
+export function genPInteger(): PInteger {
   return new PInteger();
 }
 
-function genPByteString(): PByteString {
+export function genPByteString(): PByteString {
   return new PByteString();
 }
 
-function genPList(maxDepth: number, maxLength: number): PList<PLifted<PType>> {
+export function genPList(
+  maxDepth: number,
+  maxLength: number,
+): PList<PLifted<PType>> {
   const pelem = genPType(maxDepth, maxLength);
   const length = maybeNdef(genInteger(maxLength));
   return new PList(pelem, length);
 }
 
-function genPMap(
+export function genPMap(
   maxDepth: number,
   maxLength: number,
 ): PMap<PLifted<PType>, PLifted<PType>> {
@@ -282,7 +291,7 @@ function genPMap(
   return new PMap(pkey, pvalue, size);
 }
 
-function genPConstr(
+export function genPConstr(
   maxDepth: number,
   maxLength: number,
 ): PConstr {
@@ -291,7 +300,7 @@ function genPConstr(
   return new PConstr(index, pfields);
 }
 
-function genPSum(maxDepth: number, maxLength: number): PSum {
+export function genPSum(maxDepth: number, maxLength: number): PSum {
   const pconstrs = new Array<PRecord>();
   const maxi = genInteger(maxLength);
   for (let i = 0; i < maxi; i++) {
@@ -300,7 +309,7 @@ function genPSum(maxDepth: number, maxLength: number): PSum {
   return new PSum(pconstrs);
 }
 
-function genPRecord(maxDepth: number, maxLength: number): PRecord {
+export function genPRecord(maxDepth: number, maxLength: number): PRecord {
   const pfields: Record<string, PType> = {};
   const maxi = genInteger(maxLength);
   for (let i = 0; i < maxi; i++) {
@@ -313,7 +322,7 @@ function genPRecord(maxDepth: number, maxLength: number): PRecord {
 
 // sample named record
 
-class Example {
+export class Example {
   constructor(
     public ccy: string,
     public tkn: string,
@@ -321,7 +330,7 @@ class Example {
   ) {}
 }
 
-function genPExample() {
+export function genPExample() {
   return new PRecord(
     {
       "ccy": new PByteString(),

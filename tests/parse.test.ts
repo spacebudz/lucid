@@ -1,15 +1,16 @@
 import { assertEquals } from "https://deno.land/std@0.167.0/testing/asserts.ts";
-import { Data, PlutusData } from "../src/mod.ts";
-import { PType } from "../src/plutus/parse.ts";
 import {
+  Data,
   ExtPlutusData,
   genPType,
   genPTypeData,
   gMaxDepth,
   gMaxLength,
+  PlutusData,
   stripConstr,
   stripExt,
-} from "./generators.ts";
+} from "../src/mod.ts";
+import { PType } from "../src/plutus/parse.ts";
 
 Deno.test("parsing property tests", () => {
   const dataErrs = new Map<string, number>();
