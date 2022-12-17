@@ -138,15 +138,16 @@ export class PMap<K extends PType, V extends PType> implements PType {
   };
 }
 
-export class PConstr implements PType {
+export class PConstr<T extends Record<string, PLifted<PType>>>
+  implements PType {
   constructor(
     public index: number,
-    public pfields: PRecord,
+    public pfields: PRecord<T>,
   ) {}
 
   public plift = (
     c: Constr<PlutusData>,
-  ): Record<string, PLifted<PType>> => {
+  ): T | Record<string, PLifted<PType>> => {
     assert(c instanceof Constr, `plift: expected Constr`);
     assert(
       this.index === c.index,
@@ -167,14 +168,14 @@ export class PConstr implements PType {
   };
 }
 
-export class PSum implements PType {
+export class PSum<T extends Record<string, PLifted<PType>>> implements PType {
   constructor(
-    public pconstrs: Array<PRecord>,
+    public pconstrs: Array<PRecord<T>>,
   ) {}
 
   public plift = (
     c: Constr<PlutusData>,
-  ): Record<string, PLifted<PType>> => { // TODO the return type
+  ): T | Record<string, PLifted<PType>> => { // TODO the return type
     assert(c instanceof Constr, `plift: expected Constr`);
     assert(c.index < this.pconstrs.length, `plift: constr index out of bounds`);
     return this.pconstrs[c.index].plift(c.fields);
@@ -192,14 +193,15 @@ export class PSum implements PType {
   };
 }
 
-export class PRecord implements PType {
+export class PRecord<T extends Record<string, PLifted<PType>>>
+  implements PType {
   constructor(
     public pfields: Record<string, PType>,
-    public plifted?: { new (...params: any): Record<string, PLifted<PType>> },
-    public asserts?: ((o: Record<string, PLifted<PType>>) => void)[],
+    public plifted?: { new (...params: any): T },
+    public asserts?: ((o: T | Record<string, PLifted<PType>>) => void)[],
   ) {}
 
-  public plift = (l: Array<PlutusData>): Record<string, PLifted<PType>> => {
+  public plift = (l: Array<PlutusData>): T | Record<string, PType> => {
     assert(
       l instanceof Array,
       `Record.plift: expected List: ${l}`,
@@ -213,19 +215,20 @@ export class PRecord implements PType {
       obj[key] = pvalue.plift(value);
     });
 
-    const obj_ = this.plifted ? new this.plifted(...Object.values(obj)) : obj;
-
-    if (this.asserts) {
-      this.asserts.forEach((assert) => {
-        assert(obj_);
-      });
+    if (this.plifted) {
+      const obj_ = new this.plifted(...Object.values(obj));
+      if (this.asserts) {
+        this.asserts.forEach((assert) => {
+          assert(obj_);
+        });
+      }
+      return obj_;
     }
-
-    return obj_;
+    return obj;
   };
 
   public pconstant = (
-    data: Record<string, PLifted<PType>>,
+    data: T | Record<string, PLifted<PType>>,
   ): Array<PlutusData> => {
     assert(data instanceof Object, `PRecord.pconstant: expected Object`);
     assert(

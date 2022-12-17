@@ -201,21 +201,25 @@ export function genMap(
   return m;
 }
 
-export function genExtConstr(pconstr: PConstr): ExtConstr<ExtPlutusData> {
+export function genExtConstr<T extends Record<string, PLifted<PType>>>(
+  pconstr: PConstr<T>,
+): ExtConstr<ExtPlutusData> {
   const record = genRecord(pconstr.pfields);
   //   const fields = Object.values(record);
   return new ExtConstr(pconstr.index, record);
 }
 
-export function genSum(psum: PSum): Constr<ExtPlutusData> {
+export function genSum<T extends Record<string, PLifted<PType>>>(
+  psum: PSum<T>,
+): Constr<ExtPlutusData> {
   const [precord, index] = randomIndexedChoice(psum.pconstrs);
-  const record = genRecord(precord);
+  const record = genRecord<T>(precord);
   const fields = Object.values(record);
   return new Constr(index, fields);
 }
 
-export function genRecord(
-  precord: PRecord,
+export function genRecord<T extends Record<string, PLifted<PType>>>(
+  precord: PRecord<T>,
 ): Example | Record<string, ExtPlutusData> {
   if (precord.plifted) {
     return new Example(
@@ -294,17 +298,20 @@ export function genPMap(
   return new PMap(pkey, pvalue, size);
 }
 
-export function genPConstr(
+export function genPConstr<T extends Record<string, PLifted<PType>>>(
   maxDepth: number,
   maxLength: number,
-): PConstr {
+): PConstr<T> {
   const index = genNumber(maxInteger);
-  const pfields = genPRecord(maxDepth, maxLength);
-  return new PConstr(index, pfields);
+  const pfields = genPRecord<T>(maxDepth, maxLength);
+  return new PConstr<T>(index, pfields);
 }
 
-export function genPSum(maxDepth: number, maxLength: number): PSum {
-  const pconstrs = new Array<PRecord>();
+export function genPSum<T extends Record<string, PLifted<PType>>>(
+  maxDepth: number,
+  maxLength: number,
+): PSum<T> {
+  const pconstrs = new Array<PRecord<T>>();
   const maxi = genNumber(maxLength);
   for (let i = 0; i < maxi; i++) {
     pconstrs.push(genPRecord(maxDepth, maxLength));
@@ -312,7 +319,10 @@ export function genPSum(maxDepth: number, maxLength: number): PSum {
   return new PSum(pconstrs);
 }
 
-export function genPRecord(maxDepth: number, maxLength: number): PRecord {
+export function genPRecord<T extends Record<string, PLifted<PType>>>(
+  maxDepth: number,
+  maxLength: number,
+): PRecord<T> {
   const pfields: Record<string, PType> = {};
   const maxi = genNumber(maxLength);
   for (let i = 0; i < maxi; i++) {
