@@ -198,7 +198,7 @@ export class PRecord<T extends Record<string, PLifted<PType>>>
   constructor(
     public pfields: Record<string, PType>,
     public plifted?: { new (...params: any): T },
-    public asserts?: ((o: T | Record<string, PLifted<PType>>) => void)[],
+    public asserts?: ((o: T) => void)[],
   ) {}
 
   public plift = (l: Array<PlutusData>): T | Record<string, PType> => {
@@ -238,7 +238,7 @@ export class PRecord<T extends Record<string, PLifted<PType>>>
 
     if (this.asserts) {
       this.asserts.forEach((assert) => {
-        assert(data);
+        assert(data as T);
       });
     }
 
