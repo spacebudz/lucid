@@ -63,12 +63,15 @@ export class PList<T extends PType> implements PType {
   constructor(
     public pelem: T,
     public length?: number,
+    public asserts?: ((l: Array<PLifted<T>>) => void)[],
   ) {}
 
   public plift = (l: Array<PlutusData>): Array<PLifted<T>> => {
     assert(l instanceof Array, `List.plift: expected List: ${l}`);
     assert(!this.length || this.length === l.length, `plift: wrong length`);
-    return l.map((elem) => this.pelem.plift(elem));
+    const l_ = l.map((elem) => this.pelem.plift(elem));
+    if (this.asserts) this.asserts.forEach((assert) => assert(l_));
+    return l_;
   };
 
   public pconstant = (data: Array<PLifted<T>>): Array<PlutusData> => {
@@ -77,6 +80,7 @@ export class PList<T extends PType> implements PType {
       !this.length || this.length === data.length,
       `pconstant: wrong length`,
     );
+    if (this.asserts) this.asserts.forEach((assert) => assert(data));
     return data.map(this.pelem.pconstant);
   };
 }
@@ -86,6 +90,7 @@ export class PMap<K extends PType, V extends PType> implements PType {
     public pkey: K,
     public pvalue: V,
     public size?: number,
+    public asserts?: ((m: Map<PLifted<K>, PLifted<V>>) => void)[],
   ) {}
 
   public plift = (
@@ -100,6 +105,7 @@ export class PMap<K extends PType, V extends PType> implements PType {
     m.forEach((value: PlutusData, key: PlutusData) => {
       p.set(this.pkey.plift(key), this.pvalue.plift(value));
     });
+    if (this.asserts) this.asserts.forEach((assert) => assert(p));
     return p;
   };
 
@@ -108,6 +114,7 @@ export class PMap<K extends PType, V extends PType> implements PType {
   ): Map<PlutusData, PlutusData> => {
     assert(data instanceof Map, `pconstant: expected Map`);
     assert(!this.size || this.size === data.size, `pconstant: wrong size`);
+    if (this.asserts) this.asserts.forEach((assert) => assert(data));
     const m = new Map<PLifted<K>, PLifted<V>>();
     data.forEach((value, key) => {
       m.set(key, value);
@@ -152,13 +159,15 @@ export class PSum implements PType {
 
   public plift = (
     c: Constr<PlutusData>,
-  ): PObject<Record<string, PType>> | Record<string, PType> => { // TODO the return type
+  ): Record<string, PLifted<PType>> => { // TODO the return type
     assert(c instanceof Constr, `plift: expected Constr`);
     assert(c.index < this.pconstrs.length, `plift: constr index out of bounds`);
     return this.pconstrs[c.index].plift(c.fields);
   };
 
-  public pconstant = (data: Object): Constr<PlutusData> => {
+  public pconstant = (
+    data: Record<string, PLifted<PType>>,
+  ): Constr<PlutusData> => {
     assert(data instanceof Object, `PSum.pconstant: expected Object`);
     assert(
       !(data instanceof Array),
@@ -171,7 +180,8 @@ export class PSum implements PType {
 export class PRecord implements PType {
   constructor(
     public pfields: Record<string, PType>,
-    public plifted?: { new (...params: any): any },
+    public plifted?: { new (...params: any): Record<string, PLifted<PType>> },
+    public asserts?: ((self: Record<string, PLifted<PType>>) => void)[],
   ) {}
 
   public plift = (l: Array<PlutusData>): Record<string, PLifted<PType>> => {
@@ -179,7 +189,7 @@ export class PRecord implements PType {
       l instanceof Array,
       `Record.plift: expected List: ${l}`,
     );
-    let obj: Record<string, PLifted<PType>> = {};
+    const obj: Record<string, PLifted<PType>> = {};
 
     const pfields = Object.entries(this.pfields);
     l.forEach((value, i) => {
@@ -188,19 +198,32 @@ export class PRecord implements PType {
       obj[key] = pvalue.plift(value);
     });
 
-    if (this.plifted) {
-      return new this.plifted(...Object.values(obj)); // TODO ensure this works
-    } else {
-      return obj;
+    const obj_ = this.plifted ? new this.plifted(...Object.values(obj)) : obj;
+
+    if (this.asserts) {
+      this.asserts.forEach((assert) => {
+        assert(obj_);
+      });
     }
+
+    return obj_;
   };
 
-  public pconstant = (data: Object): Array<PlutusData> => {
+  public pconstant = (
+    data: Record<string, PLifted<PType>>,
+  ): Array<PlutusData> => {
     assert(data instanceof Object, `PRecord.pconstant: expected Object`);
     assert(
       !(data instanceof Array),
       `PRecord.pconstant: unexpected Array: ${data}`,
     );
+
+    if (this.asserts) {
+      this.asserts.forEach((assert) => {
+        assert(data);
+      });
+    }
+
     const l = new Array<PlutusData>();
     Object.entries(data).forEach(([key, value]) => {
       const pfield = this.pfields[key];

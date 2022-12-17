@@ -18,8 +18,8 @@ import {
 
 const zeroChance = 0.1;
 const ndefChance = 0.1;
-const maxInteger = 100;
-const maxStringBytes = 100;
+const maxInteger = Number.MAX_SAFE_INTEGER;
+const maxStringBytes = 100; // TODO higher
 export const gMaxLength = 12;
 export const gMaxDepth = 2;
 
@@ -61,8 +61,7 @@ export function genPTypeData(ptype: PType): ExtPlutusData {
     ); // note: might result in up to double depth
     return genPTypeData(actual);
   } else if (ptype instanceof PInteger) {
-    const i = genInteger(maxInteger);
-    return BigInt(i);
+    return genInteger();
   } else if (ptype instanceof PByteString) {
     return genByteString(); // TODO Uint8Arrays
   } else if (ptype instanceof PList) {
@@ -134,12 +133,16 @@ export function maybeNdef<T>(value: T) {
   }
 }
 
-export function genInteger(maxValue: number): number {
+export function genNumber(maxValue: number): number {
   if (Math.random() > zeroChance) {
     return Math.floor(Math.random() * maxValue);
   } else {
     return 0;
   }
+}
+
+export function genInteger(): bigint {
+  return BigInt(genNumber(maxInteger));
 }
 
 export function genString(alph: string): string {
@@ -152,7 +155,7 @@ export function genString(alph: string): string {
     }
   }
   const l: string[] = [];
-  const maxi = 8 * genInteger(maxStringBytes);
+  const maxi = 8 * genNumber(maxStringBytes);
   for (let i = 0; i < maxi; i++) {
     l.push(genChar());
   }
@@ -172,7 +175,7 @@ export function genByteString(): string {
 }
 
 export function genList(plist: PList<PType>): Array<ExtPlutusData> {
-  const length = plist.length ? plist.length : genInteger(gMaxLength);
+  const length = plist.length ? plist.length : genNumber(gMaxLength);
   const l = new Array<ExtPlutusData>();
   for (let i = 0; i < length; i++) {
     l.push(genPTypeData(plist.pelem));
@@ -183,7 +186,7 @@ export function genList(plist: PList<PType>): Array<ExtPlutusData> {
 export function genMap(
   pmap: PMap<PType, PType>,
 ): Map<ExtPlutusData, ExtPlutusData> {
-  const size = pmap.size ? pmap.size : genInteger(gMaxLength);
+  const size = pmap.size ? pmap.size : genNumber(gMaxLength);
   const m = new Map<ExtPlutusData, ExtPlutusData>();
   const keyStrings = new Array<string>();
   while (m.size < size) {
@@ -218,7 +221,7 @@ export function genRecord(
     return new Example(
       genByteString(),
       genByteString(),
-      BigInt(genInteger(maxInteger)),
+      BigInt(genNumber(maxInteger)),
     );
   } else {
     const r: Record<string, ExtPlutusData> = {};
@@ -277,7 +280,7 @@ export function genPList(
   maxLength: number,
 ): PList<PLifted<PType>> {
   const pelem = genPType(maxDepth, maxLength);
-  const length = maybeNdef(genInteger(maxLength));
+  const length = maybeNdef(genNumber(maxLength));
   return new PList(pelem, length);
 }
 
@@ -287,7 +290,7 @@ export function genPMap(
 ): PMap<PLifted<PType>, PLifted<PType>> {
   const pkey = genPType(maxDepth - 1, maxLength / 2);
   const pvalue = genPType(maxDepth - 1, maxLength / 2);
-  const size = maybeNdef(genInteger(maxLength));
+  const size = maybeNdef(genNumber(maxLength));
   return new PMap(pkey, pvalue, size);
 }
 
@@ -295,14 +298,14 @@ export function genPConstr(
   maxDepth: number,
   maxLength: number,
 ): PConstr {
-  const index = genInteger(maxInteger);
+  const index = genNumber(maxInteger);
   const pfields = genPRecord(maxDepth, maxLength);
   return new PConstr(index, pfields);
 }
 
 export function genPSum(maxDepth: number, maxLength: number): PSum {
   const pconstrs = new Array<PRecord>();
-  const maxi = genInteger(maxLength);
+  const maxi = genNumber(maxLength);
   for (let i = 0; i < maxi; i++) {
     pconstrs.push(genPRecord(maxDepth, maxLength));
   }
@@ -311,7 +314,7 @@ export function genPSum(maxDepth: number, maxLength: number): PSum {
 
 export function genPRecord(maxDepth: number, maxLength: number): PRecord {
   const pfields: Record<string, PType> = {};
-  const maxi = genInteger(maxLength);
+  const maxi = genNumber(maxLength);
   for (let i = 0; i < maxi; i++) {
     const key = genName();
     const pvalue = genPType(maxDepth, maxLength);
