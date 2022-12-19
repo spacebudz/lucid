@@ -1,5 +1,5 @@
 import {
-  Static,
+  Static as _Static,
   TEnum,
   TLiteral,
   TLiteralValue,
@@ -12,8 +12,6 @@ import { C, Core } from "../core/mod.ts";
 import { Datum, Json, Redeemer } from "../types/mod.ts";
 import { fromHex, toHex } from "../utils/utils.ts";
 
-export type { Static };
-
 export class Constr<T> {
   index: number;
   fields: T[];
@@ -22,6 +20,13 @@ export class Constr<T> {
     this.index = index;
     this.fields = fields;
   }
+}
+
+export declare namespace Data {
+  export type Static<T extends TSchema, P extends unknown[] = []> = _Static<
+    T,
+    P
+  >;
 }
 
 export type Data =
@@ -45,7 +50,7 @@ export const Data = {
     keySchema: T,
     valueSchema: U,
   ) {
-    return Type.Unsafe<Map<Static<T>, Static<U>>>({
+    return Type.Unsafe<Map<Data.Static<T>, Data.Static<U>>>({
       key: keySchema,
       value: valueSchema,
       type: "map",
@@ -66,7 +71,7 @@ export const Data = {
     return Type.Literal(literal);
   },
   Nullable: function <T extends TSchema>(schema: T) {
-    return Type.Unsafe<Static<T> | null>({ ...schema, nullable: true });
+    return Type.Unsafe<Data.Static<T> | null>({ ...schema, nullable: true });
   },
 
   /**

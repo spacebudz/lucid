@@ -1,4 +1,4 @@
-import { Constr, Data, Static } from "../mod.ts";
+import { Constr, Data } from "../mod.ts";
 import {
   assert,
   assertEquals,
@@ -6,38 +6,86 @@ import {
 import { applyParamsToScript } from "../src/mod.ts";
 
 Deno.test("Roundtrip data bigint", () => {
-  const datum = 1234n;
-  const newDatum = Data.from<bigint>(
-    Data.to<bigint>(datum, Data.BigInt),
-    Data.BigInt,
+  /*
+    - TypeScript:
+
+    type MyDatum = bigint
+
+    - Aiken:
+
+    type MyDatum = Int
+  */
+  const MyDatum = Data.BigInt;
+  type MyDatum = Data.Static<typeof MyDatum>;
+  const datum: MyDatum = 1234n;
+  const newDatum = Data.from<MyDatum>(
+    Data.to<MyDatum>(datum, MyDatum),
+    MyDatum,
   );
   assertEquals(datum, newDatum);
 });
 
 Deno.test("Roundtrip data string", () => {
-  const datum = "31313131"; //hex
-  const newDatum = Data.from<string>(
-    Data.to<string>(datum, Data.String),
-    Data.String,
+  /*
+    - TypeScript:
+
+    type MyDatum = string
+
+    - Aiken:
+
+    type MyDatum = ByteArray
+  */
+  const MyDatum = Data.String;
+  type MyDatum = Data.Static<typeof MyDatum>;
+  const datum: MyDatum = "31313131"; //hex
+  const newDatum = Data.from<MyDatum>(
+    Data.to<MyDatum>(datum, MyDatum),
+    MyDatum,
   );
   assertEquals(datum, newDatum);
 });
 
 Deno.test("Roundtrip data boolean", () => {
-  const datum = true;
-  const newDatum = Data.from<boolean>(
-    Data.to<boolean>(datum, Data.Boolean),
-    Data.Boolean,
+  /*
+    - TypeScript:
+
+    type MyDatum = boolean
+
+    - Aiken:
+
+    type MyDatum = Bool
+  */
+  const MyDatum = Data.Boolean;
+  type MyDatum = Data.Static<typeof MyDatum>;
+  const datum: MyDatum = true;
+  const newDatum = Data.from<MyDatum>(
+    Data.to<MyDatum>(datum, MyDatum),
+    MyDatum,
   );
   assertEquals(datum, newDatum);
 });
 
 Deno.test("Roundtrip data object", () => {
+  /*
+    - TypeScript:
+
+    type MyDatum = {
+      myVariableA: string;
+      myVariableB: bigint | null;
+    }
+
+    - Aiken:
+
+    type MyDatum {
+      myVariableA: ByteArray,
+      myVariableB: Option(Int),
+    }
+  */
   const MyDatum = Data.Object({
     myVariableA: Data.String,
     myVariableB: Data.Nullable(Data.BigInt),
   });
-  type MyDatum = Static<typeof MyDatum>;
+  type MyDatum = Data.Static<typeof MyDatum>;
 
   const datum: MyDatum = {
     myVariableA: "313131",
@@ -62,8 +110,17 @@ Deno.test("Roundtrip data object", () => {
 });
 
 Deno.test("Roundtrip data array", () => {
+  /*
+    - TypeScript:
+
+    type MyDatum = bigint[]
+
+    - Aiken:
+
+    type MyDatum = List<Int>
+  */
   const MyDatum = Data.Array(Data.BigInt);
-  type MyDatum = Static<typeof MyDatum>;
+  type MyDatum = Data.Static<typeof MyDatum>;
   const datum: MyDatum = [45n, 100n, 9994n, 4281958210985912095n];
   const newDatum = Data.from<MyDatum>(
     Data.to<MyDatum>(datum, MyDatum),
@@ -73,8 +130,17 @@ Deno.test("Roundtrip data array", () => {
 });
 
 Deno.test("Roundtrip data map", () => {
+  /*
+    - TypeScript:
+
+    type MyDatum = Map<bigint, string>
+
+    - Aiken:
+
+    type MyDatum = AssocList<#(Int, ByteArray)>
+  */
   const MyDatum = Data.Map(Data.BigInt, Data.String);
-  type MyDatum = Static<typeof MyDatum>;
+  type MyDatum = Data.Static<typeof MyDatum>;
   const datum: MyDatum = new Map([[3209n, "3131"], [
     249218490182n,
     "32323232",
@@ -87,13 +153,28 @@ Deno.test("Roundtrip data map", () => {
 });
 
 Deno.test("Roundtrip data enum", () => {
+  /*
+    - TypeScript:
+
+    type MyDatum = "Left" | "Down" | "Right" | { Up: [string]; }
+
+    - Aiken:
+
+    type MyDatum {
+      Left
+      Up(ByteArray)
+      Right
+      Down
+    }
+  */
   const MyDatum = Data.Enum([
     Data.Literal("Left"),
     Data.Object({ Up: Data.Tuple([Data.String]) }),
     Data.Literal("Right"),
     Data.Literal("Down"),
   ]);
-  type MyDatum = Static<typeof MyDatum>;
+
+  type MyDatum = Data.Static<typeof MyDatum>;
   const datumLeft: MyDatum = "Left";
   const newDatumLeft = Data.from<MyDatum>(
     Data.to<MyDatum>(datumLeft, MyDatum),
@@ -110,28 +191,65 @@ Deno.test("Roundtrip data enum", () => {
 });
 
 Deno.test("Roundtrip data any", () => {
-  const datum = new Constr(0, []);
-  const newDatum = Data.from<Data>(
-    Data.to<Data>(datum, Data.Any),
+  /*
+    - TypeScript:
+
+    type MyDatum = Data
+
+    - Aiken:
+
+    type MyDatum = Data
+  */
+  type MyDatum = Data;
+  const datum: MyDatum = new Constr(0, []);
+  const newDatum = Data.from<MyDatum>(
+    Data.to<MyDatum>(datum, Data.Any),
     Data.Any,
   );
   assertEquals(datum, newDatum);
 });
 
 Deno.test("Roundtrip data tuple", () => {
-  const datum = new Constr(0, [123n, "313131"]);
-  const t = Data.castFrom<[bigint, string]>(
-    datum,
-    Data.Tuple([Data.BigInt, Data.String]),
-  );
-  const newDatum = Data.from<Data>(
-    Data.to<Data>(datum, Data.Any),
-    Data.Any,
+  /*
+    - TypeScript:
+
+    type MyDatum = [bigint, string]
+
+    - Aiken:
+
+    type MyDatum = #(Int, ByteArray)
+  */
+  const MyDatum = Data.Tuple([Data.BigInt, Data.String]);
+  type MyDatum = Data.Static<typeof MyDatum>;
+  const datum: MyDatum = [123n, "313131"];
+  const newDatum = Data.from<MyDatum>(
+    Data.to<MyDatum>(datum, MyDatum),
+    MyDatum,
   );
   assertEquals(datum, newDatum);
 });
 
 Deno.test("Complex data structure", () => {
+  /*
+    - TypeScript:
+
+    type MyDatum = "Down" | {
+        Up: [{
+            someVariable: bigint | null;
+        }[]];
+    }
+
+    - Aiken:
+
+    type MyDatum {
+      Down
+      Up(List<Item>)
+    }
+
+    type Item {
+      someVariable: Option(Int)
+    }
+  */
   const MyDatum = Data.Enum([
     Data.Object({
       Up: Data.Tuple([
@@ -142,7 +260,7 @@ Deno.test("Complex data structure", () => {
     }),
     Data.Literal("Down"),
   ]);
-  type MyDatum = Static<typeof MyDatum>;
+  type MyDatum = Data.Static<typeof MyDatum>;
   const datum: MyDatum = {
     Up: [[{ someVariable: null }, { someVariable: 123n }, {
       someVariable: 9990324235325n,
