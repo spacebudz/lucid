@@ -137,7 +137,7 @@ Deno.test("Roundtrip data map", () => {
 
     - Aiken:
 
-    type MyDatum = AssocList<#(Int, ByteArray)>
+    type MyDatum = AssocList<Int, ByteArray>
   */
   const MyDatum = Data.Map(Data.BigInt, Data.String);
   type MyDatum = Data.Static<typeof MyDatum>;
