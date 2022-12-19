@@ -34,6 +34,8 @@ import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../misc/wallet.ts";
 import { signData, verifyData } from "../misc/sign_data.ts";
 import { Message } from "./message.ts";
 import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
+import { Data } from "../plutus/data.ts";
+import { TSchema } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
@@ -176,13 +178,14 @@ export class Lucid {
     return this.provider.awaitTx(txHash);
   }
 
-  async datumOf(utxo: UTxO): Promise<Datum> {
-    if (utxo.datum) return utxo.datum;
-    if (!utxo.datumHash) {
-      throw new Error("This UTxO does not have a datum hash.");
+  async datumOf<T = Datum>(utxo: UTxO, shape?: TSchema): Promise<T> {
+    if (!utxo.datum) {
+      if (!utxo.datumHash) {
+        throw new Error("This UTxO does not have a datum hash.");
+      }
+      utxo.datum = await this.provider.getDatum(utxo.datumHash);
     }
-    utxo.datum = await this.provider.getDatum(utxo.datumHash);
-    return utxo.datum;
+    return shape ? Data.from<T>(utxo.datum, shape) : utxo.datum as T;
   }
 
   /**
