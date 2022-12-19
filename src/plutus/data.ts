@@ -40,7 +40,7 @@ export const Data = {
   // Types
   // Note: Recursive types are not supported (yet)
   BigInt: Type.Unsafe<bigint>({ type: "bigint" }),
-  String: Type.String(),
+  String: Type.String(), // Bytes in hex
   Boolean: Type.Boolean(),
   Any: Type.Any(), // Data
   Array: function <T extends TSchema>(schema: T) {
