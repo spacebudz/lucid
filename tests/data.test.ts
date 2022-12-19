@@ -162,9 +162,9 @@ Deno.test("Roundtrip data enum", () => {
 
     type MyDatum {
       Left
-      Up(ByteArray)
-      Right
       Down
+      Right
+      Up(ByteArray)
     }
   */
   const MyDatum = Data.Enum([
