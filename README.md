@@ -71,8 +71,8 @@ Outputs a `dist` folder
 import { Blockfrost, Lucid } from "lucid-cardano"; // NPM
 
 const lucid = await Lucid.new(
-  new Blockfrost("https://cardano-testnet.blockfrost.io/api/v0", "<projectId>"),
-  "Testnet",
+  new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
+  "Preview",
 );
 
 // Assumes you are in a browser environment
