@@ -169,9 +169,9 @@ Deno.test("Roundtrip data enum", () => {
   */
   const MyDatum = Data.Enum([
     Data.Literal("Left"),
-    Data.Object({ Up: Data.Tuple([Data.String]) }),
-    Data.Literal("Right"),
     Data.Literal("Down"),
+    Data.Literal("Right"),
+    Data.Object({ Up: Data.Tuple([Data.String]) }),
   ]);
 
   type MyDatum = Data.Static<typeof MyDatum>;
