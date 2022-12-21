@@ -258,7 +258,7 @@ export class Lucid {
     return this;
   }
 
-  selectWallet(api: WalletApi): Lucid {
+  selectWallet(api: WalletApi, key?: string): Lucid {
     const getAddressHex = async () => {
       const [addressHex] = await api.getUsedAddresses();
       if (addressHex) return addressHex;
@@ -268,6 +268,7 @@ export class Lucid {
     };
 
     this.wallet = {
+      key,
       address: async (): Promise<Address> =>
         C.Address.from_bytes(
           fromHex(await getAddressHex()),
