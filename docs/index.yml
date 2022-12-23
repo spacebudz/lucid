@@ -1,6 +1,6 @@
 layout: layouts/landing.njk
 title: Lucid, Cardano off-chain framework
-description: Support for multiple file formats like Markdown, YAML, JavaScript, TypeScript, JSX, Nunjucks etc.
+description: Build transactions and interact with smart contracts the easy way on Cardano with JavaScript and TypeScript.
 header:
   title: Build on Cardano the <span>easy</span> way
 
