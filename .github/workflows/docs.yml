@@ -5,8 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  deploy:
-    name: Deploy
+  build:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # Needed for auth with Deno Deploy
@@ -22,8 +21,7 @@ jobs:
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
-        working-directory: ./docs
         with:
           project: "spacebudz-lucid"
-          import-map: "./import_map.json"
-          entrypoint: "serve.ts"
+          import-map: "./docs/import_map.json"
+          entrypoint: "./docs/serve.ts"
