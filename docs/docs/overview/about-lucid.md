@@ -13,7 +13,7 @@ Addionally Lucid is written in JavaScript/TypeScript which lowers the barrier to
 
 ## What Lucid is
 
-To understand what Lucid is we need to understand how Cardano works. On Cardano most of the computation happens off-chain. Smart contracts also known as validators are just scripts that lock UTxOs. In order to spend these UTxOs the validators needs to be executed, which then either result in true or false. A validator itself cannot change the state of the chain, only the transaction can. A validator makes sure the transaction is created with certain necessary constraints. So Lucid is framework that helps you to easily build these transactions to satisfy the constraints of the validator.  
+To understand what Lucid is we need to understand how Cardano works. On Cardano most of the computation happens off-chain. Smart contracts also known as validators are just scripts that lock UTxOs. In order to spend these UTxOs the validators needs to be executed, which then either result in true or false. A validator itself cannot change the state of the chain, only the transaction can. A validator makes sure the transaction is created with certain necessary constraints. So Lucid is a framework that helps you to easily build these transactions to satisfy the constraints of the validator.  
 
 ## What Lucid is not
 
