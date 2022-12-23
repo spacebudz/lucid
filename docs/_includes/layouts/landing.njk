@@ -1,0 +1,56 @@
+---
+layout: ./base.njk
+page_css: landing.css
+---
+<div class="landing">
+  <header class="landing-header">
+    <h1>{{ header.title | safe }}</h1>
+
+    <figure class="landing-header-fire">
+      {{ comp.fire() | safe }}
+    </figure>
+
+    <div class="landing-install">
+      {{ install.title | md | safe }}
+
+      <div class="landing-install-code">
+        <pre><code>{{ install.code }}</code></pre>
+        <a class="landing-install-cta" href="{{ install.url }}" aria-label="Continue to Getting Started">
+          <img src="/icons/arrow-right.svg" inline>
+        </a>
+      </div>
+
+      <a href="https://deno.land/x/lucid" target="_blank"><img src="https://shield.deno.dev/x/lucid" alt="deno.land/x/lucid" width="144" height="20"></a>
+    </div>
+  </header>
+
+
+  <section class="landing-usage">
+  {% for block in usage %}
+    <div class="landing-usage-text">
+      <h2>{{ block.title }}</h2>
+      {{ block.description | md | safe }}
+    </div>
+    <div class="landing-usage-code">
+      {{ block.code | md | safe }}
+    </div>
+  {% endfor %}
+  </section>
+
+  <ul class="landing-features">
+    {% for feature in features %}
+    <li>
+      <img src="{{ feature.img }}" inline>
+      <h3>{{ feature.title }}</h3>
+      {{ feature.description | md | safe }}
+    </li>
+    {% endfor %}
+  </ul>
+
+  <section class="landing-developed-by">
+    <h3>developed by</h3>
+    <h2>SpaceBudz</h2>
+    <a href="https://spacebudz.io" target="_blank"><img src="/icons/spacebudz.svg" width="90" height="90"></img></a>
+  </section>
+
+</div>

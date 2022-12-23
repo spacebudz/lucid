@@ -1,0 +1,29 @@
+.selector {
+  display: block;
+  appearance: none;
+  box-sizing: border-box;
+  height: 2em;
+  border: solid 2px var(--color-background-2);
+  background: none;
+  color: var(--color-foreground-1);
+  background-color: var(--color-background);
+  /* Chevron gray-light */
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="44px" height="44px" viewBox="0 0 44 44" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M22,23.5857864 L27.2928932,18.2928932 C27.6834175,17.9023689 28.3165825,17.9023689 28.7071068,18.2928932 C29.0976311,18.6834175 29.0976311,19.3165825 28.7071068,19.7071068 L22.7071068,25.7071068 C22.3165825,26.0976311 21.6834175,26.0976311 21.2928932,25.7071068 L15.2928932,19.7071068 C14.9023689,19.3165825 14.9023689,18.6834175 15.2928932,18.2928932 C15.6834175,17.9023689 16.3165825,17.9023689 16.7071068,18.2928932 L22,23.5857864 Z" fill="%23BBC2CE"></path></svg>');
+  background-repeat: no-repeat;
+  background-position: right center;
+  border-radius: var(--border-radius-small);
+  font: var(--text-caption-bold);
+  padding: 0 40px 0 1em;
+  transition-property: background-color, color, box-shadow, border-color;
+  transition-duration: var(--animation-duration);
+  outline: 0;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: initial;
+  max-width: 100%;
+
+  &:hover {
+      background-color: var(--color-background-1);
+      border-color: var(--color-background-2);
+  }
+}

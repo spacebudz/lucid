@@ -1,0 +1,205 @@
+<div class="fire">
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+  <div class="flame"></div>
+</div>
+
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" class="fire-effect" width="0" height="0">
+  <defs>
+    <filter id="fire-blur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 12 -10" result="goo" />
+      <feBlend in="SourceGraphic" in2="fire-blur" />
+    </filter>
+  </defs>
+</svg>
+
+<style>
+  .fire {
+    position: relative;
+    width: 12em;
+    height: 12em;
+    overflow: hidden;
+    border-radius: 0%;
+    filter: url(#fire-blur);
+  }
+  .flame,
+  .flame::after {
+    position: absolute;
+    border-radius: 10%;
+    animation-fill-mode: backwards;
+    animation-duration: 2.2s;
+    animation-timing-function: cubic-bezier(0.01, 0.5, 0.64, 1);
+    animation-iteration-count: infinite;
+  }
+  .flame {
+    left: 12%;
+    bottom: 0;
+    width: 5em;
+    height: 5em;
+    background: var(--color-blue-600);
+    animation-name: firecircle;
+    will-change: transform;
+  }
+  .flame::after {
+    content: "";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-blue-400);
+    animation-name: fireafter;
+    will-change: opacity;
+    opacity: 0;
+  }
+  .flame:nth-child(1),
+  .flame:nth-child(1)::after {
+    animation-delay: 0.14s;
+  }
+  .flame:nth-child(1) {
+    margin-left: 0.8em;
+    margin-bottom: -1em;
+  }
+  .flame:nth-child(2),
+  .flame:nth-child(2)::after {
+    animation-delay: 0.28s;
+  }
+  .flame:nth-child(2) {
+    margin-left: 1.1em;
+    margin-bottom: -1.8em;
+  }
+  .flame:nth-child(3),
+  .flame:nth-child(3)::after {
+    animation-delay: 0.42s;
+  }
+  .flame:nth-child(3) {
+    margin-left: 3.8em;
+    margin-bottom: -1.8em;
+  }
+  .flame:nth-child(4),
+  .flame:nth-child(4)::after {
+    animation-delay: 0.56s;
+  }
+  .flame:nth-child(4) {
+    margin-left: 1.8em;
+    margin-bottom: -2.1em;
+  }
+  .flame:nth-child(5),
+  .flame:nth-child(5)::after {
+    animation-delay: 0.7s;
+  }
+  .flame:nth-child(5) {
+    margin-left: 3.8em;
+    margin-bottom: -2.1em;
+  }
+  .flame:nth-child(6),
+  .flame:nth-child(6)::after {
+    animation-delay: 0.84s;
+  }
+  .flame:nth-child(6) {
+    margin-left: 3.3em;
+    margin-bottom: -1em;
+  }
+  .flame:nth-child(7),
+  .flame:nth-child(7)::after {
+    animation-delay: 0.98s;
+  }
+  .flame:nth-child(7) {
+    margin-left: 4em;
+    margin-bottom: -2.2em;
+  }
+  .flame:nth-child(8),
+  .flame:nth-child(8)::after {
+    animation-delay: 1.12s;
+  }
+  .flame:nth-child(8) {
+    margin-left: 0.1em;
+    margin-bottom: -1.5em;
+  }
+  .flame:nth-child(9),
+  .flame:nth-child(9)::after {
+    animation-delay: 1.26s;
+  }
+  .flame:nth-child(9) {
+    margin-left: 4.2em;
+    margin-bottom: -2em;
+  }
+  .flame:nth-child(10),
+  .flame:nth-child(10)::after {
+    animation-delay: 1.4s;
+  }
+  .flame:nth-child(10) {
+    margin-left: 1.8em;
+    margin-bottom: -2.2em;
+  }
+  .flame:nth-child(11),
+  .flame:nth-child(11)::after {
+    animation-delay: 1.54s;
+  }
+  .flame:nth-child(11) {
+    margin-left: 3.8em;
+    margin-bottom: -2.2em;
+  }
+  .flame:nth-child(12),
+  .flame:nth-child(12)::after {
+    animation-delay: 1.68s;
+  }
+  .flame:nth-child(12) {
+    margin-left: 0.2em;
+    margin-bottom: -2em;
+  }
+  .flame:nth-child(13),
+  .flame:nth-child(13)::after {
+    animation-delay: 1.82s;
+  }
+  .flame:nth-child(13) {
+    margin-left: 0.1em;
+    margin-bottom: -2.1em;
+  }
+  .flame:nth-child(14),
+  .flame:nth-child(14)::after {
+    animation-delay: 1.96s;
+  }
+  .flame:nth-child(14) {
+    margin-left: 2.1em;
+    margin-bottom: -2.1em;
+  }
+  .flame:nth-child(15),
+  .flame:nth-child(15)::after {
+    animation-delay: 2.1s;
+  }
+  .flame:nth-child(15) {
+    margin-left: 0.9em;
+    margin-bottom: -1.6em;
+  }
+  @keyframes firecircle {
+    0% {
+      transform: translateY(0) scale(1);
+    }
+
+    100% {
+      transform: translateY(-11em) scale(0);
+    }
+  }
+  @keyframes fireafter {
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+</style>

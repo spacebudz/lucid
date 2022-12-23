@@ -1,0 +1,228 @@
+layout: layouts/landing.njk
+title: Lucid, Cardano off-chain framework
+description: Support for multiple file formats like Markdown, YAML, JavaScript, TypeScript, JSX, Nunjucks etc.
+header:
+  title: Build on Cardano the <span>easy</span> way
+
+install:
+  title: "Run the following to [import Lucid](./docs/overview/import.md):"
+  code: import { Lucid } from "https://deno.land/x/lucid/mod.ts"
+  url: /docs/getting-started/your-first-tx/
+
+usage:
+  - title: Interoperability
+    description: |
+      Lucid can be run pretty much anywhere. From backend server, browser, to mobile. The library is written in Deno with TypeScript and can additionally be bundled into an NPM package or web bundle.
+    code: |
+      <lume-code>
+
+      ```js { title="mod.js" }
+      // Deno
+
+      import { Lucid } from "https://deno.land/x/lucid/mod.ts"
+
+      const lucid = await Lucid.new();
+      ```
+
+      ```ts { title="mod.ts" }
+      // Deno (TypeScript)
+
+      import { Lucid } from "https://deno.land/x/lucid/mod.ts"
+
+      const lucid: Lucid = await Lucid.new();
+      ```
+
+      ```js { title="index.js" }
+      // Node.js
+
+      import { Lucid } from "lucid-cardano"
+
+      const lucid = await Lucid.new();
+      ```
+
+      ```ts { title="index.ts" }
+      // Node.js (TypeScript)
+
+      import { Lucid } from "lucid-cardano"
+
+      const lucid: Lucid = await Lucid.new();
+      ```
+
+      ```html { title="index.html" }
+      <!-- Web -->
+      <script type="module">
+        import { Lucid } from "https://unpkg.com/lucid-cardano/web/mod.js"
+
+        const lucid = await Lucid.new();
+      </script>
+      ```
+
+      </lume-code>
+
+  - title: Clean and intuitive transaction API
+    description: |
+      Don't bother anymore with balancing your transaction inputs/outputs, calculating fees and script costs. Lucid abstracts away all that complexity.
+    code: |
+      <lume-code>
+
+      ```ts { title="send.js" }
+      const tx = await lucid.newTx()
+        .payToAddress("addr..", {lovelace: 40000000n})
+        .complete();
+      const signedTx = await lucid.sign().complete();
+      const txHash = await signedTx.submit();
+      ```
+
+      ```ts { title="multiple.js" }
+      const tx = await lucid.newTx()
+        .payToAddress("addra..", {lovelace: 10000000n})
+        .payToAddress("addrb..", {lovelace: 20000000n})
+        .payToAddress("addrc..", {lovelace: 30000000n})
+        .payToAddress("addrd..", {lovelace: 40000000n})
+        .payToAddress("addre..", {lovelace: 50000000n})
+        .complete();
+      ```
+
+      ```ts { title="multisig.js" }
+      const tx = await lucid.newTx()
+        .collectFrom([scriptUtxo])
+        .payToAddress("addr..", {lovelace: 50000000n})
+        .attachSpendingValidator(multisigScript)
+        .complete();
+      const signedTx = await tx.assemble(["<sig_1>", "<sig_2>"]).complete();
+      const txHash = await signedTx.submit();
+      ```
+
+      ```ts { title="contract.js" }
+      const [utxo] = await lucid.utxosAt("addr.."); // Contract address
+
+      const tx = await lucid.newTx()
+        .collectFrom([utxo], Data.empty()) // Redeemer
+        .payToContract("addr..", Data.to(new Constr(0, ["3131", 5n])), {
+          lovelace: 35000000n,
+        })
+        .complete();
+      ```
+
+      ```ts { title="compose.js" }
+      const txA = lucid.newTx().addSigner("addr..");
+      const txB = (utxo) => lucid.newTx().collectFrom([utxo]);
+
+      const [utxo] = await lucid.wallet.getUtxos();
+
+      const tx = await lucid.newTx()
+        .payToAddress("addra..", {lovelace: 10000000n})
+        .compose(txA)
+        .compose(txB(utxo))
+        .complete();
+      ```
+
+      </lume-code>
+
+  - title: Modular providers
+    description: |
+      Use one of the existing blockchain providers in Lucid or implement your own provider.
+    code: |
+      <lume-code>
+
+      ```js { title="blockfrost.js" }
+      import { Lucid, Blockfrost } from "https://deno.land/x/lucid/mod.ts"
+
+      const lucid = await Lucid.new(
+        new Blockfrost(
+          "https://cardano-mainnet.blockfrost.io/api/v0",
+          "<project_id>",
+        ),
+      );
+      ```
+      ```js { title="kupmios.js" }
+      import { Lucid, Kupmios } from "https://deno.land/x/lucid/mod.ts"
+
+      const lucid = await Lucid.new(
+        new Kupmios(
+          "http://localhost:1442",
+          "ws://localhost:1337",
+        ),
+      );
+      ```
+      ```js { title="custom.ts" }
+      import { Lucid, Provider } from "https://deno.land/x/lucid/mod.ts"
+
+      class MyProvider implements Provider { ... }
+
+      const lucid = await Lucid.new(
+        new MyProvider(),
+      );
+      ```
+
+      </lume-code>
+
+  - title: Diverse wallet selection
+    description: |
+      Select CIP-0030 compatible browser wallets, import a wallet from a private key or simply view a certain address.
+    code: |
+      <lume-code>
+
+      ```js { title="browser.js" }
+      const api = await window.cardano.nami.enable();
+      lucid.selectWallet(api);
+      ```
+
+      ```js { title="seed.js" }
+      const seedPhrase = lucid.utils.generateSeedPhrase();
+      lucid.selectWalletFromSeed(seedPhrase);
+      ```
+
+      ```js { title="privateKey.js" }
+      const privateKey = lucid.utils.generatePrivateKey();
+      lucid.selectWalletFromPrivateKey(privateKey);
+      ```
+
+      ```js { title="view.js" }
+      lucid.selectWalletFrom({address:"addr..."})
+      ```
+
+
+      </lume-code>
+
+  - title: Convenient and secure datum usability
+    description: |
+      Instead of having to deal with raw plutus data Lucid allows you to leverage the underlying data structures and primitives of JavaScript.
+    code: |
+      <lume-code>
+
+      ```ts { title="to.ts" }
+      const Listing = Data.Object({
+        owner: Data.String,
+        amount: Data.BigInt,
+        private: Data.Boolean,
+      });
+      type Listing = Data.Static<typeof Listing>;
+
+      const listing = Data.to<Listing>(
+        { owner: "31313131313131", amount: 5252352323n, private: false },
+        Listing,
+      );
+      ```
+
+      ```ts { title="from.ts" }
+      const listing: Listing = Data.from<Listing>(
+        "d8799f47313131313131311b0000000139108943d87980ff",
+        Listing,
+      );
+      ```
+
+      </lume-code>
+
+features:
+  - title: It's Deno!
+    img: /icons/deno.svg
+    description: Get started with Lucid straightaway, no package management needed or whatsoever. But Node.js developers are not left behind, Lucid is also available as NPM package.
+
+  - title: Compose it
+    img: /icons/compose.svg
+    description: Since Lucid is JavaScript you get a lot of flexibility and ease of use out of the box. Off-chain code from apps can be reused, imported or composed together with other apps.
+
+  - title: Be independent
+    img: /icons/independent.svg
+    description: Run the library entirely locally without the need to fetch data from external APIs. Thanks to <a href="https://github.com/aiken-lang/aiken" target="_blank">Aiken</a> Lucid can even evaluate smart contracts.

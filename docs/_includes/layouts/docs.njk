@@ -1,0 +1,45 @@
+---
+layout: ./base.njk
+page_css: docs.css
+---
+
+<div class="doc">
+  {% include "templates/doc-navbar.njk" %}
+
+  <main class="doc-content">
+    <header class="doc-header">
+      <h1>{{ title }}</h1>
+      {{ description | md | safe }}
+
+      {% include "templates/toc.njk" %}
+    </header>
+
+    <div class="doc-body">
+      {{ content | safe }}
+    </div>
+
+    <footer class="doc-footer">
+      <ul class="doc-pagination">
+        {%- set previousPost = search.previousPage(url, "url^=/docs/", "section_order order title") %}
+        {%- if previousPost %}
+        <li class="is-prev">
+          <a href="{{ previousPost.data.url }}" rel="prev">
+            ← Previous 
+            <strong>{{ previousPost.data.title }}</strong>
+          </a>
+        </li>
+        {% endif %}
+
+        {%- set nextPost = search.nextPage(url, "url^=/docs/", "section_order order title") %}
+        {%- if nextPost %}
+        <li class="is-next">
+          <a href="{{ nextPost.data.url }}" rel="next">
+            Next → 
+            <strong>{{ nextPost.data.title }}</strong>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </footer>
+  </main>
+</div>

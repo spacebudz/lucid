@@ -1,0 +1,66 @@
+@import "./github-theme.css";
+
+lume-code {
+  display: block;
+  
+  & .hljs {
+    border-radius: 0 0 var(--border-radius) var(--border-radius) !important;
+    border-top: 0 !important;
+  }
+
+  & .lume-code-menu {
+    position: relative;
+    display: flex;
+    list-style: none;
+    padding: 0 1em 0 88px;
+    margin: 0;
+    background: var(--color-background-2);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    overflow-x: auto;
+    column-gap: 1px;
+
+    & li {
+      margin: 0;
+      white-space: nowrap;
+    }
+  }
+
+  & .lume-code-menu::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 88px;
+    height: 100%;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="54" height="14" viewBox="0 0 54 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="%23FF5533"/><circle cx="27" cy="7" r="7" fill="%23E6CF5C"/><circle cx="47" cy="7" r="7" fill="%237ACC52"/></svg>');
+    background-repeat: no-repeat;
+    background-position: 16px 14px;
+  }
+}
+
+.lume-code-tab {
+  --background: var(--color-background-2);
+  --background-hover: var(--color-background-3);
+
+  display: block;
+  border: none;
+  border-radius: 0;
+  padding: 10px 1em;
+  font: var(--text-caption);
+  cursor: pointer;
+  transition-property: background-color, color;
+  transition-duration: var(--animation-duration);
+  background: var(--color-background-2);
+  color: var(--color-foreground-1);
+
+  &:hover {
+    background: var(--color-background-1);
+    color: var(--color-foreground);
+  }
+
+  &.is-active {
+    background: var(--color-background-1);
+    color: var(--color-foreground);
+    font: var(--text-caption-bold);
+  }
+}

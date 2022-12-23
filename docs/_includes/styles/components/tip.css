@@ -1,0 +1,32 @@
+.tip {
+  font: var(--text-caption);
+  letter-spacing: 0;
+  color: var(--color-tip-foreground);
+  background-color: var(--color-tip);
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path d="M20 27a1 1 0 0 1 .117 1.993L20 29H10a1 1 0 0 1-.117-1.993L10 27h10ZM14.735 1.003a11 11 0 0 1 7.054 19.653c-.45.348-.73.866-.78 1.423l-.009.168V23a2 2 0 0 1-1.85 1.995L19 25h-8a2 2 0 0 1-1.995-1.85L9 23v-.751a2.013 2.013 0 0 0-.778-1.584A10.984 10.984 0 0 1 4 12.062C3.967 6.095 8.773 1.143 14.735 1.003ZM15.059 3l-.277.003C9.91 3.117 5.973 7.174 6 12.052a8.984 8.984 0 0 0 3.215 6.844l.415.338a4.014 4.014 0 0 1 1.363 2.781l.007.231V23h8v-.759a4.035 4.035 0 0 1 1.38-3.016l.404-.33A9 9 0 0 0 15.06 3Zm1.008 2.1.116.012a6.99 6.99 0 0 1 5.719 5.712 1 1 0 1 1-1.972.337 4.99 4.99 0 0 0-4.082-4.077 1 1 0 0 1 .219-1.985Z" fill="gray"/></svg>');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-blend-mode: var(--background-blend-mode);
+  border: solid 1px var(--color-tip-1);
+  padding: .5em 1em .5em 50px;
+  border-radius: var(--border-radius-small);
+  margin: 2em 0 !important;
+
+  & + .tip {
+    margin-top: -1.5em !important;
+  }
+}
+
+:root[data-theme="light"] .tip {
+  --color-tip: var(--color-yellow-800);
+  --color-tip-foreground: var(--color-yellow-200);
+  --color-tip-1: var(--color-yellow-750);
+  --background-blend-mode: difference;
+}
+
+:root[data-theme="dark"] .tip {
+  --color-tip-foreground: var(--color-brown-600);
+  --color-tip: var(--color-brown-160);
+  --color-tip-1: var(--color-brown-200);
+  --background-blend-mode: screen;
+}

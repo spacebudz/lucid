@@ -1,0 +1,36 @@
+{
+  "importMap": "import_map.json",
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "deno.ns",
+      "deno.unstable"
+    ]
+  },
+  "tasks": {
+    "build": "deno task lume",
+    "serve": "deno task lume -s",
+    "lume": "echo \"import 'lume/cli.ts'\" | deno run --unstable -A -"
+  },
+  "lint": {
+    "files": {
+      "exclude": [
+        "./_site"
+      ]
+    },
+    "rules": {
+      "tags": [
+        "recommended"
+      ]
+    }
+  },
+  "fmt": {
+    "files": {
+      "exclude": [
+        "./_site"
+      ]
+    }
+  }
+}
