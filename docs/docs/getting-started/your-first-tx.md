@@ -4,7 +4,7 @@ description: How to create and submit a transaction with Lucid
 order: 2
 ---
 
-Let's create a simple transaction where we send `5 ADA` each to two recipients:
+Let's create a simple transaction where we send `5 ADA` to two recipients each:
 
 ```js
 const tx = await lucid.newTx()

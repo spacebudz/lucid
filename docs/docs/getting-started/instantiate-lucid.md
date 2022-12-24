@@ -4,8 +4,8 @@ description: Instantiate Lucid with a provider
 order: 0
 ---
 
-Lucid can be instantiate with a blockchain provider or without. Usually you want to select a provider in order to query data and submit transactions. Additionally you want to select a network. Lucid support `Mainnet`, `Testnet`, `Preprod` and `Preview` networks.
-If no network is selected `Mainnet` is chosen. Throughout the entire docs we are making use of the `Preprod` network. 
+Lucid can be instantiated with a blockchain provider or without. Usually you want to select a provider in order to query data and submit transactions. Additionally you want to select a network. Lucid supports the `Mainnet`, `Testnet`, `Preprod` and `Preview` networks.
+If no network is selected `Mainnet` is chosen by default. Throughout the entire docs we are making use of the `Preprod` network. 
 
 ```js
 import { Lucid, Blockfrost } from "https://deno.land/x/lucid/mod.ts"
