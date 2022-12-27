@@ -1,4 +1,4 @@
-import { Blockfrost, Data, Lucid, TxHash, utf8ToHex } from "../mod.ts";
+import { Blockfrost, Data, fromText, Lucid, TxHash } from "../mod.ts";
 
 const lucid = await Lucid.new(
   new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
@@ -20,9 +20,9 @@ type MyDatum = Data.Static<typeof MyDatum>;
 
 export async function send(): Promise<TxHash> {
   const datum: MyDatum = {
-    name: utf8ToHex("Lucid"),
+    name: fromText("Lucid"),
     age: 0n,
-    colors: [utf8ToHex("Blue"), utf8ToHex("Purple")],
+    colors: [fromText("Blue"), fromText("Purple")],
     description: null,
   };
 

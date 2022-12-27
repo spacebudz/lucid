@@ -2,12 +2,12 @@ import {
   applyParamsToScript,
   Blockfrost,
   Data,
+  fromText,
   Lucid,
   MintingPolicy,
   PolicyId,
   TxHash,
   Unit,
-  utf8ToHex,
 } from "../mod.ts";
 
 const lucid = await Lucid.new(
@@ -39,7 +39,7 @@ const policyId: PolicyId = lucid.utils.mintingPolicyToId(
 export async function mint(
   name: string,
 ): Promise<TxHash> {
-  const unit: Unit = policyId + utf8ToHex(name);
+  const unit: Unit = policyId + fromText(name);
 
   const tx = await lucid
     .newTx()

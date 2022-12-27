@@ -144,20 +144,22 @@ export class Utils {
   }
 
   validatorToScriptHash(validator: Validator): ScriptHash {
-    if (validator.type === "Native") {
-      return C.NativeScript.from_bytes(fromHex(validator.script))
-        .hash(C.ScriptHashNamespace.NativeScript)
-        .to_hex();
-    } else if (validator.type === "PlutusV1") {
-      return C.PlutusScript.from_bytes(fromHex(validator.script))
-        .hash(C.ScriptHashNamespace.PlutusV1)
-        .to_hex();
-    } else if (validator.type === "PlutusV2") {
-      return C.PlutusScript.from_bytes(fromHex(validator.script))
-        .hash(C.ScriptHashNamespace.PlutusV2)
-        .to_hex();
+    switch (validator.type) {
+      case "Native":
+        return C.NativeScript.from_bytes(fromHex(validator.script))
+          .hash(C.ScriptHashNamespace.NativeScript)
+          .to_hex();
+      case "PlutusV1":
+        return C.PlutusScript.from_bytes(fromHex(validator.script))
+          .hash(C.ScriptHashNamespace.PlutusV1)
+          .to_hex();
+      case "PlutusV2":
+        return C.PlutusScript.from_bytes(fromHex(validator.script))
+          .hash(C.ScriptHashNamespace.PlutusV2)
+          .to_hex();
+      default:
+        throw new Error("No variant matched");
     }
-    throw new Error("No variant matched");
   }
 
   mintingPolicyToId(mintingPolicy: MintingPolicy): PolicyId {
@@ -201,7 +203,7 @@ export class Utils {
     return slotToBeginUnixTime(slot, SLOT_CONFIG_NETWORK[this.lucid.network]);
   }
 
-  /** Address can be in Bech32 or Hex */
+  /** Address can be in Bech32 or Hex. */
   getAddressDetails(address: string): AddressDetails {
     return getAddressDetails(address);
   }
@@ -227,7 +229,7 @@ function addressFromHexOrBech32(address: string): Core.Address {
   }
 }
 
-/** Address can be in Bech32 or Hex */
+/** Address can be in Bech32 or Hex. */
 export function getAddressDetails(address: string): AddressDetails {
   // Base Address
   try {
@@ -535,12 +537,14 @@ export function toHex(bytes: Uint8Array): string {
   return encodeToString(bytes);
 }
 
-export function hexToUtf8(hex: string): string {
+/** Convert a Hex encoded string to a Utf-8 encoded string. */
+export function toText(hex: string): string {
   return new TextDecoder().decode(decode(new TextEncoder().encode(hex)));
 }
 
-export function utf8ToHex(utf8: string): string {
-  return toHex(new TextEncoder().encode(utf8));
+/** Convert a Utf-8 encoded string to a Hex encoded string. */
+export function fromText(text: string): string {
+  return toHex(new TextEncoder().encode(text));
 }
 
 export function toPublicKey(privateKey: PrivateKey): PublicKey {

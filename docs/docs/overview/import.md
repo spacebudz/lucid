@@ -43,7 +43,7 @@ import { Lucid } from "lucid-cardano"
 const lucid = await Lucid.new();
 ```
 
-**Note:** Lucid is an ES Module. You need to set `{"type" : "module"}` in your `packages.json`.\
+**Note:** Lucid is an ES Module. You need to set `{"type" : "module"}` in your `package.json`.\
 To bundle your NPM project you may need to adjust your bundler. 
 For instance when using [Webpack](https://webpack.js.org/) you need to enbale in the `webpack.config.json`:
 ```json
