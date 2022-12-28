@@ -157,7 +157,7 @@ export type OutRef = { txHash: TxHash; outputIndex: number };
 
 export type AddressType = "Base" | "Enterprise" | "Pointer" | "Reward";
 
-export type Network = "Mainnet" | "Testnet" | "Preview" | "Preprod";
+export type Network = "Mainnet" | "Testnet" | "Preview" | "Preprod" | "Custom";
 
 export type AddressDetails = {
   type: AddressType;

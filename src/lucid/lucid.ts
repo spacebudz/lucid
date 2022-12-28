@@ -36,6 +36,7 @@ import { Message } from "./message.ts";
 import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
 import { Data } from "../plutus/data.ts";
 import { TSchema } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
+import { Simulator } from "../provider/simulator.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
@@ -50,6 +51,16 @@ export class Lucid {
     if (provider) {
       lucid.provider = provider;
       const protocolParameters = await provider.getProtocolParameters();
+
+      if (lucid.provider instanceof Simulator) {
+        lucid.network = "Custom";
+        SLOT_CONFIG_NETWORK[lucid.network] = {
+          zeroTime: lucid.provider.now(),
+          zeroSlot: 0,
+          slotLength: 1000,
+        };
+      }
+
       const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
       lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
         .coins_per_utxo_byte(
@@ -109,6 +120,9 @@ export class Lucid {
    * If provider or network unset, no overwriting happens. Provider or network from current instance are taken then.
    */
   async switchProvider(provider?: Provider, network?: Network): Promise<Lucid> {
+    if (this.network === "Custom") {
+      throw new Error("Cannot switch when on custom network.");
+    }
     const lucid = await Lucid.new(
       provider,
       network,
