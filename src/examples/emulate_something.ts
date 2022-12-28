@@ -39,7 +39,8 @@ async function mint(): Promise<TxHash> {
     .mintAssets({
       [toUnit(policyId, fromText("Wow"))]: 123n,
     })
-    .attachMintingPolicy(mintingPolicy).validTo(emulator.now() + 30000)
+    .validTo(emulator.now() + 30000)
+    .attachMintingPolicy(mintingPolicy)
     .complete();
   const signedTx = await tx.sign().complete();
 
