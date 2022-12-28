@@ -319,6 +319,7 @@ export class Emulator implements Provider {
     })();
 
     const nativeHashesOptional: Record<ScriptHash, Core.NativeScript> = {};
+    const plutusHashesOptional: ScriptHash[] = [];
 
     const plutusHashes = (() => {
       const scriptHashes = [];
@@ -344,6 +345,7 @@ export class Emulator implements Provider {
 
     const resolvedInputs = [];
 
+    // Check existence of inputs and look for script refs.
     for (let i = 0; i < inputs.len(); i++) {
       const input = inputs.get(i);
 
@@ -378,14 +380,14 @@ export class Emulator implements Provider {
           }
           case "PlutusV1": {
             const script = C.PlutusScript.from_bytes(fromHex(scriptRef.script));
-            plutusHashes.push(
+            plutusHashesOptional.push(
               script.hash(C.ScriptHashNamespace.PlutusV1).to_hex(),
             );
             break;
           }
           case "PlutusV2": {
             const script = C.PlutusScript.from_bytes(fromHex(scriptRef.script));
-            plutusHashes.push(
+            plutusHashesOptional.push(
               script.hash(C.ScriptHashNamespace.PlutusV2).to_hex(),
             );
             break;
@@ -394,6 +396,53 @@ export class Emulator implements Provider {
       }
 
       resolvedInputs.push({ entry, type });
+    }
+
+    // Check existence of reference inputs and look for script refs.
+    for (let i = 0; i < (body.reference_inputs()?.len() || 0); i++) {
+      const input = body.reference_inputs()!.get(i);
+
+      const outRef = input.transaction_id().to_hex() + input.index().to_str();
+
+      const entry = this.ledger[outRef] || this.mempool[outRef];
+
+      if (!entry || entry.spent) {
+        throw new Error(
+          `Could not read UTxO: ${
+            JSON.stringify({
+              txHash: entry?.utxo.txHash,
+              outputIndex: entry?.utxo.outputIndex,
+            })
+          }\nIt does not exist or was already spent.`,
+        );
+      }
+
+      const scriptRef = entry.utxo.scriptRef;
+      if (scriptRef) {
+        switch (scriptRef.type) {
+          case "Native": {
+            const script = C.NativeScript.from_bytes(fromHex(scriptRef.script));
+            nativeHashesOptional[
+              script.hash(C.ScriptHashNamespace.NativeScript).to_hex()
+            ] = script;
+            break;
+          }
+          case "PlutusV1": {
+            const script = C.PlutusScript.from_bytes(fromHex(scriptRef.script));
+            plutusHashesOptional.push(
+              script.hash(C.ScriptHashNamespace.PlutusV1).to_hex(),
+            );
+            break;
+          }
+          case "PlutusV2": {
+            const script = C.PlutusScript.from_bytes(fromHex(scriptRef.script));
+            plutusHashesOptional.push(
+              script.hash(C.ScriptHashNamespace.PlutusV2).to_hex(),
+            );
+            break;
+          }
+        }
+      }
     }
 
     const redeemers = (() => {
@@ -451,7 +500,11 @@ export class Emulator implements Provider {
                 `Invalid native script witness. Script hash: ${credential.hash}`,
               );
             }
-          } else if (plutusHashes.includes(credential.hash)) {
+            break;
+          } else if (
+            plutusHashes.includes(credential.hash) ||
+            plutusHashesOptional.includes(credential.hash)
+          ) {
             if (
               redeemers.find((redeemer) =>
                 redeemer.tag === tag && redeemer.index === index
