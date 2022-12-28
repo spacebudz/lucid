@@ -186,7 +186,7 @@ export class Emulator implements Provider {
   }
 
   /**
-   * Simulate the behaviour of the reward distribution at epoch boundaries.
+   * Emulates the behaviour of the reward distribution at epoch boundaries.
    * Stake keys need to be registered and delegated like on a real chain in order to receive rewards.
    */
   distributeRewards(rewards: Lovelace) {
