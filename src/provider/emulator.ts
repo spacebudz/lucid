@@ -28,7 +28,7 @@ import {
 /** Concatentation of txHash + outputIndex */
 type FlatOutRef = string;
 
-export class Simulator implements Provider {
+export class Emulator implements Provider {
   ledger: Record<FlatOutRef, { utxo: UTxO; spent: boolean }>;
   mempool: Record<FlatOutRef, { utxo: UTxO; spent: boolean }> = {};
   /**
@@ -185,6 +185,10 @@ export class Simulator implements Provider {
     return Promise.resolve(true);
   }
 
+  /**
+   * Simulate the behaviour of the reward distribution at epoch boundaries.
+   * Stake keys need to be registered and delegated like on a real chain in order to receive rewards.
+   */
   distributeRewards(rewards: Lovelace) {
     for (
       const [rewardAddress, { registeredStake, delegation }] of Object.entries(
@@ -240,8 +244,8 @@ export class Simulator implements Provider {
     }
 
     // Validity interval
-    // Lower bound is inclusive?
-    // Upper bound is inclusive?
+    // Lower bound is inclusive
+    // Upper bound is exclusive
     const lowerBound = body.validity_start_interval()?.to_str()
       ? parseInt(body.validity_start_interval()!.to_str())
       : null;
@@ -249,13 +253,13 @@ export class Simulator implements Provider {
       ? parseInt(body.ttl()!.to_str())
       : null;
 
-    if (Number.isInteger(lowerBound) && lowerBound! < this.slot) {
+    if (Number.isInteger(lowerBound) && this.slot < lowerBound!) {
       throw new Error(
         `Lower bound (${lowerBound}) not in slot range (${this.slot}).`,
       );
     }
 
-    if (Number.isInteger(upperBound) && upperBound! > this.slot) {
+    if (Number.isInteger(upperBound) && this.slot >= upperBound!) {
       throw new Error(
         `Upper bound (${upperBound}) not in slot range (${this.slot}).`,
       );
@@ -291,7 +295,7 @@ export class Simulator implements Provider {
           .to_hex();
 
         if (
-          witness.verify(
+          !witness.verify(
             Number.isInteger(lowerBound)
               ? C.BigNum.from_str(lowerBound!.toString())
               : undefined,
