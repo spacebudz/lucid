@@ -36,7 +36,7 @@ import { Message } from "./message.ts";
 import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
 import { Data } from "../plutus/data.ts";
 import { TSchema } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
-import { Simulator } from "../provider/simulator.ts";
+import { Emulator } from "../provider/emulator.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
@@ -52,7 +52,7 @@ export class Lucid {
       lucid.provider = provider;
       const protocolParameters = await provider.getProtocolParameters();
 
-      if (lucid.provider instanceof Simulator) {
+      if (lucid.provider instanceof Emulator) {
         lucid.network = "Custom";
         SLOT_CONFIG_NETWORK[lucid.network] = {
           zeroTime: lucid.provider.now(),
