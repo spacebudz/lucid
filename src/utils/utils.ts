@@ -185,11 +185,11 @@ export class Utils {
   }
 
   generatePrivateKey(): PrivateKey {
-    return C.PrivateKey.generate_ed25519().to_bech32();
+    return generatePrivateKey();
   }
 
   generateSeedPhrase(): string {
-    return generateMnemonic(256);
+    return generateSeedPhrase();
   }
 
   unixTimeToSlot(unixTime: UnixTime): Slot {
@@ -364,6 +364,14 @@ export function getAddressDetails(address: string): AddressDetails {
   } catch (_e) { /* pass */ }
 
   throw new Error("No address type matched for: " + address);
+}
+
+export function generatePrivateKey(): PrivateKey {
+  return C.PrivateKey.generate_ed25519().to_bech32();
+}
+
+export function generateSeedPhrase(): string {
+  return generateMnemonic(256);
 }
 
 export function valueToAssets(value: Core.Value): Assets {
