@@ -522,6 +522,8 @@ export function networkToId(network: Network): number {
       return 0;
     case "Preprod":
       return 0;
+    case "Custom":
+      return 0;
     case "Mainnet":
       return 1;
     default:

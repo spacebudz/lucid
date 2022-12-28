@@ -3558,6 +3558,18 @@ declare export class NativeScript {
    * @returns {Ed25519KeyHashes}
    */
   get_required_signers(): Ed25519KeyHashes;
+
+  /**
+   * @param {BigNum | void} lower_bound
+   * @param {BigNum | void} upper_bound
+   * @param {Ed25519KeyHashes} key_hashes
+   * @returns {boolean}
+   */
+  verify(
+    lower_bound: BigNum | void,
+    upper_bound: BigNum | void,
+    key_hashes: Ed25519KeyHashes
+  ): boolean;
 }
 /**
  */
@@ -7278,6 +7290,10 @@ declare export class TransactionInputs {
    * @param {TransactionInput} elem
    */
   add(elem: TransactionInput): void;
+
+  /**
+   */
+  sort(): void;
 }
 /**
  */

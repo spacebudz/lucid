@@ -12,6 +12,8 @@ export const SLOT_CONFIG_NETWORK: Record<
     zeroSlot: 86400,
     slotLength: 1000,
   }, // Starting at Shelley era
+  /** Customizable slot config (Initialized with 0 values). */
+  Custom: { zeroTime: 0, zeroSlot: 0, slotLength: 0 },
 };
 
 export function slotToBeginUnixTime(
