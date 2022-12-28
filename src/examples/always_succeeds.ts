@@ -38,8 +38,8 @@ const alwaysSucceedAddress: Address = lucid.utils.validatorToAddress(
   alwaysSucceedScript,
 );
 
-const Datum = () => Data.empty();
-const Redeemer = () => Data.empty();
+const Datum = () => Data.void();
+const Redeemer = () => Data.void();
 
 export async function lockUtxo(
   lovelace: Lovelace,

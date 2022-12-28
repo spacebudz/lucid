@@ -508,7 +508,7 @@ export function coreToUtxo(coreUtxo: Core.TransactionUnspentOutput): UTxO {
       : coreUtxo.output().address().to_bech32(undefined),
     datumHash: coreUtxo.output()?.datum()?.as_data_hash()?.to_hex(),
     datum: coreUtxo.output()?.datum()?.as_data() &&
-      toHex(coreUtxo.output().datum()!.as_data()!.to_bytes()),
+      toHex(coreUtxo.output().datum()!.as_data()!.get().to_bytes()),
     scriptRef: coreUtxo.output()?.script_ref() &&
       fromScriptRef(coreUtxo.output().script_ref()!),
   };

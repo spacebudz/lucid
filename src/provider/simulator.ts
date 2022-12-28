@@ -331,13 +331,13 @@ export class Simulator implements Provider {
 
     const redeemers = (() => {
       const tagMap: Record<number, string> = {
-        0: "Mint",
-        1: "Spend",
+        0: "Spend",
+        1: "Mint",
         2: "Cert",
         3: "Reward",
       };
       const collected = [];
-      for (let i = 0; i < (witnesses.redeemers()?.len || 0); i++) {
+      for (let i = 0; i < (witnesses.redeemers()?.len() || 0); i++) {
         const redeemer = witnesses.redeemers()!.get(i);
         collected.push({
           tag: tagMap[redeemer.tag().kind()],
@@ -351,9 +351,10 @@ export class Simulator implements Provider {
 
     function checkAndConsumeHash(
       credential: Credential,
+      tag: string,
       index: number,
     ) {
-      switch (credential?.type) {
+      switch (credential.type) {
         case "Key": {
           if (!keyHashes.includes(credential.hash)) {
             throw new Error(
@@ -370,7 +371,7 @@ export class Simulator implements Provider {
           } else if (plutusHashes.includes(credential.hash)) {
             if (
               redeemers.find((redeemer) =>
-                redeemer.tag === "Reward" && redeemer.index === index
+                redeemer.tag === tag && redeemer.index === index
               )
             ) {
               consumedHashes.add(credential.hash);
@@ -387,7 +388,7 @@ export class Simulator implements Provider {
 
     for (let index = 0; index < (body.mint()?.keys().len() || 0); index++) {
       const policyId = body.mint()!.keys().get(index).to_hex();
-      checkAndConsumeHash({ type: "Script", hash: policyId }, index);
+      checkAndConsumeHash({ type: "Script", hash: policyId }, "Mint", index);
     }
 
     // Check withdrawal witnesses
@@ -407,7 +408,7 @@ export class Simulator implements Provider {
       const { stakeCredential } = getAddressDetails(
         rewardAddress,
       );
-      checkAndConsumeHash(stakeCredential!, index);
+      checkAndConsumeHash(stakeCredential!, "Reward", index);
       if (this.chain[rewardAddress]?.delegation.rewards !== withdrawal) {
         throw new Error(
           "Withdrawal amount doesn't match actual reward balance.",
@@ -457,7 +458,7 @@ export class Simulator implements Provider {
           ).to_address().to_bech32(undefined);
 
           const { stakeCredential } = getAddressDetails(rewardAddress);
-          checkAndConsumeHash(stakeCredential!, index);
+          checkAndConsumeHash(stakeCredential!, "Cert", index);
 
           if (!this.chain[rewardAddress]?.registeredStake) {
             throw new Error(
@@ -476,7 +477,7 @@ export class Simulator implements Provider {
           const poolId = delegation.pool_keyhash().to_bech32("pool");
 
           const { stakeCredential } = getAddressDetails(rewardAddress);
-          checkAndConsumeHash(stakeCredential!, index);
+          checkAndConsumeHash(stakeCredential!, "Cert", index);
 
           if (
             !this.chain[rewardAddress]?.registeredStake &&
@@ -529,34 +530,7 @@ export class Simulator implements Provider {
 
     resolvedInputs.forEach(({ entry: { utxo } }, index) => {
       const { paymentCredential } = getAddressDetails(utxo.address);
-      switch (paymentCredential?.type) {
-        case "Key": {
-          if (!keyHashes.includes(paymentCredential.hash)) {
-            throw new Error(
-              `Missing vkey witness. Key hash: ${paymentCredential.hash}`,
-            );
-          }
-          consumedHashes.add(paymentCredential.hash);
-          break;
-        }
-        case "Script":
-          if (nativeHashes.includes(paymentCredential.hash)) {
-            consumedHashes.add(paymentCredential.hash);
-            break;
-          } else if (plutusHashes.includes(paymentCredential.hash)) {
-            if (
-              redeemers.find((redeemer) =>
-                redeemer.tag === "Spend" && redeemer.index === index
-              )
-            ) {
-              consumedHashes.add(paymentCredential.hash);
-              break;
-            }
-          }
-          throw new Error(
-            `Missing script witness. Script hash: ${paymentCredential.hash}`,
-          );
-      }
+      checkAndConsumeHash(paymentCredential!, "Spend", index);
     });
 
     if (!keyHashes.every((keyHash) => consumedHashes.has(keyHash))) {

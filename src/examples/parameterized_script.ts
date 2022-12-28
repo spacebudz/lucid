@@ -43,7 +43,7 @@ export async function mint(
 
   const tx = await lucid
     .newTx()
-    .mintAssets({ [unit]: 1n }, Data.empty())
+    .mintAssets({ [unit]: 1n }, Data.void())
     .attachMintingPolicy(mintingPolicy)
     .complete();
 

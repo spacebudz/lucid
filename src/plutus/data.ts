@@ -91,7 +91,7 @@ export const Data = {
    * Note: Constructor cannot be used here, also only bytes/integers as Json keys.
    */
   toJson,
-  empty: function (): Datum | Redeemer {
+  void: function (): Datum | Redeemer {
     return "d87980";
   },
   castFrom,
