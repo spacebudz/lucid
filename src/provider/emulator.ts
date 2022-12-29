@@ -233,7 +233,7 @@ export class Emulator implements Provider {
     const witnesses = desTx.witness_set();
     const datums = witnesses.plutus_data();
 
-    const txHash = toHex(C.hash_blake2b256(body.to_bytes()));
+    const txHash = C.hash_transaction(body).to_hex();
 
     // Datum table
     if (datums) {
