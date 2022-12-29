@@ -235,15 +235,6 @@ export class Emulator implements Provider {
 
     const txHash = C.hash_transaction(body).to_hex();
 
-    // Datum table
-    if (datums) {
-      for (let i = 0; i < datums.len(); i++) {
-        const datum = datums.get(i);
-        const datumHash = C.hash_plutus_data(datum).to_hex();
-        this.datumTable[datumHash] = toHex(datum.to_bytes());
-      }
-    }
-
     // Validity interval
     // Lower bound is inclusive?
     // Upper bound is inclusive?
@@ -265,6 +256,17 @@ export class Emulator implements Provider {
         `Upper bound (${upperBound}) not in slot range (${this.slot}).`,
       );
     }
+
+    // Datums in witness set
+    const datumTable = (() => {
+      const table: Record<DatumHash, Datum> = {};
+      for (let i = 0; i < (datums?.len() || 0); i++) {
+        const datum = datums!.get(i);
+        const datumHash = C.hash_plutus_data(datum).to_hex();
+        table[datumHash] = toHex(datum.to_bytes());
+      }
+      return table;
+    })();
 
     // Witness keys
     const keyHashes = (() => {
@@ -340,10 +342,17 @@ export class Emulator implements Provider {
       return scriptHashes;
     })();
 
+    const consumedHashes = new Set();
+
     const inputs = body.inputs();
     inputs.sort();
 
-    const resolvedInputs = [];
+    type ResolvedInput = {
+      entry: { utxo: UTxO; spent: boolean };
+      type: "Ledger" | "Mempool";
+    };
+
+    const resolvedInputs: ResolvedInput[] = [];
 
     // Check existence of inputs and look for script refs.
     for (let i = 0; i < inputs.len(); i++) {
@@ -353,7 +362,7 @@ export class Emulator implements Provider {
 
       const entryLedger = this.ledger[outRef];
 
-      const { entry, type } = !entryLedger
+      const { entry, type }: ResolvedInput = !entryLedger
         ? { entry: this.mempool[outRef]!, type: "Mempool" }
         : { entry: entryLedger, type: "Ledger" };
 
@@ -394,6 +403,8 @@ export class Emulator implements Provider {
           }
         }
       }
+
+      if (entry.utxo.datumHash) consumedHashes.add(entry.utxo.datumHash);
 
       resolvedInputs.push({ entry, type });
     }
@@ -443,10 +454,14 @@ export class Emulator implements Provider {
           }
         }
       }
+
+      if (entry.utxo.datumHash) consumedHashes.add(entry.utxo.datumHash);
     }
 
+    type Tag = "Spend" | "Mint" | "Cert" | "Reward";
+
     const redeemers = (() => {
-      const tagMap: Record<number, string> = {
+      const tagMap: Record<number, Tag> = {
         0: "Spend",
         1: "Mint",
         2: "Cert",
@@ -463,11 +478,9 @@ export class Emulator implements Provider {
       return collected;
     })();
 
-    const consumedHashes = new Set();
-
     function checkAndConsumeHash(
       credential: Credential,
-      tag: string,
+      tag: Tag,
       index: number,
     ) {
       switch (credential.type) {
@@ -529,7 +542,10 @@ export class Emulator implements Provider {
 
     // Check withdrawal witnesses
 
-    const withdrawalRequests = [];
+    const withdrawalRequests: {
+      rewardAddress: RewardAddress;
+      withdrawal: Lovelace;
+    }[] = [];
 
     for (
       let index = 0;
@@ -556,7 +572,7 @@ export class Emulator implements Provider {
     // Check cert witnesses
 
     const certRequests: {
-      type: string;
+      type: "Registration" | "Deregistration" | "Delegation";
       rewardAddress: RewardAddress;
       poolId?: PoolId;
     }[] = [];
@@ -639,16 +655,65 @@ export class Emulator implements Provider {
       checkAndConsumeHash(paymentCredential!, "Spend", index);
     });
 
-    if (!keyHashes.every((keyHash) => consumedHashes.has(keyHash))) {
-      throw new Error(`Extraneous vkey witness.`);
+    // Create outputs and consume datum hashes
+    const outputs = (() => {
+      const collected = [];
+      for (let i = 0; i < body.outputs().len(); i++) {
+        const output = body.outputs().get(i);
+        const unspentOutput = C.TransactionUnspentOutput.new(
+          C.TransactionInput.new(
+            C.TransactionHash.from_hex(txHash),
+            C.BigNum.from_str(i.toString()),
+          ),
+          output,
+        );
+
+        const utxo = coreToUtxo(unspentOutput);
+
+        if (utxo.datumHash) consumedHashes.add(utxo.datumHash);
+
+        collected.push(
+          {
+            utxo,
+            spent: false,
+          },
+        );
+      }
+      return collected;
+    })();
+
+    // Check consumed witnesses
+
+    const [extraKeyHash] = keyHashes.filter((keyHash) =>
+      !consumedHashes.has(keyHash)
+    );
+    if (extraKeyHash) {
+      throw new Error(`Extraneous vkey witness. Key hash: ${extraKeyHash}`);
     }
 
-    if (!nativeHashes.every((scriptHash) => consumedHashes.has(scriptHash))) {
-      throw new Error(`Extraneous native script witness.`);
+    const [extraNativeHash] = nativeHashes.filter((scriptHash) =>
+      !consumedHashes.has(scriptHash)
+    );
+    if (extraNativeHash) {
+      throw new Error(
+        `Extraneous native script. Script hash: ${extraNativeHash}`,
+      );
     }
 
-    if (!plutusHashes.every((scriptHash) => consumedHashes.has(scriptHash))) {
-      throw new Error(`Extraneous plutus script witness.`);
+    const [extraPlutusHash] = plutusHashes.filter((scriptHash) =>
+      !consumedHashes.has(scriptHash)
+    );
+    if (extraPlutusHash) {
+      throw new Error(
+        `Extraneous plutus script. Script hash: ${extraPlutusHash}`,
+      );
+    }
+
+    const [extraDatumHash] = Object.keys(datumTable).filter((datumHash) =>
+      !consumedHashes.has(datumHash)
+    );
+    if (extraDatumHash) {
+      throw new Error(`Extraneous plutus data. Datum hash: ${extraDatumHash}`);
     }
 
     // Apply transitions
@@ -689,19 +754,15 @@ export class Emulator implements Provider {
       }
     });
 
-    for (let i = 0; i < body.outputs().len(); i++) {
-      const output = body.outputs().get(i);
-      const unspentOutput = C.TransactionUnspentOutput.new(
-        C.TransactionInput.new(
-          C.TransactionHash.from_hex(txHash),
-          C.BigNum.from_str(i.toString()),
-        ),
-        output,
-      );
-      this.mempool[txHash + i] = {
-        utxo: coreToUtxo(unspentOutput),
-        spent: false,
+    outputs.forEach(({ utxo, spent }) => {
+      this.mempool[utxo.txHash + utxo.outputIndex] = {
+        utxo,
+        spent,
       };
+    });
+
+    for (const [datumHash, datum] of Object.entries(datumTable)) {
+      this.datumTable[datumHash] = datum;
     }
 
     return Promise.resolve(txHash);
