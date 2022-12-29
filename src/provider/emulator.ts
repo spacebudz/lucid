@@ -245,8 +245,8 @@ export class Emulator implements Provider {
     }
 
     // Validity interval
-    // Lower bound is inclusive
-    // Upper bound is exclusive
+    // Lower bound is inclusive?
+    // Upper bound is inclusive?
     const lowerBound = body.validity_start_interval()?.to_str()
       ? parseInt(body.validity_start_interval()!.to_str())
       : null;
@@ -260,7 +260,7 @@ export class Emulator implements Provider {
       );
     }
 
-    if (Number.isInteger(upperBound) && this.slot >= upperBound!) {
+    if (Number.isInteger(upperBound) && this.slot > upperBound!) {
       throw new Error(
         `Upper bound (${upperBound}) not in slot range (${this.slot}).`,
       );
