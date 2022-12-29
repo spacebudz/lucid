@@ -15,6 +15,7 @@ import {
   ScriptHash,
   Transaction,
   TxHash,
+  Unit,
   UnixTime,
   UTxO,
 } from "../types/types.ts";
@@ -766,5 +767,86 @@ export class Emulator implements Provider {
     }
 
     return Promise.resolve(txHash);
+  }
+
+  log() {
+    function getRandomColor(unit: Unit) {
+      const seed = unit === "lovelace" ? "1" : unit;
+      // Convert the seed string to a number
+      let num = 0;
+      for (let i = 0; i < seed.length; i++) {
+        num += seed.charCodeAt(i);
+      }
+
+      // Generate a color based on the seed number
+      const r = (num * 123) % 256;
+      const g = (num * 321) % 256;
+      const b = (num * 213) % 256;
+
+      // Return the color as a hex string
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    const totalBalances: Assets = {};
+
+    const balances: Record<Address, Assets> = {};
+    for (const { utxo } of Object.values(this.ledger)) {
+      for (const [unit, quantity] of Object.entries(utxo.assets)) {
+        if (!balances[utxo.address]) {
+          balances[utxo.address] = { [unit]: quantity };
+        } else if (!balances[utxo.address]?.[unit]) {
+          balances[utxo.address][unit] = quantity;
+        } else {
+          balances[utxo.address][unit] += quantity;
+        }
+
+        if (!totalBalances[unit]) {
+          totalBalances[unit] = quantity;
+        } else {
+          totalBalances[unit] += quantity;
+        }
+      }
+    }
+
+    console.log("\n%cBlockchain state", "color:purple");
+    console.log(
+      `
+    Block height:   %c${this.blockHeight}%c
+    Slot:           %c${this.slot}%c
+    Unix time:      %c${this.time}
+  `,
+      "color:yellow",
+      "color:white",
+      "color:yellow",
+      "color:white",
+      "color:yellow",
+    );
+    console.log("\n");
+    for (const [address, assets] of Object.entries(balances)) {
+      console.log(
+        `Address: %c${address}`,
+        "color:blue",
+        "\n",
+      );
+      for (const [unit, quantity] of Object.entries(assets)) {
+        const barLength = Math.max(
+          Math.floor(
+            60 * (Number(quantity) / Number(totalBalances[unit])),
+          ),
+          1,
+        );
+        console.log(
+          `%c${"\u2588".repeat(barLength)}`,
+          `color: ${getRandomColor(unit)}`,
+          "(",
+          `${unit}:`,
+          quantity,
+          ")",
+        );
+      }
+      console.log(
+        "\n------------------------------------------------------------\n",
+      );
+    }
   }
 }
