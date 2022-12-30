@@ -1,9 +1,11 @@
 import {
+  Data,
   Emulator,
   fromText,
   generateSeedPhrase,
   getAddressDetails,
   Lucid,
+  SpendingValidator,
   toUnit,
   TxHash,
 } from "../src/mod.ts";
@@ -11,8 +13,6 @@ import {
   assert,
   assertEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
-import { Data } from "../src/plutus/data.ts";
-import { SpendingValidator } from "../src/types/types.ts";
 
 const seedPhrase = generateSeedPhrase();
 
