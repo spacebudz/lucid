@@ -148,3 +148,8 @@ Contributions and PRs are welcome!\
 The [contribution instructions](./CONTRIBUTING.md).
 
 Join us on [Discord](https://discord.gg/82MWs63Tdm)!
+
+### Who is using Lucid?
+
+- [Cardano Starter Kit](https://cardano-starter-kit.alangaming.com/) a Next.js starter kit for building Cardano dApps
+- [use-cardano](https://use-cardano.alangaming.com/) a react context, hook and set of components built on top of Lucid
