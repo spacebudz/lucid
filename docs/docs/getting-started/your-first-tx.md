@@ -13,7 +13,8 @@ const tx = await lucid.newTx()
   .complete();
 ```
 
-Transactions always need to end with `.complete()` in order to balance the transaction and do coin selection.
+Transactions always need to end with `.complete()` in order to balance the
+transaction and do coin selection.
 
 Next we sign the transaction:
 
@@ -21,7 +22,8 @@ Next we sign the transaction:
 const signedTx = await tx.sign().complete();
 ```
 
-Here we also need to call `.complete()` when we are ready with signing (There are multiple options to [sign a transaction](../components/transaction.md)).
+Here we also need to call `.complete()` when we are ready with signing (There
+are multiple options to [sign a transaction](../components/transaction.md)).
 
 Lastly we submit the transaction:
 
@@ -32,8 +34,9 @@ console.log(txHash);
 ```
 
 The full example:
+
 ```js
-import { Lucid, Blockfrost } from "https://deno.land/x/lucid/mod.ts"
+import { Blockfrost, Lucid } from "https://deno.land/x/lucid/mod.ts";
 
 const lucid = await Lucid.new(
   new Blockfrost("https://cardano-preprod.blockfrost.io/api/v0", "<projectId>"),

@@ -4,21 +4,23 @@ description: How to import Lucid
 order: 1
 ---
 
-Lucid is written in [Deno](https://deno.land/), but can be used in many other JavaScript runtimes too. 
+Lucid is written in [Deno](https://deno.land/), but can be used in many other
+JavaScript runtimes too.
 
 ## Using Deno
 
-Make sure you have [Deno](https://deno.land/manual@v1.29.1/getting_started/installation) installed.
+Make sure you have
+[Deno](https://deno.land/manual@v1.29.1/getting_started/installation) installed.
 
 ```js
-import { Lucid } from "https://deno.land/x/lucid/mod.ts"
+import { Lucid } from "https://deno.land/x/lucid/mod.ts";
 
 const lucid = await Lucid.new();
 ```
 
 **Hint:** We always recommend importing libraries including the version tag:\
 e.g. `https://deno.land/x/lucid@0.8.3/mod.ts`\
-For simplicity we leave it out in the documentation. 
+For simplicity we leave it out in the documentation.
 
 ### Visual Studio Code configuration
 
@@ -38,14 +40,17 @@ npm install lucid-cardano
 then import it:
 
 ```js
-import { Lucid } from "lucid-cardano"
+import { Lucid } from "lucid-cardano";
 
 const lucid = await Lucid.new();
 ```
 
-**Note:** Lucid is an ES Module. You need to set `{"type" : "module"}` in your `package.json`.\
-To bundle your NPM project you may need to adjust your bundler. 
-For instance when using [Webpack](https://webpack.js.org/) you need to enbale in the `webpack.config.json`:
+**Note:** Lucid is an ES Module. You need to set `{"type" : "module"}` in your
+`package.json`.\
+To bundle your NPM project you may need to adjust your bundler. For instance
+when using [Webpack](https://webpack.js.org/) you need to enbale in the
+`webpack.config.json`:
+
 ```json
 experiments: {
     "asyncWebAssembly": true,
@@ -53,7 +58,6 @@ experiments: {
     "layers": true // optional, with some bundlers/frameworks it doesn't work without
   }
 ```
-
 
 ## Using Web
 
@@ -74,13 +78,18 @@ Clone the repository:
 git clone https://github.com/spacebudz/lucid.git
 ```
 
-With Deno you can simply import Lucid like this (at the root of the Lucid folder):
+With Deno you can simply import Lucid like this (at the root of the Lucid
+folder):
+
 ```js
-import { Lucid } from "./mod.ts"
+import { Lucid } from "./mod.ts";
 ```
 
-For NPM and web bundle you need to build Lucid first. Go to the root of the Lucid folder and execute:
+For NPM and web bundle you need to build Lucid first. Go to the root of the
+Lucid folder and execute:
+
 ```sh
 deno task build
 ```
+
 This will output a `dist` folder at the root containing the NPM and web bundle.
