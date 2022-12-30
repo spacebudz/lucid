@@ -836,16 +836,16 @@ export class Emulator implements Provider {
           1,
         );
         console.log(
-          `%c${"\u2588".repeat(barLength)}`,
+          `%c${"\u2586".repeat(barLength) + " ".repeat(60 - barLength)}`,
           `color: ${getRandomColor(unit)}`,
-          "(",
+          "",
           `${unit}:`,
           quantity,
-          ")",
+          "",
         );
       }
       console.log(
-        "\n------------------------------------------------------------\n",
+        `\n${"\u2581".repeat(60)}\n`,
       );
     }
   }
