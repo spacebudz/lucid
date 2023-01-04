@@ -524,8 +524,6 @@ export function coreToUtxo(coreUtxo: Core.TransactionUnspentOutput): UTxO {
 
 export function networkToId(network: Network): number {
   switch (network) {
-    case "Testnet":
-      return 0;
     case "Preview":
       return 0;
     case "Preprod":
