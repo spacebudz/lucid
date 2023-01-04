@@ -5,7 +5,6 @@ export const SLOT_CONFIG_NETWORK: Record<
   SlotConfig
 > = {
   Mainnet: { zeroTime: 1596059091000, zeroSlot: 4492800, slotLength: 1000 }, // Starting at Shelley era
-  Testnet: { zeroTime: 1595967616000, zeroSlot: 1598400, slotLength: 1000 }, // Starting at Shelley era
   Preview: { zeroTime: 1666656000000, zeroSlot: 0, slotLength: 1000 }, // Starting at Shelley era
   Preprod: {
     zeroTime: 1654041600000 + 1728000000,
