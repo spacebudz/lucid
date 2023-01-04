@@ -269,6 +269,8 @@ export class Emulator implements Provider {
       return table;
     })();
 
+    const consumedHashes = new Set();
+
     // Witness keys
     const keyHashes = (() => {
       const keyHashes = [];
@@ -316,6 +318,10 @@ export class Emulator implements Provider {
             `Invalid native script witness. Script hash: ${scriptHash}`,
           );
         }
+        for (let i = 0; i < witness.get_required_signers().len(); i++) {
+          const keyHash = witness.get_required_signers().get(i).to_hex();
+          consumedHashes.add(keyHash);
+        }
         scriptHashes.push(scriptHash);
       }
       return scriptHashes;
@@ -342,8 +348,6 @@ export class Emulator implements Provider {
       }
       return scriptHashes;
     })();
-
-    const consumedHashes = new Set();
 
     const inputs = body.inputs();
     inputs.sort();

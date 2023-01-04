@@ -195,7 +195,9 @@ function from<T = Data>(raw: Datum | Redeemer, shape?: TSchema): T {
 function fromJson(json: Json): Data {
   function toData(json: Json): Data {
     if (typeof json === "string") {
-      return toHex(new TextEncoder().encode(json));
+      return json.startsWith("0x")
+        ? json.slice(2)
+        : toHex(new TextEncoder().encode(json));
     }
     if (typeof json === "number") return BigInt(json);
     if (typeof json === "bigint") return json;

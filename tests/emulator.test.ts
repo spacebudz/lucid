@@ -1,4 +1,5 @@
 import {
+  Assets,
   Data,
   Emulator,
   fromText,
@@ -14,21 +15,24 @@ import {
   assertEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 
-const seedPhrase = generateSeedPhrase();
+async function generateAccount(assets: Assets) {
+  const seedPhrase = generateSeedPhrase();
+  return {
+    seedPhrase,
+    address: await (await Lucid.new(undefined, "Custom"))
+      .selectWalletFromSeed(seedPhrase).wallet.address(),
+    assets,
+  };
+}
 
-const address = await (await Lucid.new(undefined, "Custom"))
-  .selectWalletFromSeed(seedPhrase).wallet.address();
+const ACCOUNT_0 = await generateAccount({ lovelace: 75000000000n });
+const ACCOUNT_1 = await generateAccount({ lovelace: 100000000n });
 
-const START_BALANCE = 3000000000n;
-
-const emulator = new Emulator([{
-  address,
-  assets: { lovelace: START_BALANCE },
-}]);
+const emulator = new Emulator([ACCOUNT_0, ACCOUNT_1]);
 
 const lucid = await Lucid.new(emulator);
 
-lucid.selectWalletFromSeed(seedPhrase);
+lucid.selectWalletFromSeed(ACCOUNT_0.seedPhrase);
 
 Deno.test("Correct start balance", async () => {
   const utxos = await lucid.wallet.getUtxos();
@@ -36,7 +40,7 @@ Deno.test("Correct start balance", async () => {
     (amount, utxo) => amount + utxo.assets.lovelace,
     0n,
   );
-  assertEquals(lovelace, START_BALANCE);
+  assertEquals(lovelace, ACCOUNT_0.assets.lovelace);
 });
 
 Deno.test("Paid to address", async () => {
@@ -84,7 +88,10 @@ Deno.test("Missing vkey witness", async () => {
 });
 
 Deno.test("Mint asset in slot range", async () => {
-  const { paymentCredential } = getAddressDetails(address);
+  const { paymentCredential } = getAddressDetails(ACCOUNT_0.address);
+  const { paymentCredential: paymentCredential2 } = getAddressDetails(
+    ACCOUNT_1.address,
+  );
 
   const mintingPolicy = lucid.utils.nativeScriptFromJson({
     type: "all",
@@ -94,6 +101,7 @@ Deno.test("Mint asset in slot range", async () => {
         slot: lucid.utils.unixTimeToSlot(emulator.now() + 60000),
       },
       { type: "sig", keyHash: paymentCredential?.hash! },
+      { type: "sig", keyHash: paymentCredential2?.hash! },
     ],
   });
 
@@ -107,7 +115,12 @@ Deno.test("Mint asset in slot range", async () => {
       .validTo(emulator.now() + 30000)
       .attachMintingPolicy(mintingPolicy)
       .complete();
-    const signedTx = await tx.sign().complete();
+
+    await tx.partialSign();
+    lucid.selectWalletFromSeed(ACCOUNT_1.seedPhrase);
+    await tx.partialSign();
+    lucid.selectWalletFromSeed(ACCOUNT_0.seedPhrase);
+    const signedTx = await tx.complete();
 
     return signedTx.submit();
   }
