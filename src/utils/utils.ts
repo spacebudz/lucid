@@ -215,6 +215,14 @@ export class Utils {
   nativeScriptFromJson(nativeScript: NativeScript): Script {
     return nativeScriptFromJson(nativeScript);
   }
+
+  paymentCredentialOf(address: Address): Credential {
+    return paymentCredentialOf(address);
+  }
+
+  stakeCredentialOf(rewardAddress: RewardAddress): Credential {
+    return stakeCredentialOf(rewardAddress);
+  }
 }
 
 function addressFromHexOrBech32(address: string): Core.Address {
@@ -364,6 +372,26 @@ export function getAddressDetails(address: string): AddressDetails {
   } catch (_e) { /* pass */ }
 
   throw new Error("No address type matched for: " + address);
+}
+
+export function paymentCredentialOf(address: Address): Credential {
+  const { paymentCredential } = getAddressDetails(address);
+  if (!paymentCredential) {
+    throw new Error(
+      "The specified address does not contain a payment credential.",
+    );
+  }
+  return paymentCredential;
+}
+
+export function stakeCredentialOf(rewardAddress: RewardAddress): Credential {
+  const { stakeCredential } = getAddressDetails(rewardAddress);
+  if (!stakeCredential) {
+    throw new Error(
+      "The specified address does not contain a stake credential.",
+    );
+  }
+  return stakeCredential;
 }
 
 export function generatePrivateKey(): PrivateKey {

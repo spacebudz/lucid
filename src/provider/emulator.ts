@@ -109,16 +109,16 @@ export class Emulator implements Provider {
     this.mempool = {};
   }
 
-  getUtxos(address: string): Promise<UTxO[]> {
+  getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
     const utxos: UTxO[] = Object.values(this.ledger).flatMap(({ utxo }) => {
-      const { paymentCredential: utxoCredential } = getAddressDetails(
-        utxo.address,
-      );
-      const { paymentCredential } = getAddressDetails(address);
-      if (
-        utxoCredential?.hash === paymentCredential?.hash
-      ) return utxo;
-      else return [];
+      if (typeof addressOrCredential === "string") {
+        return addressOrCredential === utxo.address ? utxo : [];
+      } else {
+        const { paymentCredential } = getAddressDetails(
+          utxo.address,
+        );
+        return paymentCredential?.hash === addressOrCredential.hash ? utxo : [];
+      }
     });
 
     return Promise.resolve(
@@ -130,21 +130,28 @@ export class Emulator implements Provider {
     return Promise.resolve(this.protocolParameters);
   }
 
-  getDatum(datumHash: string): Promise<string> {
+  getDatum(datumHash: DatumHash): Promise<Datum> {
     return Promise.resolve(this.datumTable[datumHash]);
   }
 
-  getUtxosWithUnit(address: string, unit: string): Promise<UTxO[]> {
+  getUtxosWithUnit(
+    addressOrCredential: Address | Credential,
+    unit: Unit,
+  ): Promise<UTxO[]> {
     const utxos: UTxO[] = Object.values(this.ledger).flatMap(({ utxo }) => {
-      const { paymentCredential: utxoCredential } = getAddressDetails(
-        utxo.address,
-      );
-      const { paymentCredential } = getAddressDetails(address);
-      if (
-        utxoCredential?.hash === paymentCredential?.hash &&
-        utxo.assets[unit] > 0n
-      ) return utxo;
-      else return [];
+      if (typeof addressOrCredential === "string") {
+        return addressOrCredential === utxo.address && utxo.assets[unit] > 0n
+          ? utxo
+          : [];
+      } else {
+        const { paymentCredential } = getAddressDetails(
+          utxo.address,
+        );
+        return paymentCredential?.hash === addressOrCredential.hash &&
+            utxo.assets[unit] > 0n
+          ? utxo
+          : [];
+      }
     });
 
     return Promise.resolve(

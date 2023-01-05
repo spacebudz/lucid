@@ -1,6 +1,7 @@
 import {
   Address,
   Assets,
+  Credential,
   Datum,
   DatumHash,
   Delegation,
@@ -77,22 +78,33 @@ export class Kupmios implements Provider {
     });
   }
 
-  async getUtxos(address: Address): Promise<UTxO[]> {
-    const { paymentCredential } = getAddressDetails(address);
+  async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
+    const isAddress = typeof addressOrCredential === "string";
+    const queryPredicate = isAddress
+      ? addressOrCredential
+      : addressOrCredential.hash;
     const result = await fetch(
-      `${this.kupoUrl}/matches/${paymentCredential!.hash}/*?unspent`,
+      `${this.kupoUrl}/matches/${queryPredicate}${
+        isAddress ? "" : "/*"
+      }?unspent`,
     )
       .then((res) => res.json());
     return this.kupmiosUtxosToUtxos(result);
   }
 
-  async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
-    const { paymentCredential } = getAddressDetails(address);
+  async getUtxosWithUnit(
+    addressOrCredential: Address | Credential,
+    unit: Unit,
+  ): Promise<UTxO[]> {
+    const isAddress = typeof addressOrCredential === "string";
+    const queryPredicate = isAddress
+      ? addressOrCredential
+      : addressOrCredential.hash;
     const { policyId, assetName } = fromUnit(unit);
     const result = await fetch(
-      `${this.kupoUrl}/matches/${
-        paymentCredential!.hash
-      }/*?unspent&policy_id=${policyId}${
+      `${this.kupoUrl}/matches/${queryPredicate}${
+        isAddress ? "" : "/*"
+      }?unspent&policy_id=${policyId}${
         assetName ? `&asset_name=${assetName}` : ""
       }`,
     )

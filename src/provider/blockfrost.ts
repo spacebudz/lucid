@@ -1,8 +1,9 @@
 import { C, Core } from "../core/mod.ts";
-import { fromHex, getAddressDetails, toHex } from "../utils/mod.ts";
+import { fromHex, toHex } from "../utils/mod.ts";
 import {
   Address,
   Assets,
+  Credential,
   Datum,
   DatumHash,
   Delegation,
@@ -49,17 +50,24 @@ export class Blockfrost implements Provider {
     };
   }
 
-  async getUtxos(address: Address): Promise<UTxO[]> {
-    const { paymentCredential } = getAddressDetails(address);
-    const credentialBech32 = paymentCredential?.type === "Key"
-      ? C.Ed25519KeyHash.from_hex(paymentCredential!.hash).to_bech32("addr_vkh")
-      : C.ScriptHash.from_hex(paymentCredential!.hash).to_bech32("addr_vkh"); // should be 'script' (CIP-0005)
+  async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
+    const queryPredicate = (() => {
+      if (typeof addressOrCredential === "string") return addressOrCredential;
+      const credentialBech32 = addressOrCredential.type === "Key"
+        ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
+          "addr_vkh",
+        )
+        : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
+          "addr_vkh",
+        ); // should be 'script' (CIP-0005)
+      return credentialBech32;
+    })();
     let result: BlockfrostUtxoResult = [];
     let page = 1;
     while (true) {
       const pageResult: BlockfrostUtxoResult | BlockfrostUtxoError =
         await fetch(
-          `${this.url}/addresses/${credentialBech32}/utxos?page=${page}`,
+          `${this.url}/addresses/${queryPredicate}/utxos?page=${page}`,
           { headers: { project_id: this.projectId, lucid } },
         ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
@@ -77,17 +85,27 @@ export class Blockfrost implements Provider {
     return this.blockfrostUtxosToUtxos(result);
   }
 
-  async getUtxosWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
-    const { paymentCredential } = getAddressDetails(address);
-    const credentialBech32 = paymentCredential?.type === "Key"
-      ? C.Ed25519KeyHash.from_hex(paymentCredential!.hash).to_bech32("addr_vkh")
-      : C.ScriptHash.from_hex(paymentCredential!.hash).to_bech32("addr_vkh"); // should be 'script' (CIP-0005)
+  async getUtxosWithUnit(
+    addressOrCredential: Address | Credential,
+    unit: Unit,
+  ): Promise<UTxO[]> {
+    const queryPredicate = (() => {
+      if (typeof addressOrCredential === "string") return addressOrCredential;
+      const credentialBech32 = addressOrCredential.type === "Key"
+        ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
+          "addr_vkh",
+        )
+        : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
+          "addr_vkh",
+        ); // should be 'script' (CIP-0005)
+      return credentialBech32;
+    })();
     let result: BlockfrostUtxoResult = [];
     let page = 1;
     while (true) {
       const pageResult: BlockfrostUtxoResult | BlockfrostUtxoError =
         await fetch(
-          `${this.url}/addresses/${credentialBech32}/utxos/${unit}?page=${page}`,
+          `${this.url}/addresses/${queryPredicate}/utxos/${unit}?page=${page}`,
           { headers: { project_id: this.projectId, lucid } },
         ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
