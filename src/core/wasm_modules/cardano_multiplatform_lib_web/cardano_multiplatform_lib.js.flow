@@ -10296,16 +10296,6 @@ export type MIRPotJSON = "Reserves" | "Treasury";
 export interface MIRToStakeCredentialsJSON {
   [k: string]: ProtocolParamUpdateJSON;
 }
-export type MerkleEitherJSON =
-  | {
-      Left: number[],
-      ...
-    }
-  | {
-      Right: number[],
-      ...
-    };
-export type MerkleProofJSON = MerkleEitherJSON[];
 export interface MintJSON {
   [k: string]: MintAssetsJSON;
 }

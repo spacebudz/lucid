@@ -151,8 +151,10 @@ Join us on [Discord](https://discord.gg/82MWs63Tdm)!
 
 ### Use Lucid with React
 
-[use-cardano](https://use-cardano.alangaming.com/) a React context, hook and set of components built on top of Lucid
+[use-cardano](https://use-cardano.alangaming.com/) a React context, hook and set
+of components built on top of Lucid
 
 ### Use Lucid with Next.js
 
-[Cardano Starter Kit](https://cardano-starter-kit.alangaming.com/) a Next.js starter kit for building Cardano dApps
+[Cardano Starter Kit](https://cardano-starter-kit.alangaming.com/) a Next.js
+starter kit for building Cardano dApps
