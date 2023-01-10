@@ -1,0 +1,20 @@
+---
+layout: ./base.njk
+page_css: error.css
+---
+
+<div class="error">
+  <h1>{{ content.title | safe }}</h1>
+
+  <figure class="error-fire">
+    {{ comp.fire() | safe }}
+  </figure>
+
+  {{ content.description | md | safe }}
+
+  <a href="{{ '/' | url }}">
+    <button type="button" class="button is-primary is-big">
+      {{ content.button.title }}
+    </button>
+  </a>
+</div>

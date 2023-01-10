@@ -2970,6 +2970,17 @@ export class NativeScript {
    * @returns {Ed25519KeyHashes}
    */
   get_required_signers(): Ed25519KeyHashes;
+  /**
+   * @param {BigNum | undefined} lower_bound
+   * @param {BigNum | undefined} upper_bound
+   * @param {Ed25519KeyHashes} key_hashes
+   * @returns {boolean}
+   */
+  verify(
+    lower_bound: BigNum | undefined,
+    upper_bound: BigNum | undefined,
+    key_hashes: Ed25519KeyHashes,
+  ): boolean;
 }
 /** */
 export class NativeScripts {
@@ -6033,6 +6044,8 @@ export class TransactionInputs {
    * @param {TransactionInput} elem
    */
   add(elem: TransactionInput): void;
+  /** */
+  sort(): void;
 }
 /** */
 export class TransactionMetadatum {
@@ -7009,6 +7022,7 @@ export interface InitOutput {
   readonly transactioninputs_len: (a: number) => number;
   readonly transactioninputs_get: (a: number, b: number) => number;
   readonly transactioninputs_add: (a: number, b: number) => void;
+  readonly transactioninputs_sort: (a: number) => void;
   readonly __wbg_transactionoutputs_free: (a: number) => void;
   readonly transactionoutputs_to_bytes: (a: number, b: number) => void;
   readonly transactionoutputs_from_bytes: (a: number, b: number) => number;
@@ -7498,6 +7512,12 @@ export interface InitOutput {
   readonly nativescript_as_timelock_start: (a: number) => number;
   readonly nativescript_as_timelock_expiry: (a: number) => number;
   readonly nativescript_get_required_signers: (a: number) => number;
+  readonly nativescript_verify: (
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+  ) => number;
   readonly __wbg_nativescripts_free: (a: number) => void;
   readonly nativescripts_new: () => number;
   readonly nativescripts_len: (a: number) => number;

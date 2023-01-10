@@ -3,6 +3,7 @@ import {
   coreToUtxo,
   createCostModels,
   fromHex,
+  paymentCredentialOf,
   toHex,
   Utils,
   utxoToCore,
@@ -34,6 +35,10 @@ import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../misc/wallet.ts";
 import { signData, verifyData } from "../misc/sign_data.ts";
 import { Message } from "./message.ts";
 import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
+import { Data } from "../plutus/data.ts";
+import { TSchema } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
+import { Emulator } from "../provider/emulator.ts";
+import { Credential } from "../types/types.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
@@ -48,6 +53,16 @@ export class Lucid {
     if (provider) {
       lucid.provider = provider;
       const protocolParameters = await provider.getProtocolParameters();
+
+      if (lucid.provider instanceof Emulator) {
+        lucid.network = "Custom";
+        SLOT_CONFIG_NETWORK[lucid.network] = {
+          zeroTime: lucid.provider.now(),
+          zeroSlot: 0,
+          slotLength: 1000,
+        };
+      }
+
       const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
       lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
         .coins_per_utxo_byte(
@@ -107,6 +122,9 @@ export class Lucid {
    * If provider or network unset, no overwriting happens. Provider or network from current instance are taken then.
    */
   async switchProvider(provider?: Provider, network?: Network): Promise<Lucid> {
+    if (this.network === "Custom") {
+      throw new Error("Cannot switch when on custom network.");
+    }
     const lucid = await Lucid.new(
       provider,
       network,
@@ -151,12 +169,15 @@ export class Lucid {
     return this.utils.unixTimeToSlot(Date.now());
   }
 
-  utxosAt(address: Address): Promise<UTxO[]> {
-    return this.provider.getUtxos(address);
+  utxosAt(addressOrCredential: Address | Credential): Promise<UTxO[]> {
+    return this.provider.getUtxos(addressOrCredential);
   }
 
-  utxosAtWithUnit(address: Address, unit: Unit): Promise<UTxO[]> {
-    return this.provider.getUtxosWithUnit(address, unit);
+  utxosAtWithUnit(
+    addressOrCredential: Address | Credential,
+    unit: Unit,
+  ): Promise<UTxO[]> {
+    return this.provider.getUtxosWithUnit(addressOrCredential, unit);
   }
 
   /** Unit needs to be an NFT (or optionally the entire supply in one UTxO). */
@@ -176,13 +197,14 @@ export class Lucid {
     return this.provider.awaitTx(txHash);
   }
 
-  async datumOf(utxo: UTxO): Promise<Datum> {
-    if (utxo.datum) return utxo.datum;
-    if (!utxo.datumHash) {
-      throw new Error("This UTxO does not have a datum hash.");
+  async datumOf<T = Datum>(utxo: UTxO, shape?: TSchema): Promise<T> {
+    if (!utxo.datum) {
+      if (!utxo.datumHash) {
+        throw new Error("This UTxO does not have a datum hash.");
+      }
+      utxo.datum = await this.provider.getDatum(utxo.datumHash);
     }
-    utxo.datum = await this.provider.getDatum(utxo.datumHash);
-    return utxo.datum;
+    return shape ? Data.from<T>(utxo.datum, shape) : utxo.datum as T;
   }
 
   /**
@@ -205,10 +227,14 @@ export class Lucid {
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> => null,
       getUtxos: async (): Promise<UTxO[]> => {
-        return await this.utxosAt(await this.wallet.address());
+        return await this.utxosAt(
+          paymentCredentialOf(await this.wallet.address()),
+        );
       },
       getUtxosCore: async (): Promise<Core.TransactionUnspentOutputs> => {
-        const utxos = await this.utxosAt(await this.wallet.address());
+        const utxos = await this.utxosAt(
+          paymentCredentialOf(await this.wallet.address()),
+        );
         const coreUtxos = C.TransactionUnspentOutputs.new();
         utxos.forEach((utxo) => {
           coreUtxos.add(utxoToCore(utxo));
@@ -366,13 +392,12 @@ export class Lucid {
         return rewardAddr || null;
       },
       getUtxos: async (): Promise<UTxO[]> => {
-        return utxos ? utxos : await this.utxosAt(address);
+        return utxos ? utxos : await this.utxosAt(paymentCredentialOf(address));
       },
       getUtxosCore: async (): Promise<Core.TransactionUnspentOutputs> => {
         const coreUtxos = C.TransactionUnspentOutputs.new();
-        (utxos ? utxos : await this.utxosAt(address)).forEach((utxo) =>
-          coreUtxos.add(utxoToCore(utxo))
-        );
+        (utxos ? utxos : await this.utxosAt(paymentCredentialOf(address)))
+          .forEach((utxo) => coreUtxos.add(utxoToCore(utxo)));
         return coreUtxos;
       },
       getDelegation: async (): Promise<Delegation> => {
@@ -432,10 +457,11 @@ export class Lucid {
       rewardAddress: async (): Promise<RewardAddress | null> =>
         rewardAddress || null,
       // deno-lint-ignore require-await
-      getUtxos: async (): Promise<UTxO[]> => this.utxosAt(address),
+      getUtxos: async (): Promise<UTxO[]> =>
+        this.utxosAt(paymentCredentialOf(address)),
       getUtxosCore: async (): Promise<Core.TransactionUnspentOutputs> => {
         const coreUtxos = C.TransactionUnspentOutputs.new();
-        (await this.utxosAt(address)).forEach((utxo) =>
+        (await this.utxosAt(paymentCredentialOf(address))).forEach((utxo) =>
           coreUtxos.add(utxoToCore(utxo))
         );
         return coreUtxos;

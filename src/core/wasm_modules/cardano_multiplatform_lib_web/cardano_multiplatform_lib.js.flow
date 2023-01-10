@@ -3558,6 +3558,18 @@ declare export class NativeScript {
    * @returns {Ed25519KeyHashes}
    */
   get_required_signers(): Ed25519KeyHashes;
+
+  /**
+   * @param {BigNum | void} lower_bound
+   * @param {BigNum | void} upper_bound
+   * @param {Ed25519KeyHashes} key_hashes
+   * @returns {boolean}
+   */
+  verify(
+    lower_bound: BigNum | void,
+    upper_bound: BigNum | void,
+    key_hashes: Ed25519KeyHashes
+  ): boolean;
 }
 /**
  */
@@ -7278,6 +7290,10 @@ declare export class TransactionInputs {
    * @param {TransactionInput} elem
    */
   add(elem: TransactionInput): void;
+
+  /**
+   */
+  sort(): void;
 }
 /**
  */
@@ -8459,6 +8475,7 @@ export interface InitOutput {
   +transactioninputs_len: (a: number) => number;
   +transactioninputs_get: (a: number, b: number) => number;
   +transactioninputs_add: (a: number, b: number) => void;
+  +transactioninputs_sort: (a: number) => void;
   +__wbg_transactionoutputs_free: (a: number) => void;
   +transactionoutputs_to_bytes: (a: number, b: number) => void;
   +transactionoutputs_from_bytes: (a: number, b: number) => number;
@@ -8895,6 +8912,7 @@ export interface InitOutput {
   +nativescript_as_timelock_start: (a: number) => number;
   +nativescript_as_timelock_expiry: (a: number) => number;
   +nativescript_get_required_signers: (a: number) => number;
+  +nativescript_verify: (a: number, b: number, c: number, d: number) => number;
   +__wbg_nativescripts_free: (a: number) => void;
   +nativescripts_new: () => number;
   +nativescripts_len: (a: number) => number;

@@ -1,0 +1,68 @@
+/*!
+  GitHub theme for Highlight.js
+
+  Based on the "github" and "github-dark" themes for Highlight.js
+  - https://github.com/highlightjs/highlight.js/blob/main/src/styles/github.css
+  - https://github.com/highlightjs/highlight.js/blob/main/src/styles/github-dark.css
+  
+  Modified by Lume authors & contributors
+*/
+
+:root[data-theme="light"] {
+  --color-1: #d73a49;
+  --color-2: #6f42c1;
+  --color-3: #005cc5;
+  --color-4: #032f62;
+  --color-5: #e36209;
+  --color-6: #6a737d;
+  --color-7: #22863a;
+  --color-8: #24292e;
+  --color-9: #005cc5;
+  --color-10: #735c0f;
+  --color-11: #22863a;
+  --color-12: #f0fff4;
+  --color-13: #b31d28;
+  --color-14: #ffeef0;
+}
+
+:root[data-theme="dark"] {
+  --color-1: #ff7b72;
+  --color-2: #d2a8ff;
+  --color-3: #79c0ff;
+  --color-4: #a5d6ff;
+  --color-5: #ffa657;
+  --color-6: #8b949e;
+  --color-7: #7ee787;
+  --color-8: #c9d1d9;
+  --color-9: #5b97f1;
+  --color-10: #f2cc60;
+  --color-11: #aff5b4;
+  --color-12: #033a16;
+  --color-13: #ffdcd7;
+  --color-14: #67060c;
+}
+
+.hljs {
+  display: block;
+  color: var(--color-black);
+  background: var(--color-background-1);
+  border-radius: var(--border-radius);
+  border: solid 1px var(--color-background-2);
+  overflow-x: auto;
+  padding: 1em !important;
+}
+
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:var(--color-1)}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:var(--color-2)}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:var(--color-3)}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:var(--color-4)}
+.hljs-built_in,.hljs-symbol{color:var(--color-5)}
+.hljs-code,.hljs-comment,.hljs-formula{color:var(--color-6)}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:var(--color-7)}
+.hljs-subst{color:var(--color-8)}
+.hljs-section{color:var(--color-9);font-weight:600}
+.hljs-bullet{color:var(--color-10)}
+.hljs-emphasis{color:var(--color-8);font-style:italic}
+.hljs-strong{color:var(--color-8);font-weight:600}
+.hljs-addition{color:var(--color-11);background-color:var(--color-12)}
+.hljs-deletion{color:var(--color-13);background-color:var(--color-14)}

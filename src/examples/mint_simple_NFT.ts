@@ -1,11 +1,11 @@
 import {
   Blockfrost,
+  fromText,
   Lucid,
   MintingPolicy,
   PolicyId,
   TxHash,
   Unit,
-  utf8ToHex,
 } from "../mod.ts";
 
 /*
@@ -46,7 +46,7 @@ const policyId: PolicyId = lucid.utils.mintingPolicyToId(
 export async function mintNFT(
   name: string,
 ): Promise<TxHash> {
-  const unit: Unit = policyId + utf8ToHex(name);
+  const unit: Unit = policyId + fromText(name);
 
   const tx = await lucid
     .newTx()
@@ -65,7 +65,7 @@ export async function mintNFT(
 export async function burnNFT(
   name: string,
 ): Promise<TxHash> {
-  const unit: Unit = policyId + utf8ToHex(name);
+  const unit: Unit = policyId + fromText(name);
 
   const tx = await lucid
     .newTx()

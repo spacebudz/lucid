@@ -1,0 +1,45 @@
+@font-face {
+  font-family: 'Inter';
+  font-weight: 400 600;
+  font-display: swap;
+  font-style: oblique 0 10deg;
+  src: url("/fonts/inter.woff2") format("woff2");
+  unicode-range: U + 0-00FF, U + 131, U + 152-0153, U + 2BB-02BC, U + 2C6, U + 2 DA, U + 2 DC, U + 2000-206F, U + 2074, U + 20 AC, U + 2122, U + 2191, U + 2193, U + 2212, U + 2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter-fallback';
+  size-adjust: 107.00%;
+  ascent-override: 90%;
+  src: local("Arial");
+}
+
+@font-face {
+  font-family: 'Epilogue';
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("/fonts/epilogue.woff2") format("woff2");
+  unicode-range: U + 0-00FF, U + 131, U + 152-0153, U + 2BB-02BC, U + 2C6, U + 2 DA, U + 2 DC, U + 2000-206F, U + 2074, U + 20 AC, U + 2122, U + 2191, U + 2193, U + 2212, U + 2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Epilogue-fallback';
+  size-adjust: 99%;
+  ascent-override: 80%;
+  src: local("Verdana");
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-weight: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/jetbrains-mono.woff2") format("woff2");
+  unicode-range: U + 0-00FF, U + 131, U + 152-0153, U + 2BB-02BC, U + 2C6, U + 2 DA, U + 2 DC, U + 2000-206F, U + 2074, U + 20 AC, U + 2122, U + 2191, U + 2193, U + 2212, U + 2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains-fallback';
+  size-adjust: 108.00%;
+  src: local("Consolas");
+}

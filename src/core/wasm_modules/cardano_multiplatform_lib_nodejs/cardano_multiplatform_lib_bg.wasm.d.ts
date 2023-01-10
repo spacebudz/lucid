@@ -33,6 +33,7 @@ export function transactioninputs_new(): number;
 export function transactioninputs_len(a: number): number;
 export function transactioninputs_get(a: number, b: number): number;
 export function transactioninputs_add(a: number, b: number): void;
+export function transactioninputs_sort(a: number): void;
 export function __wbg_transactionoutputs_free(a: number): void;
 export function transactionoutputs_to_bytes(a: number, b: number): void;
 export function transactionoutputs_from_bytes(a: number, b: number): number;
@@ -543,6 +544,12 @@ export function nativescript_as_script_n_of_k(a: number): number;
 export function nativescript_as_timelock_start(a: number): number;
 export function nativescript_as_timelock_expiry(a: number): number;
 export function nativescript_get_required_signers(a: number): number;
+export function nativescript_verify(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): number;
 export function __wbg_nativescripts_free(a: number): void;
 export function nativescripts_new(): number;
 export function nativescripts_len(a: number): number;

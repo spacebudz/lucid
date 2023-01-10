@@ -1,0 +1,27 @@
+<nav class="doc-navbar">
+  {% for section in docs_menu %}
+  <details class="doc-navbar-section" {% if url.includes(section.id) %}open{% endif %}>
+    <summary>
+      <span class="doc-navbar-section-title">{{ section.title }}</span>
+    </summary>
+    <ul class="doc-navbar-section-links">
+      {% for page in search.pages("url^=/docs/" + section.id, "order title") %}
+        <li>
+          {% if page.data.url == url %}
+          <a href="{{ page.data.url }}" aria-current="page" title="{{ page.data.description }}">{{ page.data.title }}</a>
+          {% else %}
+          <a href="{{ page.data.url }}" title="{{ page.data.description }}">{{ page.data.title }}</a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </details>
+  {% endfor %}
+   <details class="doc-navbar-section">
+    {% for item in docs_items %}
+    <summary>
+      <a href="{{ "/docs/" + item.id }}" class="doc-navbar-section-title-item" {% if url.includes(item.id) %}open{% endif %}>{{ item.title }}</a>
+    </summary>
+    {% endfor %}
+  </details>
+</nav>

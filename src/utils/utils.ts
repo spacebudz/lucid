@@ -16,7 +16,6 @@ import {
   MintingPolicy,
   NativeScript,
   Network,
-  PlutusData,
   PolicyId,
   PrivateKey,
   PublicKey,
@@ -39,7 +38,8 @@ import {
   slotToBeginUnixTime,
   unixTimeToEnclosingSlot,
 } from "../plutus/time.ts";
-import { Data } from "../plutus/data.ts";
+import { Constr, Data } from "../plutus/data.ts";
+import { TSchema } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
 
 export class Utils {
   private lucid: Lucid;
@@ -144,20 +144,22 @@ export class Utils {
   }
 
   validatorToScriptHash(validator: Validator): ScriptHash {
-    if (validator.type === "Native") {
-      return C.NativeScript.from_bytes(fromHex(validator.script))
-        .hash(C.ScriptHashNamespace.NativeScript)
-        .to_hex();
-    } else if (validator.type === "PlutusV1") {
-      return C.PlutusScript.from_bytes(fromHex(validator.script))
-        .hash(C.ScriptHashNamespace.PlutusV1)
-        .to_hex();
-    } else if (validator.type === "PlutusV2") {
-      return C.PlutusScript.from_bytes(fromHex(validator.script))
-        .hash(C.ScriptHashNamespace.PlutusV2)
-        .to_hex();
+    switch (validator.type) {
+      case "Native":
+        return C.NativeScript.from_bytes(fromHex(validator.script))
+          .hash(C.ScriptHashNamespace.NativeScript)
+          .to_hex();
+      case "PlutusV1":
+        return C.PlutusScript.from_bytes(fromHex(validator.script))
+          .hash(C.ScriptHashNamespace.PlutusV1)
+          .to_hex();
+      case "PlutusV2":
+        return C.PlutusScript.from_bytes(fromHex(validator.script))
+          .hash(C.ScriptHashNamespace.PlutusV2)
+          .to_hex();
+      default:
+        throw new Error("No variant matched");
     }
-    throw new Error("No variant matched");
   }
 
   mintingPolicyToId(mintingPolicy: MintingPolicy): PolicyId {
@@ -183,11 +185,11 @@ export class Utils {
   }
 
   generatePrivateKey(): PrivateKey {
-    return C.PrivateKey.generate_ed25519().to_bech32();
+    return generatePrivateKey();
   }
 
   generateSeedPhrase(): string {
-    return generateMnemonic(256);
+    return generateSeedPhrase();
   }
 
   unixTimeToSlot(unixTime: UnixTime): Slot {
@@ -201,7 +203,7 @@ export class Utils {
     return slotToBeginUnixTime(slot, SLOT_CONFIG_NETWORK[this.lucid.network]);
   }
 
-  /** Address can be in Bech32 or Hex */
+  /** Address can be in Bech32 or Hex. */
   getAddressDetails(address: string): AddressDetails {
     return getAddressDetails(address);
   }
@@ -212,6 +214,14 @@ export class Utils {
    */
   nativeScriptFromJson(nativeScript: NativeScript): Script {
     return nativeScriptFromJson(nativeScript);
+  }
+
+  paymentCredentialOf(address: Address): Credential {
+    return paymentCredentialOf(address);
+  }
+
+  stakeCredentialOf(rewardAddress: RewardAddress): Credential {
+    return stakeCredentialOf(rewardAddress);
   }
 }
 
@@ -227,7 +237,7 @@ function addressFromHexOrBech32(address: string): Core.Address {
   }
 }
 
-/** Address can be in Bech32 or Hex */
+/** Address can be in Bech32 or Hex. */
 export function getAddressDetails(address: string): AddressDetails {
   // Base Address
   try {
@@ -361,6 +371,34 @@ export function getAddressDetails(address: string): AddressDetails {
   }
 
   throw new Error("No address type matched for: " + address);
+}
+
+export function paymentCredentialOf(address: Address): Credential {
+  const { paymentCredential } = getAddressDetails(address);
+  if (!paymentCredential) {
+    throw new Error(
+      "The specified address does not contain a payment credential."
+    );
+  }
+  return paymentCredential;
+}
+
+export function stakeCredentialOf(rewardAddress: RewardAddress): Credential {
+  const { stakeCredential } = getAddressDetails(rewardAddress);
+  if (!stakeCredential) {
+    throw new Error(
+      "The specified address does not contain a stake credential."
+    );
+  }
+  return stakeCredential;
+}
+
+export function generatePrivateKey(): PrivateKey {
+  return C.PrivateKey.generate_ed25519().to_bech32();
+}
+
+export function generateSeedPhrase(): string {
+  return generateMnemonic(256);
 }
 
 export function valueToAssets(value: Core.Value): Assets {
@@ -513,11 +551,11 @@ export function coreToUtxo(coreUtxo: Core.TransactionUnspentOutput): UTxO {
 
 export function networkToId(network: Network): number {
   switch (network) {
-    case "Testnet":
-      return 0;
     case "Preview":
       return 0;
     case "Preprod":
+      return 0;
+    case "Custom":
       return 0;
     case "Mainnet":
       return 1;
@@ -534,12 +572,14 @@ export function toHex(bytes: Uint8Array): string {
   return encodeToString(bytes);
 }
 
-export function hexToUtf8(hex: string): string {
+/** Convert a Hex encoded string to a Utf-8 encoded string. */
+export function toText(hex: string): string {
   return new TextDecoder().decode(decode(new TextEncoder().encode(hex)));
 }
 
-export function utf8ToHex(utf8: string): string {
-  return toHex(new TextEncoder().encode(utf8));
+/** Convert a Utf-8 encoded string to a Hex encoded string. */
+export function fromText(text: string): string {
+  return toHex(new TextEncoder().encode(text));
 }
 
 export function toPublicKey(privateKey: PrivateKey): PublicKey {
@@ -627,13 +667,17 @@ export function nativeScriptFromJson(nativeScript: NativeScript): Script {
   };
 }
 
-export function applyParamsToScript(
+export function applyParamsToScript<T extends unknown[] = Data[]>(
   plutusScript: string,
-  ...params: PlutusData[]
+  params: [...T],
+  shape?: TSchema
 ): string {
+  const p = shape
+    ? (Data.castTo<T>(params, shape) as Constr<Data>).fields
+    : (params as Data[]);
   return toHex(
     C.apply_params_to_plutus_script(
-      C.PlutusList.from_bytes(fromHex(Data.to(params))),
+      C.PlutusList.from_bytes(fromHex(Data.to<Data[]>(p))),
       C.PlutusScript.from_bytes(fromHex(plutusScript))
     ).to_bytes()
   );

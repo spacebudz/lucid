@@ -2970,6 +2970,17 @@ export class NativeScript {
    * @returns {Ed25519KeyHashes}
    */
   get_required_signers(): Ed25519KeyHashes;
+  /**
+   * @param {BigNum | undefined} lower_bound
+   * @param {BigNum | undefined} upper_bound
+   * @param {Ed25519KeyHashes} key_hashes
+   * @returns {boolean}
+   */
+  verify(
+    lower_bound: BigNum | undefined,
+    upper_bound: BigNum | undefined,
+    key_hashes: Ed25519KeyHashes,
+  ): boolean;
 }
 /** */
 export class NativeScripts {
@@ -6033,6 +6044,8 @@ export class TransactionInputs {
    * @param {TransactionInput} elem
    */
   add(elem: TransactionInput): void;
+  /** */
+  sort(): void;
 }
 /** */
 export class TransactionMetadatum {

@@ -1,0 +1,30 @@
+{
+  "name": "lume.land",
+  "short_name": "lume",
+  "description": "The fast & flexible static site generator for Deno.",
+  "lang": "en",
+  "id": "/",
+  "start_url": "/",
+  "theme_color": "#fff",
+  "background_color": "#141b1f",
+  "orientation": "natural",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

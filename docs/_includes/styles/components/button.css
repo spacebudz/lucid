@@ -1,0 +1,111 @@
+.button {
+  background: var(--background, none);
+  color: var(--color, currentColor);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 0;
+  height: 2em;
+  padding: 0 .6em;
+  font: var(--text-caption-bold);
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  transition-property: background-color, color;
+  transition-duration: var(--animation-duration);
+  box-sizing: border-box;
+  vertical-align: middle;
+  flex: 0 0 auto;
+  text-decoration: none;
+
+  &::-moz-focus-inner {
+    border: 0;
+  }
+
+  &.is-small {
+    font: var(--text-caption-mini-bold);
+    text-transform: uppercase;
+  }
+  &.is-big {
+    height: 3em;
+    padding: 0 1em;
+  }
+
+  &.is-primary {
+    --color: var(--color-background-1);
+    --color-hover: var(--color-background-1);
+    --background: var(--color-primary);
+    --background-hover: var(--color-primary-1);
+  }
+
+  &.is-secondary {
+    --color: var(--color-foreground-1);
+    --color-hover: var(--color-foreground-1);
+    --color-active: var(--color-background);
+    --background: var(--color-background-1);
+    --background-hover: var(--color-background-2);
+    --background-active: var(--color-primary);
+
+    &.is-active {
+      color: var(--color-active);
+      background: var(--background-active);
+    }
+  }
+  & input {
+    accent-color: var(--accent);
+  }
+
+  &:hover {
+    color: var(--color-hover, currentColor);
+    background: var(--background-hover, none);
+  }
+  &:disabled {
+    cursor: default;
+    background: none;
+    opacity: .1;
+  }
+
+  &.has-icon {
+    padding: 0;
+    width: 40px;
+    height: 40px;
+
+    & svg {
+      width: 30px;
+      height: 30px;
+      fill: currentColor;
+    }
+    & path {
+      fill: currentColor;
+    }
+  }
+}
+
+.button-theme {
+  background: none;
+  color: currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: solid 1px var(--color-background-3);
+  padding: 0 .6em;
+  font: var(--text-callout);
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  vertical-align: middle;
+
+  &:hover {
+    background: var(--color-background-2);
+  }
+}
+
+[data-theme="light"] .button-theme .is-light,
+[data-theme="dark"] .button-theme .is-dark {
+  display: block;
+}
+
+[data-theme="light"] .button-theme .is-dark,
+[data-theme="dark"] .button-theme .is-light {
+  display: none;
+}

@@ -1,0 +1,118 @@
+:root {
+  /* Fonts */
+  --font-display: 'Epilogue', 'Epilogue-fallback', var(--font-ui);
+  --font-ui: 'Inter', 'Inter-fallback', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Oxygen, Cantarell, sans-serif;
+  --font-code: 'JetBrains Mono', 'JetBrains-fallback', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+
+  /* Text styles */
+  --text-display-size: clamp(30px, 10vw, 75px);
+  --text-display-height: 0.95;
+  --text-display: 700 var(--text-display-size)/var(--text-display-height) var(--font-display);
+  --text-display-spacing: -0.045em;
+  --text-heading-size: clamp(20px, 8vw, 50px);
+  --text-heading: 700 var(--text-heading-size)/1.1 var(--font-display);
+  --text-heading-spacing: -0.03em;
+  --text-title-size: clamp(20px, 6vw, 30px);
+  --text-title: 600 var(--text-title-size)/1.2 var(--font-display);
+  --text-title-spacing: -0.03em;
+  --text-body-size: clamp(16px, 4vw, 20px);
+  --text-body: var(--text-body-size)/1.65 var(--font-ui);
+  --text-body-bold: 600 var(--text-body-size)/1.6 var(--font-ui);
+  --text-body-spacing: -0.02em;
+  --text-caption: 15px/1.6 var(--font-ui);
+  --text-caption-bold: 600 15px/1.6 var(--font-ui);
+  --text-caption-mini: 13px/1.6 var(--font-ui);
+  --text-caption-mini-bold: 600 13px/1.6 var(--font-ui);
+  --text-code: 16px/1.6 var(--font-code);
+
+  /* Colors */
+  /* Tokens */
+  --color-blue-400: hsl(221, 83%, 54%);
+  --color-blue-500: hsl(213, 94%, 68%);
+  --color-blue-600: hsl(212, 96%, 78%);
+  --color-red-400: hsl(0deg, 50%, 40%);
+  --color-red-500: hsl(0deg, 50%, 50%);
+  --color-red-600: hsl(0deg, 70%, 60%);
+  --color-white: hsl(200deg, 20%, 100%);
+  --color-white-alpha: hsla(200deg, 20%, 100%, 0.9);
+  --color-black-970: hsl(200deg, 20%, 97%);
+  --color-black-930: hsl(200deg, 20%, 93%);
+  --color-black-860: hsl(200deg, 20%, 86%);
+  --color-black-650: hsl(200deg, 20%, 65%);
+  --color-black-350: hsl(200deg, 20%, 35%);
+  --color-black-240: hsl(200deg, 20%, 24%);
+  --color-black-180: hsl(200deg, 20%, 18%);
+  --color-black-140: hsl(200deg, 20%, 14%);
+  --color-black-100: hsl(200deg, 20%, 10%);
+  --color-black-100-alpha: hsla(200deg, 20%, 10%, 0.9);
+  --color-yellow-800: hsl(50deg, 80%, 80%);
+  --color-yellow-750: hsl(50deg, 80%, 75%);
+  --color-yellow-200: hsl(50deg, 80%, 20%);
+  --color-brown-600: hsl(50deg, 10%, 60%);
+  --color-brown-160: hsl(50deg, 10%, 16%);
+  --color-brown-200: hsl(50deg, 10%, 20%);
+
+  /* Borders */
+  --border-radius-small: 5px;
+  --border-radius: 10px;
+
+  /* Animation */
+  --animation-duration: 0.2s;
+
+  /* Spaces */
+  --margin: max(25px, 5vw);
+  --max-width: 1200px;
+  --column-gap-0: 10px;
+  --column-gap-1: 25px;
+  --column-gap-2: 50px;
+  --column-gap-3: 100px;
+  --row-gap-0: 25px;
+  --row-gap-1: clamp(20px, 5vh, 50px);
+  --row-gap-2: clamp(40px, 10vh, 100px);
+  --row-gap-3: clamp(60px, 15vh, 150px);
+  --row-gap-4: clamp(80px, 20vh, 200px);
+}
+
+:root.no-motion {
+  --animation-duration: 0s;
+}
+
+@media (prefers-reduced-motion) {
+  :root {
+    --animation-duration: 0s;
+  }
+}
+
+/* Theme light mode */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-primary: var(--color-blue-500);
+  --color-primary-1: var(--color-blue-400);
+  --color-foreground: var(--color-black-100);
+  --color-foreground-1: var(--color-black-240);
+  --color-background: var(--color-white);
+  --color-background-a: var(--color-white-alpha);
+  --color-background-1: var(--color-black-970);
+  --color-background-2: var(--color-black-930);
+  --color-background-3: var(--color-black-860);
+}
+
+/* Theme dark mode */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-primary: var(--color-blue-600);
+  --color-primary-1: var(--color-blue-400);
+  --color-foreground: var(--color-white);
+  --color-foreground-1: var(--color-black-650);
+  --color-background: var(--color-black-100);
+  --color-background-a: var(--color-black-100-alpha);
+  --color-background-1: var(--color-black-140);
+  --color-background-2: var(--color-black-180);
+  --color-background-3: var(--color-black-240);
+
+  /* Overwrite @docsearch modal dark colors */
+  --docsearch-modal-background: var(--color-background);
+  --docsearch-key-gradient: background-image: linear-gradient(-26.5deg, var(--color-background), var(--color-background-1));
+  --docsearch-footer-background: var(--color-background-1);
+  --docsearch-muted-color: hsl(218deg, 14%, 64%);
+}

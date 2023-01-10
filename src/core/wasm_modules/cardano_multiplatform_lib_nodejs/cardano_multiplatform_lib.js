@@ -710,7 +710,7 @@ function handleError(f, args) {
     wasm.__wbindgen_exn_store(addHeapObject(e));
   }
 }
-function __wbg_adapter_1367(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1369(arg0, arg1, arg2, arg3) {
   wasm.wasm_bindgen__convert__closures__invoke2_mut__h6a929cf27a4d54a4(
     arg0,
     arg1,
@@ -7693,6 +7693,29 @@ class NativeScript {
   get_required_signers() {
     var ret = wasm.nativescript_get_required_signers(this.ptr);
     return Ed25519KeyHashes.__wrap(ret);
+  }
+  /**
+   * @param {BigNum | undefined} lower_bound
+   * @param {BigNum | undefined} upper_bound
+   * @param {Ed25519KeyHashes} key_hashes
+   * @returns {boolean}
+   */
+  verify(lower_bound, upper_bound, key_hashes) {
+    let ptr0 = 0;
+    if (!isLikeNone(lower_bound)) {
+      _assertClass(lower_bound, BigNum);
+      ptr0 = lower_bound.ptr;
+      lower_bound.ptr = 0;
+    }
+    let ptr1 = 0;
+    if (!isLikeNone(upper_bound)) {
+      _assertClass(upper_bound, BigNum);
+      ptr1 = upper_bound.ptr;
+      upper_bound.ptr = 0;
+    }
+    _assertClass(key_hashes, Ed25519KeyHashes);
+    var ret = wasm.nativescript_verify(this.ptr, ptr0, ptr1, key_hashes.ptr);
+    return ret !== 0;
   }
 }
 module.exports.NativeScript = NativeScript;
@@ -15266,6 +15289,10 @@ class TransactionInputs {
     _assertClass(elem, TransactionInput);
     wasm.transactioninputs_add(this.ptr, elem.ptr);
   }
+  /** */
+  sort() {
+    wasm.transactioninputs_sort(this.ptr);
+  }
 }
 module.exports.TransactionInputs = TransactionInputs;
 /** */
@@ -17895,7 +17922,7 @@ module.exports.__wbg_new_c143a4f563f78c4e = function (arg0, arg1) {
       const a = state0.a;
       state0.a = 0;
       try {
-        return __wbg_adapter_1367(a, state0.b, arg0, arg1);
+        return __wbg_adapter_1369(a, state0.b, arg0, arg1);
       } finally {
         state0.a = a;
       }
@@ -18034,8 +18061,8 @@ module.exports.__wbindgen_memory = function () {
   return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper8400 = function (arg0, arg1, arg2) {
-  var ret = makeMutClosure(arg0, arg1, 442, __wbg_adapter_32);
+module.exports.__wbindgen_closure_wrapper8421 = function (arg0, arg1, arg2) {
+  var ret = makeMutClosure(arg0, arg1, 443, __wbg_adapter_32);
   return addHeapObject(ret);
 };
 

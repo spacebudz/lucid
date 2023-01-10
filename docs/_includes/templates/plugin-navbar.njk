@@ -1,0 +1,24 @@
+<nav class="doc-navbar">
+  {% for id, info in tags_info %}
+  {% set pages = search.pages(id, "title") %}
+  {% set open = search.page(id + " url=" + url) %}
+
+  <details class="doc-navbar-section" {% if open %} open{% endif %}>
+    <summary>
+      <span class="doc-navbar-section-title">{{ info.name }}</span>
+    </summary>
+    <ul class="doc-navbar-section-links">
+      {% for page in search.pages(id, "title") %}
+        <li>
+          <a href="{{ page.data.url }}" {% if page.data.url == url %}aria-current="page"{% endif %} title="{{ page.data.description }}">
+            {{ page.data.title }}
+            {% if page.data.enabled %}
+            <span class="tag is-small">Installed</span>
+            {% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </details>
+  {% endfor %}
+</nav>
