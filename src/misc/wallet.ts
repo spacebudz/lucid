@@ -23,6 +23,7 @@ type FromSeed = {
 export function walletFromSeed(
   seed: string,
   options: {
+    password?: string;
     addressType?: "Base" | "Enterprise";
     accountIndex?: number;
     network?: Network;
@@ -36,7 +37,9 @@ export function walletFromSeed(
   const entropy = mnemonicToEntropy(seed);
   const rootKey = C.Bip32PrivateKey.from_bip39_entropy(
     fromHex(entropy),
-    new Uint8Array(),
+    options.password
+      ? new TextEncoder().encode(options.password)
+      : new Uint8Array(),
   );
 
   const accountKey = rootKey.derive(harden(1852))

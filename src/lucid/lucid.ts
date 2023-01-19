@@ -428,13 +428,18 @@ export class Lucid {
    */
   selectWalletFromSeed(
     seed: string,
-    options?: { addressType?: "Base" | "Enterprise"; accountIndex?: number },
+    options?: {
+      addressType?: "Base" | "Enterprise";
+      accountIndex?: number;
+      password?: string;
+    },
   ): Lucid {
     const { address, rewardAddress, paymentKey, stakeKey } = walletFromSeed(
       seed,
       {
         addressType: options?.addressType || "Base",
         accountIndex: options?.accountIndex || 0,
+        password: options?.password,
         network: this.network,
       },
     );
