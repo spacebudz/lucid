@@ -38,7 +38,7 @@ import {
   slotToBeginUnixTime,
   unixTimeToEnclosingSlot,
 } from "../plutus/time.ts";
-import { Constr, Data } from "../plutus/data.ts";
+import { Data } from "../plutus/data.ts";
 import { TSchema } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
 
 export class Utils {
@@ -675,9 +675,7 @@ export function applyParamsToScript<T extends unknown[] = Data[]>(
   params: [...T],
   shape?: TSchema,
 ): string {
-  const p = shape
-    ? (Data.castTo<T>(params, shape) as Constr<Data>).fields
-    : params as Data[];
+  const p = (shape ? Data.castTo<T>(params, shape) : params) as Data[];
   return toHex(
     C.apply_params_to_plutus_script(
       C.PlutusList.from_bytes(fromHex(Data.to<Data[]>(p))),
