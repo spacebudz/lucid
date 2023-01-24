@@ -25,7 +25,7 @@ export type Cardano = {
   [key: string]: {
     name: string;
     icon: string;
-    version: string;
+    apiVersion: string;
     enable(): Promise<WalletApi>;
     isEnabled(): Promise<boolean>;
   };
