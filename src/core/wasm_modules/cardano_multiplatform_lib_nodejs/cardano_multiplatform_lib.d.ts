@@ -1,6 +1,17 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+ * @param {Transaction} tx
+ * @param {LinearFee} linear_fee
+ * @param {ExUnitPrices} ex_unit_prices
+ * @returns {BigNum}
+ */
+export function min_fee(
+  tx: Transaction,
+  linear_fee: LinearFee,
+  ex_unit_prices: ExUnitPrices,
+): BigNum;
+/**
  * @param {Uint8Array} bytes
  * @returns {TransactionMetadatum}
  */
@@ -51,17 +62,6 @@ export function encrypt_with_password(
  * @returns {string}
  */
 export function decrypt_with_password(password: string, data: string): string;
-/**
- * @param {Transaction} tx
- * @param {LinearFee} linear_fee
- * @param {ExUnitPrices} ex_unit_prices
- * @returns {BigNum}
- */
-export function min_fee(
-  tx: Transaction,
-  linear_fee: LinearFee,
-  ex_unit_prices: ExUnitPrices,
-): BigNum;
 /**
  * @param {PlutusList} params
  * @param {PlutusScript} plutus_script
