@@ -549,6 +549,7 @@ export class Tx {
     }
 
     const utxos = await this.lucid.wallet.getUtxosCore();
+    const collateral = await this.lucid.wallet.getCollateral();
 
     const changeAddress: Core.Address = addressFromWithNetworkCheck(
       options?.change?.address || (await this.lucid.wallet.address()),
@@ -594,7 +595,7 @@ export class Tx {
     return new TxComplete(
       this.lucid,
       await this.txBuilder.construct(
-        utxos,
+        collateral || utxos,
         changeAddress,
         options?.nativeUplc === undefined ? true : options?.nativeUplc
       )
@@ -662,7 +663,7 @@ export class Tx {
       const output = outputs.get(i);
       if (
         !longestAddress ||
-        output.address().to_bech32().length > longestAddress.to_bech32().length
+        output.address().to_bech32(undefined).length > longestAddress.to_bech32(undefined).length
       ) {
         longestAddress = output.address();
       }
