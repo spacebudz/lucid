@@ -157,10 +157,14 @@ export class Kupmios implements Provider {
       client.addEventListener("message", (msg: MessageEvent<string>) => {
         try {
           const { result } = JSON.parse(msg.data);
+          const delegation = (result ? Object.values(result)[0] : {}) as {
+            delegate: string;
+            rewards: number;
+          };
           res(
             {
-              poolId: result.delegate || null,
-              rewards: BigInt(result.rewards || 0),
+              poolId: delegation.delegate || null,
+              rewards: BigInt(delegation.rewards || 0),
             },
           );
           client.close();

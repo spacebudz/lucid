@@ -32,7 +32,7 @@ export function unixTimeToEnclosingSlot(
   unixTime: UnixTime,
   slotConfig: SlotConfig,
 ): Slot {
-  const timePassed = (unixTime - slotConfig.zeroTime);
+  const timePassed = unixTime - slotConfig.zeroTime;
   const slotsPassed = Math.floor(timePassed / slotConfig.slotLength);
   return slotsPassed + slotConfig.zeroSlot;
 }

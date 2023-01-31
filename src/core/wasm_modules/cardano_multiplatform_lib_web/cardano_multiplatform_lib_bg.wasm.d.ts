@@ -7,8 +7,6 @@ export function unitinterval_from_bytes(a: number, b: number): number;
 export function unitinterval_to_json(a: number, b: number): void;
 export function unitinterval_to_js_value(a: number): number;
 export function unitinterval_from_json(a: number, b: number): number;
-export function unitinterval_numerator(a: number): number;
-export function unitinterval_denominator(a: number): number;
 export function unitinterval_new(a: number, b: number): number;
 export function unitinterval_from_float(a: number): number;
 export function __wbg_transaction_free(a: number): void;
@@ -29,8 +27,6 @@ export function transactioninputs_from_bytes(a: number, b: number): number;
 export function transactioninputs_to_json(a: number, b: number): void;
 export function transactioninputs_to_js_value(a: number): number;
 export function transactioninputs_from_json(a: number, b: number): number;
-export function transactioninputs_new(): number;
-export function transactioninputs_len(a: number): number;
 export function transactioninputs_get(a: number, b: number): number;
 export function transactioninputs_add(a: number, b: number): void;
 export function transactioninputs_sort(a: number): void;
@@ -40,8 +36,6 @@ export function transactionoutputs_from_bytes(a: number, b: number): number;
 export function transactionoutputs_to_json(a: number, b: number): void;
 export function transactionoutputs_to_js_value(a: number): number;
 export function transactionoutputs_from_json(a: number, b: number): number;
-export function transactionoutputs_new(): number;
-export function transactionoutputs_len(a: number): number;
 export function transactionoutputs_get(a: number, b: number): number;
 export function transactionoutputs_add(a: number, b: number): void;
 export function __wbg_certificates_free(a: number): void;
@@ -51,7 +45,6 @@ export function certificates_to_json(a: number, b: number): void;
 export function certificates_to_js_value(a: number): number;
 export function certificates_from_json(a: number, b: number): number;
 export function certificates_new(): number;
-export function certificates_len(a: number): number;
 export function certificates_get(a: number, b: number): number;
 export function certificates_add(a: number, b: number): void;
 export function __wbg_transactionbody_free(a: number): void;
@@ -62,7 +55,6 @@ export function transactionbody_to_js_value(a: number): number;
 export function transactionbody_from_json(a: number, b: number): number;
 export function transactionbody_inputs(a: number): number;
 export function transactionbody_outputs(a: number): number;
-export function transactionbody_fee(a: number): number;
 export function transactionbody_ttl(a: number): number;
 export function transactionbody_set_certs(a: number, b: number): void;
 export function transactionbody_certs(a: number): number;
@@ -125,7 +117,6 @@ export function transactioninput_to_json(a: number, b: number): void;
 export function transactioninput_to_js_value(a: number): number;
 export function transactioninput_from_json(a: number, b: number): number;
 export function transactioninput_transaction_id(a: number): number;
-export function transactioninput_index(a: number): number;
 export function transactioninput_new(a: number, b: number): number;
 export function __wbg_transactionoutput_free(a: number): void;
 export function transactionoutput_to_bytes(a: number, b: number): void;
@@ -141,21 +132,16 @@ export function transactionoutput_set_datum(a: number, b: number): void;
 export function transactionoutput_set_script_ref(a: number, b: number): void;
 export function transactionoutput_new(a: number, b: number): number;
 export function transactionoutput_to_legacy_bytes(a: number, b: number): void;
-export function __wbg_stakeregistration_free(a: number): void;
 export function stakeregistration_to_bytes(a: number, b: number): void;
 export function stakeregistration_from_bytes(a: number, b: number): number;
-export function stakeregistration_to_json(a: number, b: number): void;
 export function stakeregistration_to_js_value(a: number): number;
 export function stakeregistration_from_json(a: number, b: number): number;
-export function stakeregistration_stake_credential(a: number): number;
-export function stakeregistration_new(a: number): number;
 export function __wbg_stakederegistration_free(a: number): void;
 export function stakederegistration_to_bytes(a: number, b: number): void;
 export function stakederegistration_from_bytes(a: number, b: number): number;
 export function stakederegistration_to_json(a: number, b: number): void;
 export function stakederegistration_to_js_value(a: number): number;
 export function stakederegistration_from_json(a: number, b: number): number;
-export function stakederegistration_stake_credential(a: number): number;
 export function stakederegistration_new(a: number): number;
 export function __wbg_stakedelegation_free(a: number): void;
 export function stakedelegation_to_bytes(a: number, b: number): void;
@@ -173,7 +159,6 @@ export function ed25519keyhashes_to_json(a: number, b: number): void;
 export function ed25519keyhashes_to_js_value(a: number): number;
 export function ed25519keyhashes_from_json(a: number, b: number): number;
 export function ed25519keyhashes_new(): number;
-export function ed25519keyhashes_len(a: number): number;
 export function ed25519keyhashes_get(a: number, b: number): number;
 export function ed25519keyhashes_add(a: number, b: number): void;
 export function __wbg_relays_free(a: number): void;
@@ -182,8 +167,6 @@ export function relays_from_bytes(a: number, b: number): number;
 export function relays_to_json(a: number, b: number): void;
 export function relays_to_js_value(a: number): number;
 export function relays_from_json(a: number, b: number): number;
-export function relays_new(): number;
-export function relays_len(a: number): number;
 export function relays_get(a: number, b: number): number;
 export function relays_add(a: number, b: number): void;
 export function __wbg_poolparams_free(a: number): void;
@@ -194,7 +177,6 @@ export function poolparams_to_js_value(a: number): number;
 export function poolparams_from_json(a: number, b: number): number;
 export function poolparams_operator(a: number): number;
 export function poolparams_vrf_keyhash(a: number): number;
-export function poolparams_pledge(a: number): number;
 export function poolparams_cost(a: number): number;
 export function poolparams_margin(a: number): number;
 export function poolparams_reward_account(a: number): number;
@@ -228,7 +210,6 @@ export function poolretirement_to_json(a: number, b: number): void;
 export function poolretirement_to_js_value(a: number): number;
 export function poolretirement_from_json(a: number, b: number): number;
 export function poolretirement_pool_keyhash(a: number): number;
-export function poolretirement_epoch(a: number): number;
 export function poolretirement_new(a: number, b: number): number;
 export function __wbg_genesiskeydelegation_free(a: number): void;
 export function genesiskeydelegation_to_bytes(a: number, b: number): void;
@@ -297,8 +278,6 @@ export function mirtostakecredentials_from_bytes(a: number, b: number): number;
 export function mirtostakecredentials_to_json(a: number, b: number): void;
 export function mirtostakecredentials_to_js_value(a: number): number;
 export function mirtostakecredentials_from_json(a: number, b: number): number;
-export function mirtostakecredentials_new(): number;
-export function mirtostakecredentials_len(a: number): number;
 export function mirtostakecredentials_insert(
   a: number,
   b: number,
@@ -343,21 +322,17 @@ export function ipv6_to_js_value(a: number): number;
 export function ipv6_from_json(a: number, b: number): number;
 export function ipv6_new(a: number, b: number): number;
 export function ipv6_ip(a: number, b: number): void;
-export function __wbg_url_free(a: number): void;
 export function url_to_bytes(a: number, b: number): void;
 export function url_from_bytes(a: number, b: number): number;
 export function url_new(a: number, b: number): number;
-export function url_url(a: number, b: number): void;
 export function __wbg_dnsrecordaoraaaa_free(a: number): void;
 export function dnsrecordaoraaaa_to_bytes(a: number, b: number): void;
 export function dnsrecordaoraaaa_from_bytes(a: number, b: number): number;
 export function dnsrecordaoraaaa_new(a: number, b: number): number;
 export function dnsrecordaoraaaa_record(a: number, b: number): void;
-export function __wbg_dnsrecordsrv_free(a: number): void;
 export function dnsrecordsrv_to_bytes(a: number, b: number): void;
 export function dnsrecordsrv_from_bytes(a: number, b: number): number;
 export function dnsrecordsrv_new(a: number, b: number): number;
-export function dnsrecordsrv_record(a: number, b: number): void;
 export function __wbg_singlehostaddr_free(a: number): void;
 export function singlehostaddr_to_bytes(a: number, b: number): void;
 export function singlehostaddr_from_bytes(a: number, b: number): number;
@@ -375,7 +350,6 @@ export function singlehostname_to_json(a: number, b: number): void;
 export function singlehostname_to_js_value(a: number): number;
 export function singlehostname_from_json(a: number, b: number): number;
 export function singlehostname_port(a: number): number;
-export function singlehostname_dns_name(a: number): number;
 export function singlehostname_new(a: number, b: number): number;
 export function __wbg_multihostname_free(a: number): void;
 export function multihostname_to_bytes(a: number, b: number): void;
@@ -404,7 +378,6 @@ export function poolmetadata_from_bytes(a: number, b: number): number;
 export function poolmetadata_to_json(a: number, b: number): void;
 export function poolmetadata_to_js_value(a: number): number;
 export function poolmetadata_from_json(a: number, b: number): number;
-export function poolmetadata_url(a: number): number;
 export function poolmetadata_pool_metadata_hash(a: number): number;
 export function poolmetadata_new(a: number, b: number): number;
 export function __wbg_stakecredentials_free(a: number): void;
@@ -413,8 +386,6 @@ export function stakecredentials_from_bytes(a: number, b: number): number;
 export function stakecredentials_to_json(a: number, b: number): void;
 export function stakecredentials_to_js_value(a: number): number;
 export function stakecredentials_from_json(a: number, b: number): number;
-export function stakecredentials_new(): number;
-export function stakecredentials_len(a: number): number;
 export function stakecredentials_get(a: number, b: number): number;
 export function stakecredentials_add(a: number, b: number): void;
 export function __wbg_rewardaddresses_free(a: number): void;
@@ -423,8 +394,6 @@ export function rewardaddresses_from_bytes(a: number, b: number): number;
 export function rewardaddresses_to_json(a: number, b: number): void;
 export function rewardaddresses_to_js_value(a: number): number;
 export function rewardaddresses_from_json(a: number, b: number): number;
-export function rewardaddresses_new(): number;
-export function rewardaddresses_len(a: number): number;
 export function rewardaddresses_get(a: number, b: number): number;
 export function rewardaddresses_add(a: number, b: number): void;
 export function __wbg_withdrawals_free(a: number): void;
@@ -433,8 +402,6 @@ export function withdrawals_from_bytes(a: number, b: number): number;
 export function withdrawals_to_json(a: number, b: number): void;
 export function withdrawals_to_js_value(a: number): number;
 export function withdrawals_from_json(a: number, b: number): number;
-export function withdrawals_new(): number;
-export function withdrawals_len(a: number): number;
 export function withdrawals_insert(a: number, b: number, c: number): number;
 export function withdrawals_get(a: number, b: number): number;
 export function withdrawals_keys(a: number): number;
@@ -490,38 +457,28 @@ export function scriptall_to_js_value(a: number): number;
 export function scriptall_from_json(a: number, b: number): number;
 export function scriptall_native_scripts(a: number): number;
 export function scriptall_new(a: number): number;
-export function __wbg_scriptany_free(a: number): void;
 export function scriptany_to_bytes(a: number, b: number): void;
 export function scriptany_from_bytes(a: number, b: number): number;
-export function scriptany_to_json(a: number, b: number): void;
 export function scriptany_to_js_value(a: number): number;
 export function scriptany_from_json(a: number, b: number): number;
-export function scriptany_native_scripts(a: number): number;
-export function scriptany_new(a: number): number;
 export function __wbg_scriptnofk_free(a: number): void;
 export function scriptnofk_to_bytes(a: number, b: number): void;
 export function scriptnofk_from_bytes(a: number, b: number): number;
 export function scriptnofk_to_json(a: number, b: number): void;
 export function scriptnofk_to_js_value(a: number): number;
 export function scriptnofk_from_json(a: number, b: number): number;
-export function scriptnofk_n(a: number): number;
 export function scriptnofk_native_scripts(a: number): number;
 export function scriptnofk_new(a: number, b: number): number;
-export function __wbg_timelockstart_free(a: number): void;
 export function timelockstart_to_bytes(a: number, b: number): void;
 export function timelockstart_from_bytes(a: number, b: number): number;
-export function timelockstart_to_json(a: number, b: number): void;
 export function timelockstart_to_js_value(a: number): number;
 export function timelockstart_from_json(a: number, b: number): number;
-export function timelockstart_slot(a: number): number;
-export function timelockstart_new(a: number): number;
 export function __wbg_timelockexpiry_free(a: number): void;
 export function timelockexpiry_to_bytes(a: number, b: number): void;
 export function timelockexpiry_from_bytes(a: number, b: number): number;
 export function timelockexpiry_to_json(a: number, b: number): void;
 export function timelockexpiry_to_js_value(a: number): number;
 export function timelockexpiry_from_json(a: number, b: number): number;
-export function timelockexpiry_slot(a: number): number;
 export function timelockexpiry_new(a: number): number;
 export function __wbg_nativescript_free(a: number): void;
 export function nativescript_to_bytes(a: number, b: number): void;
@@ -551,8 +508,6 @@ export function nativescript_verify(
   d: number,
 ): number;
 export function __wbg_nativescripts_free(a: number): void;
-export function nativescripts_new(): number;
-export function nativescripts_len(a: number): number;
 export function nativescripts_get(a: number, b: number): number;
 export function nativescripts_add(a: number, b: number): void;
 export function __wbg_update_free(a: number): void;
@@ -570,8 +525,6 @@ export function genesishashes_from_bytes(a: number, b: number): number;
 export function genesishashes_to_json(a: number, b: number): void;
 export function genesishashes_to_js_value(a: number): number;
 export function genesishashes_from_json(a: number, b: number): number;
-export function genesishashes_new(): number;
-export function genesishashes_len(a: number): number;
 export function genesishashes_get(a: number, b: number): number;
 export function genesishashes_add(a: number, b: number): void;
 export function __wbg_scripthashes_free(a: number): void;
@@ -580,8 +533,6 @@ export function scripthashes_from_bytes(a: number, b: number): number;
 export function scripthashes_to_json(a: number, b: number): void;
 export function scripthashes_to_js_value(a: number): number;
 export function scripthashes_from_json(a: number, b: number): number;
-export function scripthashes_new(): number;
-export function scripthashes_len(a: number): number;
 export function scripthashes_get(a: number, b: number): number;
 export function scripthashes_add(a: number, b: number): void;
 export function __wbg_proposedprotocolparameterupdates_free(a: number): void;
@@ -602,8 +553,6 @@ export function proposedprotocolparameterupdates_from_json(
   a: number,
   b: number,
 ): number;
-export function proposedprotocolparameterupdates_new(): number;
-export function proposedprotocolparameterupdates_len(a: number): number;
 export function proposedprotocolparameterupdates_insert(
   a: number,
   b: number,
@@ -620,8 +569,6 @@ export function protocolversion_from_bytes(a: number, b: number): number;
 export function protocolversion_to_json(a: number, b: number): void;
 export function protocolversion_to_js_value(a: number): number;
 export function protocolversion_from_json(a: number, b: number): number;
-export function protocolversion_major(a: number): number;
-export function protocolversion_minor(a: number): number;
 export function protocolversion_new(a: number, b: number): number;
 export function __wbg_protocolparamupdate_free(a: number): void;
 export function protocolparamupdate_to_bytes(a: number, b: number): void;
@@ -744,8 +691,6 @@ export function transactionbodies_from_bytes(a: number, b: number): number;
 export function transactionbodies_to_json(a: number, b: number): void;
 export function transactionbodies_to_js_value(a: number): number;
 export function transactionbodies_from_json(a: number, b: number): number;
-export function transactionbodies_new(): number;
-export function transactionbodies_len(a: number): number;
 export function transactionbodies_get(a: number, b: number): number;
 export function transactionbodies_add(a: number, b: number): void;
 export function __wbg_transactionwitnesssets_free(a: number): void;
@@ -754,15 +699,11 @@ export function transactionwitnesssets_from_bytes(a: number, b: number): number;
 export function transactionwitnesssets_to_json(a: number, b: number): void;
 export function transactionwitnesssets_to_js_value(a: number): number;
 export function transactionwitnesssets_from_json(a: number, b: number): number;
-export function transactionwitnesssets_new(): number;
-export function transactionwitnesssets_len(a: number): number;
 export function transactionwitnesssets_get(a: number, b: number): number;
 export function transactionwitnesssets_add(a: number, b: number): void;
 export function __wbg_transactionindexes_free(a: number): void;
 export function transactionindexes_to_bytes(a: number, b: number): void;
 export function transactionindexes_from_bytes(a: number, b: number): number;
-export function transactionindexes_new(): number;
-export function transactionindexes_len(a: number): number;
 export function transactionindexes_get(a: number, b: number): number;
 export function transactionindexes_add(a: number, b: number): void;
 export function __wbg_auxiliarydataset_free(a: number): void;
@@ -873,7 +814,6 @@ export function assets_to_json(a: number, b: number): void;
 export function assets_to_js_value(a: number): number;
 export function assets_from_json(a: number, b: number): number;
 export function assets_new(): number;
-export function assets_len(a: number): number;
 export function assets_insert(a: number, b: number, c: number): number;
 export function assets_get(a: number, b: number): number;
 export function assets_keys(a: number): number;
@@ -883,8 +823,6 @@ export function multiasset_from_bytes(a: number, b: number): number;
 export function multiasset_to_json(a: number, b: number): void;
 export function multiasset_to_js_value(a: number): number;
 export function multiasset_from_json(a: number, b: number): number;
-export function multiasset_new(): number;
-export function multiasset_len(a: number): number;
 export function multiasset_insert(a: number, b: number, c: number): number;
 export function multiasset_get(a: number, b: number): number;
 export function multiasset_set_asset(
@@ -897,9 +835,7 @@ export function multiasset_get_asset(a: number, b: number, c: number): number;
 export function multiasset_keys(a: number): number;
 export function multiasset_sub(a: number, b: number): number;
 export function __wbg_mintassets_free(a: number): void;
-export function mintassets_new(): number;
 export function mintassets_new_from_entry(a: number, b: number): number;
-export function mintassets_len(a: number): number;
 export function mintassets_insert(a: number, b: number, c: number): number;
 export function mintassets_get(a: number, b: number): number;
 export function mintassets_keys(a: number): number;
@@ -909,9 +845,7 @@ export function mint_from_bytes(a: number, b: number): number;
 export function mint_to_json(a: number, b: number): void;
 export function mint_to_js_value(a: number): number;
 export function mint_from_json(a: number, b: number): number;
-export function mint_new(): number;
 export function mint_new_from_entry(a: number, b: number): number;
-export function mint_len(a: number): number;
 export function mint_insert(a: number, b: number, c: number): number;
 export function mint_get(a: number, b: number): number;
 export function mint_keys(a: number): number;
@@ -926,11 +860,394 @@ export function networkid_from_json(a: number, b: number): number;
 export function networkid_testnet(): number;
 export function networkid_mainnet(): number;
 export function networkid_kind(a: number): number;
+export function transactionoutputs_len(a: number): number;
+export function transactioninputs_len(a: number): number;
+export function ed25519keyhashes_len(a: number): number;
+export function relays_len(a: number): number;
+export function stakecredentials_len(a: number): number;
+export function rewardaddresses_len(a: number): number;
+export function withdrawals_len(a: number): number;
+export function scriptnofk_n(a: number): number;
+export function nativescripts_len(a: number): number;
+export function genesishashes_len(a: number): number;
+export function scripthashes_len(a: number): number;
+export function proposedprotocolparameterupdates_len(a: number): number;
+export function protocolversion_major(a: number): number;
+export function transactionbodies_len(a: number): number;
+export function transactionwitnesssets_len(a: number): number;
+export function transactionindexes_len(a: number): number;
+export function mirtostakecredentials_len(a: number): number;
+export function poolretirement_epoch(a: number): number;
+export function protocolversion_minor(a: number): number;
+export function certificates_len(a: number): number;
+export function assets_len(a: number): number;
+export function multiasset_len(a: number): number;
+export function mintassets_len(a: number): number;
+export function mint_len(a: number): number;
+export function unitinterval_numerator(a: number): number;
+export function transactioninput_index(a: number): number;
+export function transactionbody_fee(a: number): number;
+export function unitinterval_denominator(a: number): number;
+export function timelockstart_slot(a: number): number;
+export function timelockexpiry_slot(a: number): number;
+export function poolparams_pledge(a: number): number;
+export function stakeregistration_stake_credential(a: number): number;
+export function stakederegistration_stake_credential(a: number): number;
+export function url_url(a: number, b: number): void;
+export function dnsrecordsrv_record(a: number, b: number): void;
+export function scriptany_native_scripts(a: number): number;
+export function proposedprotocolparameterupdates_new(): number;
+export function mirtostakecredentials_new(): number;
+export function __wbg_url_free(a: number): void;
+export function __wbg_dnsrecordsrv_free(a: number): void;
+export function __wbg_scriptany_free(a: number): void;
+export function stakeregistration_new(a: number): number;
+export function transactionoutputs_new(): number;
+export function transactioninputs_new(): number;
+export function stakecredentials_new(): number;
+export function rewardaddresses_new(): number;
+export function nativescripts_new(): number;
+export function genesishashes_new(): number;
+export function scripthashes_new(): number;
+export function transactionbodies_new(): number;
+export function transactionwitnesssets_new(): number;
+export function transactionindexes_new(): number;
+export function relays_new(): number;
+export function __wbg_timelockstart_free(a: number): void;
+export function stakeregistration_to_json(a: number, b: number): void;
+export function scriptany_to_json(a: number, b: number): void;
+export function timelockstart_to_json(a: number, b: number): void;
+export function timelockstart_new(a: number): number;
+export function singlehostname_dns_name(a: number): number;
+export function poolmetadata_url(a: number): number;
+export function scriptany_new(a: number): number;
+export function withdrawals_new(): number;
+export function multiasset_new(): number;
+export function mintassets_new(): number;
+export function mint_new(): number;
+export function __wbg_stakeregistration_free(a: number): void;
+export function __wbg_linearfee_free(a: number): void;
+export function linearfee_constant(a: number): number;
+export function linearfee_coefficient(a: number): number;
+export function linearfee_new(a: number, b: number): number;
+export function min_fee(a: number, b: number, c: number): number;
+export function __wbg_transactionoutputbuilder_free(a: number): void;
+export function transactionoutputbuilder_new(): number;
+export function transactionoutputbuilder_with_address(
+  a: number,
+  b: number,
+): number;
+export function transactionoutputbuilder_with_datum(
+  a: number,
+  b: number,
+): number;
+export function transactionoutputbuilder_next(a: number): number;
+export function __wbg_transactionoutputamountbuilder_free(a: number): void;
+export function transactionoutputamountbuilder_with_value(
+  a: number,
+  b: number,
+): number;
+export function transactionoutputamountbuilder_with_coin(
+  a: number,
+  b: number,
+): number;
+export function transactionoutputamountbuilder_with_coin_and_asset(
+  a: number,
+  b: number,
+  c: number,
+): number;
+export function transactionoutputamountbuilder_with_asset_and_min_required_coin(
+  a: number,
+  b: number,
+  c: number,
+): number;
+export function transactionoutputamountbuilder_build(a: number): number;
+export function __wbg_bip32privatekey_free(a: number): void;
+export function bip32privatekey_derive(a: number, b: number): number;
+export function bip32privatekey_from_128_xprv(a: number, b: number): number;
+export function bip32privatekey_to_128_xprv(a: number, b: number): void;
+export function bip32privatekey_generate_ed25519_bip32(): number;
+export function bip32privatekey_to_raw_key(a: number): number;
+export function bip32privatekey_to_public(a: number): number;
+export function bip32privatekey_from_bytes(a: number, b: number): number;
+export function bip32privatekey_as_bytes(a: number, b: number): void;
+export function bip32privatekey_from_bech32(a: number, b: number): number;
+export function bip32privatekey_to_bech32(a: number, b: number): void;
+export function bip32privatekey_from_bip39_entropy(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): number;
+export function bip32privatekey_chaincode(a: number, b: number): void;
+export function __wbg_bip32publickey_free(a: number): void;
+export function bip32publickey_derive(a: number, b: number): number;
+export function bip32publickey_to_raw_key(a: number): number;
+export function bip32publickey_from_bytes(a: number, b: number): number;
+export function bip32publickey_as_bytes(a: number, b: number): void;
+export function bip32publickey_from_bech32(a: number, b: number): number;
+export function bip32publickey_to_bech32(a: number, b: number): void;
+export function bip32publickey_chaincode(a: number, b: number): void;
+export function __wbg_privatekey_free(a: number): void;
+export function privatekey_to_public(a: number): number;
+export function privatekey_generate_ed25519(): number;
+export function privatekey_generate_ed25519extended(): number;
+export function privatekey_from_bech32(a: number, b: number): number;
+export function privatekey_to_bech32(a: number, b: number): void;
+export function privatekey_as_bytes(a: number, b: number): void;
+export function privatekey_from_extended_bytes(a: number, b: number): number;
+export function privatekey_from_normal_bytes(a: number, b: number): number;
+export function privatekey_sign(a: number, b: number, c: number): number;
+export function privatekey_from_bytes(a: number, b: number): number;
+export function privatekey_to_bytes(a: number, b: number): void;
+export function __wbg_publickey_free(a: number): void;
+export function publickey_from_bech32(a: number, b: number): number;
+export function publickey_to_bech32(a: number, b: number): void;
+export function publickey_from_bytes(a: number, b: number): number;
+export function publickey_verify(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): number;
+export function publickey_hash(a: number): number;
+export function __wbg_vkey_free(a: number): void;
+export function vkey_to_bytes(a: number, b: number): void;
+export function vkey_from_bytes(a: number, b: number): number;
+export function vkey_new(a: number): number;
+export function vkey_public_key(a: number): number;
+export function __wbg_vkeys_free(a: number): void;
+export function vkeys_get(a: number, b: number): number;
+export function vkeys_add(a: number, b: number): void;
+export function __wbg_vkeywitness_free(a: number): void;
+export function vkeywitness_to_bytes(a: number, b: number): void;
+export function vkeywitness_from_bytes(a: number, b: number): number;
+export function vkeywitness_to_json(a: number, b: number): void;
+export function vkeywitness_to_js_value(a: number): number;
+export function vkeywitness_from_json(a: number, b: number): number;
+export function vkeywitness_new(a: number, b: number): number;
+export function vkeywitness_signature(a: number): number;
+export function __wbg_vkeywitnesses_free(a: number): void;
+export function vkeywitnesses_get(a: number, b: number): number;
+export function vkeywitnesses_add(a: number, b: number): void;
+export function __wbg_bootstrapwitness_free(a: number): void;
+export function bootstrapwitness_to_bytes(a: number, b: number): void;
+export function bootstrapwitness_from_bytes(a: number, b: number): number;
+export function bootstrapwitness_to_json(a: number, b: number): void;
+export function bootstrapwitness_to_js_value(a: number): number;
+export function bootstrapwitness_from_json(a: number, b: number): number;
+export function bootstrapwitness_vkey(a: number): number;
+export function bootstrapwitness_signature(a: number): number;
+export function bootstrapwitness_chain_code(a: number, b: number): void;
+export function bootstrapwitness_attributes(a: number, b: number): void;
+export function bootstrapwitness_new(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+  f: number,
+): number;
+export function __wbg_bootstrapwitnesses_free(a: number): void;
+export function bootstrapwitnesses_new(): number;
+export function bootstrapwitnesses_len(a: number): number;
+export function bootstrapwitnesses_get(a: number, b: number): number;
+export function bootstrapwitnesses_add(a: number, b: number): void;
+export function __wbg_publickeys_free(a: number): void;
+export function publickeys_new(): number;
+export function publickeys_get(a: number, b: number): number;
+export function publickeys_add(a: number, b: number): void;
+export function __wbg_ed25519signature_free(a: number): void;
+export function ed25519signature_to_bytes(a: number, b: number): void;
+export function ed25519signature_to_bech32(a: number, b: number): void;
+export function ed25519signature_to_hex(a: number, b: number): void;
+export function ed25519signature_from_bech32(a: number, b: number): number;
+export function ed25519signature_from_hex(a: number, b: number): number;
+export function ed25519signature_from_bytes(a: number, b: number): number;
+export function __wbg_legacydaedalusprivatekey_free(a: number): void;
+export function legacydaedalusprivatekey_from_bytes(
+  a: number,
+  b: number,
+): number;
+export function legacydaedalusprivatekey_as_bytes(a: number, b: number): void;
+export function legacydaedalusprivatekey_chaincode(a: number, b: number): void;
+export function __wbg_ed25519keyhash_free(a: number): void;
+export function ed25519keyhash_from_bytes(a: number, b: number): number;
+export function ed25519keyhash_to_bytes(a: number, b: number): void;
+export function ed25519keyhash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function ed25519keyhash_from_bech32(a: number, b: number): number;
+export function ed25519keyhash_to_hex(a: number, b: number): void;
+export function ed25519keyhash_from_hex(a: number, b: number): number;
+export function scripthash_from_bytes(a: number, b: number): number;
+export function scripthash_from_bech32(a: number, b: number): number;
+export function scripthash_from_hex(a: number, b: number): number;
+export function transactionhash_from_bytes(a: number, b: number): number;
+export function transactionhash_from_bech32(a: number, b: number): number;
+export function transactionhash_from_hex(a: number, b: number): number;
+export function genesisdelegatehash_from_bytes(a: number, b: number): number;
+export function genesisdelegatehash_from_bech32(a: number, b: number): number;
+export function genesisdelegatehash_from_hex(a: number, b: number): number;
+export function genesishash_from_bytes(a: number, b: number): number;
+export function genesishash_from_bech32(a: number, b: number): number;
+export function genesishash_from_hex(a: number, b: number): number;
+export function __wbg_auxiliarydatahash_free(a: number): void;
+export function auxiliarydatahash_from_bytes(a: number, b: number): number;
+export function auxiliarydatahash_to_bytes(a: number, b: number): void;
+export function auxiliarydatahash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function auxiliarydatahash_from_bech32(a: number, b: number): number;
+export function auxiliarydatahash_to_hex(a: number, b: number): void;
+export function auxiliarydatahash_from_hex(a: number, b: number): number;
+export function poolmetadatahash_from_bytes(a: number, b: number): number;
+export function poolmetadatahash_from_bech32(a: number, b: number): number;
+export function poolmetadatahash_from_hex(a: number, b: number): number;
+export function vrfkeyhash_from_bytes(a: number, b: number): number;
+export function vrfkeyhash_from_bech32(a: number, b: number): number;
+export function vrfkeyhash_from_hex(a: number, b: number): number;
+export function blockhash_from_bytes(a: number, b: number): number;
+export function blockhash_from_bech32(a: number, b: number): number;
+export function blockhash_from_hex(a: number, b: number): number;
+export function datahash_from_bytes(a: number, b: number): number;
+export function datahash_from_bech32(a: number, b: number): number;
+export function datahash_from_hex(a: number, b: number): number;
+export function scriptdatahash_from_bytes(a: number, b: number): number;
+export function scriptdatahash_from_bech32(a: number, b: number): number;
+export function scriptdatahash_from_hex(a: number, b: number): number;
+export function kesvkey_from_bytes(a: number, b: number): number;
+export function kesvkey_from_bech32(a: number, b: number): number;
+export function kesvkey_from_hex(a: number, b: number): number;
+export function vrfvkey_to_bytes(a: number, b: number): void;
+export function vrfvkey_from_bytes(a: number, b: number): number;
+export function vrfvkey_hash(a: number): number;
+export function __wbg_kessignature_free(a: number): void;
+export function kessignature_from_bytes(a: number, b: number): number;
+export function __wbg_nonce_free(a: number): void;
+export function nonce_to_bytes(a: number, b: number): void;
+export function nonce_from_bytes(a: number, b: number): number;
+export function nonce_new_identity(): number;
+export function nonce_new_from_hash(a: number, b: number): number;
+export function nonce_get_hash(a: number, b: number): void;
+export function __wbg_vrfcert_free(a: number): void;
+export function vrfcert_to_bytes(a: number, b: number): void;
+export function vrfcert_from_bytes(a: number, b: number): number;
+export function vrfcert_to_json(a: number, b: number): void;
+export function vrfcert_to_js_value(a: number): number;
+export function vrfcert_from_json(a: number, b: number): number;
+export function vrfcert_new(a: number, b: number, c: number, d: number): number;
+export function vkeywitnesses_len(a: number): number;
+export function vkeys_len(a: number): number;
+export function publickeys_size(a: number): number;
+export function scripthash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function genesisdelegatehash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function genesishash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function transactionhash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function poolmetadatahash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function vrfkeyhash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function blockhash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function datahash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function scriptdatahash_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function kesvkey_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function scripthash_to_bytes(a: number, b: number): void;
+export function transactionhash_to_bytes(a: number, b: number): void;
+export function genesisdelegatehash_to_bytes(a: number, b: number): void;
+export function genesishash_to_bytes(a: number, b: number): void;
+export function publickey_as_bytes(a: number, b: number): void;
+export function poolmetadatahash_to_bytes(a: number, b: number): void;
+export function vrfkeyhash_to_bytes(a: number, b: number): void;
+export function blockhash_to_bytes(a: number, b: number): void;
+export function datahash_to_bytes(a: number, b: number): void;
+export function scriptdatahash_to_bytes(a: number, b: number): void;
+export function kesvkey_to_bytes(a: number, b: number): void;
+export function vrfvkey_to_raw_key(a: number, b: number): void;
+export function kessignature_to_bytes(a: number, b: number): void;
+export function vrfcert_output(a: number, b: number): void;
+export function vrfcert_proof(a: number, b: number): void;
+export function __wbg_vrfvkey_free(a: number): void;
+export function scripthash_to_hex(a: number, b: number): void;
+export function genesisdelegatehash_to_hex(a: number, b: number): void;
+export function genesishash_to_hex(a: number, b: number): void;
+export function transactionhash_to_hex(a: number, b: number): void;
+export function poolmetadatahash_to_hex(a: number, b: number): void;
+export function vrfkeyhash_to_hex(a: number, b: number): void;
+export function blockhash_to_hex(a: number, b: number): void;
+export function datahash_to_hex(a: number, b: number): void;
+export function scriptdatahash_to_hex(a: number, b: number): void;
+export function kesvkey_to_hex(a: number, b: number): void;
+export function vkeywitnesses_new(): number;
+export function vkeys_new(): number;
+export function vkeywitness_vkey(a: number): number;
+export function __wbg_scripthash_free(a: number): void;
+export function __wbg_genesisdelegatehash_free(a: number): void;
+export function __wbg_genesishash_free(a: number): void;
+export function __wbg_kesvkey_free(a: number): void;
+export function __wbg_poolmetadatahash_free(a: number): void;
+export function __wbg_transactionhash_free(a: number): void;
+export function __wbg_vrfkeyhash_free(a: number): void;
+export function __wbg_blockhash_free(a: number): void;
+export function __wbg_scriptdatahash_free(a: number): void;
+export function __wbg_datahash_free(a: number): void;
 export function __wbg_metadatamap_free(a: number): void;
 export function metadatamap_to_bytes(a: number, b: number): void;
 export function metadatamap_from_bytes(a: number, b: number): number;
-export function metadatamap_new(): number;
-export function metadatamap_len(a: number): number;
 export function metadatamap_insert(a: number, b: number, c: number): number;
 export function metadatamap_insert_str(
   a: number,
@@ -971,8 +1288,6 @@ export function transactionmetadatumlabels_from_bytes(
   a: number,
   b: number,
 ): number;
-export function transactionmetadatumlabels_new(): number;
-export function transactionmetadatumlabels_len(a: number): number;
 export function transactionmetadatumlabels_get(a: number, b: number): number;
 export function transactionmetadatumlabels_add(a: number, b: number): void;
 export function __wbg_generaltransactionmetadata_free(a: number): void;
@@ -1028,6 +1343,76 @@ export function decode_metadatum_to_json_str(
   b: number,
   c: number,
 ): void;
+export function transactionmetadatumlabels_len(a: number): number;
+export function metadatamap_len(a: number): number;
+export function metadatamap_new(): number;
+export function transactionmetadatumlabels_new(): number;
+export function __wbg_networkinfo_free(a: number): void;
+export function networkinfo_new(a: number, b: number): number;
+export function networkinfo_network_id(a: number): number;
+export function networkinfo_protocol_magic(a: number): number;
+export function networkinfo_testnet(): number;
+export function networkinfo_mainnet(): number;
+export function __wbg_stakecredential_free(a: number): void;
+export function stakecredential_from_keyhash(a: number): number;
+export function stakecredential_from_scripthash(a: number): number;
+export function stakecredential_to_keyhash(a: number): number;
+export function stakecredential_to_scripthash(a: number): number;
+export function stakecredential_kind(a: number): number;
+export function stakecredential_to_bytes(a: number, b: number): void;
+export function stakecredential_from_bytes(a: number, b: number): number;
+export function stakecredential_to_json(a: number, b: number): void;
+export function stakecredential_to_js_value(a: number): number;
+export function stakecredential_from_json(a: number, b: number): number;
+export function __wbg_byronaddress_free(a: number): void;
+export function byronaddress_to_base58(a: number, b: number): void;
+export function byronaddress_to_bytes(a: number, b: number): void;
+export function byronaddress_from_bytes(a: number, b: number): number;
+export function byronaddress_byron_protocol_magic(a: number): number;
+export function byronaddress_attributes(a: number, b: number): void;
+export function byronaddress_network_id(a: number): number;
+export function byronaddress_from_base58(a: number, b: number): number;
+export function byronaddress_icarus_from_key(a: number, b: number): number;
+export function byronaddress_is_valid(a: number, b: number): number;
+export function byronaddress_to_address(a: number): number;
+export function __wbg_address_free(a: number): void;
+export function address_from_bytes(a: number, b: number): number;
+export function address_to_json(a: number, b: number): void;
+export function address_to_js_value(a: number): number;
+export function address_from_json(a: number, b: number): number;
+export function address_to_bytes(a: number, b: number): void;
+export function address_to_bech32(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+): void;
+export function address_from_bech32(a: number, b: number): number;
+export function address_network_id(a: number): number;
+export function address_as_byron(a: number): number;
+export function address_as_reward(a: number): number;
+export function address_as_pointer(a: number): number;
+export function address_as_enterprise(a: number): number;
+export function address_as_base(a: number): number;
+export function __wbg_baseaddress_free(a: number): void;
+export function baseaddress_new(a: number, b: number, c: number): number;
+export function baseaddress_payment_cred(a: number): number;
+export function baseaddress_stake_cred(a: number): number;
+export function baseaddress_to_address(a: number): number;
+export function __wbg_enterpriseaddress_free(a: number): void;
+export function enterpriseaddress_new(a: number, b: number): number;
+export function enterpriseaddress_to_address(a: number): number;
+export function rewardaddress_to_address(a: number): number;
+export function __wbg_pointer_free(a: number): void;
+export function pointer_new(a: number, b: number, c: number): number;
+export function pointer_slot(a: number): number;
+export function pointer_tx_index(a: number): number;
+export function pointer_cert_index(a: number): number;
+export function __wbg_pointeraddress_free(a: number): void;
+export function pointeraddress_new(a: number, b: number, c: number): number;
+export function pointeraddress_payment_cred(a: number): number;
+export function pointeraddress_stake_pointer(a: number): number;
+export function pointeraddress_to_address(a: number): number;
 export function __wbg_transactionbuilderconfig_free(a: number): void;
 export function __wbg_transactionbuilderconfigbuilder_free(a: number): void;
 export function transactionbuilderconfigbuilder_new(): number;
@@ -1208,84 +1593,8 @@ export function transactionbuilder_construct(
 ): number;
 export function transactionbuilder_build_tx(a: number): number;
 export function transactionbuilder_min_fee(a: number): number;
-export function __wbg_networkinfo_free(a: number): void;
-export function networkinfo_new(a: number, b: number): number;
-export function networkinfo_network_id(a: number): number;
-export function networkinfo_protocol_magic(a: number): number;
-export function networkinfo_testnet(): number;
-export function networkinfo_mainnet(): number;
-export function __wbg_stakecredential_free(a: number): void;
-export function stakecredential_from_keyhash(a: number): number;
-export function stakecredential_from_scripthash(a: number): number;
-export function stakecredential_to_keyhash(a: number): number;
-export function stakecredential_to_scripthash(a: number): number;
-export function stakecredential_kind(a: number): number;
-export function stakecredential_to_bytes(a: number, b: number): void;
-export function stakecredential_from_bytes(a: number, b: number): number;
-export function stakecredential_to_json(a: number, b: number): void;
-export function stakecredential_to_js_value(a: number): number;
-export function stakecredential_from_json(a: number, b: number): number;
-export function __wbg_byronaddress_free(a: number): void;
-export function byronaddress_to_base58(a: number, b: number): void;
-export function byronaddress_to_bytes(a: number, b: number): void;
-export function byronaddress_from_bytes(a: number, b: number): number;
-export function byronaddress_byron_protocol_magic(a: number): number;
-export function byronaddress_attributes(a: number, b: number): void;
-export function byronaddress_network_id(a: number): number;
-export function byronaddress_from_base58(a: number, b: number): number;
-export function byronaddress_icarus_from_key(a: number, b: number): number;
-export function byronaddress_is_valid(a: number, b: number): number;
-export function byronaddress_to_address(a: number): number;
-export function byronaddress_from_address(a: number): number;
-export function __wbg_address_free(a: number): void;
-export function address_from_bytes(a: number, b: number): number;
-export function address_to_json(a: number, b: number): void;
-export function address_to_js_value(a: number): number;
-export function address_from_json(a: number, b: number): number;
-export function address_to_bytes(a: number, b: number): void;
-export function address_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function address_from_bech32(a: number, b: number): number;
-export function address_network_id(a: number): number;
-export function address_as_byron(a: number): number;
-export function address_as_reward(a: number): number;
-export function address_as_pointer(a: number): number;
-export function address_as_enterprise(a: number): number;
-export function address_as_base(a: number): number;
-export function __wbg_baseaddress_free(a: number): void;
-export function baseaddress_new(a: number, b: number, c: number): number;
-export function baseaddress_payment_cred(a: number): number;
-export function baseaddress_stake_cred(a: number): number;
-export function baseaddress_to_address(a: number): number;
-export function baseaddress_from_address(a: number): number;
-export function __wbg_enterpriseaddress_free(a: number): void;
-export function enterpriseaddress_new(a: number, b: number): number;
-export function enterpriseaddress_payment_cred(a: number): number;
-export function enterpriseaddress_to_address(a: number): number;
-export function enterpriseaddress_from_address(a: number): number;
-export function __wbg_rewardaddress_free(a: number): void;
-export function rewardaddress_new(a: number, b: number): number;
-export function rewardaddress_payment_cred(a: number): number;
-export function rewardaddress_to_address(a: number): number;
-export function rewardaddress_from_address(a: number): number;
-export function __wbg_pointer_free(a: number): void;
-export function pointer_new(a: number, b: number, c: number): number;
-export function pointer_slot(a: number): number;
-export function pointer_tx_index(a: number): number;
-export function pointer_cert_index(a: number): number;
-export function __wbg_pointeraddress_free(a: number): void;
-export function pointeraddress_new(a: number, b: number, c: number): number;
-export function pointeraddress_payment_cred(a: number): number;
-export function pointeraddress_stake_pointer(a: number): number;
-export function pointeraddress_to_address(a: number): number;
-export function pointeraddress_from_address(a: number): number;
 export function __wbg_redeemerwitnesskey_free(a: number): void;
 export function redeemerwitnesskey_tag(a: number): number;
-export function redeemerwitnesskey_index(a: number): number;
 export function redeemerwitnesskey_new(a: number, b: number): number;
 export function __wbg_requiredwitnessset_free(a: number): void;
 export function requiredwitnessset_add_vkey(a: number, b: number): void;
@@ -1368,6 +1677,16 @@ export function transactionwitnesssetbuilder_add_existing(
   b: number,
 ): void;
 export function transactionwitnesssetbuilder_build(a: number): number;
+export function baseaddress_from_address(a: number): number;
+export function enterpriseaddress_from_address(a: number): number;
+export function rewardaddress_from_address(a: number): number;
+export function redeemerwitnesskey_index(a: number): number;
+export function pointeraddress_from_address(a: number): number;
+export function enterpriseaddress_payment_cred(a: number): number;
+export function rewardaddress_payment_cred(a: number): number;
+export function rewardaddress_new(a: number, b: number): number;
+export function __wbg_rewardaddress_free(a: number): void;
+export function byronaddress_from_address(a: number): number;
 export function encrypt_with_password(
   a: number,
   b: number,
@@ -1386,11 +1705,6 @@ export function decrypt_with_password(
   d: number,
   e: number,
 ): void;
-export function __wbg_linearfee_free(a: number): void;
-export function linearfee_constant(a: number): number;
-export function linearfee_coefficient(a: number): number;
-export function linearfee_new(a: number, b: number): number;
-export function min_fee(a: number, b: number, c: number): number;
 export function __wbg_blockfrost_free(a: number): void;
 export function blockfrost_new(
   a: number,
@@ -1481,7 +1795,6 @@ export function int_is_positive(a: number): number;
 export function int_as_positive(a: number): number;
 export function int_as_negative(a: number): number;
 export function int_as_i32(a: number, b: number): void;
-export function int_as_i32_or_nothing(a: number, b: number): void;
 export function int_as_i32_or_fail(a: number): number;
 export function int_to_str(a: number, b: number): void;
 export function int_from_str(a: number, b: number): number;
@@ -1519,6 +1832,7 @@ export function encode_json_str_to_native_script(
   d: number,
   e: number,
 ): number;
+export function int_as_i32_or_nothing(a: number, b: number): void;
 export function __wbg_plutusscript_free(a: number): void;
 export function plutusscript_to_bytes(a: number, b: number): void;
 export function plutusscript_from_bytes(a: number, b: number): number;
@@ -1529,7 +1843,6 @@ export function __wbg_plutusscripts_free(a: number): void;
 export function plutusscripts_to_bytes(a: number, b: number): void;
 export function plutusscripts_from_bytes(a: number, b: number): number;
 export function plutusscripts_new(): number;
-export function plutusscripts_len(a: number): number;
 export function plutusscripts_get(a: number, b: number): number;
 export function plutusscripts_add(a: number, b: number): void;
 export function __wbg_constrplutusdata_free(a: number): void;
@@ -1545,7 +1858,6 @@ export function costmodel_new(): number;
 export function costmodel_new_plutus_v2(): number;
 export function costmodel_set(a: number, b: number, c: number): number;
 export function costmodel_get(a: number, b: number): number;
-export function costmodel_len(a: number): number;
 export function __wbg_costmdls_free(a: number): void;
 export function costmdls_to_bytes(a: number, b: number): void;
 export function costmdls_from_bytes(a: number, b: number): number;
@@ -1564,7 +1876,6 @@ export function exunitprices_from_float(a: number, b: number): number;
 export function __wbg_exunits_free(a: number): void;
 export function exunits_to_bytes(a: number, b: number): void;
 export function exunits_from_bytes(a: number, b: number): number;
-export function exunits_mem(a: number): number;
 export function exunits_steps(a: number): number;
 export function exunits_new(a: number, b: number): number;
 export function __wbg_language_free(a: number): void;
@@ -1575,14 +1886,12 @@ export function language_new_plutus_v2(): number;
 export function language_kind(a: number): number;
 export function __wbg_languages_free(a: number): void;
 export function languages_new(): number;
-export function languages_len(a: number): number;
 export function languages_get(a: number, b: number): number;
 export function languages_add(a: number, b: number): void;
 export function __wbg_plutusmap_free(a: number): void;
 export function plutusmap_to_bytes(a: number, b: number): void;
 export function plutusmap_from_bytes(a: number, b: number): number;
 export function plutusmap_new(): number;
-export function plutusmap_len(a: number): number;
 export function plutusmap_insert(a: number, b: number, c: number): number;
 export function plutusmap_get(a: number, b: number): number;
 export function plutusmap_keys(a: number): number;
@@ -1604,14 +1913,12 @@ export function __wbg_plutuslist_free(a: number): void;
 export function plutuslist_to_bytes(a: number, b: number): void;
 export function plutuslist_from_bytes(a: number, b: number): number;
 export function plutuslist_new(): number;
-export function plutuslist_len(a: number): number;
 export function plutuslist_get(a: number, b: number): number;
 export function plutuslist_add(a: number, b: number): void;
 export function __wbg_redeemer_free(a: number): void;
 export function redeemer_to_bytes(a: number, b: number): void;
 export function redeemer_from_bytes(a: number, b: number): number;
 export function redeemer_tag(a: number): number;
-export function redeemer_index(a: number): number;
 export function redeemer_data(a: number): number;
 export function redeemer_ex_units(a: number): number;
 export function redeemer_new(
@@ -1631,13 +1938,9 @@ export function redeemertag_kind(a: number): number;
 export function __wbg_redeemers_free(a: number): void;
 export function redeemers_to_bytes(a: number, b: number): void;
 export function redeemers_from_bytes(a: number, b: number): number;
-export function redeemers_new(): number;
-export function redeemers_len(a: number): number;
 export function redeemers_get(a: number, b: number): number;
 export function redeemers_add(a: number, b: number): void;
 export function __wbg_strings_free(a: number): void;
-export function strings_new(): number;
-export function strings_len(a: number): number;
 export function strings_get(a: number, b: number, c: number): void;
 export function strings_add(a: number, b: number, c: number): void;
 export function __wbg_data_free(a: number): void;
@@ -1664,7 +1967,6 @@ export function script_as_plutus_v2(a: number): number;
 export function __wbg_scriptref_free(a: number): void;
 export function scriptref_to_bytes(a: number, b: number): void;
 export function scriptref_from_bytes(a: number, b: number): number;
-export function scriptref_to_json(a: number, b: number): void;
 export function scriptref_to_js_value(a: number): number;
 export function scriptref_from_json(a: number, b: number): number;
 export function scriptref_new(a: number): number;
@@ -1690,324 +1992,22 @@ export function decode_plutus_datum_to_json_str(
   b: number,
   c: number,
 ): void;
-export function __wbg_transactionoutputbuilder_free(a: number): void;
-export function transactionoutputbuilder_new(): number;
-export function transactionoutputbuilder_with_address(
-  a: number,
-  b: number,
-): number;
-export function transactionoutputbuilder_with_datum(
-  a: number,
-  b: number,
-): number;
-export function transactionoutputbuilder_next(a: number): number;
-export function __wbg_transactionoutputamountbuilder_free(a: number): void;
-export function transactionoutputamountbuilder_with_value(
-  a: number,
-  b: number,
-): number;
-export function transactionoutputamountbuilder_with_coin(
-  a: number,
-  b: number,
-): number;
-export function transactionoutputamountbuilder_with_coin_and_asset(
-  a: number,
-  b: number,
-  c: number,
-): number;
-export function transactionoutputamountbuilder_with_asset_and_min_required_coin(
-  a: number,
-  b: number,
-  c: number,
-): number;
-export function transactionoutputamountbuilder_build(a: number): number;
-export function __wbg_bip32privatekey_free(a: number): void;
-export function bip32privatekey_derive(a: number, b: number): number;
-export function bip32privatekey_from_128_xprv(a: number, b: number): number;
-export function bip32privatekey_to_128_xprv(a: number, b: number): void;
-export function bip32privatekey_generate_ed25519_bip32(): number;
-export function bip32privatekey_to_raw_key(a: number): number;
-export function bip32privatekey_to_public(a: number): number;
-export function bip32privatekey_from_bytes(a: number, b: number): number;
-export function bip32privatekey_as_bytes(a: number, b: number): void;
-export function bip32privatekey_from_bech32(a: number, b: number): number;
-export function bip32privatekey_to_bech32(a: number, b: number): void;
-export function bip32privatekey_from_bip39_entropy(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): number;
-export function bip32privatekey_chaincode(a: number, b: number): void;
-export function __wbg_bip32publickey_free(a: number): void;
-export function bip32publickey_derive(a: number, b: number): number;
-export function bip32publickey_to_raw_key(a: number): number;
-export function bip32publickey_from_bytes(a: number, b: number): number;
-export function bip32publickey_as_bytes(a: number, b: number): void;
-export function bip32publickey_from_bech32(a: number, b: number): number;
-export function bip32publickey_to_bech32(a: number, b: number): void;
-export function bip32publickey_chaincode(a: number, b: number): void;
-export function __wbg_privatekey_free(a: number): void;
-export function privatekey_to_public(a: number): number;
-export function privatekey_generate_ed25519(): number;
-export function privatekey_generate_ed25519extended(): number;
-export function privatekey_from_bech32(a: number, b: number): number;
-export function privatekey_to_bech32(a: number, b: number): void;
-export function privatekey_as_bytes(a: number, b: number): void;
-export function privatekey_from_extended_bytes(a: number, b: number): number;
-export function privatekey_from_normal_bytes(a: number, b: number): number;
-export function privatekey_sign(a: number, b: number, c: number): number;
-export function privatekey_from_bytes(a: number, b: number): number;
-export function privatekey_to_bytes(a: number, b: number): void;
-export function __wbg_publickey_free(a: number): void;
-export function publickey_from_bech32(a: number, b: number): number;
-export function publickey_to_bech32(a: number, b: number): void;
-export function publickey_as_bytes(a: number, b: number): void;
-export function publickey_from_bytes(a: number, b: number): number;
-export function publickey_verify(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): number;
-export function publickey_hash(a: number): number;
-export function __wbg_vkey_free(a: number): void;
-export function vkey_to_bytes(a: number, b: number): void;
-export function vkey_from_bytes(a: number, b: number): number;
-export function vkey_new(a: number): number;
-export function vkey_public_key(a: number): number;
-export function __wbg_vkeys_free(a: number): void;
-export function vkeys_new(): number;
-export function vkeys_len(a: number): number;
-export function vkeys_get(a: number, b: number): number;
-export function vkeys_add(a: number, b: number): void;
-export function __wbg_vkeywitness_free(a: number): void;
-export function vkeywitness_to_bytes(a: number, b: number): void;
-export function vkeywitness_from_bytes(a: number, b: number): number;
-export function vkeywitness_to_json(a: number, b: number): void;
-export function vkeywitness_to_js_value(a: number): number;
-export function vkeywitness_from_json(a: number, b: number): number;
-export function vkeywitness_new(a: number, b: number): number;
-export function vkeywitness_vkey(a: number): number;
-export function vkeywitness_signature(a: number): number;
-export function __wbg_vkeywitnesses_free(a: number): void;
-export function vkeywitnesses_new(): number;
-export function vkeywitnesses_len(a: number): number;
-export function vkeywitnesses_get(a: number, b: number): number;
-export function vkeywitnesses_add(a: number, b: number): void;
-export function __wbg_bootstrapwitness_free(a: number): void;
-export function bootstrapwitness_to_bytes(a: number, b: number): void;
-export function bootstrapwitness_from_bytes(a: number, b: number): number;
-export function bootstrapwitness_to_json(a: number, b: number): void;
-export function bootstrapwitness_to_js_value(a: number): number;
-export function bootstrapwitness_from_json(a: number, b: number): number;
-export function bootstrapwitness_vkey(a: number): number;
-export function bootstrapwitness_signature(a: number): number;
-export function bootstrapwitness_chain_code(a: number, b: number): void;
-export function bootstrapwitness_attributes(a: number, b: number): void;
-export function bootstrapwitness_new(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-  e: number,
-  f: number,
-): number;
-export function __wbg_bootstrapwitnesses_free(a: number): void;
-export function bootstrapwitnesses_new(): number;
-export function bootstrapwitnesses_len(a: number): number;
-export function bootstrapwitnesses_get(a: number, b: number): number;
-export function bootstrapwitnesses_add(a: number, b: number): void;
-export function __wbg_publickeys_free(a: number): void;
-export function publickeys_new(): number;
-export function publickeys_size(a: number): number;
-export function publickeys_get(a: number, b: number): number;
-export function publickeys_add(a: number, b: number): void;
-export function __wbg_ed25519signature_free(a: number): void;
-export function ed25519signature_to_bytes(a: number, b: number): void;
-export function ed25519signature_to_bech32(a: number, b: number): void;
-export function ed25519signature_to_hex(a: number, b: number): void;
-export function ed25519signature_from_bech32(a: number, b: number): number;
-export function ed25519signature_from_hex(a: number, b: number): number;
-export function ed25519signature_from_bytes(a: number, b: number): number;
-export function __wbg_legacydaedalusprivatekey_free(a: number): void;
-export function legacydaedalusprivatekey_from_bytes(
-  a: number,
-  b: number,
-): number;
-export function legacydaedalusprivatekey_as_bytes(a: number, b: number): void;
-export function legacydaedalusprivatekey_chaincode(a: number, b: number): void;
-export function __wbg_ed25519keyhash_free(a: number): void;
-export function ed25519keyhash_from_bytes(a: number, b: number): number;
-export function ed25519keyhash_to_bytes(a: number, b: number): void;
-export function ed25519keyhash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function ed25519keyhash_from_bech32(a: number, b: number): number;
-export function ed25519keyhash_to_hex(a: number, b: number): void;
-export function ed25519keyhash_from_hex(a: number, b: number): number;
-export function __wbg_scripthash_free(a: number): void;
-export function scripthash_from_bytes(a: number, b: number): number;
-export function scripthash_to_bytes(a: number, b: number): void;
-export function scripthash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function scripthash_from_bech32(a: number, b: number): number;
-export function scripthash_to_hex(a: number, b: number): void;
-export function scripthash_from_hex(a: number, b: number): number;
-export function __wbg_transactionhash_free(a: number): void;
-export function transactionhash_from_bytes(a: number, b: number): number;
-export function transactionhash_to_bytes(a: number, b: number): void;
-export function transactionhash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function transactionhash_from_bech32(a: number, b: number): number;
-export function transactionhash_to_hex(a: number, b: number): void;
-export function transactionhash_from_hex(a: number, b: number): number;
-export function __wbg_genesisdelegatehash_free(a: number): void;
-export function genesisdelegatehash_from_bytes(a: number, b: number): number;
-export function genesisdelegatehash_to_bytes(a: number, b: number): void;
-export function genesisdelegatehash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function genesisdelegatehash_from_bech32(a: number, b: number): number;
-export function genesisdelegatehash_to_hex(a: number, b: number): void;
-export function genesisdelegatehash_from_hex(a: number, b: number): number;
-export function __wbg_genesishash_free(a: number): void;
-export function genesishash_from_bytes(a: number, b: number): number;
-export function genesishash_to_bytes(a: number, b: number): void;
-export function genesishash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function genesishash_from_bech32(a: number, b: number): number;
-export function genesishash_to_hex(a: number, b: number): void;
-export function genesishash_from_hex(a: number, b: number): number;
-export function __wbg_auxiliarydatahash_free(a: number): void;
-export function auxiliarydatahash_from_bytes(a: number, b: number): number;
-export function auxiliarydatahash_to_bytes(a: number, b: number): void;
-export function auxiliarydatahash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function auxiliarydatahash_from_bech32(a: number, b: number): number;
-export function auxiliarydatahash_to_hex(a: number, b: number): void;
-export function auxiliarydatahash_from_hex(a: number, b: number): number;
-export function __wbg_poolmetadatahash_free(a: number): void;
-export function poolmetadatahash_from_bytes(a: number, b: number): number;
-export function poolmetadatahash_to_bytes(a: number, b: number): void;
-export function poolmetadatahash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function poolmetadatahash_from_bech32(a: number, b: number): number;
-export function poolmetadatahash_to_hex(a: number, b: number): void;
-export function poolmetadatahash_from_hex(a: number, b: number): number;
-export function __wbg_vrfkeyhash_free(a: number): void;
-export function vrfkeyhash_from_bytes(a: number, b: number): number;
-export function vrfkeyhash_to_bytes(a: number, b: number): void;
-export function vrfkeyhash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function vrfkeyhash_from_bech32(a: number, b: number): number;
-export function vrfkeyhash_to_hex(a: number, b: number): void;
-export function vrfkeyhash_from_hex(a: number, b: number): number;
-export function __wbg_blockhash_free(a: number): void;
-export function blockhash_from_bytes(a: number, b: number): number;
-export function blockhash_to_bytes(a: number, b: number): void;
-export function blockhash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function blockhash_from_bech32(a: number, b: number): number;
-export function blockhash_to_hex(a: number, b: number): void;
-export function blockhash_from_hex(a: number, b: number): number;
-export function __wbg_datahash_free(a: number): void;
-export function datahash_from_bytes(a: number, b: number): number;
-export function datahash_to_bytes(a: number, b: number): void;
-export function datahash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function datahash_from_bech32(a: number, b: number): number;
-export function datahash_to_hex(a: number, b: number): void;
-export function datahash_from_hex(a: number, b: number): number;
-export function __wbg_scriptdatahash_free(a: number): void;
-export function scriptdatahash_from_bytes(a: number, b: number): number;
-export function scriptdatahash_to_bytes(a: number, b: number): void;
-export function scriptdatahash_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function scriptdatahash_from_bech32(a: number, b: number): number;
-export function scriptdatahash_to_hex(a: number, b: number): void;
-export function scriptdatahash_from_hex(a: number, b: number): number;
-export function __wbg_kesvkey_free(a: number): void;
-export function kesvkey_from_bytes(a: number, b: number): number;
-export function kesvkey_to_bytes(a: number, b: number): void;
-export function kesvkey_to_bech32(
-  a: number,
-  b: number,
-  c: number,
-  d: number,
-): void;
-export function kesvkey_from_bech32(a: number, b: number): number;
-export function kesvkey_to_hex(a: number, b: number): void;
-export function kesvkey_from_hex(a: number, b: number): number;
-export function __wbg_vrfvkey_free(a: number): void;
-export function vrfvkey_to_bytes(a: number, b: number): void;
-export function vrfvkey_from_bytes(a: number, b: number): number;
-export function vrfvkey_hash(a: number): number;
-export function vrfvkey_to_raw_key(a: number, b: number): void;
-export function __wbg_kessignature_free(a: number): void;
-export function kessignature_to_bytes(a: number, b: number): void;
-export function kessignature_from_bytes(a: number, b: number): number;
-export function __wbg_nonce_free(a: number): void;
-export function nonce_to_bytes(a: number, b: number): void;
-export function nonce_from_bytes(a: number, b: number): number;
-export function nonce_new_identity(): number;
-export function nonce_new_from_hash(a: number, b: number): number;
-export function nonce_get_hash(a: number, b: number): void;
-export function __wbg_vrfcert_free(a: number): void;
-export function vrfcert_to_bytes(a: number, b: number): void;
-export function vrfcert_from_bytes(a: number, b: number): number;
-export function vrfcert_to_json(a: number, b: number): void;
-export function vrfcert_to_js_value(a: number): number;
-export function vrfcert_from_json(a: number, b: number): number;
-export function vrfcert_output(a: number, b: number): void;
-export function vrfcert_proof(a: number, b: number): void;
-export function vrfcert_new(a: number, b: number, c: number, d: number): number;
+export function plutusscripts_len(a: number): number;
+export function costmodel_len(a: number): number;
+export function languages_len(a: number): number;
+export function plutusmap_len(a: number): number;
+export function plutuslist_len(a: number): number;
+export function redeemers_len(a: number): number;
+export function strings_len(a: number): number;
+export function exunits_mem(a: number): number;
+export function redeemer_index(a: number): number;
+export function redeemers_new(): number;
+export function strings_new(): number;
+export function scriptref_to_json(a: number, b: number): void;
 export function __wbindgen_malloc(a: number): number;
 export function __wbindgen_realloc(a: number, b: number, c: number): number;
 export const __wbindgen_export_2: WebAssembly.Table;
-export function _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h0ccbd9467399eb6b(
+export function _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hf552e89fb1b782c2(
   a: number,
   b: number,
   c: number,
@@ -2015,7 +2015,7 @@ export function _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen
 export function __wbindgen_add_to_stack_pointer(a: number): number;
 export function __wbindgen_free(a: number, b: number): void;
 export function __wbindgen_exn_store(a: number): void;
-export function wasm_bindgen__convert__closures__invoke2_mut__h6a929cf27a4d54a4(
+export function wasm_bindgen__convert__closures__invoke2_mut__h343db6eee225c129(
   a: number,
   b: number,
   c: number,

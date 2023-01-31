@@ -56,16 +56,25 @@ export const Data = {
       type: "map",
     });
   },
+  /**
+   * Object applies by default a PlutusData Constr with index 0.\
+   * Set 'hasConstr' to false to serialize Object as PlutusData List.
+   */
   Object: function <T extends TProperties>(
     properties: T,
+    hasConstr = true,
   ) {
-    return Type.Object(properties);
+    return Type.Object(properties, { hasConstr });
   },
   Enum: function <T extends TSchema>(items: T[]) {
     return Type.Union(items);
   },
-  Tuple: function <T extends TSchema[]>(items: [...T]) {
-    return Type.Tuple(items);
+  /**
+   * Tuple is by default a PlutusData List.\
+   * Set 'hasConstr' to true to apply a PlutusData Constr with index 0.
+   */
+  Tuple: function <T extends TSchema[]>(items: [...T], hasConstr = false) {
+    return Type.Tuple(items, { hasConstr });
   },
   Literal: function <T extends TLiteralValue>(literal: T): TLiteral<T> {
     return Type.Literal(literal);
@@ -326,41 +335,61 @@ function castFrom<T>(data: Data, shape: TSchema): T {
           }
 
           return {
-            [key]: castFrom<T>(new Constr(0, data.fields), objectSchema[key]),
+            [key]: castFrom<T>(data.fields, objectSchema[key]),
           } as T;
         }
       }
       throw new Error("Could not type cast to enum.");
     }
     case "object": {
-      if (!(data instanceof Constr) || data.index !== 0) {
-        throw new Error("Could not type cast to object.");
-      }
-      const fields: Record<string, T> = {};
-      Object.entries(shape.properties as TSchema).forEach(
-        ([name, schema]: [string, TSchema], index: number) => {
-          if ((/[A-Z]/.test(name[0]))) {
-            throw new Error(
-              "Could not type cast to object. Object properties need to start with a lowercase letter.",
+      if (data instanceof Constr && data.index === 0 && shape.hasConstr) {
+        const fields: Record<string, T> = {};
+        Object.entries(shape.properties as TSchema).forEach(
+          ([name, schema]: [string, TSchema], index: number) => {
+            if ((/[A-Z]/.test(name[0]))) {
+              throw new Error(
+                "Could not type cast to object. Object properties need to start with a lowercase letter.",
+              );
+            }
+            fields[name] = castFrom<T>(
+              data.fields[index],
+              schema,
             );
-          }
-          fields[name] = castFrom<T>(
-            data.fields[index],
-            schema,
-          );
-        },
-      );
-      return fields as T;
+          },
+        );
+        return fields as T;
+      } else if (data instanceof Array && !shape.hasConstr) {
+        const fields: Record<string, T> = {};
+        Object.entries(shape.properties as TSchema).forEach(
+          ([name, schema]: [string, TSchema], index: number) => {
+            if ((/[A-Z]/.test(name[0]))) {
+              throw new Error(
+                "Could not type cast to object. Object properties need to start with a lowercase letter.",
+              );
+            }
+            fields[name] = castFrom<T>(
+              data[index],
+              schema,
+            );
+          },
+        );
+        return fields as T;
+      }
+      throw new Error("Could not type cast to object.");
     }
     case "array": {
       if (shape.items instanceof Array) { // tuple
-        if (!(data instanceof Constr) || data.index !== 0) {
-          throw new Error("Could not type cast to tuple.");
+        if (data instanceof Constr && data.index === 0 && shape.hasConstr) {
+          return data.fields.map((field, index) =>
+            castFrom<T>(field, shape.items[index])
+          ) as T;
+        } else if (data instanceof Array && !shape.hasConstr) {
+          return data.map((field, index) =>
+            castFrom<T>(field, shape.items[index])
+          ) as T;
         }
 
-        return data.fields.map((field, index) =>
-          castFrom<T>(field, shape.items[index])
-        ) as T;
+        throw new Error("Could not type cast to tuple.");
       } else { // array
         if (!(data instanceof Array)) {
           throw new Error("Could not type cast to array.");
@@ -468,22 +497,20 @@ function castTo<T>(struct: T, shape: TSchema): Data {
       if (typeof struct !== "object" || struct === null) {
         throw new Error("Could not type cast to object.");
       }
-      return new Constr(
-        0,
-        Object.keys(shape.properties).map((name) =>
-          castTo<T>((struct as Record<string, T>)[name], shape.properties[name])
-        ),
+      const fields = Object.keys(shape.properties).map((name) =>
+        castTo<T>((struct as Record<string, T>)[name], shape.properties[name])
       );
+      return shape.hasConstr ? new Constr(0, fields) : fields;
     }
     case "array": {
       if (!(struct instanceof Array)) {
         throw new Error("Could not type cast to array.");
       }
       if (shape.items instanceof Array) { // tuple
-        return new Constr(
-          0,
-          struct.map((item, index) => castTo<T>(item, shape.items[index])),
+        const fields = struct.map((item, index) =>
+          castTo<T>(item, shape.items[index])
         );
+        return shape.hasConstr ? new Constr(0, fields) : fields;
       } else { // array
         return struct.map((item) => castTo<T>(item, shape.items));
       }
