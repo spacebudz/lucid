@@ -226,6 +226,9 @@ export class Lucid {
           .to_bech32(undefined),
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> => null,
+      getCollateral: (): Core.TransactionUnspentOutputs | undefined => {
+        return undefined;
+      },
       getUtxos: async (): Promise<UTxO[]> => {
         return await this.utxosAt(
           paymentCredentialOf(await this.wallet.address()),
@@ -306,6 +309,9 @@ export class Lucid {
           : null;
         return rewardAddress;
       },
+      getCollateral: (): Core.TransactionUnspentOutputs | undefined => {
+        return undefined;
+      },
       getUtxos: async (): Promise<UTxO[]> => {
         const utxos = ((await api.getUtxos()) || []).map((utxo) => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
@@ -358,6 +364,7 @@ export class Lucid {
     address,
     utxos,
     rewardAddress,
+    collateral
   }: ExternalWallet): Lucid {
     const addressDetails = this.utils.getAddressDetails(address);
     this.wallet = {
@@ -390,6 +397,15 @@ export class Lucid {
           })()
           : rewardAddress;
         return rewardAddr || null;
+      },
+      getCollateral: (): Core.TransactionUnspentOutputs | undefined => {
+        if(!collateral){
+          return undefined;
+        }
+        
+        const coreUtxos = C.TransactionUnspentOutputs.new();
+        (collateral).forEach((utxo) => coreUtxos.add(utxoToCore(utxo)));
+        return coreUtxos;
       },
       getUtxos: async (): Promise<UTxO[]> => {
         return utxos ? utxos : await this.utxosAt(paymentCredentialOf(address));
@@ -461,6 +477,9 @@ export class Lucid {
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> =>
         rewardAddress || null,
+      getCollateral: (): Core.TransactionUnspentOutputs | undefined => {
+        return undefined;
+      },
       // deno-lint-ignore require-await
       getUtxos: async (): Promise<UTxO[]> =>
         this.utxosAt(paymentCredentialOf(address)),
