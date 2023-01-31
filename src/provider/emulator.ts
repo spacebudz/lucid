@@ -492,8 +492,8 @@ export class Emulator implements Provider {
 
     function checkAndConsumeHash(
       credential: Credential,
-      tag: Tag,
-      index: number,
+      tag: Tag | null,
+      index: number | null,
     ) {
       switch (credential.type) {
         case "Key": {
@@ -543,6 +543,40 @@ export class Emulator implements Provider {
             `Missing script witness. Script hash: ${credential.hash}`,
           );
       }
+    }
+
+    // Check collateral inputs
+
+    for (let i = 0; i < (body.collateral()?.len() || 0); i++) {
+      const input = body.collateral()!.get(i);
+
+      const outRef = input.transaction_id().to_hex() + input.index().to_str();
+
+      const entry = this.ledger[outRef] || this.mempool[outRef];
+
+      if (!entry || entry.spent) {
+        throw new Error(
+          `Could not read UTxO: ${
+            JSON.stringify({
+              txHash: entry?.utxo.txHash,
+              outputIndex: entry?.utxo.outputIndex,
+            })
+          }\nIt does not exist or was already spent.`,
+        );
+      }
+
+      const { paymentCredential } = getAddressDetails(entry.utxo.address);
+      if (paymentCredential?.type === "Script") {
+        throw new Error("Collateral inputs can only contain vkeys.");
+      }
+      checkAndConsumeHash(paymentCredential!, null, null);
+    }
+
+    // Check required signers
+
+    for (let i = 0; i < (body.required_signers()?.len() || 0); i++) {
+      const signer = body.required_signers()!.get(i);
+      checkAndConsumeHash({ type: "Key", hash: signer.to_hex() }, null, null);
     }
 
     // Check mint witnesses
