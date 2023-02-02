@@ -38,7 +38,7 @@ export interface Provider {
   getUtxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]>;
   getDelegation(rewardAddress: RewardAddress): Promise<Delegation>;
   getDatum(datumHash: DatumHash): Promise<Datum>;
-  awaitTx(txHash: TxHash): Promise<boolean>;
+  awaitTx(txHash: TxHash, checkInterval?: number): Promise<boolean>;
   submitTx(tx: Transaction): Promise<TxHash>;
 }
 

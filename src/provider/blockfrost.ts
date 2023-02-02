@@ -203,7 +203,7 @@ export class Blockfrost implements Provider {
     return datum;
   }
 
-  awaitTx(txHash: TxHash): Promise<boolean> {
+  awaitTx(txHash: TxHash, checkInterval = 3000): Promise<boolean> {
     return new Promise((res) => {
       const confirmation = setInterval(async () => {
         const isConfirmed = await fetch(`${this.url}/txs/${txHash}`, {
@@ -214,7 +214,7 @@ export class Blockfrost implements Provider {
           res(true);
           return;
         }
-      }, 3000);
+      }, checkInterval);
     });
   }
 

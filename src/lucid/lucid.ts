@@ -193,8 +193,8 @@ export class Lucid {
     return this.provider.getDelegation(rewardAddress);
   }
 
-  awaitTx(txHash: TxHash): Promise<boolean> {
-    return this.provider.awaitTx(txHash);
+  awaitTx(txHash: TxHash, checkInterval = 3000): Promise<boolean> {
+    return this.provider.awaitTx(txHash, checkInterval);
   }
 
   async datumOf<T = Datum>(utxo: UTxO, shape?: TSchema): Promise<T> {
