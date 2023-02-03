@@ -246,12 +246,10 @@ export class Emulator implements Provider {
     // Validity interval
     // Lower bound is inclusive?
     // Upper bound is inclusive?
-    const lowerBound = body.validity_start_interval()?.to_str()
+    const lowerBound = body.validity_start_interval()
       ? parseInt(body.validity_start_interval()!.to_str())
       : null;
-    const upperBound = body.ttl()?.to_str()
-      ? parseInt(body.ttl()!.to_str())
-      : null;
+    const upperBound = body.ttl() ? parseInt(body.ttl()!.to_str()) : null;
 
     if (Number.isInteger(lowerBound) && this.slot < lowerBound!) {
       throw new Error(
