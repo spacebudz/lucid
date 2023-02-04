@@ -47,7 +47,11 @@ export class Lucid {
   network: Network = "Mainnet";
   utils!: Utils;
 
-  static async new(provider?: Provider, network?: Network): Promise<Lucid> {
+  static async new(
+    provider?: Provider,
+    network?: Network,
+    logger?: any
+  ): Promise<Lucid> {
     const lucid = new this();
     if (network) lucid.network = network;
     if (provider) {
@@ -61,6 +65,15 @@ export class Lucid {
           zeroSlot: 0,
           slotLength: 1000,
         };
+      }
+
+      if (logger && logger.info) {
+        logger.info(
+          {
+            protocolParameters,
+          },
+          "Logging lucid protocol parameters"
+        );
       }
 
       const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
@@ -191,8 +204,8 @@ export class Lucid {
     return this.provider.getDelegation(rewardAddress);
   }
 
-  awaitTx(txHash: TxHash): Promise<boolean> {
-    return this.provider.awaitTx(txHash);
+  awaitTx(txHash: TxHash, checkInterval = 3000): Promise<boolean> {
+    return this.provider.awaitTx(txHash, checkInterval);
   }
 
   async datumOf<T = Datum>(utxo: UTxO, shape?: TSchema): Promise<T> {

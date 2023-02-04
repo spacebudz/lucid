@@ -185,7 +185,7 @@ export class Kupmios implements Provider {
     return result.datum;
   }
 
-  awaitTx(txHash: TxHash): Promise<boolean> {
+  awaitTx(txHash: TxHash, checkInterval = 3000): Promise<boolean> {
     return new Promise((res) => {
       const confirmation = setInterval(async () => {
         const isConfirmed = await fetch(
@@ -196,7 +196,7 @@ export class Kupmios implements Provider {
           res(true);
           return;
         }
-      }, 3000);
+      }, checkInterval);
     });
   }
 

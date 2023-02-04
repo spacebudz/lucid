@@ -223,3 +223,15 @@ Deno.test("Evaluate a contract", async () => {
 
   emulator.awaitSlot(100);
 });
+
+Deno.test("Check required signer", async () => {
+  const tx = await lucid.newTx().addSigner(ACCOUNT_1.address).payToAddress(
+    ACCOUNT_1.address,
+    { lovelace: 5000000n },
+  )
+    .complete();
+  await tx.partialSign();
+  lucid.selectWalletFromSeed(ACCOUNT_1.seedPhrase);
+  await tx.partialSign();
+  await lucid.awaitTx(await tx.complete().then((tx) => tx.submit()));
+});
