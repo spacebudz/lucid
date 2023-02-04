@@ -42,7 +42,7 @@ export const Data = {
   BigInt: Type.Unsafe<bigint>({ type: "bigint" }),
   String: Type.String(), // Bytes in hex
   Boolean: Type.Boolean(),
-  Any: Type.Any(), // Data
+  Any: Type.Unsafe<Data>(),
   Array: function <T extends TSchema>(schema: T) {
     return Type.Array(schema);
   },
