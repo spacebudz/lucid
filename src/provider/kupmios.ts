@@ -163,8 +163,8 @@ export class Kupmios implements Provider {
           };
           res(
             {
-              poolId: delegation.delegate || null,
-              rewards: BigInt(delegation.rewards || 0),
+              poolId: delegation?.delegate || null,
+              rewards: BigInt(delegation?.rewards || 0),
             },
           );
           client.close();
