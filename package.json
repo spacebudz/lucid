@@ -1,6 +1,6 @@
 {
   "name": "@jpg-store/lucid-cardano",
-  "version": "0.8.11",
+  "version": "0.8.12",
   "license": "MIT",
   "description": "This is a fork of the original Lucid repo compiled into CommonJS. For more information check https://github.com/spacebudz/lucid",
   "repository": "https://github.com/jpg-store/lucid"
