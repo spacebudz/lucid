@@ -28,6 +28,7 @@ import {
   toScriptRef,
   utxoToCore,
 } from "../utils/mod.ts";
+import { applyDoubleCborEncoding } from "../utils/utils.ts";
 import { Lucid } from "./lucid.ts";
 import { TxComplete } from "./tx_complete.ts";
 
@@ -603,23 +604,23 @@ export class Tx {
 
 function attachScript(
   tx: Tx,
-  script:
+  { type, script }:
     | SpendingValidator
     | MintingPolicy
     | CertificateValidator
     | WithdrawalValidator,
 ) {
-  if (script.type === "Native") {
+  if (type === "Native") {
     return tx.txBuilder.add_native_script(
-      C.NativeScript.from_bytes(fromHex(script.script)),
+      C.NativeScript.from_bytes(fromHex(script)),
     );
-  } else if (script.type === "PlutusV1") {
+  } else if (type === "PlutusV1") {
     return tx.txBuilder.add_plutus_script(
-      C.PlutusScript.from_bytes(fromHex(script.script)),
+      C.PlutusScript.from_bytes(fromHex(applyDoubleCborEncoding(script))),
     );
-  } else if (script.type === "PlutusV2") {
+  } else if (type === "PlutusV2") {
     return tx.txBuilder.add_plutus_v2_script(
-      C.PlutusScript.from_bytes(fromHex(script.script)),
+      C.PlutusScript.from_bytes(fromHex(applyDoubleCborEncoding(script))),
     );
   }
   throw new Error("No variant matched.");
