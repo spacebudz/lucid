@@ -63,40 +63,19 @@ export type PlutusVersion = "PlutusV1" | "PlutusV2";
 /** Hex */
 export type PolicyId = string;
 
-/**
- * Plutus scripts need to be double Cbor encoded.
- * Raw compiled scripts without any Cbor encoding do not work.
- */
 export type Script = { type: ScriptType; script: string };
-/**
- * Plutus scripts need to be double Cbor encoded.
- * Raw compiled scripts without any Cbor encoding do not work.
- */
+
 export type Validator =
   | MintingPolicy
   | SpendingValidator
   | CertificateValidator
   | WithdrawalValidator;
-/**
- * Plutus scripts need to be double Cbor encoded.
- * Raw compiled scripts without any Cbor encoding do not work.
- */
+
 export type MintingPolicy = Script;
-/**
- * Plutus scripts need to be double Cbor encoded.
- * Raw compiled scripts without any Cbor encoding do not work.
- */
 export type SpendingValidator = Script;
-/**
- * Plutus scripts need to be double Cbor encoded.
- * Raw compiled scripts without any Cbor encoding do not work.
- */
 export type CertificateValidator = Script;
-/**
- * Plutus scripts need to be double Cbor encoded.
- * Raw compiled scripts without any Cbor encoding do not work.
- */
 export type WithdrawalValidator = Script;
+
 /** Bech32 */
 export type Address = string;
 /** Bech32 */

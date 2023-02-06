@@ -150,11 +150,15 @@ export class Utils {
           .hash(C.ScriptHashNamespace.NativeScript)
           .to_hex();
       case "PlutusV1":
-        return C.PlutusScript.from_bytes(fromHex(validator.script))
+        return C.PlutusScript.from_bytes(
+          fromHex(applyDoubleCborEncoding(validator.script)),
+        )
           .hash(C.ScriptHashNamespace.PlutusV1)
           .to_hex();
       case "PlutusV2":
-        return C.PlutusScript.from_bytes(fromHex(validator.script))
+        return C.PlutusScript.from_bytes(
+          fromHex(applyDoubleCborEncoding(validator.script)),
+        )
           .hash(C.ScriptHashNamespace.PlutusV2)
           .to_hex();
       default:
@@ -483,14 +487,18 @@ export function toScriptRef(script: Script): Core.ScriptRef {
     case "PlutusV1":
       return C.ScriptRef.new(
         C.Script.new_plutus_v1(
-          C.PlutusScript.from_bytes(fromHex(script.script))
-        )
+          C.PlutusScript.from_bytes(
+            fromHex(applyDoubleCborEncoding(script.script)),
+          ),
+        ),
       );
     case "PlutusV2":
       return C.ScriptRef.new(
         C.Script.new_plutus_v2(
-          C.PlutusScript.from_bytes(fromHex(script.script))
-        )
+          C.PlutusScript.from_bytes(
+            fromHex(applyDoubleCborEncoding(script.script)),
+          ),
+        ),
       );
     default:
       throw new Error("No variant matched.");
@@ -676,13 +684,14 @@ export function applyParamsToScript<T extends unknown[] = Data[]>(
   return toHex(
     C.apply_params_to_plutus_script(
       C.PlutusList.from_bytes(fromHex(Data.to<Data[]>(p))),
-      C.PlutusScript.from_bytes(fromHex(plutusScript))
-    ).to_bytes()
+
+      C.PlutusScript.from_bytes(fromHex(applyDoubleCborEncoding(plutusScript))),
+    ).to_bytes(),
   );
 }
 
-export const chunk = (array: any[], size: number) => {
-  const chunks = [];
+export const chunk = <T>(array: T[], size: number) => {
+  const chunks: T[][] = [];
   const n = array.length;
 
   let i = 0;
@@ -693,3 +702,15 @@ export const chunk = (array: any[], size: number) => {
 
   return chunks;
 };
+
+/** Returns double cbor encoded script. If script is already double cbor encoded it's returned as it is. */
+export function applyDoubleCborEncoding(script: string): string {
+  try {
+    C.PlutusScript.from_bytes(
+      C.PlutusScript.from_bytes(fromHex(script)).bytes(),
+    );
+    return script;
+  } catch (_e) {
+    return toHex(C.PlutusScript.new(fromHex(script)).to_bytes());
+  }
+}
