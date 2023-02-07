@@ -503,7 +503,7 @@ export class Emulator implements Provider {
           consumedHashes.add(credential.hash);
           break;
         }
-        case "Script":
+        case "Script": {
           if (nativeHashes.includes(credential.hash)) {
             consumedHashes.add(credential.hash);
             break;
@@ -540,6 +540,7 @@ export class Emulator implements Provider {
           throw new Error(
             `Missing script witness. Script hash: ${credential.hash}`,
           );
+        }
       }
     }
 

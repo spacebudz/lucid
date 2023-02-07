@@ -8445,18 +8445,18 @@ export interface InitOutput {
   +memory: WebAssembly.Memory;
   +__wbg_unitinterval_free: (a: number) => void;
   +unitinterval_to_bytes: (a: number, b: number) => void;
-  +unitinterval_from_bytes: (a: number, b: number) => number;
+  +unitinterval_from_bytes: (a: number, b: number, c: number) => void;
   +unitinterval_to_json: (a: number, b: number) => void;
-  +unitinterval_to_js_value: (a: number) => number;
-  +unitinterval_from_json: (a: number, b: number) => number;
+  +unitinterval_to_js_value: (a: number, b: number) => void;
+  +unitinterval_from_json: (a: number, b: number, c: number) => void;
   +unitinterval_new: (a: number, b: number) => number;
   +unitinterval_from_float: (a: number) => number;
   +__wbg_transaction_free: (a: number) => void;
   +transaction_to_bytes: (a: number, b: number) => void;
-  +transaction_from_bytes: (a: number, b: number) => number;
+  +transaction_from_bytes: (a: number, b: number, c: number) => void;
   +transaction_to_json: (a: number, b: number) => void;
-  +transaction_to_js_value: (a: number) => number;
-  +transaction_from_json: (a: number, b: number) => number;
+  +transaction_to_js_value: (a: number, b: number) => void;
+  +transaction_from_json: (a: number, b: number, c: number) => void;
   +transaction_body: (a: number) => number;
   +transaction_witness_set: (a: number) => number;
   +transaction_is_valid: (a: number) => number;
@@ -8465,36 +8465,36 @@ export interface InitOutput {
   +transaction_new: (a: number, b: number, c: number) => number;
   +__wbg_transactioninputs_free: (a: number) => void;
   +transactioninputs_to_bytes: (a: number, b: number) => void;
-  +transactioninputs_from_bytes: (a: number, b: number) => number;
+  +transactioninputs_from_bytes: (a: number, b: number, c: number) => void;
   +transactioninputs_to_json: (a: number, b: number) => void;
-  +transactioninputs_to_js_value: (a: number) => number;
-  +transactioninputs_from_json: (a: number, b: number) => number;
+  +transactioninputs_to_js_value: (a: number, b: number) => void;
+  +transactioninputs_from_json: (a: number, b: number, c: number) => void;
   +transactioninputs_get: (a: number, b: number) => number;
   +transactioninputs_add: (a: number, b: number) => void;
   +transactioninputs_sort: (a: number) => void;
   +__wbg_transactionoutputs_free: (a: number) => void;
   +transactionoutputs_to_bytes: (a: number, b: number) => void;
-  +transactionoutputs_from_bytes: (a: number, b: number) => number;
+  +transactionoutputs_from_bytes: (a: number, b: number, c: number) => void;
   +transactionoutputs_to_json: (a: number, b: number) => void;
-  +transactionoutputs_to_js_value: (a: number) => number;
-  +transactionoutputs_from_json: (a: number, b: number) => number;
+  +transactionoutputs_to_js_value: (a: number, b: number) => void;
+  +transactionoutputs_from_json: (a: number, b: number, c: number) => void;
   +transactionoutputs_get: (a: number, b: number) => number;
   +transactionoutputs_add: (a: number, b: number) => void;
   +__wbg_certificates_free: (a: number) => void;
   +certificates_to_bytes: (a: number, b: number) => void;
-  +certificates_from_bytes: (a: number, b: number) => number;
+  +certificates_from_bytes: (a: number, b: number, c: number) => void;
   +certificates_to_json: (a: number, b: number) => void;
-  +certificates_to_js_value: (a: number) => number;
-  +certificates_from_json: (a: number, b: number) => number;
+  +certificates_to_js_value: (a: number, b: number) => void;
+  +certificates_from_json: (a: number, b: number, c: number) => void;
   +certificates_new: () => number;
   +certificates_get: (a: number, b: number) => number;
   +certificates_add: (a: number, b: number) => void;
   +__wbg_transactionbody_free: (a: number) => void;
   +transactionbody_to_bytes: (a: number, b: number) => void;
-  +transactionbody_from_bytes: (a: number, b: number) => number;
+  +transactionbody_from_bytes: (a: number, b: number, c: number) => void;
   +transactionbody_to_json: (a: number, b: number) => void;
-  +transactionbody_to_js_value: (a: number) => number;
-  +transactionbody_from_json: (a: number, b: number) => number;
+  +transactionbody_to_js_value: (a: number, b: number) => void;
+  +transactionbody_from_json: (a: number, b: number, c: number) => void;
   +transactionbody_inputs: (a: number) => number;
   +transactionbody_outputs: (a: number) => number;
   +transactionbody_ttl: (a: number) => number;
@@ -8528,18 +8528,18 @@ export interface InitOutput {
   +transactionbody_raw: (a: number, b: number) => void;
   +__wbg_transactioninput_free: (a: number) => void;
   +transactioninput_to_bytes: (a: number, b: number) => void;
-  +transactioninput_from_bytes: (a: number, b: number) => number;
+  +transactioninput_from_bytes: (a: number, b: number, c: number) => void;
   +transactioninput_to_json: (a: number, b: number) => void;
-  +transactioninput_to_js_value: (a: number) => number;
-  +transactioninput_from_json: (a: number, b: number) => number;
+  +transactioninput_to_js_value: (a: number, b: number) => void;
+  +transactioninput_from_json: (a: number, b: number, c: number) => void;
   +transactioninput_transaction_id: (a: number) => number;
   +transactioninput_new: (a: number, b: number) => number;
   +__wbg_transactionoutput_free: (a: number) => void;
   +transactionoutput_to_bytes: (a: number, b: number) => void;
-  +transactionoutput_from_bytes: (a: number, b: number) => number;
+  +transactionoutput_from_bytes: (a: number, b: number, c: number) => void;
   +transactionoutput_to_json: (a: number, b: number) => void;
-  +transactionoutput_to_js_value: (a: number) => number;
-  +transactionoutput_from_json: (a: number, b: number) => number;
+  +transactionoutput_to_js_value: (a: number, b: number) => void;
+  +transactionoutput_from_json: (a: number, b: number, c: number) => void;
   +transactionoutput_address: (a: number) => number;
   +transactionoutput_amount: (a: number) => number;
   +transactionoutput_datum: (a: number) => number;
@@ -8549,48 +8549,48 @@ export interface InitOutput {
   +transactionoutput_new: (a: number, b: number) => number;
   +transactionoutput_to_legacy_bytes: (a: number, b: number) => void;
   +stakeregistration_to_bytes: (a: number, b: number) => void;
-  +stakeregistration_from_bytes: (a: number, b: number) => number;
-  +stakeregistration_to_js_value: (a: number) => number;
-  +stakeregistration_from_json: (a: number, b: number) => number;
+  +stakeregistration_from_bytes: (a: number, b: number, c: number) => void;
+  +stakeregistration_to_js_value: (a: number, b: number) => void;
+  +stakeregistration_from_json: (a: number, b: number, c: number) => void;
   +__wbg_stakederegistration_free: (a: number) => void;
   +stakederegistration_to_bytes: (a: number, b: number) => void;
-  +stakederegistration_from_bytes: (a: number, b: number) => number;
+  +stakederegistration_from_bytes: (a: number, b: number, c: number) => void;
   +stakederegistration_to_json: (a: number, b: number) => void;
-  +stakederegistration_to_js_value: (a: number) => number;
-  +stakederegistration_from_json: (a: number, b: number) => number;
+  +stakederegistration_to_js_value: (a: number, b: number) => void;
+  +stakederegistration_from_json: (a: number, b: number, c: number) => void;
   +stakederegistration_new: (a: number) => number;
   +__wbg_stakedelegation_free: (a: number) => void;
   +stakedelegation_to_bytes: (a: number, b: number) => void;
-  +stakedelegation_from_bytes: (a: number, b: number) => number;
+  +stakedelegation_from_bytes: (a: number, b: number, c: number) => void;
   +stakedelegation_to_json: (a: number, b: number) => void;
-  +stakedelegation_to_js_value: (a: number) => number;
-  +stakedelegation_from_json: (a: number, b: number) => number;
+  +stakedelegation_to_js_value: (a: number, b: number) => void;
+  +stakedelegation_from_json: (a: number, b: number, c: number) => void;
   +stakedelegation_stake_credential: (a: number) => number;
   +stakedelegation_pool_keyhash: (a: number) => number;
   +stakedelegation_new: (a: number, b: number) => number;
   +__wbg_ed25519keyhashes_free: (a: number) => void;
   +ed25519keyhashes_to_bytes: (a: number, b: number) => void;
-  +ed25519keyhashes_from_bytes: (a: number, b: number) => number;
+  +ed25519keyhashes_from_bytes: (a: number, b: number, c: number) => void;
   +ed25519keyhashes_to_json: (a: number, b: number) => void;
-  +ed25519keyhashes_to_js_value: (a: number) => number;
-  +ed25519keyhashes_from_json: (a: number, b: number) => number;
+  +ed25519keyhashes_to_js_value: (a: number, b: number) => void;
+  +ed25519keyhashes_from_json: (a: number, b: number, c: number) => void;
   +ed25519keyhashes_new: () => number;
   +ed25519keyhashes_get: (a: number, b: number) => number;
   +ed25519keyhashes_add: (a: number, b: number) => void;
   +__wbg_relays_free: (a: number) => void;
   +relays_to_bytes: (a: number, b: number) => void;
-  +relays_from_bytes: (a: number, b: number) => number;
+  +relays_from_bytes: (a: number, b: number, c: number) => void;
   +relays_to_json: (a: number, b: number) => void;
-  +relays_to_js_value: (a: number) => number;
-  +relays_from_json: (a: number, b: number) => number;
+  +relays_to_js_value: (a: number, b: number) => void;
+  +relays_from_json: (a: number, b: number, c: number) => void;
   +relays_get: (a: number, b: number) => number;
   +relays_add: (a: number, b: number) => void;
   +__wbg_poolparams_free: (a: number) => void;
   +poolparams_to_bytes: (a: number, b: number) => void;
-  +poolparams_from_bytes: (a: number, b: number) => number;
+  +poolparams_from_bytes: (a: number, b: number, c: number) => void;
   +poolparams_to_json: (a: number, b: number) => void;
-  +poolparams_to_js_value: (a: number) => number;
-  +poolparams_from_json: (a: number, b: number) => number;
+  +poolparams_to_js_value: (a: number, b: number) => void;
+  +poolparams_from_json: (a: number, b: number, c: number) => void;
   +poolparams_operator: (a: number) => number;
   +poolparams_vrf_keyhash: (a: number) => number;
   +poolparams_cost: (a: number) => number;
@@ -8612,47 +8612,55 @@ export interface InitOutput {
   ) => number;
   +__wbg_poolregistration_free: (a: number) => void;
   +poolregistration_to_bytes: (a: number, b: number) => void;
-  +poolregistration_from_bytes: (a: number, b: number) => number;
+  +poolregistration_from_bytes: (a: number, b: number, c: number) => void;
   +poolregistration_to_json: (a: number, b: number) => void;
-  +poolregistration_to_js_value: (a: number) => number;
-  +poolregistration_from_json: (a: number, b: number) => number;
+  +poolregistration_to_js_value: (a: number, b: number) => void;
+  +poolregistration_from_json: (a: number, b: number, c: number) => void;
   +poolregistration_pool_params: (a: number) => number;
   +poolregistration_new: (a: number) => number;
   +poolregistration_set_is_update: (a: number, b: number) => void;
   +__wbg_poolretirement_free: (a: number) => void;
   +poolretirement_to_bytes: (a: number, b: number) => void;
-  +poolretirement_from_bytes: (a: number, b: number) => number;
+  +poolretirement_from_bytes: (a: number, b: number, c: number) => void;
   +poolretirement_to_json: (a: number, b: number) => void;
-  +poolretirement_to_js_value: (a: number) => number;
-  +poolretirement_from_json: (a: number, b: number) => number;
+  +poolretirement_to_js_value: (a: number, b: number) => void;
+  +poolretirement_from_json: (a: number, b: number, c: number) => void;
   +poolretirement_pool_keyhash: (a: number) => number;
   +poolretirement_new: (a: number, b: number) => number;
   +__wbg_genesiskeydelegation_free: (a: number) => void;
   +genesiskeydelegation_to_bytes: (a: number, b: number) => void;
-  +genesiskeydelegation_from_bytes: (a: number, b: number) => number;
+  +genesiskeydelegation_from_bytes: (a: number, b: number, c: number) => void;
   +genesiskeydelegation_to_json: (a: number, b: number) => void;
-  +genesiskeydelegation_to_js_value: (a: number) => number;
-  +genesiskeydelegation_from_json: (a: number, b: number) => number;
+  +genesiskeydelegation_to_js_value: (a: number, b: number) => void;
+  +genesiskeydelegation_from_json: (a: number, b: number, c: number) => void;
   +genesiskeydelegation_genesishash: (a: number) => number;
   +genesiskeydelegation_genesis_delegate_hash: (a: number) => number;
   +genesiskeydelegation_vrf_keyhash: (a: number) => number;
   +genesiskeydelegation_new: (a: number, b: number, c: number) => number;
   +__wbg_moveinstantaneousrewardscert_free: (a: number) => void;
   +moveinstantaneousrewardscert_to_bytes: (a: number, b: number) => void;
-  +moveinstantaneousrewardscert_from_bytes: (a: number, b: number) => number;
+  +moveinstantaneousrewardscert_from_bytes: (
+    a: number,
+    b: number,
+    c: number
+  ) => void;
   +moveinstantaneousrewardscert_to_json: (a: number, b: number) => void;
-  +moveinstantaneousrewardscert_to_js_value: (a: number) => number;
-  +moveinstantaneousrewardscert_from_json: (a: number, b: number) => number;
+  +moveinstantaneousrewardscert_to_js_value: (a: number, b: number) => void;
+  +moveinstantaneousrewardscert_from_json: (
+    a: number,
+    b: number,
+    c: number
+  ) => void;
   +moveinstantaneousrewardscert_move_instantaneous_reward: (
     a: number
   ) => number;
   +moveinstantaneousrewardscert_new: (a: number) => number;
   +__wbg_certificate_free: (a: number) => void;
   +certificate_to_bytes: (a: number, b: number) => void;
-  +certificate_from_bytes: (a: number, b: number) => number;
+  +certificate_from_bytes: (a: number, b: number, c: number) => void;
   +certificate_to_json: (a: number, b: number) => void;
-  +certificate_to_js_value: (a: number) => number;
-  +certificate_from_json: (a: number, b: number) => number;
+  +certificate_to_js_value: (a: number, b: number) => void;
+  +certificate_from_json: (a: number, b: number, c: number) => void;
   +certificate_new_stake_registration: (a: number) => number;
   +certificate_new_stake_deregistration: (a: number) => number;
   +certificate_new_stake_delegation: (a: number) => number;
@@ -8670,19 +8678,23 @@ export interface InitOutput {
   +certificate_as_move_instantaneous_rewards_cert: (a: number) => number;
   +__wbg_mirtostakecredentials_free: (a: number) => void;
   +mirtostakecredentials_to_bytes: (a: number, b: number) => void;
-  +mirtostakecredentials_from_bytes: (a: number, b: number) => number;
+  +mirtostakecredentials_from_bytes: (a: number, b: number, c: number) => void;
   +mirtostakecredentials_to_json: (a: number, b: number) => void;
-  +mirtostakecredentials_to_js_value: (a: number) => number;
-  +mirtostakecredentials_from_json: (a: number, b: number) => number;
+  +mirtostakecredentials_to_js_value: (a: number, b: number) => void;
+  +mirtostakecredentials_from_json: (a: number, b: number, c: number) => void;
   +mirtostakecredentials_insert: (a: number, b: number, c: number) => number;
   +mirtostakecredentials_get: (a: number, b: number) => number;
   +mirtostakecredentials_keys: (a: number) => number;
   +__wbg_moveinstantaneousreward_free: (a: number) => void;
   +moveinstantaneousreward_to_bytes: (a: number, b: number) => void;
-  +moveinstantaneousreward_from_bytes: (a: number, b: number) => number;
+  +moveinstantaneousreward_from_bytes: (
+    a: number,
+    b: number,
+    c: number
+  ) => void;
   +moveinstantaneousreward_to_json: (a: number, b: number) => void;
-  +moveinstantaneousreward_to_js_value: (a: number) => number;
-  +moveinstantaneousreward_from_json: (a: number, b: number) => number;
+  +moveinstantaneousreward_to_js_value: (a: number, b: number) => void;
+  +moveinstantaneousreward_from_json: (a: number, b: number, c: number) => void;
   +moveinstantaneousreward_new_to_other_pot: (a: number, b: number) => number;
   +moveinstantaneousreward_new_to_stake_creds: (a: number, b: number) => number;
   +moveinstantaneousreward_pot: (a: number) => number;
@@ -8691,63 +8703,63 @@ export interface InitOutput {
   +moveinstantaneousreward_as_to_stake_creds: (a: number) => number;
   +__wbg_ipv4_free: (a: number) => void;
   +ipv4_to_bytes: (a: number, b: number) => void;
-  +ipv4_from_bytes: (a: number, b: number) => number;
+  +ipv4_from_bytes: (a: number, b: number, c: number) => void;
   +ipv4_to_json: (a: number, b: number) => void;
-  +ipv4_to_js_value: (a: number) => number;
-  +ipv4_from_json: (a: number, b: number) => number;
-  +ipv4_new: (a: number, b: number) => number;
+  +ipv4_to_js_value: (a: number, b: number) => void;
+  +ipv4_from_json: (a: number, b: number, c: number) => void;
+  +ipv4_new: (a: number, b: number, c: number) => void;
   +ipv4_ip: (a: number, b: number) => void;
   +__wbg_ipv6_free: (a: number) => void;
   +ipv6_to_bytes: (a: number, b: number) => void;
-  +ipv6_from_bytes: (a: number, b: number) => number;
+  +ipv6_from_bytes: (a: number, b: number, c: number) => void;
   +ipv6_to_json: (a: number, b: number) => void;
-  +ipv6_to_js_value: (a: number) => number;
-  +ipv6_from_json: (a: number, b: number) => number;
-  +ipv6_new: (a: number, b: number) => number;
+  +ipv6_to_js_value: (a: number, b: number) => void;
+  +ipv6_from_json: (a: number, b: number, c: number) => void;
+  +ipv6_new: (a: number, b: number, c: number) => void;
   +ipv6_ip: (a: number, b: number) => void;
   +url_to_bytes: (a: number, b: number) => void;
-  +url_from_bytes: (a: number, b: number) => number;
-  +url_new: (a: number, b: number) => number;
+  +url_from_bytes: (a: number, b: number, c: number) => void;
+  +url_new: (a: number, b: number, c: number) => void;
   +__wbg_dnsrecordaoraaaa_free: (a: number) => void;
   +dnsrecordaoraaaa_to_bytes: (a: number, b: number) => void;
-  +dnsrecordaoraaaa_from_bytes: (a: number, b: number) => number;
-  +dnsrecordaoraaaa_new: (a: number, b: number) => number;
+  +dnsrecordaoraaaa_from_bytes: (a: number, b: number, c: number) => void;
+  +dnsrecordaoraaaa_new: (a: number, b: number, c: number) => void;
   +dnsrecordaoraaaa_record: (a: number, b: number) => void;
   +dnsrecordsrv_to_bytes: (a: number, b: number) => void;
-  +dnsrecordsrv_from_bytes: (a: number, b: number) => number;
-  +dnsrecordsrv_new: (a: number, b: number) => number;
+  +dnsrecordsrv_from_bytes: (a: number, b: number, c: number) => void;
+  +dnsrecordsrv_new: (a: number, b: number, c: number) => void;
   +__wbg_singlehostaddr_free: (a: number) => void;
   +singlehostaddr_to_bytes: (a: number, b: number) => void;
-  +singlehostaddr_from_bytes: (a: number, b: number) => number;
+  +singlehostaddr_from_bytes: (a: number, b: number, c: number) => void;
   +singlehostaddr_to_json: (a: number, b: number) => void;
-  +singlehostaddr_to_js_value: (a: number) => number;
-  +singlehostaddr_from_json: (a: number, b: number) => number;
+  +singlehostaddr_to_js_value: (a: number, b: number) => void;
+  +singlehostaddr_from_json: (a: number, b: number, c: number) => void;
   +singlehostaddr_port: (a: number) => number;
   +singlehostaddr_ipv4: (a: number) => number;
   +singlehostaddr_ipv6: (a: number) => number;
   +singlehostaddr_new: (a: number, b: number, c: number) => number;
   +__wbg_singlehostname_free: (a: number) => void;
   +singlehostname_to_bytes: (a: number, b: number) => void;
-  +singlehostname_from_bytes: (a: number, b: number) => number;
+  +singlehostname_from_bytes: (a: number, b: number, c: number) => void;
   +singlehostname_to_json: (a: number, b: number) => void;
-  +singlehostname_to_js_value: (a: number) => number;
-  +singlehostname_from_json: (a: number, b: number) => number;
+  +singlehostname_to_js_value: (a: number, b: number) => void;
+  +singlehostname_from_json: (a: number, b: number, c: number) => void;
   +singlehostname_port: (a: number) => number;
   +singlehostname_new: (a: number, b: number) => number;
   +__wbg_multihostname_free: (a: number) => void;
   +multihostname_to_bytes: (a: number, b: number) => void;
-  +multihostname_from_bytes: (a: number, b: number) => number;
+  +multihostname_from_bytes: (a: number, b: number, c: number) => void;
   +multihostname_to_json: (a: number, b: number) => void;
-  +multihostname_to_js_value: (a: number) => number;
-  +multihostname_from_json: (a: number, b: number) => number;
+  +multihostname_to_js_value: (a: number, b: number) => void;
+  +multihostname_from_json: (a: number, b: number, c: number) => void;
   +multihostname_dns_name: (a: number) => number;
   +multihostname_new: (a: number) => number;
   +__wbg_relay_free: (a: number) => void;
   +relay_to_bytes: (a: number, b: number) => void;
-  +relay_from_bytes: (a: number, b: number) => number;
+  +relay_from_bytes: (a: number, b: number, c: number) => void;
   +relay_to_json: (a: number, b: number) => void;
-  +relay_to_js_value: (a: number) => number;
-  +relay_from_json: (a: number, b: number) => number;
+  +relay_to_js_value: (a: number, b: number) => void;
+  +relay_from_json: (a: number, b: number, c: number) => void;
   +relay_new_single_host_addr: (a: number) => number;
   +relay_new_single_host_name: (a: number) => number;
   +relay_new_multi_host_name: (a: number) => number;
@@ -8757,43 +8769,43 @@ export interface InitOutput {
   +relay_as_multi_host_name: (a: number) => number;
   +__wbg_poolmetadata_free: (a: number) => void;
   +poolmetadata_to_bytes: (a: number, b: number) => void;
-  +poolmetadata_from_bytes: (a: number, b: number) => number;
+  +poolmetadata_from_bytes: (a: number, b: number, c: number) => void;
   +poolmetadata_to_json: (a: number, b: number) => void;
-  +poolmetadata_to_js_value: (a: number) => number;
-  +poolmetadata_from_json: (a: number, b: number) => number;
+  +poolmetadata_to_js_value: (a: number, b: number) => void;
+  +poolmetadata_from_json: (a: number, b: number, c: number) => void;
   +poolmetadata_pool_metadata_hash: (a: number) => number;
   +poolmetadata_new: (a: number, b: number) => number;
   +__wbg_stakecredentials_free: (a: number) => void;
   +stakecredentials_to_bytes: (a: number, b: number) => void;
-  +stakecredentials_from_bytes: (a: number, b: number) => number;
+  +stakecredentials_from_bytes: (a: number, b: number, c: number) => void;
   +stakecredentials_to_json: (a: number, b: number) => void;
-  +stakecredentials_to_js_value: (a: number) => number;
-  +stakecredentials_from_json: (a: number, b: number) => number;
+  +stakecredentials_to_js_value: (a: number, b: number) => void;
+  +stakecredentials_from_json: (a: number, b: number, c: number) => void;
   +stakecredentials_get: (a: number, b: number) => number;
   +stakecredentials_add: (a: number, b: number) => void;
   +__wbg_rewardaddresses_free: (a: number) => void;
   +rewardaddresses_to_bytes: (a: number, b: number) => void;
-  +rewardaddresses_from_bytes: (a: number, b: number) => number;
+  +rewardaddresses_from_bytes: (a: number, b: number, c: number) => void;
   +rewardaddresses_to_json: (a: number, b: number) => void;
-  +rewardaddresses_to_js_value: (a: number) => number;
-  +rewardaddresses_from_json: (a: number, b: number) => number;
+  +rewardaddresses_to_js_value: (a: number, b: number) => void;
+  +rewardaddresses_from_json: (a: number, b: number, c: number) => void;
   +rewardaddresses_get: (a: number, b: number) => number;
   +rewardaddresses_add: (a: number, b: number) => void;
   +__wbg_withdrawals_free: (a: number) => void;
   +withdrawals_to_bytes: (a: number, b: number) => void;
-  +withdrawals_from_bytes: (a: number, b: number) => number;
+  +withdrawals_from_bytes: (a: number, b: number, c: number) => void;
   +withdrawals_to_json: (a: number, b: number) => void;
-  +withdrawals_to_js_value: (a: number) => number;
-  +withdrawals_from_json: (a: number, b: number) => number;
+  +withdrawals_to_js_value: (a: number, b: number) => void;
+  +withdrawals_from_json: (a: number, b: number, c: number) => void;
   +withdrawals_insert: (a: number, b: number, c: number) => number;
   +withdrawals_get: (a: number, b: number) => number;
   +withdrawals_keys: (a: number) => number;
   +__wbg_transactionwitnessset_free: (a: number) => void;
   +transactionwitnessset_to_bytes: (a: number, b: number) => void;
-  +transactionwitnessset_from_bytes: (a: number, b: number) => number;
+  +transactionwitnessset_from_bytes: (a: number, b: number, c: number) => void;
   +transactionwitnessset_to_json: (a: number, b: number) => void;
-  +transactionwitnessset_to_js_value: (a: number) => number;
-  +transactionwitnessset_from_json: (a: number, b: number) => number;
+  +transactionwitnessset_to_js_value: (a: number, b: number) => void;
+  +transactionwitnessset_from_json: (a: number, b: number, c: number) => void;
   +transactionwitnessset_set_vkeys: (a: number, b: number) => void;
   +transactionwitnessset_vkeys: (a: number) => number;
   +transactionwitnessset_set_native_scripts: (a: number, b: number) => void;
@@ -8811,49 +8823,49 @@ export interface InitOutput {
   +transactionwitnessset_new: () => number;
   +__wbg_scriptpubkey_free: (a: number) => void;
   +scriptpubkey_to_bytes: (a: number, b: number) => void;
-  +scriptpubkey_from_bytes: (a: number, b: number) => number;
+  +scriptpubkey_from_bytes: (a: number, b: number, c: number) => void;
   +scriptpubkey_to_json: (a: number, b: number) => void;
-  +scriptpubkey_to_js_value: (a: number) => number;
-  +scriptpubkey_from_json: (a: number, b: number) => number;
+  +scriptpubkey_to_js_value: (a: number, b: number) => void;
+  +scriptpubkey_from_json: (a: number, b: number, c: number) => void;
   +scriptpubkey_addr_keyhash: (a: number) => number;
   +scriptpubkey_new: (a: number) => number;
   +__wbg_scriptall_free: (a: number) => void;
   +scriptall_to_bytes: (a: number, b: number) => void;
-  +scriptall_from_bytes: (a: number, b: number) => number;
+  +scriptall_from_bytes: (a: number, b: number, c: number) => void;
   +scriptall_to_json: (a: number, b: number) => void;
-  +scriptall_to_js_value: (a: number) => number;
-  +scriptall_from_json: (a: number, b: number) => number;
+  +scriptall_to_js_value: (a: number, b: number) => void;
+  +scriptall_from_json: (a: number, b: number, c: number) => void;
   +scriptall_native_scripts: (a: number) => number;
   +scriptall_new: (a: number) => number;
   +scriptany_to_bytes: (a: number, b: number) => void;
-  +scriptany_from_bytes: (a: number, b: number) => number;
-  +scriptany_to_js_value: (a: number) => number;
-  +scriptany_from_json: (a: number, b: number) => number;
+  +scriptany_from_bytes: (a: number, b: number, c: number) => void;
+  +scriptany_to_js_value: (a: number, b: number) => void;
+  +scriptany_from_json: (a: number, b: number, c: number) => void;
   +__wbg_scriptnofk_free: (a: number) => void;
   +scriptnofk_to_bytes: (a: number, b: number) => void;
-  +scriptnofk_from_bytes: (a: number, b: number) => number;
+  +scriptnofk_from_bytes: (a: number, b: number, c: number) => void;
   +scriptnofk_to_json: (a: number, b: number) => void;
-  +scriptnofk_to_js_value: (a: number) => number;
-  +scriptnofk_from_json: (a: number, b: number) => number;
+  +scriptnofk_to_js_value: (a: number, b: number) => void;
+  +scriptnofk_from_json: (a: number, b: number, c: number) => void;
   +scriptnofk_native_scripts: (a: number) => number;
   +scriptnofk_new: (a: number, b: number) => number;
   +timelockstart_to_bytes: (a: number, b: number) => void;
-  +timelockstart_from_bytes: (a: number, b: number) => number;
-  +timelockstart_to_js_value: (a: number) => number;
-  +timelockstart_from_json: (a: number, b: number) => number;
+  +timelockstart_from_bytes: (a: number, b: number, c: number) => void;
+  +timelockstart_to_js_value: (a: number, b: number) => void;
+  +timelockstart_from_json: (a: number, b: number, c: number) => void;
   +__wbg_timelockexpiry_free: (a: number) => void;
   +timelockexpiry_to_bytes: (a: number, b: number) => void;
-  +timelockexpiry_from_bytes: (a: number, b: number) => number;
+  +timelockexpiry_from_bytes: (a: number, b: number, c: number) => void;
   +timelockexpiry_to_json: (a: number, b: number) => void;
-  +timelockexpiry_to_js_value: (a: number) => number;
-  +timelockexpiry_from_json: (a: number, b: number) => number;
+  +timelockexpiry_to_js_value: (a: number, b: number) => void;
+  +timelockexpiry_from_json: (a: number, b: number, c: number) => void;
   +timelockexpiry_new: (a: number) => number;
   +__wbg_nativescript_free: (a: number) => void;
   +nativescript_to_bytes: (a: number, b: number) => void;
-  +nativescript_from_bytes: (a: number, b: number) => number;
+  +nativescript_from_bytes: (a: number, b: number, c: number) => void;
   +nativescript_to_json: (a: number, b: number) => void;
-  +nativescript_to_js_value: (a: number) => number;
-  +nativescript_from_json: (a: number, b: number) => number;
+  +nativescript_to_js_value: (a: number, b: number) => void;
+  +nativescript_from_json: (a: number, b: number, c: number) => void;
   +nativescript_hash: (a: number, b: number) => number;
   +nativescript_new_script_pubkey: (a: number) => number;
   +nativescript_new_script_all: (a: number) => number;
@@ -8875,38 +8887,43 @@ export interface InitOutput {
   +nativescripts_add: (a: number, b: number) => void;
   +__wbg_update_free: (a: number) => void;
   +update_to_bytes: (a: number, b: number) => void;
-  +update_from_bytes: (a: number, b: number) => number;
+  +update_from_bytes: (a: number, b: number, c: number) => void;
   +update_to_json: (a: number, b: number) => void;
-  +update_to_js_value: (a: number) => number;
-  +update_from_json: (a: number, b: number) => number;
+  +update_to_js_value: (a: number, b: number) => void;
+  +update_from_json: (a: number, b: number, c: number) => void;
   +update_proposed_protocol_parameter_updates: (a: number) => number;
   +update_epoch: (a: number) => number;
   +update_new: (a: number, b: number) => number;
   +__wbg_genesishashes_free: (a: number) => void;
   +genesishashes_to_bytes: (a: number, b: number) => void;
-  +genesishashes_from_bytes: (a: number, b: number) => number;
+  +genesishashes_from_bytes: (a: number, b: number, c: number) => void;
   +genesishashes_to_json: (a: number, b: number) => void;
-  +genesishashes_to_js_value: (a: number) => number;
-  +genesishashes_from_json: (a: number, b: number) => number;
+  +genesishashes_to_js_value: (a: number, b: number) => void;
+  +genesishashes_from_json: (a: number, b: number, c: number) => void;
   +genesishashes_get: (a: number, b: number) => number;
   +genesishashes_add: (a: number, b: number) => void;
   +__wbg_scripthashes_free: (a: number) => void;
   +scripthashes_to_bytes: (a: number, b: number) => void;
-  +scripthashes_from_bytes: (a: number, b: number) => number;
+  +scripthashes_from_bytes: (a: number, b: number, c: number) => void;
   +scripthashes_to_json: (a: number, b: number) => void;
-  +scripthashes_to_js_value: (a: number) => number;
-  +scripthashes_from_json: (a: number, b: number) => number;
+  +scripthashes_to_js_value: (a: number, b: number) => void;
+  +scripthashes_from_json: (a: number, b: number, c: number) => void;
   +scripthashes_get: (a: number, b: number) => number;
   +scripthashes_add: (a: number, b: number) => void;
   +__wbg_proposedprotocolparameterupdates_free: (a: number) => void;
   +proposedprotocolparameterupdates_to_bytes: (a: number, b: number) => void;
   +proposedprotocolparameterupdates_from_bytes: (
     a: number,
-    b: number
-  ) => number;
+    b: number,
+    c: number
+  ) => void;
   +proposedprotocolparameterupdates_to_json: (a: number, b: number) => void;
-  +proposedprotocolparameterupdates_to_js_value: (a: number) => number;
-  +proposedprotocolparameterupdates_from_json: (a: number, b: number) => number;
+  +proposedprotocolparameterupdates_to_js_value: (a: number, b: number) => void;
+  +proposedprotocolparameterupdates_from_json: (
+    a: number,
+    b: number,
+    c: number
+  ) => void;
   +proposedprotocolparameterupdates_insert: (
     a: number,
     b: number,
@@ -8916,17 +8933,17 @@ export interface InitOutput {
   +proposedprotocolparameterupdates_keys: (a: number) => number;
   +__wbg_protocolversion_free: (a: number) => void;
   +protocolversion_to_bytes: (a: number, b: number) => void;
-  +protocolversion_from_bytes: (a: number, b: number) => number;
+  +protocolversion_from_bytes: (a: number, b: number, c: number) => void;
   +protocolversion_to_json: (a: number, b: number) => void;
-  +protocolversion_to_js_value: (a: number) => number;
-  +protocolversion_from_json: (a: number, b: number) => number;
+  +protocolversion_to_js_value: (a: number, b: number) => void;
+  +protocolversion_from_json: (a: number, b: number, c: number) => void;
   +protocolversion_new: (a: number, b: number) => number;
   +__wbg_protocolparamupdate_free: (a: number) => void;
   +protocolparamupdate_to_bytes: (a: number, b: number) => void;
-  +protocolparamupdate_from_bytes: (a: number, b: number) => number;
+  +protocolparamupdate_from_bytes: (a: number, b: number, c: number) => void;
   +protocolparamupdate_to_json: (a: number, b: number) => void;
-  +protocolparamupdate_to_js_value: (a: number) => number;
-  +protocolparamupdate_from_json: (a: number, b: number) => number;
+  +protocolparamupdate_to_js_value: (a: number, b: number) => void;
+  +protocolparamupdate_from_json: (a: number, b: number, c: number) => void;
   +protocolparamupdate_set_minfee_a: (a: number, b: number) => void;
   +protocolparamupdate_minfee_a: (a: number) => number;
   +protocolparamupdate_set_minfee_b: (a: number, b: number) => void;
@@ -8990,23 +9007,23 @@ export interface InitOutput {
   +protocolparamupdate_new: () => number;
   +__wbg_transactionbodies_free: (a: number) => void;
   +transactionbodies_to_bytes: (a: number, b: number) => void;
-  +transactionbodies_from_bytes: (a: number, b: number) => number;
+  +transactionbodies_from_bytes: (a: number, b: number, c: number) => void;
   +transactionbodies_to_json: (a: number, b: number) => void;
-  +transactionbodies_to_js_value: (a: number) => number;
-  +transactionbodies_from_json: (a: number, b: number) => number;
+  +transactionbodies_to_js_value: (a: number, b: number) => void;
+  +transactionbodies_from_json: (a: number, b: number, c: number) => void;
   +transactionbodies_get: (a: number, b: number) => number;
   +transactionbodies_add: (a: number, b: number) => void;
   +__wbg_transactionwitnesssets_free: (a: number) => void;
   +transactionwitnesssets_to_bytes: (a: number, b: number) => void;
-  +transactionwitnesssets_from_bytes: (a: number, b: number) => number;
+  +transactionwitnesssets_from_bytes: (a: number, b: number, c: number) => void;
   +transactionwitnesssets_to_json: (a: number, b: number) => void;
-  +transactionwitnesssets_to_js_value: (a: number) => number;
-  +transactionwitnesssets_from_json: (a: number, b: number) => number;
+  +transactionwitnesssets_to_js_value: (a: number, b: number) => void;
+  +transactionwitnesssets_from_json: (a: number, b: number, c: number) => void;
   +transactionwitnesssets_get: (a: number, b: number) => number;
   +transactionwitnesssets_add: (a: number, b: number) => void;
   +__wbg_transactionindexes_free: (a: number) => void;
   +transactionindexes_to_bytes: (a: number, b: number) => void;
-  +transactionindexes_from_bytes: (a: number, b: number) => number;
+  +transactionindexes_from_bytes: (a: number, b: number, c: number) => void;
   +transactionindexes_get: (a: number, b: number) => number;
   +transactionindexes_add: (a: number, b: number) => void;
   +__wbg_auxiliarydataset_free: (a: number) => void;
@@ -9017,10 +9034,10 @@ export interface InitOutput {
   +auxiliarydataset_indices: (a: number) => number;
   +__wbg_block_free: (a: number) => void;
   +block_to_bytes: (a: number, b: number) => void;
-  +block_from_bytes: (a: number, b: number) => number;
+  +block_from_bytes: (a: number, b: number, c: number) => void;
   +block_to_json: (a: number, b: number) => void;
-  +block_to_js_value: (a: number) => number;
-  +block_from_json: (a: number, b: number) => number;
+  +block_to_js_value: (a: number, b: number) => void;
+  +block_from_json: (a: number, b: number, c: number) => void;
   +block_header: (a: number) => number;
   +block_transaction_bodies: (a: number) => number;
   +block_transaction_witness_sets: (a: number) => number;
@@ -9029,19 +9046,19 @@ export interface InitOutput {
   +block_new: (a: number, b: number, c: number, d: number, e: number) => number;
   +__wbg_header_free: (a: number) => void;
   +header_to_bytes: (a: number, b: number) => void;
-  +header_from_bytes: (a: number, b: number) => number;
+  +header_from_bytes: (a: number, b: number, c: number) => void;
   +header_to_json: (a: number, b: number) => void;
-  +header_to_js_value: (a: number) => number;
-  +header_from_json: (a: number, b: number) => number;
+  +header_to_js_value: (a: number, b: number) => void;
+  +header_from_json: (a: number, b: number, c: number) => void;
   +header_header_body: (a: number) => number;
   +header_body_signature: (a: number) => number;
   +header_new: (a: number, b: number) => number;
   +__wbg_operationalcert_free: (a: number) => void;
   +operationalcert_to_bytes: (a: number, b: number) => void;
-  +operationalcert_from_bytes: (a: number, b: number) => number;
+  +operationalcert_from_bytes: (a: number, b: number, c: number) => void;
   +operationalcert_to_json: (a: number, b: number) => void;
-  +operationalcert_to_js_value: (a: number) => number;
-  +operationalcert_from_json: (a: number, b: number) => number;
+  +operationalcert_to_js_value: (a: number, b: number) => void;
+  +operationalcert_from_json: (a: number, b: number, c: number) => void;
   +operationalcert_hot_vkey: (a: number) => number;
   +operationalcert_sequence_number: (a: number) => number;
   +operationalcert_kes_period: (a: number) => number;
@@ -9049,10 +9066,10 @@ export interface InitOutput {
   +operationalcert_new: (a: number, b: number, c: number, d: number) => number;
   +__wbg_headerbody_free: (a: number) => void;
   +headerbody_to_bytes: (a: number, b: number) => void;
-  +headerbody_from_bytes: (a: number, b: number) => number;
+  +headerbody_from_bytes: (a: number, b: number, c: number) => void;
   +headerbody_to_json: (a: number, b: number) => void;
-  +headerbody_to_js_value: (a: number) => number;
-  +headerbody_from_json: (a: number, b: number) => number;
+  +headerbody_to_js_value: (a: number, b: number) => void;
+  +headerbody_from_json: (a: number, b: number, c: number) => void;
   +headerbody_block_number: (a: number) => number;
   +headerbody_slot: (a: number) => number;
   +headerbody_prev_hash: (a: number) => number;
@@ -9079,38 +9096,38 @@ export interface InitOutput {
   ) => number;
   +__wbg_assetname_free: (a: number) => void;
   +assetname_to_bytes: (a: number, b: number) => void;
-  +assetname_from_bytes: (a: number, b: number) => number;
+  +assetname_from_bytes: (a: number, b: number, c: number) => void;
   +assetname_to_json: (a: number, b: number) => void;
-  +assetname_to_js_value: (a: number) => number;
-  +assetname_from_json: (a: number, b: number) => number;
-  +assetname_new: (a: number, b: number) => number;
+  +assetname_to_js_value: (a: number, b: number) => void;
+  +assetname_from_json: (a: number, b: number, c: number) => void;
+  +assetname_new: (a: number, b: number, c: number) => void;
   +assetname_name: (a: number, b: number) => void;
   +__wbg_assetnames_free: (a: number) => void;
   +assetnames_to_bytes: (a: number, b: number) => void;
-  +assetnames_from_bytes: (a: number, b: number) => number;
+  +assetnames_from_bytes: (a: number, b: number, c: number) => void;
   +assetnames_to_json: (a: number, b: number) => void;
-  +assetnames_to_js_value: (a: number) => number;
-  +assetnames_from_json: (a: number, b: number) => number;
+  +assetnames_to_js_value: (a: number, b: number) => void;
+  +assetnames_from_json: (a: number, b: number, c: number) => void;
   +assetnames_new: () => number;
   +assetnames_len: (a: number) => number;
   +assetnames_get: (a: number, b: number) => number;
   +assetnames_add: (a: number, b: number) => void;
   +__wbg_assets_free: (a: number) => void;
   +assets_to_bytes: (a: number, b: number) => void;
-  +assets_from_bytes: (a: number, b: number) => number;
+  +assets_from_bytes: (a: number, b: number, c: number) => void;
   +assets_to_json: (a: number, b: number) => void;
-  +assets_to_js_value: (a: number) => number;
-  +assets_from_json: (a: number, b: number) => number;
+  +assets_to_js_value: (a: number, b: number) => void;
+  +assets_from_json: (a: number, b: number, c: number) => void;
   +assets_new: () => number;
   +assets_insert: (a: number, b: number, c: number) => number;
   +assets_get: (a: number, b: number) => number;
   +assets_keys: (a: number) => number;
   +__wbg_multiasset_free: (a: number) => void;
   +multiasset_to_bytes: (a: number, b: number) => void;
-  +multiasset_from_bytes: (a: number, b: number) => number;
+  +multiasset_from_bytes: (a: number, b: number, c: number) => void;
   +multiasset_to_json: (a: number, b: number) => void;
-  +multiasset_to_js_value: (a: number) => number;
-  +multiasset_from_json: (a: number, b: number) => number;
+  +multiasset_to_js_value: (a: number, b: number) => void;
+  +multiasset_from_json: (a: number, b: number, c: number) => void;
   +multiasset_insert: (a: number, b: number, c: number) => number;
   +multiasset_get: (a: number, b: number) => number;
   +multiasset_set_asset: (a: number, b: number, c: number, d: number) => number;
@@ -9124,10 +9141,10 @@ export interface InitOutput {
   +mintassets_keys: (a: number) => number;
   +__wbg_mint_free: (a: number) => void;
   +mint_to_bytes: (a: number, b: number) => void;
-  +mint_from_bytes: (a: number, b: number) => number;
+  +mint_from_bytes: (a: number, b: number, c: number) => void;
   +mint_to_json: (a: number, b: number) => void;
-  +mint_to_js_value: (a: number) => number;
-  +mint_from_json: (a: number, b: number) => number;
+  +mint_to_js_value: (a: number, b: number) => void;
+  +mint_from_json: (a: number, b: number, c: number) => void;
   +mint_new_from_entry: (a: number, b: number) => number;
   +mint_insert: (a: number, b: number, c: number) => number;
   +mint_get: (a: number, b: number) => number;
@@ -9136,10 +9153,10 @@ export interface InitOutput {
   +mint_as_negative_multiasset: (a: number) => number;
   +__wbg_networkid_free: (a: number) => void;
   +networkid_to_bytes: (a: number, b: number) => void;
-  +networkid_from_bytes: (a: number, b: number) => number;
+  +networkid_from_bytes: (a: number, b: number, c: number) => void;
   +networkid_to_json: (a: number, b: number) => void;
-  +networkid_to_js_value: (a: number) => number;
-  +networkid_from_json: (a: number, b: number) => number;
+  +networkid_to_js_value: (a: number, b: number) => void;
+  +networkid_from_json: (a: number, b: number, c: number) => void;
   +networkid_testnet: () => number;
   +networkid_mainnet: () => number;
   +networkid_kind: (a: number) => number;
@@ -9184,7 +9201,6 @@ export interface InitOutput {
   +__wbg_url_free: (a: number) => void;
   +__wbg_dnsrecordsrv_free: (a: number) => void;
   +__wbg_scriptany_free: (a: number) => void;
-  +stakeregistration_new: (a: number) => number;
   +transactionoutputs_new: () => number;
   +transactioninputs_new: () => number;
   +stakecredentials_new: () => number;
@@ -9201,6 +9217,7 @@ export interface InitOutput {
   +scriptany_to_json: (a: number, b: number) => void;
   +timelockstart_to_json: (a: number, b: number) => void;
   +timelockstart_new: (a: number) => number;
+  +stakeregistration_new: (a: number) => number;
   +singlehostname_dns_name: (a: number) => number;
   +poolmetadata_url: (a: number) => number;
   +scriptany_new: (a: number) => number;
@@ -9213,12 +9230,12 @@ export interface InitOutput {
   +linearfee_constant: (a: number) => number;
   +linearfee_coefficient: (a: number) => number;
   +linearfee_new: (a: number, b: number) => number;
-  +min_fee: (a: number, b: number, c: number) => number;
+  +min_fee: (a: number, b: number, c: number, d: number) => void;
   +__wbg_transactionoutputbuilder_free: (a: number) => void;
   +transactionoutputbuilder_new: () => number;
   +transactionoutputbuilder_with_address: (a: number, b: number) => number;
   +transactionoutputbuilder_with_datum: (a: number, b: number) => number;
-  +transactionoutputbuilder_next: (a: number) => number;
+  +transactionoutputbuilder_next: (a: number, b: number) => void;
   +__wbg_transactionoutputamountbuilder_free: (a: number) => void;
   +transactionoutputamountbuilder_with_value: (a: number, b: number) => number;
   +transactionoutputamountbuilder_with_coin: (a: number, b: number) => number;
@@ -9230,19 +9247,20 @@ export interface InitOutput {
   +transactionoutputamountbuilder_with_asset_and_min_required_coin: (
     a: number,
     b: number,
-    c: number
-  ) => number;
-  +transactionoutputamountbuilder_build: (a: number) => number;
+    c: number,
+    d: number
+  ) => void;
+  +transactionoutputamountbuilder_build: (a: number, b: number) => void;
   +__wbg_bip32privatekey_free: (a: number) => void;
   +bip32privatekey_derive: (a: number, b: number) => number;
-  +bip32privatekey_from_128_xprv: (a: number, b: number) => number;
+  +bip32privatekey_from_128_xprv: (a: number, b: number, c: number) => void;
   +bip32privatekey_to_128_xprv: (a: number, b: number) => void;
-  +bip32privatekey_generate_ed25519_bip32: () => number;
+  +bip32privatekey_generate_ed25519_bip32: (a: number) => void;
   +bip32privatekey_to_raw_key: (a: number) => number;
   +bip32privatekey_to_public: (a: number) => number;
-  +bip32privatekey_from_bytes: (a: number, b: number) => number;
+  +bip32privatekey_from_bytes: (a: number, b: number, c: number) => void;
   +bip32privatekey_as_bytes: (a: number, b: number) => void;
-  +bip32privatekey_from_bech32: (a: number, b: number) => number;
+  +bip32privatekey_from_bech32: (a: number, b: number, c: number) => void;
   +bip32privatekey_to_bech32: (a: number, b: number) => void;
   +bip32privatekey_from_bip39_entropy: (
     a: number,
@@ -9252,34 +9270,34 @@ export interface InitOutput {
   ) => number;
   +bip32privatekey_chaincode: (a: number, b: number) => void;
   +__wbg_bip32publickey_free: (a: number) => void;
-  +bip32publickey_derive: (a: number, b: number) => number;
+  +bip32publickey_derive: (a: number, b: number, c: number) => void;
   +bip32publickey_to_raw_key: (a: number) => number;
-  +bip32publickey_from_bytes: (a: number, b: number) => number;
+  +bip32publickey_from_bytes: (a: number, b: number, c: number) => void;
   +bip32publickey_as_bytes: (a: number, b: number) => void;
-  +bip32publickey_from_bech32: (a: number, b: number) => number;
+  +bip32publickey_from_bech32: (a: number, b: number, c: number) => void;
   +bip32publickey_to_bech32: (a: number, b: number) => void;
   +bip32publickey_chaincode: (a: number, b: number) => void;
   +__wbg_privatekey_free: (a: number) => void;
   +privatekey_to_public: (a: number) => number;
-  +privatekey_generate_ed25519: () => number;
-  +privatekey_generate_ed25519extended: () => number;
-  +privatekey_from_bech32: (a: number, b: number) => number;
+  +privatekey_generate_ed25519: (a: number) => void;
+  +privatekey_generate_ed25519extended: (a: number) => void;
+  +privatekey_from_bech32: (a: number, b: number, c: number) => void;
   +privatekey_to_bech32: (a: number, b: number) => void;
   +privatekey_as_bytes: (a: number, b: number) => void;
-  +privatekey_from_extended_bytes: (a: number, b: number) => number;
-  +privatekey_from_normal_bytes: (a: number, b: number) => number;
+  +privatekey_from_extended_bytes: (a: number, b: number, c: number) => void;
+  +privatekey_from_normal_bytes: (a: number, b: number, c: number) => void;
   +privatekey_sign: (a: number, b: number, c: number) => number;
-  +privatekey_from_bytes: (a: number, b: number) => number;
+  +privatekey_from_bytes: (a: number, b: number, c: number) => void;
   +privatekey_to_bytes: (a: number, b: number) => void;
   +__wbg_publickey_free: (a: number) => void;
-  +publickey_from_bech32: (a: number, b: number) => number;
+  +publickey_from_bech32: (a: number, b: number, c: number) => void;
   +publickey_to_bech32: (a: number, b: number) => void;
-  +publickey_from_bytes: (a: number, b: number) => number;
+  +publickey_from_bytes: (a: number, b: number, c: number) => void;
   +publickey_verify: (a: number, b: number, c: number, d: number) => number;
   +publickey_hash: (a: number) => number;
   +__wbg_vkey_free: (a: number) => void;
   +vkey_to_bytes: (a: number, b: number) => void;
-  +vkey_from_bytes: (a: number, b: number) => number;
+  +vkey_from_bytes: (a: number, b: number, c: number) => void;
   +vkey_new: (a: number) => number;
   +vkey_public_key: (a: number) => number;
   +__wbg_vkeys_free: (a: number) => void;
@@ -9287,10 +9305,10 @@ export interface InitOutput {
   +vkeys_add: (a: number, b: number) => void;
   +__wbg_vkeywitness_free: (a: number) => void;
   +vkeywitness_to_bytes: (a: number, b: number) => void;
-  +vkeywitness_from_bytes: (a: number, b: number) => number;
+  +vkeywitness_from_bytes: (a: number, b: number, c: number) => void;
   +vkeywitness_to_json: (a: number, b: number) => void;
-  +vkeywitness_to_js_value: (a: number) => number;
-  +vkeywitness_from_json: (a: number, b: number) => number;
+  +vkeywitness_to_js_value: (a: number, b: number) => void;
+  +vkeywitness_from_json: (a: number, b: number, c: number) => void;
   +vkeywitness_new: (a: number, b: number) => number;
   +vkeywitness_signature: (a: number) => number;
   +__wbg_vkeywitnesses_free: (a: number) => void;
@@ -9298,10 +9316,10 @@ export interface InitOutput {
   +vkeywitnesses_add: (a: number, b: number) => void;
   +__wbg_bootstrapwitness_free: (a: number) => void;
   +bootstrapwitness_to_bytes: (a: number, b: number) => void;
-  +bootstrapwitness_from_bytes: (a: number, b: number) => number;
+  +bootstrapwitness_from_bytes: (a: number, b: number, c: number) => void;
   +bootstrapwitness_to_json: (a: number, b: number) => void;
-  +bootstrapwitness_to_js_value: (a: number) => number;
-  +bootstrapwitness_from_json: (a: number, b: number) => number;
+  +bootstrapwitness_to_js_value: (a: number, b: number) => void;
+  +bootstrapwitness_from_json: (a: number, b: number, c: number) => void;
   +bootstrapwitness_vkey: (a: number) => number;
   +bootstrapwitness_signature: (a: number) => number;
   +bootstrapwitness_chain_code: (a: number, b: number) => void;
@@ -9327,15 +9345,19 @@ export interface InitOutput {
   +ed25519signature_to_bytes: (a: number, b: number) => void;
   +ed25519signature_to_bech32: (a: number, b: number) => void;
   +ed25519signature_to_hex: (a: number, b: number) => void;
-  +ed25519signature_from_bech32: (a: number, b: number) => number;
-  +ed25519signature_from_hex: (a: number, b: number) => number;
-  +ed25519signature_from_bytes: (a: number, b: number) => number;
+  +ed25519signature_from_bech32: (a: number, b: number, c: number) => void;
+  +ed25519signature_from_hex: (a: number, b: number, c: number) => void;
+  +ed25519signature_from_bytes: (a: number, b: number, c: number) => void;
   +__wbg_legacydaedalusprivatekey_free: (a: number) => void;
-  +legacydaedalusprivatekey_from_bytes: (a: number, b: number) => number;
+  +legacydaedalusprivatekey_from_bytes: (
+    a: number,
+    b: number,
+    c: number
+  ) => void;
   +legacydaedalusprivatekey_as_bytes: (a: number, b: number) => void;
   +legacydaedalusprivatekey_chaincode: (a: number, b: number) => void;
   +__wbg_ed25519keyhash_free: (a: number) => void;
-  +ed25519keyhash_from_bytes: (a: number, b: number) => number;
+  +ed25519keyhash_from_bytes: (a: number, b: number, c: number) => void;
   +ed25519keyhash_to_bytes: (a: number, b: number) => void;
   +ed25519keyhash_to_bech32: (
     a: number,
@@ -9343,23 +9365,23 @@ export interface InitOutput {
     c: number,
     d: number
   ) => void;
-  +ed25519keyhash_from_bech32: (a: number, b: number) => number;
+  +ed25519keyhash_from_bech32: (a: number, b: number, c: number) => void;
   +ed25519keyhash_to_hex: (a: number, b: number) => void;
-  +ed25519keyhash_from_hex: (a: number, b: number) => number;
-  +scripthash_from_bytes: (a: number, b: number) => number;
-  +scripthash_from_bech32: (a: number, b: number) => number;
-  +scripthash_from_hex: (a: number, b: number) => number;
-  +transactionhash_from_bytes: (a: number, b: number) => number;
-  +transactionhash_from_bech32: (a: number, b: number) => number;
-  +transactionhash_from_hex: (a: number, b: number) => number;
-  +genesisdelegatehash_from_bytes: (a: number, b: number) => number;
-  +genesisdelegatehash_from_bech32: (a: number, b: number) => number;
-  +genesisdelegatehash_from_hex: (a: number, b: number) => number;
-  +genesishash_from_bytes: (a: number, b: number) => number;
-  +genesishash_from_bech32: (a: number, b: number) => number;
-  +genesishash_from_hex: (a: number, b: number) => number;
+  +ed25519keyhash_from_hex: (a: number, b: number, c: number) => void;
+  +scripthash_from_bytes: (a: number, b: number, c: number) => void;
+  +scripthash_from_bech32: (a: number, b: number, c: number) => void;
+  +scripthash_from_hex: (a: number, b: number, c: number) => void;
+  +transactionhash_from_bytes: (a: number, b: number, c: number) => void;
+  +transactionhash_from_bech32: (a: number, b: number, c: number) => void;
+  +transactionhash_from_hex: (a: number, b: number, c: number) => void;
+  +genesisdelegatehash_from_bytes: (a: number, b: number, c: number) => void;
+  +genesisdelegatehash_from_bech32: (a: number, b: number, c: number) => void;
+  +genesisdelegatehash_from_hex: (a: number, b: number, c: number) => void;
+  +genesishash_from_bytes: (a: number, b: number, c: number) => void;
+  +genesishash_from_bech32: (a: number, b: number, c: number) => void;
+  +genesishash_from_hex: (a: number, b: number, c: number) => void;
   +__wbg_auxiliarydatahash_free: (a: number) => void;
-  +auxiliarydatahash_from_bytes: (a: number, b: number) => number;
+  +auxiliarydatahash_from_bytes: (a: number, b: number, c: number) => void;
   +auxiliarydatahash_to_bytes: (a: number, b: number) => void;
   +auxiliarydatahash_to_bech32: (
     a: number,
@@ -9367,48 +9389,59 @@ export interface InitOutput {
     c: number,
     d: number
   ) => void;
-  +auxiliarydatahash_from_bech32: (a: number, b: number) => number;
+  +auxiliarydatahash_from_bech32: (a: number, b: number, c: number) => void;
   +auxiliarydatahash_to_hex: (a: number, b: number) => void;
-  +auxiliarydatahash_from_hex: (a: number, b: number) => number;
-  +poolmetadatahash_from_bytes: (a: number, b: number) => number;
-  +poolmetadatahash_from_bech32: (a: number, b: number) => number;
-  +poolmetadatahash_from_hex: (a: number, b: number) => number;
-  +vrfkeyhash_from_bytes: (a: number, b: number) => number;
-  +vrfkeyhash_from_bech32: (a: number, b: number) => number;
-  +vrfkeyhash_from_hex: (a: number, b: number) => number;
-  +blockhash_from_bytes: (a: number, b: number) => number;
-  +blockhash_from_bech32: (a: number, b: number) => number;
-  +blockhash_from_hex: (a: number, b: number) => number;
-  +datahash_from_bytes: (a: number, b: number) => number;
-  +datahash_from_bech32: (a: number, b: number) => number;
-  +datahash_from_hex: (a: number, b: number) => number;
-  +scriptdatahash_from_bytes: (a: number, b: number) => number;
-  +scriptdatahash_from_bech32: (a: number, b: number) => number;
-  +scriptdatahash_from_hex: (a: number, b: number) => number;
-  +kesvkey_from_bytes: (a: number, b: number) => number;
-  +kesvkey_from_bech32: (a: number, b: number) => number;
-  +kesvkey_from_hex: (a: number, b: number) => number;
+  +auxiliarydatahash_from_hex: (a: number, b: number, c: number) => void;
+  +poolmetadatahash_from_bytes: (a: number, b: number, c: number) => void;
+  +poolmetadatahash_from_bech32: (a: number, b: number, c: number) => void;
+  +poolmetadatahash_from_hex: (a: number, b: number, c: number) => void;
+  +vrfkeyhash_from_bytes: (a: number, b: number, c: number) => void;
+  +vrfkeyhash_from_bech32: (a: number, b: number, c: number) => void;
+  +vrfkeyhash_from_hex: (a: number, b: number, c: number) => void;
+  +blockhash_from_bytes: (a: number, b: number, c: number) => void;
+  +blockhash_from_bech32: (a: number, b: number, c: number) => void;
+  +blockhash_from_hex: (a: number, b: number, c: number) => void;
+  +datahash_from_bytes: (a: number, b: number, c: number) => void;
+  +datahash_from_bech32: (a: number, b: number, c: number) => void;
+  +datahash_from_hex: (a: number, b: number, c: number) => void;
+  +scriptdatahash_from_bytes: (a: number, b: number, c: number) => void;
+  +scriptdatahash_from_bech32: (a: number, b: number, c: number) => void;
+  +scriptdatahash_from_hex: (a: number, b: number, c: number) => void;
+  +kesvkey_from_bytes: (a: number, b: number, c: number) => void;
+  +kesvkey_from_bech32: (a: number, b: number, c: number) => void;
+  +kesvkey_from_hex: (a: number, b: number, c: number) => void;
   +vrfvkey_to_bytes: (a: number, b: number) => void;
-  +vrfvkey_from_bytes: (a: number, b: number) => number;
+  +vrfvkey_from_bytes: (a: number, b: number, c: number) => void;
   +vrfvkey_hash: (a: number) => number;
   +__wbg_kessignature_free: (a: number) => void;
-  +kessignature_from_bytes: (a: number, b: number) => number;
+  +kessignature_from_bytes: (a: number, b: number, c: number) => void;
   +__wbg_nonce_free: (a: number) => void;
   +nonce_to_bytes: (a: number, b: number) => void;
-  +nonce_from_bytes: (a: number, b: number) => number;
+  +nonce_from_bytes: (a: number, b: number, c: number) => void;
   +nonce_new_identity: () => number;
-  +nonce_new_from_hash: (a: number, b: number) => number;
+  +nonce_new_from_hash: (a: number, b: number, c: number) => void;
   +nonce_get_hash: (a: number, b: number) => void;
   +__wbg_vrfcert_free: (a: number) => void;
   +vrfcert_to_bytes: (a: number, b: number) => void;
-  +vrfcert_from_bytes: (a: number, b: number) => number;
+  +vrfcert_from_bytes: (a: number, b: number, c: number) => void;
   +vrfcert_to_json: (a: number, b: number) => void;
-  +vrfcert_to_js_value: (a: number) => number;
-  +vrfcert_from_json: (a: number, b: number) => number;
-  +vrfcert_new: (a: number, b: number, c: number, d: number) => number;
+  +vrfcert_to_js_value: (a: number, b: number) => void;
+  +vrfcert_from_json: (a: number, b: number, c: number) => void;
+  +vrfcert_new: (a: number, b: number, c: number, d: number, e: number) => void;
   +vkeywitnesses_len: (a: number) => number;
   +vkeys_len: (a: number) => number;
   +publickeys_size: (a: number) => number;
+  +scripthash_to_bytes: (a: number, b: number) => void;
+  +transactionhash_to_bytes: (a: number, b: number) => void;
+  +genesisdelegatehash_to_bytes: (a: number, b: number) => void;
+  +genesishash_to_bytes: (a: number, b: number) => void;
+  +publickey_as_bytes: (a: number, b: number) => void;
+  +poolmetadatahash_to_bytes: (a: number, b: number) => void;
+  +vrfkeyhash_to_bytes: (a: number, b: number) => void;
+  +blockhash_to_bytes: (a: number, b: number) => void;
+  +datahash_to_bytes: (a: number, b: number) => void;
+  +scriptdatahash_to_bytes: (a: number, b: number) => void;
+  +kesvkey_to_bytes: (a: number, b: number) => void;
   +scripthash_to_bech32: (a: number, b: number, c: number, d: number) => void;
   +genesisdelegatehash_to_bech32: (
     a: number,
@@ -9439,17 +9472,6 @@ export interface InitOutput {
     d: number
   ) => void;
   +kesvkey_to_bech32: (a: number, b: number, c: number, d: number) => void;
-  +scripthash_to_bytes: (a: number, b: number) => void;
-  +transactionhash_to_bytes: (a: number, b: number) => void;
-  +genesisdelegatehash_to_bytes: (a: number, b: number) => void;
-  +genesishash_to_bytes: (a: number, b: number) => void;
-  +publickey_as_bytes: (a: number, b: number) => void;
-  +poolmetadatahash_to_bytes: (a: number, b: number) => void;
-  +vrfkeyhash_to_bytes: (a: number, b: number) => void;
-  +blockhash_to_bytes: (a: number, b: number) => void;
-  +datahash_to_bytes: (a: number, b: number) => void;
-  +scriptdatahash_to_bytes: (a: number, b: number) => void;
-  +kesvkey_to_bytes: (a: number, b: number) => void;
   +vrfvkey_to_raw_key: (a: number, b: number) => void;
   +kessignature_to_bytes: (a: number, b: number) => void;
   +vrfcert_output: (a: number, b: number) => void;
@@ -9480,52 +9502,65 @@ export interface InitOutput {
   +__wbg_datahash_free: (a: number) => void;
   +__wbg_metadatamap_free: (a: number) => void;
   +metadatamap_to_bytes: (a: number, b: number) => void;
-  +metadatamap_from_bytes: (a: number, b: number) => number;
+  +metadatamap_from_bytes: (a: number, b: number, c: number) => void;
   +metadatamap_insert: (a: number, b: number, c: number) => number;
   +metadatamap_insert_str: (
     a: number,
     b: number,
     c: number,
-    d: number
-  ) => number;
+    d: number,
+    e: number
+  ) => void;
   +metadatamap_insert_i32: (a: number, b: number, c: number) => number;
-  +metadatamap_get: (a: number, b: number) => number;
-  +metadatamap_get_str: (a: number, b: number, c: number) => number;
-  +metadatamap_get_i32: (a: number, b: number) => number;
+  +metadatamap_get: (a: number, b: number, c: number) => void;
+  +metadatamap_get_str: (a: number, b: number, c: number, d: number) => void;
+  +metadatamap_get_i32: (a: number, b: number, c: number) => void;
   +metadatamap_has: (a: number, b: number) => number;
   +metadatamap_keys: (a: number) => number;
   +__wbg_metadatalist_free: (a: number) => void;
   +metadatalist_to_bytes: (a: number, b: number) => void;
-  +metadatalist_from_bytes: (a: number, b: number) => number;
+  +metadatalist_from_bytes: (a: number, b: number, c: number) => void;
   +metadatalist_new: () => number;
   +metadatalist_len: (a: number) => number;
   +metadatalist_get: (a: number, b: number) => number;
   +metadatalist_add: (a: number, b: number) => void;
   +__wbg_transactionmetadatum_free: (a: number) => void;
   +transactionmetadatum_to_bytes: (a: number, b: number) => void;
-  +transactionmetadatum_from_bytes: (a: number, b: number) => number;
+  +transactionmetadatum_from_bytes: (a: number, b: number, c: number) => void;
   +transactionmetadatum_new_map: (a: number) => number;
   +transactionmetadatum_new_list: (a: number) => number;
   +transactionmetadatum_new_int: (a: number) => number;
-  +transactionmetadatum_new_bytes: (a: number, b: number) => number;
-  +transactionmetadatum_new_text: (a: number, b: number) => number;
+  +transactionmetadatum_new_bytes: (a: number, b: number, c: number) => void;
+  +transactionmetadatum_new_text: (a: number, b: number, c: number) => void;
   +transactionmetadatum_kind: (a: number) => number;
-  +transactionmetadatum_as_map: (a: number) => number;
-  +transactionmetadatum_as_list: (a: number) => number;
-  +transactionmetadatum_as_int: (a: number) => number;
+  +transactionmetadatum_as_map: (a: number, b: number) => void;
+  +transactionmetadatum_as_list: (a: number, b: number) => void;
+  +transactionmetadatum_as_int: (a: number, b: number) => void;
   +transactionmetadatum_as_bytes: (a: number, b: number) => void;
   +transactionmetadatum_as_text: (a: number, b: number) => void;
   +__wbg_transactionmetadatumlabels_free: (a: number) => void;
   +transactionmetadatumlabels_to_bytes: (a: number, b: number) => void;
-  +transactionmetadatumlabels_from_bytes: (a: number, b: number) => number;
+  +transactionmetadatumlabels_from_bytes: (
+    a: number,
+    b: number,
+    c: number
+  ) => void;
   +transactionmetadatumlabels_get: (a: number, b: number) => number;
   +transactionmetadatumlabels_add: (a: number, b: number) => void;
   +__wbg_generaltransactionmetadata_free: (a: number) => void;
   +generaltransactionmetadata_to_bytes: (a: number, b: number) => void;
-  +generaltransactionmetadata_from_bytes: (a: number, b: number) => number;
+  +generaltransactionmetadata_from_bytes: (
+    a: number,
+    b: number,
+    c: number
+  ) => void;
   +generaltransactionmetadata_to_json: (a: number, b: number) => void;
-  +generaltransactionmetadata_to_js_value: (a: number) => number;
-  +generaltransactionmetadata_from_json: (a: number, b: number) => number;
+  +generaltransactionmetadata_to_js_value: (a: number, b: number) => void;
+  +generaltransactionmetadata_from_json: (
+    a: number,
+    b: number,
+    c: number
+  ) => void;
   +generaltransactionmetadata_new: () => number;
   +generaltransactionmetadata_len: (a: number) => number;
   +generaltransactionmetadata_insert: (
@@ -9537,10 +9572,10 @@ export interface InitOutput {
   +generaltransactionmetadata_keys: (a: number) => number;
   +__wbg_auxiliarydata_free: (a: number) => void;
   +auxiliarydata_to_bytes: (a: number, b: number) => void;
-  +auxiliarydata_from_bytes: (a: number, b: number) => number;
+  +auxiliarydata_from_bytes: (a: number, b: number, c: number) => void;
   +auxiliarydata_to_json: (a: number, b: number) => void;
-  +auxiliarydata_to_js_value: (a: number) => number;
-  +auxiliarydata_from_json: (a: number, b: number) => number;
+  +auxiliarydata_to_js_value: (a: number, b: number) => void;
+  +auxiliarydata_from_json: (a: number, b: number, c: number) => void;
   +auxiliarydata_new: () => number;
   +auxiliarydata_metadata: (a: number) => number;
   +auxiliarydata_set_metadata: (a: number, b: number) => void;
@@ -9551,7 +9586,12 @@ export interface InitOutput {
   +auxiliarydata_set_plutus_v2_scripts: (a: number, b: number) => void;
   +encode_arbitrary_bytes_as_metadatum: (a: number, b: number) => number;
   +decode_arbitrary_bytes_from_metadatum: (a: number, b: number) => void;
-  +encode_json_str_to_metadatum: (a: number, b: number, c: number) => number;
+  +encode_json_str_to_metadatum: (
+    a: number,
+    b: number,
+    c: number,
+    d: number
+  ) => void;
   +decode_metadatum_to_json_str: (a: number, b: number, c: number) => void;
   +transactionmetadatumlabels_len: (a: number) => number;
   +metadatamap_len: (a: number) => number;
@@ -9570,30 +9610,30 @@ export interface InitOutput {
   +stakecredential_to_scripthash: (a: number) => number;
   +stakecredential_kind: (a: number) => number;
   +stakecredential_to_bytes: (a: number, b: number) => void;
-  +stakecredential_from_bytes: (a: number, b: number) => number;
+  +stakecredential_from_bytes: (a: number, b: number, c: number) => void;
   +stakecredential_to_json: (a: number, b: number) => void;
-  +stakecredential_to_js_value: (a: number) => number;
-  +stakecredential_from_json: (a: number, b: number) => number;
+  +stakecredential_to_js_value: (a: number, b: number) => void;
+  +stakecredential_from_json: (a: number, b: number, c: number) => void;
   +__wbg_byronaddress_free: (a: number) => void;
   +byronaddress_to_base58: (a: number, b: number) => void;
   +byronaddress_to_bytes: (a: number, b: number) => void;
-  +byronaddress_from_bytes: (a: number, b: number) => number;
+  +byronaddress_from_bytes: (a: number, b: number, c: number) => void;
   +byronaddress_byron_protocol_magic: (a: number) => number;
   +byronaddress_attributes: (a: number, b: number) => void;
-  +byronaddress_network_id: (a: number) => number;
-  +byronaddress_from_base58: (a: number, b: number) => number;
+  +byronaddress_network_id: (a: number, b: number) => void;
+  +byronaddress_from_base58: (a: number, b: number, c: number) => void;
   +byronaddress_icarus_from_key: (a: number, b: number) => number;
   +byronaddress_is_valid: (a: number, b: number) => number;
   +byronaddress_to_address: (a: number) => number;
   +__wbg_address_free: (a: number) => void;
-  +address_from_bytes: (a: number, b: number) => number;
+  +address_from_bytes: (a: number, b: number, c: number) => void;
   +address_to_json: (a: number, b: number) => void;
-  +address_to_js_value: (a: number) => number;
-  +address_from_json: (a: number, b: number) => number;
+  +address_to_js_value: (a: number, b: number) => void;
+  +address_from_json: (a: number, b: number, c: number) => void;
   +address_to_bytes: (a: number, b: number) => void;
   +address_to_bech32: (a: number, b: number, c: number, d: number) => void;
-  +address_from_bech32: (a: number, b: number) => number;
-  +address_network_id: (a: number) => number;
+  +address_from_bech32: (a: number, b: number, c: number) => void;
+  +address_network_id: (a: number, b: number) => void;
   +address_as_byron: (a: number) => number;
   +address_as_reward: (a: number) => number;
   +address_as_pointer: (a: number) => number;
@@ -9666,12 +9706,13 @@ export interface InitOutput {
     d: number
   ) => number;
   +transactionbuilderconfigbuilder_blockfrost: (a: number, b: number) => number;
-  +transactionbuilderconfigbuilder_build: (a: number) => number;
+  +transactionbuilderconfigbuilder_build: (a: number, b: number) => void;
   +__wbg_transactionbuilder_free: (a: number) => void;
   +transactionbuilder_add_inputs_from: (
     a: number,
     b: number,
-    c: number
+    c: number,
+    d: number
   ) => void;
   +transactionbuilder_add_input: (a: number, b: number, c: number) => void;
   +transactionbuilder_add_reference_input: (a: number, b: number) => void;
@@ -9679,9 +9720,10 @@ export interface InitOutput {
     a: number,
     b: number,
     c: number,
-    d: number
-  ) => number;
-  +transactionbuilder_add_output: (a: number, b: number) => void;
+    d: number,
+    e: number
+  ) => void;
+  +transactionbuilder_add_output: (a: number, b: number, c: number) => void;
   +transactionbuilder_add_plutus_script: (a: number, b: number) => void;
   +transactionbuilder_add_plutus_v2_script: (a: number, b: number) => void;
   +transactionbuilder_add_plutus_data: (a: number, b: number) => void;
@@ -9691,7 +9733,7 @@ export interface InitOutput {
     b: number,
     c: number
   ) => void;
-  +transactionbuilder_fee_for_output: (a: number, b: number) => number;
+  +transactionbuilder_fee_for_output: (a: number, b: number, c: number) => void;
   +transactionbuilder_set_ttl: (a: number, b: number) => void;
   +transactionbuilder_set_validity_start_interval: (
     a: number,
@@ -9711,14 +9753,16 @@ export interface InitOutput {
     a: number,
     b: number,
     c: number,
-    d: number
+    d: number,
+    e: number
   ) => void;
   +transactionbuilder_add_json_metadatum_with_schema: (
     a: number,
     b: number,
     c: number,
     d: number,
-    e: number
+    e: number,
+    f: number
   ) => void;
   +transactionbuilder_mint: (a: number) => number;
   +transactionbuilder_certificates: (a: number) => number;
@@ -9732,23 +9776,28 @@ export interface InitOutput {
   ) => void;
   +transactionbuilder_new: (a: number) => number;
   +transactionbuilder_script_data_hash: (a: number) => number;
-  +transactionbuilder_add_collateral: (a: number, b: number) => void;
+  +transactionbuilder_add_collateral: (a: number, b: number, c: number) => void;
   +transactionbuilder_get_collateral: (a: number) => number;
   +transactionbuilder_add_required_signer: (a: number, b: number) => void;
   +transactionbuilder_required_signers: (a: number) => number;
   +transactionbuilder_set_network_id: (a: number, b: number) => void;
   +transactionbuilder_network_id: (a: number) => number;
   +transactionbuilder_redeemers: (a: number) => number;
-  +transactionbuilder_get_explicit_input: (a: number) => number;
-  +transactionbuilder_get_implicit_input: (a: number) => number;
-  +transactionbuilder_get_total_input: (a: number) => number;
-  +transactionbuilder_get_total_output: (a: number) => number;
-  +transactionbuilder_get_explicit_output: (a: number) => number;
-  +transactionbuilder_get_deposit: (a: number) => number;
+  +transactionbuilder_get_explicit_input: (a: number, b: number) => void;
+  +transactionbuilder_get_implicit_input: (a: number, b: number) => void;
+  +transactionbuilder_get_total_input: (a: number, b: number) => void;
+  +transactionbuilder_get_total_output: (a: number, b: number) => void;
+  +transactionbuilder_get_explicit_output: (a: number, b: number) => void;
+  +transactionbuilder_get_deposit: (a: number, b: number) => void;
   +transactionbuilder_get_fee_if_set: (a: number) => number;
-  +transactionbuilder_balance: (a: number, b: number, c: number) => void;
+  +transactionbuilder_balance: (
+    a: number,
+    b: number,
+    c: number,
+    d: number
+  ) => void;
   +transactionbuilder_to_bytes: (a: number, b: number) => void;
-  +transactionbuilder_full_size: (a: number) => number;
+  +transactionbuilder_full_size: (a: number, b: number) => void;
   +transactionbuilder_output_sizes: (a: number, b: number) => void;
   +transactionbuilder_outputs: (a: number) => number;
   +transactionbuilder_construct: (
@@ -9757,8 +9806,8 @@ export interface InitOutput {
     c: number,
     d: number
   ) => number;
-  +transactionbuilder_build_tx: (a: number) => number;
-  +transactionbuilder_min_fee: (a: number) => number;
+  +transactionbuilder_build_tx: (a: number, b: number) => void;
+  +transactionbuilder_min_fee: (a: number, b: number) => void;
   +__wbg_redeemerwitnesskey_free: (a: number) => void;
   +redeemerwitnesskey_tag: (a: number) => number;
   +redeemerwitnesskey_new: (a: number, b: number) => number;
@@ -9806,7 +9855,7 @@ export interface InitOutput {
   ) => void;
   +transactionwitnesssetbuilder_new: () => number;
   +transactionwitnesssetbuilder_add_existing: (a: number, b: number) => void;
-  +transactionwitnesssetbuilder_build: (a: number) => number;
+  +transactionwitnesssetbuilder_build: (a: number, b: number) => void;
   +baseaddress_from_address: (a: number) => number;
   +enterpriseaddress_from_address: (a: number) => number;
   +rewardaddress_from_address: (a: number) => number;
@@ -9839,7 +9888,7 @@ export interface InitOutput {
   +blockfrost_new: (a: number, b: number, c: number, d: number) => number;
   +blockfrost_url: (a: number, b: number) => void;
   +blockfrost_project_id: (a: number, b: number) => void;
-  +apply_params_to_plutus_script: (a: number, b: number) => number;
+  +apply_params_to_plutus_script: (a: number, b: number, c: number) => void;
   +__wbg_plutuswitness_free: (a: number) => void;
   +plutuswitness_new: (a: number, b: number, c: number) => number;
   +plutuswitness_new_plutus_v2: (a: number, b: number, c: number) => number;
@@ -9849,8 +9898,8 @@ export interface InitOutput {
   +plutuswitness_version: (a: number) => number;
   +__wbg_scriptwitness_free: (a: number) => void;
   +scriptwitness_to_json: (a: number, b: number) => void;
-  +scriptwitness_to_js_value: (a: number) => number;
-  +scriptwitness_from_json: (a: number, b: number) => number;
+  +scriptwitness_to_js_value: (a: number, b: number) => void;
+  +scriptwitness_from_json: (a: number, b: number, c: number) => void;
   +scriptwitness_new_native_witness: (a: number) => number;
   +scriptwitness_new_plutus_witness: (a: number) => number;
   +scriptwitness_kind: (a: number) => number;
@@ -9858,7 +9907,11 @@ export interface InitOutput {
   +scriptwitness_as_plutus_witness: (a: number) => number;
   +__wbg_transactionunspentoutput_free: (a: number) => void;
   +transactionunspentoutput_to_bytes: (a: number, b: number) => void;
-  +transactionunspentoutput_from_bytes: (a: number, b: number) => number;
+  +transactionunspentoutput_from_bytes: (
+    a: number,
+    b: number,
+    c: number
+  ) => void;
   +transactionunspentoutput_new: (a: number, b: number) => number;
   +transactionunspentoutput_input: (a: number) => number;
   +transactionunspentoutput_output: (a: number) => number;
@@ -9870,24 +9923,24 @@ export interface InitOutput {
   +transactionunspentoutputs_add: (a: number, b: number) => void;
   +__wbg_bignum_free: (a: number) => void;
   +bignum_to_bytes: (a: number, b: number) => void;
-  +bignum_from_bytes: (a: number, b: number) => number;
-  +bignum_from_str: (a: number, b: number) => number;
+  +bignum_from_bytes: (a: number, b: number, c: number) => void;
+  +bignum_from_str: (a: number, b: number, c: number) => void;
   +bignum_to_str: (a: number, b: number) => void;
   +bignum_zero: () => number;
   +bignum_is_zero: (a: number) => number;
-  +bignum_checked_mul: (a: number, b: number) => number;
-  +bignum_checked_add: (a: number, b: number) => number;
-  +bignum_checked_sub: (a: number, b: number) => number;
-  +bignum_checked_div: (a: number, b: number) => number;
-  +bignum_checked_div_ceil: (a: number, b: number) => number;
+  +bignum_checked_mul: (a: number, b: number, c: number) => void;
+  +bignum_checked_add: (a: number, b: number, c: number) => void;
+  +bignum_checked_sub: (a: number, b: number, c: number) => void;
+  +bignum_checked_div: (a: number, b: number, c: number) => void;
+  +bignum_checked_div_ceil: (a: number, b: number, c: number) => void;
   +bignum_clamped_sub: (a: number, b: number) => number;
   +bignum_compare: (a: number, b: number) => number;
   +__wbg_value_free: (a: number) => void;
   +value_to_bytes: (a: number, b: number) => void;
-  +value_from_bytes: (a: number, b: number) => number;
+  +value_from_bytes: (a: number, b: number, c: number) => void;
   +value_to_json: (a: number, b: number) => void;
-  +value_to_js_value: (a: number) => number;
-  +value_from_json: (a: number, b: number) => number;
+  +value_to_js_value: (a: number, b: number) => void;
+  +value_from_json: (a: number, b: number, c: number) => void;
   +value_new: (a: number) => number;
   +value_new_from_assets: (a: number) => number;
   +value_zero: () => number;
@@ -9896,13 +9949,13 @@ export interface InitOutput {
   +value_set_coin: (a: number, b: number) => void;
   +value_multiasset: (a: number) => number;
   +value_set_multiasset: (a: number, b: number) => void;
-  +value_checked_add: (a: number, b: number) => number;
-  +value_checked_sub: (a: number, b: number) => number;
+  +value_checked_add: (a: number, b: number, c: number) => void;
+  +value_checked_sub: (a: number, b: number, c: number) => void;
   +value_clamped_sub: (a: number, b: number) => number;
   +value_compare: (a: number, b: number) => number;
   +__wbg_int_free: (a: number) => void;
   +int_to_bytes: (a: number, b: number) => void;
-  +int_from_bytes: (a: number, b: number) => number;
+  +int_from_bytes: (a: number, b: number, c: number) => void;
   +int_new: (a: number) => number;
   +int_new_negative: (a: number) => number;
   +int_new_i32: (a: number) => number;
@@ -9910,15 +9963,15 @@ export interface InitOutput {
   +int_as_positive: (a: number) => number;
   +int_as_negative: (a: number) => number;
   +int_as_i32: (a: number, b: number) => void;
-  +int_as_i32_or_fail: (a: number) => number;
+  +int_as_i32_or_fail: (a: number, b: number) => void;
   +int_to_str: (a: number, b: number) => void;
-  +int_from_str: (a: number, b: number) => number;
+  +int_from_str: (a: number, b: number, c: number) => void;
   +__wbg_bigint_free: (a: number) => void;
   +bigint_to_bytes: (a: number, b: number) => void;
-  +bigint_from_bytes: (a: number, b: number) => number;
+  +bigint_from_bytes: (a: number, b: number, c: number) => void;
   +bigint_as_u64: (a: number) => number;
   +bigint_as_int: (a: number) => number;
-  +bigint_from_str: (a: number, b: number) => number;
+  +bigint_from_str: (a: number, b: number, c: number) => void;
   +bigint_to_str: (a: number, b: number) => void;
   +make_daedalus_bootstrap_witness: (a: number, b: number, c: number) => number;
   +make_icarus_bootstrap_witness: (a: number, b: number, c: number) => number;
@@ -9929,45 +9982,46 @@ export interface InitOutput {
   +hash_blake2b256: (a: number, b: number, c: number) => void;
   +hash_blake2b224: (a: number, b: number, c: number) => void;
   +hash_script_data: (a: number, b: number, c: number) => number;
-  +get_implicit_input: (a: number, b: number, c: number) => number;
-  +get_deposit: (a: number, b: number, c: number) => number;
-  +min_ada_required: (a: number, b: number) => number;
+  +get_implicit_input: (a: number, b: number, c: number, d: number) => void;
+  +get_deposit: (a: number, b: number, c: number, d: number) => void;
+  +min_ada_required: (a: number, b: number, c: number) => void;
   +encode_json_str_to_native_script: (
     a: number,
     b: number,
     c: number,
     d: number,
-    e: number
-  ) => number;
+    e: number,
+    f: number
+  ) => void;
   +int_as_i32_or_nothing: (a: number, b: number) => void;
   +__wbg_plutusscript_free: (a: number) => void;
   +plutusscript_to_bytes: (a: number, b: number) => void;
-  +plutusscript_from_bytes: (a: number, b: number) => number;
+  +plutusscript_from_bytes: (a: number, b: number, c: number) => void;
   +plutusscript_hash: (a: number, b: number) => number;
   +plutusscript_new: (a: number, b: number) => number;
   +plutusscript_bytes: (a: number, b: number) => void;
   +__wbg_plutusscripts_free: (a: number) => void;
   +plutusscripts_to_bytes: (a: number, b: number) => void;
-  +plutusscripts_from_bytes: (a: number, b: number) => number;
+  +plutusscripts_from_bytes: (a: number, b: number, c: number) => void;
   +plutusscripts_new: () => number;
   +plutusscripts_get: (a: number, b: number) => number;
   +plutusscripts_add: (a: number, b: number) => void;
   +__wbg_constrplutusdata_free: (a: number) => void;
   +constrplutusdata_to_bytes: (a: number, b: number) => void;
-  +constrplutusdata_from_bytes: (a: number, b: number) => number;
+  +constrplutusdata_from_bytes: (a: number, b: number, c: number) => void;
   +constrplutusdata_alternative: (a: number) => number;
   +constrplutusdata_data: (a: number) => number;
   +constrplutusdata_new: (a: number, b: number) => number;
   +__wbg_costmodel_free: (a: number) => void;
   +costmodel_to_bytes: (a: number, b: number) => void;
-  +costmodel_from_bytes: (a: number, b: number) => number;
+  +costmodel_from_bytes: (a: number, b: number, c: number) => void;
   +costmodel_new: () => number;
   +costmodel_new_plutus_v2: () => number;
-  +costmodel_set: (a: number, b: number, c: number) => number;
-  +costmodel_get: (a: number, b: number) => number;
+  +costmodel_set: (a: number, b: number, c: number, d: number) => void;
+  +costmodel_get: (a: number, b: number, c: number) => void;
   +__wbg_costmdls_free: (a: number) => void;
   +costmdls_to_bytes: (a: number, b: number) => void;
-  +costmdls_from_bytes: (a: number, b: number) => number;
+  +costmdls_from_bytes: (a: number, b: number, c: number) => void;
   +costmdls_new: () => number;
   +costmdls_len: (a: number) => number;
   +costmdls_insert: (a: number, b: number, c: number) => number;
@@ -9975,19 +10029,19 @@ export interface InitOutput {
   +costmdls_keys: (a: number) => number;
   +__wbg_exunitprices_free: (a: number) => void;
   +exunitprices_to_bytes: (a: number, b: number) => void;
-  +exunitprices_from_bytes: (a: number, b: number) => number;
+  +exunitprices_from_bytes: (a: number, b: number, c: number) => void;
   +exunitprices_mem_price: (a: number) => number;
   +exunitprices_step_price: (a: number) => number;
   +exunitprices_new: (a: number, b: number) => number;
   +exunitprices_from_float: (a: number, b: number) => number;
   +__wbg_exunits_free: (a: number) => void;
   +exunits_to_bytes: (a: number, b: number) => void;
-  +exunits_from_bytes: (a: number, b: number) => number;
+  +exunits_from_bytes: (a: number, b: number, c: number) => void;
   +exunits_steps: (a: number) => number;
   +exunits_new: (a: number, b: number) => number;
   +__wbg_language_free: (a: number) => void;
   +language_to_bytes: (a: number, b: number) => void;
-  +language_from_bytes: (a: number, b: number) => number;
+  +language_from_bytes: (a: number, b: number, c: number) => void;
   +language_new_plutus_v1: () => number;
   +language_new_plutus_v2: () => number;
   +language_kind: (a: number) => number;
@@ -9997,14 +10051,14 @@ export interface InitOutput {
   +languages_add: (a: number, b: number) => void;
   +__wbg_plutusmap_free: (a: number) => void;
   +plutusmap_to_bytes: (a: number, b: number) => void;
-  +plutusmap_from_bytes: (a: number, b: number) => number;
+  +plutusmap_from_bytes: (a: number, b: number, c: number) => void;
   +plutusmap_new: () => number;
   +plutusmap_insert: (a: number, b: number, c: number) => number;
   +plutusmap_get: (a: number, b: number) => number;
   +plutusmap_keys: (a: number) => number;
   +__wbg_plutusdata_free: (a: number) => void;
   +plutusdata_to_bytes: (a: number, b: number) => void;
-  +plutusdata_from_bytes: (a: number, b: number) => number;
+  +plutusdata_from_bytes: (a: number, b: number, c: number) => void;
   +plutusdata_new_constr_plutus_data: (a: number) => number;
   +plutusdata_new_map: (a: number) => number;
   +plutusdata_new_list: (a: number) => number;
@@ -10018,20 +10072,20 @@ export interface InitOutput {
   +plutusdata_as_bytes: (a: number, b: number) => void;
   +__wbg_plutuslist_free: (a: number) => void;
   +plutuslist_to_bytes: (a: number, b: number) => void;
-  +plutuslist_from_bytes: (a: number, b: number) => number;
+  +plutuslist_from_bytes: (a: number, b: number, c: number) => void;
   +plutuslist_new: () => number;
   +plutuslist_get: (a: number, b: number) => number;
   +plutuslist_add: (a: number, b: number) => void;
   +__wbg_redeemer_free: (a: number) => void;
   +redeemer_to_bytes: (a: number, b: number) => void;
-  +redeemer_from_bytes: (a: number, b: number) => number;
+  +redeemer_from_bytes: (a: number, b: number, c: number) => void;
   +redeemer_tag: (a: number) => number;
   +redeemer_data: (a: number) => number;
   +redeemer_ex_units: (a: number) => number;
   +redeemer_new: (a: number, b: number, c: number, d: number) => number;
   +__wbg_redeemertag_free: (a: number) => void;
   +redeemertag_to_bytes: (a: number, b: number) => void;
-  +redeemertag_from_bytes: (a: number, b: number) => number;
+  +redeemertag_from_bytes: (a: number, b: number, c: number) => void;
   +redeemertag_new_spend: () => number;
   +redeemertag_new_mint: () => number;
   +redeemertag_new_cert: () => number;
@@ -10039,7 +10093,7 @@ export interface InitOutput {
   +redeemertag_kind: (a: number) => number;
   +__wbg_redeemers_free: (a: number) => void;
   +redeemers_to_bytes: (a: number, b: number) => void;
-  +redeemers_from_bytes: (a: number, b: number) => number;
+  +redeemers_from_bytes: (a: number, b: number, c: number) => void;
   +redeemers_get: (a: number, b: number) => number;
   +redeemers_add: (a: number, b: number) => void;
   +__wbg_strings_free: (a: number) => void;
@@ -10047,18 +10101,18 @@ export interface InitOutput {
   +strings_add: (a: number, b: number, c: number) => void;
   +__wbg_data_free: (a: number) => void;
   +data_to_bytes: (a: number, b: number) => void;
-  +data_from_bytes: (a: number, b: number) => number;
+  +data_from_bytes: (a: number, b: number, c: number) => void;
   +data_to_json: (a: number, b: number) => void;
-  +data_to_js_value: (a: number) => number;
-  +data_from_json: (a: number, b: number) => number;
+  +data_to_js_value: (a: number, b: number) => void;
+  +data_from_json: (a: number, b: number, c: number) => void;
   +data_new: (a: number) => number;
   +data_get: (a: number) => number;
   +__wbg_script_free: (a: number) => void;
   +script_to_bytes: (a: number, b: number) => void;
-  +script_from_bytes: (a: number, b: number) => number;
+  +script_from_bytes: (a: number, b: number, c: number) => void;
   +script_to_json: (a: number, b: number) => void;
-  +script_to_js_value: (a: number) => number;
-  +script_from_json: (a: number, b: number) => number;
+  +script_to_js_value: (a: number, b: number) => void;
+  +script_from_json: (a: number, b: number, c: number) => void;
   +script_new_native: (a: number) => number;
   +script_new_plutus_v1: (a: number) => number;
   +script_new_plutus_v2: (a: number) => number;
@@ -10068,23 +10122,28 @@ export interface InitOutput {
   +script_as_plutus_v2: (a: number) => number;
   +__wbg_scriptref_free: (a: number) => void;
   +scriptref_to_bytes: (a: number, b: number) => void;
-  +scriptref_from_bytes: (a: number, b: number) => number;
-  +scriptref_to_js_value: (a: number) => number;
-  +scriptref_from_json: (a: number, b: number) => number;
+  +scriptref_from_bytes: (a: number, b: number, c: number) => void;
+  +scriptref_to_js_value: (a: number, b: number) => void;
+  +scriptref_from_json: (a: number, b: number, c: number) => void;
   +scriptref_new: (a: number) => number;
   +scriptref_get: (a: number) => number;
   +__wbg_datum_free: (a: number) => void;
   +datum_to_bytes: (a: number, b: number) => void;
-  +datum_from_bytes: (a: number, b: number) => number;
+  +datum_from_bytes: (a: number, b: number, c: number) => void;
   +datum_to_json: (a: number, b: number) => void;
-  +datum_to_js_value: (a: number) => number;
-  +datum_from_json: (a: number, b: number) => number;
+  +datum_to_js_value: (a: number, b: number) => void;
+  +datum_from_json: (a: number, b: number, c: number) => void;
   +datum_new_data_hash: (a: number) => number;
   +datum_new_data: (a: number) => number;
   +datum_kind: (a: number) => number;
   +datum_as_data_hash: (a: number) => number;
   +datum_as_data: (a: number) => number;
-  +encode_json_str_to_plutus_datum: (a: number, b: number, c: number) => number;
+  +encode_json_str_to_plutus_datum: (
+    a: number,
+    b: number,
+    c: number,
+    d: number
+  ) => void;
   +decode_plutus_datum_to_json_str: (a: number, b: number, c: number) => void;
   +plutusscripts_len: (a: number) => number;
   +costmodel_len: (a: number) => number;
@@ -10101,7 +10160,7 @@ export interface InitOutput {
   +__wbindgen_malloc: (a: number) => number;
   +__wbindgen_realloc: (a: number, b: number, c: number) => number;
   +__wbindgen_export_2: WebAssembly.Table;
-  +_dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hf552e89fb1b782c2: (
+  +_dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h8b6cac31a9c50230: (
     a: number,
     b: number,
     c: number
@@ -10109,13 +10168,22 @@ export interface InitOutput {
   +__wbindgen_add_to_stack_pointer: (a: number) => number;
   +__wbindgen_free: (a: number, b: number) => void;
   +__wbindgen_exn_store: (a: number) => void;
-  +wasm_bindgen__convert__closures__invoke2_mut__h343db6eee225c129: (
+  +wasm_bindgen__convert__closures__invoke2_mut__h271eb41e68580694: (
     a: number,
     b: number,
     c: number,
     d: number
   ) => void;
 }
+export type SyncInitInput = BufferSource | WebAssembly.Module;
+/**
+ * Instantiates the given `module`, which can either be bytes or
+ * a precompiled `WebAssembly.Module`.
+ * @param {SyncInitInput} module
+ * @returns {InitOutput}
+ */
+declare export function initSync(module: SyncInitInput): InitOutput;
+
 /**
  * If `module_or_path` is {RequestInfo} or {URL}, makes a request and
  * for everything else, calls `WebAssembly.instantiate` directly.
