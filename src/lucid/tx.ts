@@ -145,7 +145,13 @@ export class Tx {
   /** Pay to a public key or native script address. */
   payToAddress(address: Address, assets: Assets): Tx {
     this.tasks.push((that) => {
-      const output = C.TransactionOutput.new(
+      let output = C.TransactionOutput.new(
+        addressFromWithNetworkCheck(address, that.lucid),
+        assetsToValue(assets)
+      );
+      const minAda = that.lucid.utils.getMinAdaForOutput(output);
+      assets.lovelace = assets.lovelace > minAda ? assets.lovelace : minAda;
+      output = C.TransactionOutput.new(
         addressFromWithNetworkCheck(address, that.lucid),
         assetsToValue(assets)
       );
@@ -173,29 +179,41 @@ export class Tx {
           "Not allowed to set hash, asHash and inline at the same time."
         );
       }
-
-      const output = C.TransactionOutput.new(
-        addressFromWithNetworkCheck(address, that.lucid),
-        assetsToValue(assets)
-      );
-
-      if (outputData.hash) {
-        output.set_datum(
-          C.Datum.new_data_hash(C.DataHash.from_hex(outputData.hash))
+      const createOutput = (_assets) => {
+        const output = C.TransactionOutput.new(
+          addressFromWithNetworkCheck(address, that.lucid),
+          assetsToValue(_assets)
         );
-      } else if (outputData.asHash) {
-        const plutusData = C.PlutusData.from_bytes(fromHex(outputData.asHash));
-        output.set_datum(C.Datum.new_data_hash(C.hash_plutus_data(plutusData)));
-        that.txBuilder.add_plutus_data(plutusData);
-      } else if (outputData.inline) {
-        const plutusData = C.PlutusData.from_bytes(fromHex(outputData.inline));
-        output.set_datum(C.Datum.new_data(C.Data.new(plutusData)));
-      }
 
-      const script = outputData.scriptRef;
-      if (script) {
-        output.set_script_ref(toScriptRef(script));
-      }
+        if (outputData.hash) {
+          output.set_datum(
+            C.Datum.new_data_hash(C.DataHash.from_hex(outputData.hash))
+          );
+        } else if (outputData.asHash) {
+          const plutusData = C.PlutusData.from_bytes(
+            fromHex(outputData.asHash)
+          );
+          output.set_datum(
+            C.Datum.new_data_hash(C.hash_plutus_data(plutusData))
+          );
+          that.txBuilder.add_plutus_data(plutusData);
+        } else if (outputData.inline) {
+          const plutusData = C.PlutusData.from_bytes(
+            fromHex(outputData.inline)
+          );
+          output.set_datum(C.Datum.new_data(C.Data.new(plutusData)));
+        }
+
+        const script = outputData.scriptRef;
+        if (script) {
+          output.set_script_ref(toScriptRef(script));
+        }
+        return output;
+      };
+      let output = createOutput(assets);
+      const minAda = this.lucid.utils.getMinAdaForOutput(output);
+      assets.lovelace = assets.lovelace > minAda ? assets.lovelace : minAda;
+      output = createOutput(assets);
       that.txBuilder.add_output(output);
     });
     return this;
@@ -630,8 +648,7 @@ export class Tx {
    * This is the advanced UTxO management algorithm used by Eternl
    */
   private async splitChange() {
-    const { coinsPerUtxoByte } =
-      await this.lucid.provider.getProtocolParameters();
+    const { coinsPerUtxoByte } = await this.lucid.protocolParameters;
     const { changeNativeAssetChunkSize, changeMinUtxo } = this.configuration;
 
     const change = this.txBuilder

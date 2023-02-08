@@ -42,21 +42,19 @@ import { Credential } from "../types/types.ts";
 
 export class Lucid {
   txBuilderConfig!: Core.TransactionBuilderConfig;
+  protocolParameters: any;
   wallet!: Wallet;
   provider!: Provider;
   network: Network = "Mainnet";
   utils!: Utils;
 
-  static async new(
-    provider?: Provider,
-    network?: Network,
-    logger?: any
-  ): Promise<Lucid> {
+  static async new(provider?: Provider, network?: Network): Promise<Lucid> {
     const lucid = new this();
     if (network) lucid.network = network;
     if (provider) {
       lucid.provider = provider;
       const protocolParameters = await provider.getProtocolParameters();
+      lucid.protocolParameters = protocolParameters;
 
       if (lucid.provider instanceof Emulator) {
         lucid.network = "Custom";
@@ -65,15 +63,6 @@ export class Lucid {
           zeroSlot: 0,
           slotLength: 1000,
         };
-      }
-
-      if (logger && logger.info) {
-        logger.info(
-          {
-            protocolParameters,
-          },
-          "Logging lucid protocol parameters"
-        );
       }
 
       const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];

@@ -151,13 +151,13 @@ export class Utils {
           .to_hex();
       case "PlutusV1":
         return C.PlutusScript.from_bytes(
-          fromHex(applyDoubleCborEncoding(validator.script)),
+          fromHex(applyDoubleCborEncoding(validator.script))
         )
           .hash(C.ScriptHashNamespace.PlutusV1)
           .to_hex();
       case "PlutusV2":
         return C.PlutusScript.from_bytes(
-          fromHex(applyDoubleCborEncoding(validator.script)),
+          fromHex(applyDoubleCborEncoding(validator.script))
         )
           .hash(C.ScriptHashNamespace.PlutusV2)
           .to_hex();
@@ -226,6 +226,16 @@ export class Utils {
 
   stakeCredentialOf(rewardAddress: RewardAddress): Credential {
     return stakeCredentialOf(rewardAddress);
+  }
+
+  getMinAdaForOutput(output: Core.TransactionOutput): BigInt {
+    const minAda = C.min_ada_required(
+      output,
+      C.BigNum.from_str(
+        this.lucid.protocolParameters.coinsPerUtxoByte.toString()
+      )
+    );
+    return BigInt(minAda.to_str());
   }
 }
 
@@ -488,17 +498,17 @@ export function toScriptRef(script: Script): Core.ScriptRef {
       return C.ScriptRef.new(
         C.Script.new_plutus_v1(
           C.PlutusScript.from_bytes(
-            fromHex(applyDoubleCborEncoding(script.script)),
-          ),
-        ),
+            fromHex(applyDoubleCborEncoding(script.script))
+          )
+        )
       );
     case "PlutusV2":
       return C.ScriptRef.new(
         C.Script.new_plutus_v2(
           C.PlutusScript.from_bytes(
-            fromHex(applyDoubleCborEncoding(script.script)),
-          ),
-        ),
+            fromHex(applyDoubleCborEncoding(script.script))
+          )
+        )
       );
     default:
       throw new Error("No variant matched.");
@@ -685,8 +695,8 @@ export function applyParamsToScript<T extends unknown[] = Data[]>(
     C.apply_params_to_plutus_script(
       C.PlutusList.from_bytes(fromHex(Data.to<Data[]>(p))),
 
-      C.PlutusScript.from_bytes(fromHex(applyDoubleCborEncoding(plutusScript))),
-    ).to_bytes(),
+      C.PlutusScript.from_bytes(fromHex(applyDoubleCborEncoding(plutusScript)))
+    ).to_bytes()
   );
 }
 
@@ -707,7 +717,7 @@ export const chunk = <T>(array: T[], size: number) => {
 export function applyDoubleCborEncoding(script: string): string {
   try {
     C.PlutusScript.from_bytes(
-      C.PlutusScript.from_bytes(fromHex(script)).bytes(),
+      C.PlutusScript.from_bytes(fromHex(script)).bytes()
     );
     return script;
   } catch (_e) {
