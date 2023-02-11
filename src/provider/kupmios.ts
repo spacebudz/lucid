@@ -148,9 +148,8 @@ export class Kupmios implements Provider {
   }
 
   async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
-    const { stakeCredential } = getAddressDetails(rewardAddress);
     const client = await this.ogmiosWsp("Query", {
-      query: { "delegationsAndRewards": [stakeCredential!.hash] },
+      query: { "delegationsAndRewards": [rewardAddress] },
     });
 
     return new Promise((res, rej) => {
