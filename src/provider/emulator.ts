@@ -161,8 +161,8 @@ export class Emulator implements Provider {
 
   getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
     return Promise.resolve(
-      outRefs.map((outRef) =>
-        this.ledger[outRef.txHash + outRef.outputIndex]!.utxo
+      outRefs.flatMap((outRef) =>
+        this.ledger[outRef.txHash + outRef.outputIndex]?.utxo || []
       ),
     );
   }
