@@ -242,7 +242,13 @@ function toJson(plutusData: Data): Json {
       return parseInt(bigint.toString());
     }
     if (typeof data === "string") {
-      return new TextDecoder().decode(fromHex(data));
+      try {
+        return new TextDecoder(undefined, { fatal: true }).decode(
+          fromHex(data),
+        );
+      } catch (_) {
+        return "0x" + data;
+      }
     }
     if (data instanceof Array) return data.map((v) => fromData(v));
     if (data instanceof Map) {

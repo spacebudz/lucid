@@ -35,14 +35,14 @@ npm install lucid-cardano
 For JavaScript and TypeScript
 
 ```js
-import { Lucid } from "https://deno.land/x/lucid@0.8.9/mod.ts";
+import { Lucid } from "https://deno.land/x/lucid@0.9.1/mod.ts";
 ```
 
 #### Web
 
 ```html
 <script type="module">
-import { Lucid } from "https://unpkg.com/lucid-cardano@0.8.9/web/mod.js"
+import { Lucid } from "https://unpkg.com/lucid-cardano@0.9.1/web/mod.js"
 // ...
 </script>
 ```
@@ -67,7 +67,7 @@ Outputs a `dist` folder
 ### Basic usage
 
 ```js
-// import { Blockfrost, Lucid } from "https://deno.land/x/lucid@0.8.9/mod.ts"; Deno
+// import { Blockfrost, Lucid } from "https://deno.land/x/lucid@0.9.1/mod.ts"; Deno
 import { Blockfrost, Lucid } from "lucid-cardano"; // NPM
 
 const lucid = await Lucid.new(
@@ -132,7 +132,7 @@ Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
 Branch: **vasil**
 
-Commit hash: **f6c92ba092dbd7a00b1fb03310aa3dbc4f296e5b**
+Commit hash: **189798ef8e59120f815898260f7a011e0324765d**
 
 #### message-signing
 

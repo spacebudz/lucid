@@ -210,67 +210,67 @@ export function decode_plutus_datum_to_json_str(
 ): string;
 /** */
 export enum CertificateKind {
-  StakeRegistration,
-  StakeDeregistration,
-  StakeDelegation,
-  PoolRegistration,
-  PoolRetirement,
-  GenesisKeyDelegation,
-  MoveInstantaneousRewardsCert,
+  StakeRegistration = 0,
+  StakeDeregistration = 1,
+  StakeDelegation = 2,
+  PoolRegistration = 3,
+  PoolRetirement = 4,
+  GenesisKeyDelegation = 5,
+  MoveInstantaneousRewardsCert = 6,
 }
 /** */
 export enum MIRPot {
-  Reserves,
-  Treasury,
+  Reserves = 0,
+  Treasury = 1,
 }
 /** */
 export enum MIRKind {
-  ToOtherPot,
-  ToStakeCredentials,
+  ToOtherPot = 0,
+  ToStakeCredentials = 1,
 }
 /** */
 export enum RelayKind {
-  SingleHostAddr,
-  SingleHostName,
-  MultiHostName,
+  SingleHostAddr = 0,
+  SingleHostName = 1,
+  MultiHostName = 2,
 }
 /** */
 export enum NativeScriptKind {
-  ScriptPubkey,
-  ScriptAll,
-  ScriptAny,
-  ScriptNOfK,
-  TimelockStart,
-  TimelockExpiry,
+  ScriptPubkey = 0,
+  ScriptAll = 1,
+  ScriptAny = 2,
+  ScriptNOfK = 3,
+  TimelockStart = 4,
+  TimelockExpiry = 5,
 }
 /** */
 export enum NetworkIdKind {
-  Testnet,
-  Mainnet,
+  Testnet = 0,
+  Mainnet = 1,
 }
 /** */
 export enum TransactionMetadatumKind {
-  MetadataMap,
-  MetadataList,
-  Int,
-  Bytes,
-  Text,
+  MetadataMap = 0,
+  MetadataList = 1,
+  Int = 2,
+  Bytes = 3,
+  Text = 4,
 }
 /** */
 export enum MetadataJsonSchema {
-  NoConversions,
-  BasicConversions,
-  DetailedSchema,
+  NoConversions = 0,
+  BasicConversions = 1,
+  DetailedSchema = 2,
 }
 /** */
 export enum StakeCredKind {
-  Key,
-  Script,
+  Key = 0,
+  Script = 1,
 }
 /** */
 export enum ScriptWitnessKind {
-  NativeWitness,
-  PlutusWitness,
+  NativeWitness = 0,
+  PlutusWitness = 1,
 }
 /**
  * Each new language uses a different namespace for hashing its script
@@ -280,36 +280,36 @@ export enum ScriptWitnessKind {
  * https://github.com/input-output-hk/cardano-ledger/blob/9c3b4737b13b30f71529e76c5330f403165e28a6/eras/alonzo/impl/src/Cardano/Ledger/Alonzo.hs#L127
  */
 export enum ScriptHashNamespace {
-  NativeScript,
-  PlutusV1,
-  PlutusV2,
+  NativeScript = 0,
+  PlutusV1 = 1,
+  PlutusV2 = 2,
 }
 /**
  * Used to choose the schema for a script JSON string
  */
 export enum ScriptSchema {
-  Wallet,
-  Node,
+  Wallet = 0,
+  Node = 1,
 }
 /** */
 export enum LanguageKind {
-  PlutusV1,
-  PlutusV2,
+  PlutusV1 = 0,
+  PlutusV2 = 1,
 }
 /** */
 export enum PlutusDataKind {
-  ConstrPlutusData,
-  Map,
-  List,
-  Integer,
-  Bytes,
+  ConstrPlutusData = 0,
+  Map = 1,
+  List = 2,
+  Integer = 3,
+  Bytes = 4,
 }
 /** */
 export enum RedeemerTagKind {
-  Spend,
-  Mint,
-  Cert,
-  Reward,
+  Spend = 0,
+  Mint = 1,
+  Cert = 2,
+  Reward = 3,
 }
 /**
  * JSON <-> PlutusData conversion schemas.
@@ -336,7 +336,7 @@ export enum PlutusDatumSchema {
    * * Lists not supported in keys
    * * Maps not supported in keys
    */
-  BasicConversions,
+  BasicConversions = 0,
   /**
    * ScriptDataJsonDetailedSchema in cardano-node.
    *
@@ -361,18 +361,18 @@ export enum PlutusDatumSchema {
    * To JSON:
    * * all Plutus datums should be fully supported outside of the integer range limitations outlined above.
    */
-  DetailedSchema,
+  DetailedSchema = 1,
 }
 /** */
 export enum ScriptKind {
-  NativeScript,
-  PlutusScriptV1,
-  PlutusScriptV2,
+  NativeScript = 0,
+  PlutusScriptV1 = 1,
+  PlutusScriptV2 = 2,
 }
 /** */
 export enum DatumKind {
-  Hash,
-  Data,
+  Hash = 0,
+  Data = 1,
 }
 /** */
 export class Address {
