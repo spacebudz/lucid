@@ -10,7 +10,7 @@ import {
 } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
 import { C, Core } from "../core/mod.ts";
 import { Datum, Json, Redeemer } from "../types/mod.ts";
-import { fromHex, toHex } from "../utils/utils.ts";
+import { fromHex, fromText, toHex } from "../utils/utils.ts";
 
 export class Constr<T> {
   index: number;
@@ -91,13 +91,12 @@ export const Data = {
   /** Convert Cbor encoded data to PlutusData */
   from,
   /**
-   *  Convert Cbor encoded data to Data.\
-   *  Or apply a shape and cast the cbor encoded data to a certain type.
+   * Note Constr cannot be used here.\
+   * Strings prefixed with '0x' are not UTF-8 encoded.
    */
   fromJson,
   /**
-   * Convert PlutusData to a Json object.
-   * Note: Constructor cannot be used here, also only bytes/integers as Json keys.
+   * Note Constr cannot be used here, also only bytes/integers as Json keys.\
    */
   toJson,
   void: function (): Datum | Redeemer {
@@ -198,15 +197,15 @@ function from<T = Data>(raw: Datum | Redeemer, shape?: TSchema): T {
 }
 
 /**
- * Convert conveniently a Json object (e.g. Metadata) to PlutusData.
- * Note: Constructor cannot be used here.
+ * Note Constr cannot be used here.\
+ * Strings prefixed with '0x' are not UTF-8 encoded.
  */
 function fromJson(json: Json): Data {
   function toData(json: Json): Data {
     if (typeof json === "string") {
       return json.startsWith("0x")
-        ? json.slice(2)
-        : toHex(new TextEncoder().encode(json));
+        ? toHex(fromHex(json.slice(2)))
+        : fromText(json);
     }
     if (typeof json === "number") return BigInt(json);
     if (typeof json === "bigint") return json;
@@ -224,8 +223,7 @@ function fromJson(json: Json): Data {
 }
 
 /**
- * Convert PlutusData to a Json object.
- * Note: Constructor cannot be used here, also only bytes/integers as Json keys.
+ * Note Constr cannot be used here, also only bytes/integers as Json keys.\
  */
 function toJson(plutusData: Data): Json {
   function fromData(data: Data): Json {
@@ -247,7 +245,7 @@ function toJson(plutusData: Data): Json {
           fromHex(data),
         );
       } catch (_) {
-        return "0x" + data;
+        return "0x" + toHex(fromHex(data));
       }
     }
     if (data instanceof Array) return data.map((v) => fromData(v));
