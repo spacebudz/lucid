@@ -15,7 +15,7 @@ import {
   UTxO,
 } from "../types/mod.ts";
 import { C } from "../core/mod.ts";
-import { fromHex, fromUnit, getAddressDetails, toHex } from "../utils/mod.ts";
+import { fromHex, fromUnit, toHex } from "../utils/mod.ts";
 
 export class Kupmios implements Provider {
   kupoUrl: string;
