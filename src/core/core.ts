@@ -85,6 +85,11 @@ async function importForEnvironmentMessage(): Promise<typeof Msg | null> {
   }
 }
 
-export const C: typeof Core = (await importForEnvironmentCore())!;
+const [resolvedCore, resolvedMessage] = await Promise.all([
+  importForEnvironmentCore(),
+  importForEnvironmentMessage(),
+]);
 
-export const M: typeof Msg = (await importForEnvironmentMessage())!;
+export const C: typeof Core = resolvedCore!;
+
+export const M: typeof Msg = resolvedMessage!;
