@@ -15,7 +15,7 @@ Deno.test("Roundtrip data bigint", () => {
 
     type MyDatum = Int
   */
-  const MyDatum = Data.BigInt;
+  const MyDatum = Data.Integer();
   type MyDatum = Data.Static<typeof MyDatum>;
   const datum: MyDatum = 1234n;
   const newDatum = Data.from<MyDatum>(
@@ -35,7 +35,7 @@ Deno.test("Roundtrip data string", () => {
 
     type MyDatum = ByteArray
   */
-  const MyDatum = Data.String;
+  const MyDatum = Data.Bytes();
   type MyDatum = Data.Static<typeof MyDatum>;
   const datum: MyDatum = "31313131"; //hex
   const newDatum = Data.from<MyDatum>(
@@ -55,7 +55,7 @@ Deno.test("Roundtrip data boolean", () => {
 
     type MyDatum = Bool
   */
-  const MyDatum = Data.Boolean;
+  const MyDatum = Data.Boolean();
   type MyDatum = Data.Static<typeof MyDatum>;
   const datum: MyDatum = true;
   const newDatum = Data.from<MyDatum>(
@@ -82,8 +82,8 @@ Deno.test("Roundtrip data object", () => {
     }
   */
   const MyDatum = Data.Object({
-    myVariableA: Data.String,
-    myVariableB: Data.Nullable(Data.BigInt),
+    myVariableA: Data.Bytes(),
+    myVariableB: Data.Nullable(Data.Integer()),
   });
   type MyDatum = Data.Static<typeof MyDatum>;
 
@@ -119,7 +119,7 @@ Deno.test("Roundtrip data array", () => {
 
     type MyDatum = List<Int>
   */
-  const MyDatum = Data.Array(Data.BigInt);
+  const MyDatum = Data.Array(Data.Integer(), { minItems: 3, maxItems: 4 });
   type MyDatum = Data.Static<typeof MyDatum>;
   const datum: MyDatum = [45n, 100n, 9994n, 4281958210985912095n];
   const newDatum = Data.from<MyDatum>(
@@ -137,9 +137,9 @@ Deno.test("Roundtrip data map", () => {
 
     - Aiken:
 
-    type MyDatum = AssocList<Int, ByteArray>
+    type MyDatum = Dict<Int, ByteArray>
   */
-  const MyDatum = Data.Map(Data.BigInt, Data.String);
+  const MyDatum = Data.Map(Data.Integer(), Data.Bytes());
   type MyDatum = Data.Static<typeof MyDatum>;
   const datum: MyDatum = new Map([[3209n, "3131"], [
     249218490182n,
@@ -171,7 +171,7 @@ Deno.test("Roundtrip data enum", () => {
     Data.Literal("Left"),
     Data.Literal("Down"),
     Data.Literal("Right"),
-    Data.Object({ Up: Data.Tuple([Data.String]) }),
+    Data.Object({ Up: Data.Tuple([Data.Bytes()]) }),
   ]);
 
   type MyDatum = Data.Static<typeof MyDatum>;
@@ -203,8 +203,8 @@ Deno.test("Roundtrip data any", () => {
   type MyDatum = Data;
   const datum: MyDatum = new Constr(0, []);
   const newDatum = Data.from<MyDatum>(
-    Data.to<MyDatum>(datum, Data.Any),
-    Data.Any,
+    Data.to<MyDatum>(datum, Data.Any()),
+    Data.Any(),
   );
   assertEquals(datum, newDatum);
 });
@@ -217,9 +217,9 @@ Deno.test("Roundtrip data tuple", () => {
 
     - Aiken:
 
-    type MyDatum = #(Int, ByteArray)
+    type MyDatum = (Int, ByteArray)
   */
-  const MyDatum = Data.Tuple([Data.BigInt, Data.String]);
+  const MyDatum = Data.Tuple([Data.Integer(), Data.Bytes()]);
   type MyDatum = Data.Static<typeof MyDatum>;
   const datum: MyDatum = [123n, "313131"];
   const newDatum = Data.from<MyDatum>(
@@ -254,8 +254,9 @@ Deno.test("Complex data structure", () => {
     Data.Object({
       Up: Data.Tuple([
         Data.Array(
-          Data.Object({ someVariable: Data.Nullable(Data.BigInt) }),
+          Data.Object({ someVariable: Data.Nullable(Data.Integer()) }),
         ),
+        Data.Bytes({ maxLength: 2 }),
       ]),
     }),
     Data.Literal("Down"),
@@ -264,7 +265,7 @@ Deno.test("Complex data structure", () => {
   const datum: MyDatum = {
     Up: [[{ someVariable: null }, { someVariable: 123n }, {
       someVariable: 9990324235325n,
-    }]],
+    }], "3131"],
   };
   const newDatum = Data.from<MyDatum>(
     Data.to<MyDatum>(datum, MyDatum),
@@ -282,7 +283,7 @@ Deno.test("Apply params to script", () => {
       script: applyParamsToScript<[bigint]>(
         script,
         [10n],
-        Data.Tuple([Data.BigInt]),
+        Data.Tuple([Data.Integer()]),
       ),
     };
     assert(mintingPolicy);
@@ -295,7 +296,7 @@ Deno.test("Apply params to script", () => {
       script: applyParamsToScript<unknown[]>(
         script,
         [10n, "3131"],
-        Data.Tuple([Data.BigInt]), // this is the real type we check against
+        Data.Tuple([Data.Integer()]), // this is the real type we check against
       ),
     };
     assert(!mintingPolicy);
