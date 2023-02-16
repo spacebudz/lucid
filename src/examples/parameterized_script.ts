@@ -20,7 +20,7 @@ const api = await window.cardano.nami.enable();
 lucid.selectWallet(api);
 
 // Type definition could be auto generated from on-chain script
-const Params = Data.Tuple([Data.BigInt]);
+const Params = Data.Tuple([Data.Integer()]);
 type Params = Data.Static<typeof Params>;
 
 const mintingPolicy: MintingPolicy = {
