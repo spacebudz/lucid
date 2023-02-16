@@ -35,13 +35,6 @@ export type Data =
   | Map<Data, Data> // AssocList
   | Constr<Data>;
 
-function replaceProperties(object: Json, properties: Json) {
-  Object.keys(object).forEach((key) => {
-    delete object[key];
-  });
-  Object.assign(object, properties);
-}
-
 export const Data = {
   // Types
   // Note: Recursive types are not supported (yet)
@@ -823,4 +816,11 @@ function isBoolean(shape: TSchema): boolean {
 function isNullable(shape: TSchema): boolean {
   return shape.anyOf && shape.anyOf[0]?.title === "Some" &&
     shape.anyOf[1]?.title === "None";
+}
+
+function replaceProperties(object: Json, properties: Json) {
+  Object.keys(object).forEach((key) => {
+    delete object[key];
+  });
+  Object.assign(object, properties);
 }
