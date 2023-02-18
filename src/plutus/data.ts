@@ -126,16 +126,17 @@ export const Data = {
   ) {
     const object = Type.Object(properties);
     replaceProperties(object, {
-      dataType: "constructor",
-      index: 0, // Will be replaced when using Data.Enum
-      fields: Object.entries(properties).map(([title, p]) => ({ ...p, title })),
+      anyOf: [{
+        dataType: "constructor",
+        index: 0, // Will be replaced when using Data.Enum
+        fields: Object.entries(properties).map(([title, p]) => ({
+          ...p,
+          title,
+        })),
+      }],
     });
-    if (options) {
-      Object.entries(options).forEach(([key, value]) => {
-        object[key] = value;
-      });
-    }
-    if (typeof options?.hasConstr === "undefined") object.hasConstr = true;
+    object.anyOf[0].hasConstr = typeof options?.hasConstr === "undefined" ||
+      options.hasConstr;
     return object;
   },
   Enum: function <T extends TSchema>(items: T[]) {
@@ -144,15 +145,15 @@ export const Data = {
       union,
       {
         anyOf: items.map((item, index) =>
-          item.title
+          item.anyOf[0].fields.length === 0
             ? ({
-              ...item,
+              ...item.anyOf[0],
               index,
             })
             : ({
               dataType: "constructor",
               title: (() => {
-                const title = item.fields[0].title;
+                const title = item.anyOf[0].fields[0].title;
                 if (
                   (title as string).charAt(0) !==
                     (title as string).charAt(0).toUpperCase()
@@ -161,10 +162,10 @@ export const Data = {
                     `Enum '${title}' needs to start with an uppercase letter.`,
                   );
                 }
-                return item.fields[0].title;
+                return item.anyOf[0].fields[0].title;
               })(),
               index,
-              fields: item.fields[0].items,
+              fields: item.anyOf[0].fields[0].items,
             })
         ),
       },
@@ -201,10 +202,12 @@ export const Data = {
     }
     const literal = Type.Literal(title);
     replaceProperties(literal, {
-      dataType: "constructor",
-      title,
-      index: 0, // Will be replaced in Data.Enum
-      fields: [],
+      anyOf: [{
+        dataType: "constructor",
+        title,
+        index: 0, // Will be replaced in Data.Enum
+        fields: [],
+      }],
     });
     return literal;
   },
@@ -258,7 +261,7 @@ export const Data = {
  * Convert PlutusData to Cbor encoded data.\
  * Or apply a shape and convert the provided data struct to Cbor encoded data.
  */
-function to<T = Data>(data: T, shape?: TSchema): Datum | Redeemer {
+function to<T = Data>(data: T, shape?: Json): Datum | Redeemer {
   function serialize(data: Data): Core.PlutusData {
     try {
       if (
@@ -307,7 +310,7 @@ function to<T = Data>(data: T, shape?: TSchema): Datum | Redeemer {
  *  Convert Cbor encoded data to Data.\
  *  Or apply a shape and cast the cbor encoded data to a certain type.
  */
-function from<T = Data>(raw: Datum | Redeemer, shape?: TSchema): T {
+function from<T = Data>(raw: Datum | Redeemer, shape?: Json): T {
   function deserialize(data: Core.PlutusData): Data {
     if (data.kind() === 0) {
       const constr = data.as_constr_plutus_data()!;
@@ -420,7 +423,7 @@ function toJson(plutusData: Data): Json {
   return fromData(plutusData);
 }
 
-function castFrom<T>(data: Data, shape: TSchema): T {
+function castFrom<T>(data: Data, shape: Json): T {
   if (!shape) throw new Error("Could not type cast data.");
   const shapeType = (shape.anyOf ? "enum" : "") || shape.dataType;
 
@@ -441,7 +444,8 @@ function castFrom<T>(data: Data, shape: TSchema): T {
     }
     case "constructor": {
       if (
-        data instanceof Constr && data.index === shape.index && shape.hasConstr
+        data instanceof Constr && data.index === shape.index &&
+        (shape.hasConstr || shape.hasConstr === undefined)
       ) {
         const fields: Record<string, T> = {};
         if (shape.fields.length !== data.fields.length) {
@@ -461,7 +465,10 @@ function castFrom<T>(data: Data, shape: TSchema): T {
           },
         );
         return fields as T;
-      } else if (data instanceof Array && !shape.hasConstr) {
+      } else if (
+        data instanceof Array && !shape.hasConstr &&
+        shape.hasConstr !== undefined
+      ) {
         const fields: Record<string, T> = {};
         if (shape.fields.length !== data.length) {
           throw new Error("Could not ype cast to object. Fields do not match.");
@@ -484,9 +491,15 @@ function castFrom<T>(data: Data, shape: TSchema): T {
       throw new Error("Could not type cast to object.");
     }
     case "enum": {
+      // When enum has only one entry it's a single constructor/record object
+      if (shape.anyOf.length === 1) {
+        return castFrom<T>(data, shape.anyOf[0]);
+      }
+
       if (!(data instanceof Constr)) {
         throw new Error("Could not type cast to enum.");
       }
+
       const enumShape = shape.anyOf.find((entry: Json) =>
         entry.index === data.index
       );
@@ -605,7 +618,7 @@ function castFrom<T>(data: Data, shape: TSchema): T {
   throw new Error("Could not type cast data.");
 }
 
-function castTo<T>(struct: T, shape: TSchema): Data {
+function castTo<T>(struct: T, shape: Json): Data {
   if (!shape) throw new Error("Could not type cast struct.");
   const shapeType = (shape.anyOf ? "enum" : "") || shape.dataType;
 
@@ -631,9 +644,16 @@ function castTo<T>(struct: T, shape: TSchema): Data {
       const fields = shape.fields.map((field: Json) =>
         castTo<T>((struct as Record<string, T>)[field.title], field)
       );
-      return shape.hasConstr ? new Constr(shape.index, fields) : fields;
+      return (shape.hasConstr || shape.hasConstr === undefined)
+        ? new Constr(shape.index, fields)
+        : fields;
     }
     case "enum": {
+      // When enum has only one entry it's a single constructor/record object
+      if (shape.anyOf.length === 1) {
+        return castTo<T>(struct, shape.anyOf[0]);
+      }
+
       if (isBoolean(shape)) {
         if (typeof struct !== "boolean") {
           throw new Error(
