@@ -11,6 +11,6 @@ core engine. Simply set `nativeUplc` to false:
 
 ```js
 const tx = await lucid.newTx()
-  .collectFrom([scriptUtxo], Data.empty())
+  .collectFrom([scriptUtxo], Data.void())
   .complete({ nativeUplc: false });
 ```

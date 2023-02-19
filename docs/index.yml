@@ -193,9 +193,9 @@ usage:
 
       ```ts { title="to.ts" }
       const Listing = Data.Object({
-        owner: Data.String,
-        amount: Data.BigInt,
-        private: Data.Boolean,
+        owner: Data.Bytes(),
+        amount: Data.Integer(),
+        private: Data.Boolean(),
       });
       type Listing = Data.Static<typeof Listing>;
 

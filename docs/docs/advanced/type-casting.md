@@ -16,9 +16,9 @@ Create a data structure:
 import { Data } from "https://deno.land/x/lucid/mod.ts";
 
 const Listing = Data.Object({
-  owner: Data.String,
-  amount: Data.BigInt,
-  private: Data.Boolean,
+  owner: Data.Bytes(),
+  amount: Data.Integer(),
+  private: Data.Boolean(),
 });
 ```
 
