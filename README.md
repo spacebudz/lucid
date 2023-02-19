@@ -132,7 +132,7 @@ Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
 
 Branch: **vasil**
 
-Commit hash: **a0a089b393c760bbcf95e0d3f68d96a17e1e6de8**
+Commit hash: **6f34088dfecd63aaa55622e40faba9d7ea57491f**
 
 #### message-signing
 
