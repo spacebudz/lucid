@@ -1,7 +1,7 @@
-import type * as Core from "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib.js";
-import type * as Msg from "./wasm_modules/cardano_message_signing_web/cardano_message_signing.js";
+import * as Core from "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib.js";
+import * as Msg from "./wasm_modules/cardano_message_signing_web/cardano_message_signing.js";
 
-export { Core };
+export { Core, Msg };
 
 // dnt-shim-ignore
 const isNode = typeof window === "undefined";
@@ -31,26 +31,18 @@ if (isNode) {
 
 async function importForEnvironmentCore(): Promise<typeof Core | null> {
   try {
-    if (isNode) {
-      return (await import(
-        /* webpackIgnore: true */
-        "./wasm_modules/cardano_multiplatform_lib_nodejs/cardano_multiplatform_lib.js"
-      )) as unknown as typeof Core;
-    }
-
-    const pkg = await import(
-      "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib.js"
+    await Core.default(
+      isNode
+        ? (await import(/* webpackIgnore: true */ "fs" as string))
+          .readFileSync(
+            new URL(
+              "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
+              import.meta.url,
+            ).pathname,
+          )
+        : undefined,
     );
-
-    await pkg.default(
-      await fetch(
-        new URL(
-          "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
-          import.meta.url,
-        ),
-      ),
-    );
-    return pkg as unknown as typeof Core;
+    return Core;
   } catch (_e) {
     // This only ever happens during SSR rendering
     return null;
@@ -59,26 +51,18 @@ async function importForEnvironmentCore(): Promise<typeof Core | null> {
 
 async function importForEnvironmentMessage(): Promise<typeof Msg | null> {
   try {
-    if (isNode) {
-      return (await import(
-        /* webpackIgnore: true */
-        "./wasm_modules/cardano_message_signing_nodejs/cardano_message_signing.js"
-      )) as unknown as typeof Msg;
-    }
-
-    const pkg = await import(
-      "./wasm_modules/cardano_message_signing_web/cardano_message_signing.js"
+    await Msg.default(
+      isNode
+        ? (await import(/* webpackIgnore: true */ "fs" as string))
+          .readFileSync(
+            new URL(
+              "./wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
+              import.meta.url,
+            ).pathname,
+          )
+        : undefined,
     );
-
-    await pkg.default(
-      await fetch(
-        new URL(
-          "./wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
-          import.meta.url,
-        ),
-      ),
-    );
-    return pkg as unknown as typeof Msg;
+    return Msg;
   } catch (_e) {
     // This only ever happens during SSR rendering
     return null;
