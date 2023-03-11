@@ -716,7 +716,7 @@ async function createPoolRegistration(
       relays,
       metadataHash
         ? C.PoolMetadata.new(
-          C.URL.new(poolParams.metadataUrl!),
+          C.Url.new(poolParams.metadataUrl!),
           metadataHash,
         )
         : undefined,

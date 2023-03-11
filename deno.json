@@ -9,5 +9,11 @@
       "include": ["src/"],
       "exclude": ["src/core/"]
     }
+  },
+  "imports": {
+    "@peculiar/webcrypto": "./mod.ts",
+    "ws": "./mod.ts",
+    "node-fetch": "./mod.ts",
+    "fs": "./mod.ts"
   }
 }

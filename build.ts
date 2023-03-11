@@ -1,5 +1,5 @@
 import { build, emptyDir } from "https://deno.land/x/dnt@0.30.0/mod.ts";
-import * as esbuild from "https://deno.land/x/esbuild@v0.14.45/mod.js";
+import * as esbuild from "https://deno.land/x/esbuild@v0.17.11/mod.js";
 import packageInfo from "./package.json" assert { type: "json" };
 
 await emptyDir("./dist");
@@ -37,21 +37,39 @@ Deno.copyFileSync(
   "src/core/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
   "dist/esm/src/core/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
 );
-// Deno.writeTextFileSync(
-//   "dist/esm/src/core/wasm_modules/cardano_multiplatform_lib_web/package.json",
-//   JSON.stringify({ type: "commonjs" }),
-// );
 // Message
 Deno.copyFileSync(
   "src/core/wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
   "dist/esm/src/core/wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
 );
-// Deno.writeTextFileSync(
-//   "dist/esm/src/core/wasm_modules/cardano_message_signing_web/package.json",
-//   JSON.stringify({ type: "commonjs" }),
-// );
 
 //** Web ES Module */
+
+const importPathPlugin = {
+  name: "wasm-import-path",
+  setup(build: any) {
+    build.onResolve({
+      filter:
+        /^\.\/wasm_modules\/cardano_multiplatform_lib_web\/cardano_multiplatform_lib.js$/,
+    }, (args: any) => {
+      return {
+        path:
+          "../esm/src/core/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib.js",
+        external: true,
+      };
+    });
+    build.onResolve({
+      filter:
+        /^\.\/wasm_modules\/cardano_message_signing_web\/cardano_message_signing.js$/,
+    }, (args: any) => {
+      return {
+        path:
+          "../esm/src/core/wasm_modules/cardano_message_signing_web/cardano_message_signing.js",
+        external: true,
+      };
+    });
+  },
+};
 
 await esbuild.build({
   bundle: true,
@@ -65,5 +83,6 @@ await esbuild.build({
     "ws",
     "module",
   ],
+  plugins: [importPathPlugin],
 });
 esbuild.stop();
