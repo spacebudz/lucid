@@ -1,7 +1,7 @@
 import * as Core from "./libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js";
 import * as Msg from "./libs/cardano_message_signing/cardano_message_signing.generated.js";
 
-export { Core, Msg };
+export type { Core, Msg };
 
 async function importForEnvironmentCore(): Promise<typeof Core | null> {
   try {

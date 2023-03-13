@@ -2,6 +2,22 @@
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
 // source-hash: a1d5efbe4a60a171f34c2f9dd1b0ff34068fb408
+const require = /* #__PURE__ */ globalThis?.process?.versions?.node
+  ? await (async () => {
+    const { createRequire } = await import(
+      /* webpackIgnore: true */ "https://deno.land/std@0.177.0/node/module.ts"
+    );
+    return createRequire(import.meta.url);
+  })()
+  : null;
+if (globalThis?.process?.versions?.node && typeof btoa === "undefined") {
+  globalThis.btoa = function (str) {
+    return Buffer.from(str, "binary").toString("base64");
+  };
+  globalThis.atob = function (b64Encoded) {
+    return Buffer.from(b64Encoded, "base64").toString("binary");
+  };
+}
 let wasm;
 
 const cachedTextDecoder = new TextDecoder("utf-8", {
