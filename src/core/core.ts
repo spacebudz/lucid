@@ -1,47 +1,11 @@
-import * as Core from "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib.js";
-import * as Msg from "./wasm_modules/cardano_message_signing_web/cardano_message_signing.js";
+import * as Core from "./libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js";
+import * as Msg from "./libs/cardano_message_signing/cardano_message_signing.generated.js";
 
 export { Core, Msg };
 
-// dnt-shim-ignore
-const isNode = typeof window === "undefined";
-
-if (isNode) {
-  const fetch = await import(/* webpackIgnore: true */ "node-fetch" as string);
-  const { Crypto } = await import(
-    /* webpackIgnore: true */ "@peculiar/webcrypto" as string
-  );
-  const { WebSocket } = await import(
-    /* webpackIgnore: true */ "ws" as string
-  );
-
-  // @ts-ignore : global
-  if (!global.WebSocket) global.WebSocket = WebSocket;
-  // @ts-ignore : global
-  if (!global.crypto) global.crypto = new Crypto();
-  // @ts-ignore : global
-  if (!global.fetch) global.fetch = fetch.default;
-  // @ts-ignore : global
-  if (!global.Headers) global.Headers = fetch.Headers;
-  // @ts-ignore : global
-  if (!global.Request) global.Request = fetch.Request;
-  // @ts-ignore : global
-  if (!global.Response) global.Response = fetch.Response;
-}
-
 async function importForEnvironmentCore(): Promise<typeof Core | null> {
   try {
-    await Core.default(
-      isNode
-        ? (await import(/* webpackIgnore: true */ "fs" as string))
-          .readFileSync(
-            new URL(
-              "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
-              import.meta.url,
-            ).pathname,
-          )
-        : undefined,
-    );
+    await Core.instantiate();
     return Core;
   } catch (_e) {
     // This only ever happens during SSR rendering
@@ -49,19 +13,9 @@ async function importForEnvironmentCore(): Promise<typeof Core | null> {
   }
 }
 
-async function importForEnvironmentMessage(): Promise<typeof Msg | null> {
+async function importForEnvironmentMsg(): Promise<typeof Msg | null> {
   try {
-    await Msg.default(
-      isNode
-        ? (await import(/* webpackIgnore: true */ "fs" as string))
-          .readFileSync(
-            new URL(
-              "./wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
-              import.meta.url,
-            ).pathname,
-          )
-        : undefined,
-    );
+    await Msg.instantiate();
     return Msg;
   } catch (_e) {
     // This only ever happens during SSR rendering
@@ -71,7 +25,7 @@ async function importForEnvironmentMessage(): Promise<typeof Msg | null> {
 
 const [resolvedCore, resolvedMessage] = await Promise.all([
   importForEnvironmentCore(),
-  importForEnvironmentMessage(),
+  importForEnvironmentMsg(),
 ]);
 
 export const C: typeof Core = resolvedCore!;

@@ -1,0 +1,11 @@
+/Users/ales/Projects/cardano-web3/src/core/libs/cardano-message-signing/target/debug/deps/generic_array-c75c27d60415eea1.rmeta: /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/lib.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/arr.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/iter.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/hex.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/impls.rs
+
+/Users/ales/Projects/cardano-web3/src/core/libs/cardano-message-signing/target/debug/deps/libgeneric_array-c75c27d60415eea1.rlib: /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/lib.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/arr.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/iter.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/hex.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/impls.rs
+
+/Users/ales/Projects/cardano-web3/src/core/libs/cardano-message-signing/target/debug/deps/generic_array-c75c27d60415eea1.d: /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/lib.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/arr.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/iter.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/hex.rs /Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/impls.rs
+
+/Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/lib.rs:
+/Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/arr.rs:
+/Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/iter.rs:
+/Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/hex.rs:
+/Users/ales/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.8.4/src/impls.rs:
