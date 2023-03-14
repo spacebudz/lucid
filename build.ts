@@ -1,12 +1,12 @@
-import { build, emptyDir } from "https://deno.land/x/dnt@0.30.0/mod.ts";
-import * as esbuild from "https://deno.land/x/esbuild@v0.14.45/mod.js";
+import * as dnt from "https://deno.land/x/dnt@0.30.0/mod.ts";
+import * as esbuild from "https://deno.land/x/esbuild@v0.17.11/mod.js";
 import packageInfo from "./package.json" assert { type: "json" };
 
-await emptyDir("./dist");
+await dnt.emptyDir("./dist");
 
 //** NPM ES Module for Node.js and Browser */
 
-await build({
+await dnt.build({
   entryPoints: ["./mod.ts"],
   outDir: "./dist",
   test: false,
@@ -31,45 +31,33 @@ await build({
 Deno.copyFileSync("LICENSE", "dist/LICENSE");
 Deno.copyFileSync("README.md", "dist/README.md");
 
-// copy wasm files
-// Core
-Deno.copyFileSync(
-  "src/core/wasm_modules/cardano_multiplatform_lib_nodejs/cardano_multiplatform_lib_bg.wasm",
-  "dist/esm/src/core/wasm_modules/cardano_multiplatform_lib_nodejs/cardano_multiplatform_lib_bg.wasm",
-);
-Deno.writeTextFileSync(
-  "dist/esm/src/core/wasm_modules/cardano_multiplatform_lib_nodejs/package.json",
-  JSON.stringify({ type: "commonjs" }),
-);
-Deno.copyFileSync(
-  "src/core/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
-  "dist/esm/src/core/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
-);
-// Message
-Deno.copyFileSync(
-  "src/core/wasm_modules/cardano_message_signing_nodejs/cardano_message_signing_bg.wasm",
-  "dist/esm/src/core/wasm_modules/cardano_message_signing_nodejs/cardano_message_signing_bg.wasm",
-);
-Deno.writeTextFileSync(
-  "dist/esm/src/core/wasm_modules/cardano_message_signing_nodejs/package.json",
-  JSON.stringify({ type: "commonjs" }),
-);
-Deno.copyFileSync(
-  "src/core/wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
-  "dist/esm/src/core/wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
-);
-
 //** Web ES Module */
 
-// Core
-Deno.mkdirSync("dist/web/wasm_modules/cardano_multiplatform_lib_web", {
-  recursive: true,
-});
-
-// Message
-Deno.mkdirSync("dist/web/wasm_modules/cardano_message_signing_web", {
-  recursive: true,
-});
+const importPathPlugin = {
+  name: "core-import-path",
+  setup(build: any) {
+    build.onResolve({
+      filter:
+        /^\.\/libs\/cardano_multiplatform_lib\/cardano_multiplatform_lib.generated.js$/,
+    }, (args: any) => {
+      return {
+        path:
+          "../esm/src/core/libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js",
+        external: true,
+      };
+    });
+    build.onResolve({
+      filter:
+        /^\.\/libs\/cardano_message_signing\/cardano_message_signing.generated.js$/,
+    }, (args: any) => {
+      return {
+        path:
+          "../esm/src/core/libs/cardano_message_signing/cardano_message_signing.generated.js",
+        external: true,
+      };
+    });
+  },
+};
 
 await esbuild.build({
   bundle: true,
@@ -77,24 +65,27 @@ await esbuild.build({
   entryPoints: ["./dist/esm/mod.js"],
   outfile: "./dist/web/mod.js",
   minify: true,
-  external: [
-    "./wasm_modules/cardano_multiplatform_lib_nodejs/cardano_multiplatform_lib.js",
-    "./wasm_modules/cardano_message_signing_nodejs/cardano_message_signing.js",
-    "node-fetch",
-    "@peculiar/webcrypto",
-    "ws",
+  plugins: [
+    importPathPlugin,
   ],
 });
 esbuild.stop();
 
-// copy wasm file
-// Core
-Deno.copyFileSync(
-  "src/core/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
-  "dist/web/wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
-);
-// Message
-Deno.copyFileSync(
-  "src/core/wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
-  "dist/web/wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
-);
+/** Add necessary global import statements to NPM ES Module. */
+const nodeImports = `const isNode = globalThis?.process?.versions?.node;
+if (isNode) {
+  const fetch = /* #__PURE__ */ await import(/* webpackIgnore: true */ "node-fetch");
+  const { Crypto } = /* #__PURE__ */ await import(/* webpackIgnore: true */ "@peculiar/webcrypto");
+  const { WebSocket } = /* #__PURE__ */ await import(/* webpackIgnore: true */ "ws");
+  if (!globalThis.WebSocket) globalThis.WebSocket = WebSocket;
+  if (!globalThis.crypto) globalThis.crypto = new Crypto();
+  if (!globalThis.fetch) globalThis.fetch = fetch.default;
+  if (!globalThis.Headers) globalThis.Headers = fetch.Headers;
+  if (!globalThis.Request) globalThis.Request = fetch.Request;
+  if (!globalThis.Response) globalThis.Response = fetch.Response;
+}
+`;
+Deno.writeTextFileSync("./dist/esm/mod.js", "import './node_imports.js'", {
+  append: true,
+});
+Deno.writeTextFileSync("./dist/esm/node_imports.js", nodeImports);

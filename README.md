@@ -96,6 +96,19 @@ console.log(txHash);
 deno task test
 ```
 
+### Build Core
+This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib) and on top of the message-signing library, which are written in Rust.
+
+```
+deno task build:core
+```
+
+#### Test Core
+
+```
+deno task test:core
+```
+
 ### Docs
 
 [View docs](https://doc.deno.land/https://deno.land/x/lucid/mod.ts) 📖
@@ -114,7 +127,6 @@ the `webpack.config.js`:
 
 ```
 experiments: {
-    asyncWebAssembly: true,
     topLevelAwait: true,
     layers: true // optional, with some bundlers/frameworks it doesn't work without
   }
@@ -122,25 +134,6 @@ experiments: {
 
 To run the library in Node.js you need to set `{"type" : "module"}` in your
 project's `package.json`. Otherwise you will get import issues.
-
-<br />
-This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib) and on top of the message-signing library.
-
-#### cardano-multiplatform-lib
-
-Link: https://github.com/Berry-Pool/cardano-multiplatform-lib/tree/vasil
-
-Branch: **vasil**
-
-Commit hash: **6f34088dfecd63aaa55622e40faba9d7ea57491f**
-
-#### message-signing
-
-Link: https://github.com/Emurgo/message-signing
-
-Branch: **master**
-
-Commit hash: **16dcadc69557dd7c20e62a966aaded1e051c287e**
 
 ### Contributing
 
