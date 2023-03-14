@@ -103,7 +103,7 @@ This library is built on top of a customized version of the serialization-lib (c
 deno task build:core
 ```
 
-#### Test Core
+### Test Core
 
 ```
 deno task test:core
@@ -146,9 +146,9 @@ Join us on [Discord](https://discord.gg/82MWs63Tdm)!
 ### Use Lucid with React
 
 [use-cardano](https://use-cardano.alangaming.com/) a React context, hook and set
-of components built on top of Lucid
+of components built on top of Lucid.
 
 ### Use Lucid with Next.js
 
 [Cardano Starter Kit](https://cardano-starter-kit.alangaming.com/) a Next.js
-starter kit for building Cardano dApps
+starter kit for building Cardano dApps.
