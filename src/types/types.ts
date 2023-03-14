@@ -1,4 +1,4 @@
-import { Core } from "../core/mod.ts";
+import { C } from "../core/mod.ts";
 
 type CostModel = Record<string, number>;
 
@@ -170,9 +170,9 @@ export interface Wallet {
   address(): Promise<Address>;
   rewardAddress(): Promise<RewardAddress | null>;
   getUtxos(): Promise<UTxO[]>;
-  getUtxosCore(): Promise<Core.TransactionUnspentOutputs>;
+  getUtxosCore(): Promise<C.TransactionUnspentOutputs>;
   getDelegation(): Promise<Delegation>;
-  signTx(tx: Core.Transaction): Promise<Core.TransactionWitnessSet>;
+  signTx(tx: C.Transaction): Promise<C.TransactionWitnessSet>;
   signMessage(
     address: Address | RewardAddress,
     payload: Payload,

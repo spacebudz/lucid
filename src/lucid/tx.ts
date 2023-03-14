@@ -1,4 +1,4 @@
-import { C, Core } from "../core/mod.ts";
+import { C } from "../core/mod.ts";
 import {
   Address,
   Assets,
@@ -33,7 +33,7 @@ import { Lucid } from "./lucid.ts";
 import { TxComplete } from "./tx_complete.ts";
 
 export class Tx {
-  txBuilder: Core.TransactionBuilder;
+  txBuilder: C.TransactionBuilder;
   /** Stores the tx instructions, which get executed after calling .complete() */
   private tasks: ((that: Tx) => unknown)[];
   private lucid: Lucid;
@@ -547,7 +547,7 @@ export class Tx {
 
     const utxos = await this.lucid.wallet.getUtxosCore();
 
-    const changeAddress: Core.Address = addressFromWithNetworkCheck(
+    const changeAddress: C.Address = addressFromWithNetworkCheck(
       options?.change?.address || (await this.lucid.wallet.address()),
       this.lucid,
     );
@@ -639,7 +639,7 @@ function attachScript(
 async function createPoolRegistration(
   poolParams: PoolParams,
   lucid: Lucid,
-): Promise<Core.PoolRegistration> {
+): Promise<C.PoolRegistration> {
   const poolOwners = C.Ed25519KeyHashes.new();
   poolParams.owners.forEach((owner) => {
     const { stakeCredential } = lucid.utils.getAddressDetails(owner);
@@ -727,7 +727,7 @@ async function createPoolRegistration(
 function addressFromWithNetworkCheck(
   address: Address | RewardAddress,
   lucid: Lucid,
-): Core.Address {
+): C.Address {
   const addressDetails = lucid.utils.getAddressDetails(address);
 
   const actualNetworkId = networkToId(lucid.network);

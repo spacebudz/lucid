@@ -1,33 +1,17 @@
-import * as Core from "./libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js";
-import * as Msg from "./libs/cardano_message_signing/cardano_message_signing.generated.js";
+import * as C from "./libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js";
+import * as M from "./libs/cardano_message_signing/cardano_message_signing.generated.js";
 
-export type { Core, Msg };
-
-async function importForEnvironmentCore(): Promise<typeof Core | null> {
+async function unsafeInstantiate(module: any) {
   try {
-    await Core.instantiate();
-    return Core;
+    await module.instantiate();
   } catch (_e) {
     // This only ever happens during SSR rendering
-    return null;
   }
 }
 
-async function importForEnvironmentMsg(): Promise<typeof Msg | null> {
-  try {
-    await Msg.instantiate();
-    return Msg;
-  } catch (_e) {
-    // This only ever happens during SSR rendering
-    return null;
-  }
-}
-
-const [resolvedCore, resolvedMessage] = await Promise.all([
-  importForEnvironmentCore(),
-  importForEnvironmentMsg(),
+await Promise.all([
+  unsafeInstantiate(C),
+  unsafeInstantiate(M),
 ]);
 
-export const C: typeof Core = resolvedCore!;
-
-export const M: typeof Msg = resolvedMessage!;
+export { C, M };

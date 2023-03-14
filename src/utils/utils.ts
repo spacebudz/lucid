@@ -3,7 +3,7 @@ import {
   decodeString,
   encodeToString,
 } from "https://deno.land/std@0.100.0/encoding/hex.ts";
-import { C, Core } from "../core/mod.ts";
+import { C } from "../core/mod.ts";
 import {
   Address,
   AddressDetails,
@@ -229,7 +229,7 @@ export class Utils {
   }
 }
 
-function addressFromHexOrBech32(address: string): Core.Address {
+function addressFromHexOrBech32(address: string): C.Address {
   try {
     return C.Address.from_bytes(fromHex(address));
   } catch (_e) {
@@ -406,7 +406,7 @@ export function generateSeedPhrase(): string {
   return generateMnemonic(256);
 }
 
-export function valueToAssets(value: Core.Value): Assets {
+export function valueToAssets(value: C.Value): Assets {
   const assets: Assets = {};
   assets["lovelace"] = BigInt(value.coin().to_str());
   const ma = value.multiasset();
@@ -427,7 +427,7 @@ export function valueToAssets(value: Core.Value): Assets {
   return assets;
 }
 
-export function assetsToValue(assets: Assets): Core.Value {
+export function assetsToValue(assets: Assets): C.Value {
   const multiAsset = C.MultiAsset.new();
   const lovelace = assets["lovelace"];
   const units = Object.keys(assets);
@@ -456,7 +456,7 @@ export function assetsToValue(assets: Assets): Core.Value {
   return value;
 }
 
-export function fromScriptRef(scriptRef: Core.ScriptRef): Script {
+export function fromScriptRef(scriptRef: C.ScriptRef): Script {
   const kind = scriptRef.get().kind();
   switch (kind) {
     case 0:
@@ -479,7 +479,7 @@ export function fromScriptRef(scriptRef: Core.ScriptRef): Script {
   }
 }
 
-export function toScriptRef(script: Script): Core.ScriptRef {
+export function toScriptRef(script: Script): C.ScriptRef {
   switch (script.type) {
     case "Native":
       return C.ScriptRef.new(
@@ -506,8 +506,8 @@ export function toScriptRef(script: Script): Core.ScriptRef {
   }
 }
 
-export function utxoToCore(utxo: UTxO): Core.TransactionUnspentOutput {
-  const address: Core.Address = (() => {
+export function utxoToCore(utxo: UTxO): C.TransactionUnspentOutput {
+  const address: C.Address = (() => {
     try {
       return C.Address.from_bech32(utxo.address);
     } catch (_e) {
@@ -542,7 +542,7 @@ export function utxoToCore(utxo: UTxO): Core.TransactionUnspentOutput {
   );
 }
 
-export function coreToUtxo(coreUtxo: Core.TransactionUnspentOutput): UTxO {
+export function coreToUtxo(coreUtxo: C.TransactionUnspentOutput): UTxO {
   return {
     txHash: toHex(coreUtxo.input().transaction_id().to_bytes()),
     outputIndex: parseInt(coreUtxo.input().index().to_str()),

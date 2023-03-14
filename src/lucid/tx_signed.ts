@@ -1,12 +1,12 @@
-import { C, Core } from "../core/mod.ts";
+import { C } from "../core/mod.ts";
 import { Transaction, TxHash } from "../types/mod.ts";
 import { Lucid } from "./lucid.ts";
 import { toHex } from "../utils/mod.ts";
 
 export class TxSigned {
-  txSigned: Core.Transaction;
+  txSigned: C.Transaction;
   private lucid: Lucid;
-  constructor(lucid: Lucid, tx: Core.Transaction) {
+  constructor(lucid: Lucid, tx: C.Transaction) {
     this.lucid = lucid;
     this.txSigned = tx;
   }

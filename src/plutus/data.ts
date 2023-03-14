@@ -7,7 +7,7 @@ import {
   TSchema,
   Type,
 } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
-import { C, Core } from "../core/mod.ts";
+import { C } from "../core/mod.ts";
 import { Datum, Json, Redeemer } from "../types/mod.ts";
 import { fromHex, fromText, toHex } from "../utils/utils.ts";
 
@@ -262,7 +262,7 @@ export const Data = {
  * Or apply a shape and convert the provided data struct to Cbor encoded data.
  */
 function to<T = Data>(data: T, shape?: Json): Datum | Redeemer {
-  function serialize(data: Data): Core.PlutusData {
+  function serialize(data: Data): C.PlutusData {
     try {
       if (
         typeof data === "bigint"
@@ -311,7 +311,7 @@ function to<T = Data>(data: T, shape?: Json): Datum | Redeemer {
  *  Or apply a shape and cast the cbor encoded data to a certain type.
  */
 function from<T = Data>(raw: Datum | Redeemer, shape?: Json): T {
-  function deserialize(data: Core.PlutusData): Data {
+  function deserialize(data: C.PlutusData): Data {
     if (data.kind() === 0) {
       const constr = data.as_constr_plutus_data()!;
       const l = constr.data();

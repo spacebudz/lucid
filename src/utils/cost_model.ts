@@ -1,8 +1,8 @@
-import { C, Core } from "../core/mod.ts";
+import { C } from "../core/mod.ts";
 import { CostModels } from "../mod.ts";
 import { ProtocolParameters } from "../types/types.ts";
 
-export function createCostModels(costModels: CostModels): Core.Costmdls {
+export function createCostModels(costModels: CostModels): C.Costmdls {
   const costmdls = C.Costmdls.new();
 
   // add plutus v1

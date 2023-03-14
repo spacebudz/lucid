@@ -1,4 +1,4 @@
-import { C, Core } from "../core/mod.ts";
+import { C } from "../core/mod.ts";
 import {
   PrivateKey,
   Transaction,
@@ -10,12 +10,12 @@ import { TxSigned } from "./tx_signed.ts";
 import { fromHex, toHex } from "../utils/mod.ts";
 
 export class TxComplete {
-  txComplete: Core.Transaction;
-  witnessSetBuilder: Core.TransactionWitnessSetBuilder;
+  txComplete: C.Transaction;
+  witnessSetBuilder: C.TransactionWitnessSetBuilder;
   private tasks: (() => Promise<void>)[];
   private lucid: Lucid;
 
-  constructor(lucid: Lucid, tx: Core.Transaction) {
+  constructor(lucid: Lucid, tx: C.Transaction) {
     this.lucid = lucid;
     this.txComplete = tx;
     this.witnessSetBuilder = C.TransactionWitnessSetBuilder.new();

@@ -1,4 +1,4 @@
-import { C, Core } from "../core/core.ts";
+import { C } from "../core/core.ts";
 import {
   Address,
   Assets,
@@ -332,7 +332,7 @@ export class Emulator implements Provider {
       return scriptHashes;
     })();
 
-    const nativeHashesOptional: Record<ScriptHash, Core.NativeScript> = {};
+    const nativeHashesOptional: Record<ScriptHash, C.NativeScript> = {};
     const plutusHashesOptional: ScriptHash[] = [];
 
     const plutusHashes = (() => {
