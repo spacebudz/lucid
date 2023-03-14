@@ -1,0 +1,26 @@
+name: Core
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/core/libs/**"
+
+jobs:
+  build:
+    name: Build and test Rust WebAssembly crates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Deno
+        uses: denoland/setup-deno@v1
+
+      - name: Build Core
+        run: deno task build:core
+
+      - name: Test Core
+        run: deno task test:core
