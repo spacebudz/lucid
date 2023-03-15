@@ -97,7 +97,10 @@ deno task test
 ```
 
 ### Build Core
-This library is built on top of a customized version of the serialization-lib (cardano-multiplatform-lib) and on top of the message-signing library, which are written in Rust.
+
+This library is built on top of a customized version of the serialization-lib
+(cardano-multiplatform-lib) and on top of the message-signing library, which are
+written in Rust.
 
 ```
 deno task build:core
