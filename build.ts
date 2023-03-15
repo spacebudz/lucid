@@ -31,6 +31,17 @@ await dnt.build({
 Deno.copyFileSync("LICENSE", "dist/LICENSE");
 Deno.copyFileSync("README.md", "dist/README.md");
 
+// Copy WebAssembly
+
+Deno.copyFileSync(
+  "src/core/libs/cardano_multiplatform_lib/cardano_multiplatform_lib_bg.wasm",
+  "dist/esm/src/core/libs/cardano_multiplatform_lib/cardano_multiplatform_lib_bg.wasm",
+);
+Deno.copyFileSync(
+  "src/core/libs/cardano_message_signing/cardano_message_signing_bg.wasm",
+  "dist/esm/src/core/libs/cardano_message_signing/cardano_message_signing_bg.wasm",
+);
+
 //** Web ES Module */
 
 const importPathPlugin = {

@@ -28,6 +28,6 @@ wasm-bindgen = { version = "0.2.84", features=["serde-serialize"] }
 [profile.release]
 # Tell `rustc` to optimize for small code size.
 codegen-units = 1
-opt-level = "z"
+opt-level = "s"
 incremental = true
 lto = true

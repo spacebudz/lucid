@@ -55,7 +55,7 @@ wasm-bindgen-futures = "=0.4.34"
 [profile.release]
 # Tell `rustc` to optimize for small code size.
 codegen-units = 1
-opt-level = "z"
+opt-level = "s"
 incremental = true
 lto = true
 
