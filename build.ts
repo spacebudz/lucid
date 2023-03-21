@@ -12,7 +12,9 @@ await dnt.build({
   test: false,
   scriptModule: false,
   typeCheck: false,
-  shims: {},
+  shims: {
+    deno: true
+  },
   package: {
     ...packageInfo,
     engines: {
