@@ -13,6 +13,7 @@ await dnt.build({
   scriptModule: false,
   typeCheck: false,
   shims: {},
+  mappings: { "https://deno.land/std@0.180.0/fs/mod.ts": "fs" },
   package: {
     ...packageInfo,
     engines: {
