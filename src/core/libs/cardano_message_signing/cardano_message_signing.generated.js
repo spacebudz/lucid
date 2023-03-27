@@ -2,22 +2,6 @@
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
 // source-hash: ccea9a27c8aee355bc2051725d859ee0a31dcb77
-const require = /* #__PURE__ */ globalThis?.process?.versions?.node
-  ? await (async () => {
-    const { createRequire } = await import(
-      /* webpackIgnore: true */ "https://deno.land/std@0.177.0/node/module.ts"
-    );
-    return createRequire(import.meta.url);
-  })()
-  : null;
-if (globalThis?.process?.versions?.node && typeof btoa === "undefined") {
-  globalThis.btoa = function (str) {
-    return Buffer.from(str, "binary").toString("base64");
-  };
-  globalThis.atob = function (b64Encoded) {
-    return Buffer.from(b64Encoded, "base64").toString("binary");
-  };
-}
 let wasm;
 
 const heap = new Array(128).fill(undefined);
@@ -3836,7 +3820,7 @@ async function instantiateModule(opts) {
   // make file urls work in Node via dnt
   const isNode = globalThis.process?.versions?.node != null;
   if (isNode && isFile) {
-    const fs = await import("https://deno.land/std@0.180.0/fs/mod.ts");
+    // requires fs to be set externally on globalThis
     const wasmCode = fs.readFileSync(wasmUrl);
     return WebAssembly.instantiate(
       decompress ? decompress(wasmCode) : wasmCode,
@@ -3845,6 +3829,7 @@ async function instantiateModule(opts) {
   }
 
   switch (wasmUrl.protocol) {
+    case "": // relative URL
     case "file:":
     case "https:":
     case "http:": {

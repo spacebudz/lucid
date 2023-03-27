@@ -13,7 +13,6 @@ await dnt.build({
   scriptModule: false,
   typeCheck: false,
   shims: {},
-  mappings: { "https://deno.land/std@0.180.0/fs/mod.ts": "fs" },
   package: {
     ...packageInfo,
     engines: {
@@ -84,20 +83,25 @@ await esbuild.build({
 esbuild.stop();
 
 /** Add necessary global import statements to NPM ES Module. */
-const nodeImports = `const isNode = globalThis?.process?.versions?.node;
+const coreFile = `const isNode = globalThis?.process?.versions?.node;
 if (isNode) {
-  const fetch = /* #__PURE__ */ await import(/* webpackIgnore: true */ "node-fetch");
-  const { Crypto } = /* #__PURE__ */ await import(/* webpackIgnore: true */ "@peculiar/webcrypto");
-  const { WebSocket } = /* #__PURE__ */ await import(/* webpackIgnore: true */ "ws");
-  if (!globalThis.WebSocket) globalThis.WebSocket = WebSocket;
-  if (!globalThis.crypto) globalThis.crypto = new Crypto();
-  if (!globalThis.fetch) globalThis.fetch = fetch.default;
-  if (!globalThis.Headers) globalThis.Headers = fetch.Headers;
-  if (!globalThis.Request) globalThis.Request = fetch.Request;
-  if (!globalThis.Response) globalThis.Response = fetch.Response;
+    if (typeof btoa === 'undefined') {globalThis.btoa = function (str) {return Buffer.from(str, 'binary').toString('base64');}; globalThis.atob = function (b64Encoded) {return Buffer.from(b64Encoded, 'base64').toString('binary');};}
+    const { createRequire } = /* #__PURE__ */ await import(/* webpackIgnore: true */ "module");
+    const require = createRequire(import.meta.url);
+    const fetch = /* #__PURE__ */ await import(/* webpackIgnore: true */ "node-fetch");
+    const { Crypto } = /* #__PURE__ */ await import(/* webpackIgnore: true */ "@peculiar/webcrypto");
+    const { WebSocket } = /* #__PURE__ */ await import(/* webpackIgnore: true */ "ws");
+    const fs = /* #__PURE__ */ await import(/* webpackIgnore: true */ "fs");
+    if (!globalThis.WebSocket) globalThis.WebSocket = WebSocket;
+    if (!globalThis.crypto) globalThis.crypto = new Crypto();
+    if (!globalThis.fetch) globalThis.fetch = fetch.default;
+    if (!globalThis.Headers) globalThis.Headers = fetch.Headers;
+    if (!globalThis.Request) globalThis.Request = fetch.Request;
+    if (!globalThis.Response) globalThis.Response = fetch.Response;
+    if (!globalThis.require) globalThis.require = require; 
+    if (!globalThis.fs) globalThis.fs = fs; 
 }
+
+${Deno.readTextFileSync("./dist/esm/src/core/core.js")}
 `;
-Deno.writeTextFileSync("./dist/esm/mod.js", "import './node_imports.js'", {
-  append: true,
-});
-Deno.writeTextFileSync("./dist/esm/node_imports.js", nodeImports);
+Deno.writeTextFileSync("./dist/esm/src/core/core.js", coreFile);
