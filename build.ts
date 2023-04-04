@@ -86,8 +86,6 @@ esbuild.stop();
 const coreFile = `const isNode = globalThis?.process?.versions?.node;
 if (isNode) {
     if (typeof btoa === 'undefined') {globalThis.btoa = function (str) {return Buffer.from(str, 'binary').toString('base64');}; globalThis.atob = function (b64Encoded) {return Buffer.from(b64Encoded, 'base64').toString('binary');};}
-    const { createRequire } = /* #__PURE__ */ await import(/* webpackIgnore: true */ "module");
-    const require = createRequire(import.meta.url);
     const fetch = /* #__PURE__ */ await import(/* webpackIgnore: true */ "node-fetch");
     const { Crypto } = /* #__PURE__ */ await import(/* webpackIgnore: true */ "@peculiar/webcrypto");
     const { WebSocket } = /* #__PURE__ */ await import(/* webpackIgnore: true */ "ws");
@@ -98,10 +96,56 @@ if (isNode) {
     if (!globalThis.Headers) globalThis.Headers = fetch.Headers;
     if (!globalThis.Request) globalThis.Request = fetch.Request;
     if (!globalThis.Response) globalThis.Response = fetch.Response;
-    if (!globalThis.require) globalThis.require = require; 
     if (!globalThis.fs) globalThis.fs = fs; 
 }
 
-${Deno.readTextFileSync("./dist/esm/src/core/core.js")}
+const C = isNode
+  ? await import(
+    /* webpackIgnore: true */ "./libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated_nodejs.js"
+  )
+  : await import(
+    "./libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js"
+  );
+const M = isNode
+  ? await import(
+    /* webpackIgnore: true */ "./libs/cardano_message_signing/cardano_message_signing.generated_nodejs.js"
+  )
+  : await import(
+    "./libs/cardano_message_signing/cardano_message_signing.generated.js"
+  );
+import packageJson from "../../package.js";
+if (isNode) {
+  async function unsafeInstantiate(module) {
+    try {
+      await module.instantiate();
+    } catch (_e) {
+      // This only ever happens during SSR rendering
+    }
+  }
+  await Promise.all([
+    unsafeInstantiate(C),
+    unsafeInstantiate(M),
+  ]);
+}
+export { C, M };
 `;
-Deno.writeTextFileSync("./dist/esm/src/core/core.js", coreFile);
+Deno.writeTextFileSync("dist/esm/src/core/core.js", coreFile);
+
+Deno.copyFileSync(
+  "src/core/libs/cardano_message_signing/cardano_message_signing.generated_nodejs.js",
+  "dist/esm/src/core/libs/cardano_message_signing/cardano_message_signing.generated_nodejs.js",
+);
+
+Deno.copyFileSync(
+  "src/core/libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated_nodejs.js",
+  "dist/esm/src/core/libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated_nodejs.js",
+);
+
+Deno.writeTextFile(
+  "dist/esm/src/core/libs/cardano_message_signing/package.json",
+  JSON.stringify({ type: "commonjs" }),
+);
+Deno.writeTextFile(
+  "dist/esm/src/core/libs/cardano_multiplatform_lib/package.json",
+  JSON.stringify({ type: "commonjs" }),
+);
