@@ -1,6 +1,6 @@
 ---
 title: Import
-description: How to import Lucid
+description: How to import Lucid.
 order: 1
 ---
 

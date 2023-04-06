@@ -4,13 +4,7 @@ description: Cast plutus data to custom data types
 order: 1
 ---
 
-Type casting is an experimental feature yet.\
-In order to cast plutus data to JavaScript data structures you need some
-information about the shape of the type. These are stored in a JSON schema. To
-make this convenient to use we use
-[typebox](https://github.com/sinclairzx81/typebox).
-
-Create a data structure:
+Type casting is currently an experimental feature. To convert Plutus data to JavaScript data structures, you'll need information about the type's shape, which is stored in a JSON schema. To make this process more convenient, we use a tool called [Typebox](https://github.com/sinclairzx81/typebox).
 
 ```ts
 import { Data } from "https://deno.land/x/lucid/mod.ts";
@@ -22,7 +16,7 @@ const Listing = Data.Object({
 });
 ```
 
-Additionally we can derive a TypeScript type definition from the data structure:
+Furthermore, we can generate a TypeScript type definition from the data structure:
 
 ```ts
 type Listing = Data.Static<typeof Listing>;

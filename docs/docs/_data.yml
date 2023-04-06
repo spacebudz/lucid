@@ -3,10 +3,10 @@ main_menu: docs
 docs_menu:
   - title: Overview
     id: overview
+  - title: Basics
+    id: basics
   - title: Getting started
     id: getting-started
-  - title: Components
-    id: components
   - title: Advanced
     id: advanced
 

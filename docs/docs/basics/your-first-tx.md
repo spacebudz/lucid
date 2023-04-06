@@ -1,6 +1,6 @@
 ---
 title: Build your first transaction
-description: How to create and submit a transaction with Lucid
+description: How to create and submit a transaction with Lucid.
 order: 2
 ---
 
@@ -22,8 +22,7 @@ Next we sign the transaction:
 const signedTx = await tx.sign().complete();
 ```
 
-Here we also need to call `.complete()` when we are ready with signing (There
-are multiple options to [sign a transaction](../components/transaction.md)).
+Here we also need to call `.complete()` when we are ready with signing.
 
 Lastly we submit the transaction:
 
