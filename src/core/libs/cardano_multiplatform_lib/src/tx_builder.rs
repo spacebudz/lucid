@@ -727,7 +727,7 @@ impl TransactionBuilder {
 
             /* If the UTxO set is getting quite large we start to take the UTxO count into consideration. */
             let weight_utxos = if inputs.len() > 100 && available.0 > 0 {
-                (inputs.len() as f64 / available.0 as f64) * 50000.0
+                (inputs.len() as f64 / available.0 as f64) * 5000.0
             } else {
                 0.0
             };
