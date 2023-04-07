@@ -649,7 +649,8 @@ impl TransactionBuilder {
             5. Whenever we interact with a plutus script, we increase the weights on avoiding assets, since assets are costy in plutus scripts.
 
         */
-        let cost = |inputs: &Vec<TransactionUnspentOutput>,
+        let cost = |available: (usize, usize),
+                    inputs: &Vec<TransactionUnspentOutput>,
                     target: &Value,
                     total: &Value,
                     is_plutus: bool|
@@ -698,18 +699,24 @@ impl TransactionBuilder {
 
             let weight_ideal = if current_ideal > 0.0 {
                 current_ideal * 0.0
+            } else if inputs.len() > 100 {
+                -current_ideal * 200.0
             } else {
                 -current_ideal * 1000.0
             };
 
-            /* Normalize the asset length through the max possible asset length (that's an estimate) */
-            let asset_len = input_assets.len() as f64 / 1000.0;
+            /* Normalize the asset length through the max possible asset length */
+            let asset_len = if available.1 > 0 {
+                input_assets.len() as f64 / available.1 as f64
+            } else {
+                0.0
+            };
 
             let weight_assets = if is_plutus {
                 /* Assets are expensive for Plutus scripts => penalize harder if more assets are in inputs */
                 asset_len * 1500.0
             } else {
-                /* Penalize more assets a bit, but try to find the ideal quantity in order to avoid asset fractions over time */
+                /* Penalize more assets a bit, but try to find the ideal quantity in order to avoid asset fractions over time. */
                 let norm_current_vector = norm_vector(&current_vector);
                 let norm_ideal_vector = norm_vector(&ideal_vector);
 
@@ -718,8 +725,22 @@ impl TransactionBuilder {
                 asset_len * 800.0 + distance * 800.0
             };
 
-            weight_ideal + weight_assets
+            /* If the UTxO set is getting quite large we start to take the UTxO count into consideration. */
+            let weight_utxos = if inputs.len() > 100 && available.0 > 0 {
+                (inputs.len() as f64 / available.0 as f64) * 50000.0
+            } else {
+                0.0
+            };
+
+            weight_ideal + weight_assets + weight_utxos
         };
+
+        let available_count = available_inputs.len();
+        let available_value = available_inputs.iter().fold(Value::zero(), |acc, utxo| {
+            acc.checked_add(&utxo.output.amount)
+                .unwrap_or(Value::zero())
+        });
+        let available_assets_len = get_flat_assets(&available_value).len();
 
         let mut current_value = Value::zero();
         let mut inputs = available_inputs.clone();
@@ -799,10 +820,16 @@ impl TransactionBuilder {
         }
 
         /* Improvement Phase */
-        let iterations = cmp::max(relevant_inputs.len() * current_inputs.len(), 100);
+        let iterations = cmp::max(current_inputs.len(), 100);
 
         let is_plutus = self.collect_redeemers().is_some();
-        let mut current_cost = cost(&current_inputs, &output_target, &output_total, is_plutus);
+        let mut current_cost = cost(
+            (available_count, available_assets_len),
+            &current_inputs,
+            &output_target,
+            &output_total,
+            is_plutus,
+        );
 
         for _ in 0..iterations {
             if relevant_inputs.len() <= 0 {
@@ -828,6 +855,7 @@ impl TransactionBuilder {
 
                     /* Checks if replacement utxo is better than current one at this position */
                     let new_cost = cost(
+                        (available_count, available_assets_len),
                         &current_inputs_check,
                         &output_target,
                         &output_total,
@@ -851,6 +879,7 @@ impl TransactionBuilder {
 
                     /* Checks if appending a utxo improves coin selection */
                     let new_cost = cost(
+                        (available_count, available_assets_len),
                         &current_inputs_check,
                         &output_target,
                         &output_total,
@@ -883,6 +912,7 @@ impl TransactionBuilder {
 
                     /* Checks if deleting a utxo is better than current input set */
                     let new_cost = cost(
+                        (available_count, available_assets_len),
                         &current_inputs_check,
                         &output_target,
                         &output_total,
@@ -1889,7 +1919,7 @@ impl TransactionBuilder {
         change_address: &Address,
         datum: Option<Datum>,
     ) -> Result<(), JsError> {
-        let mut fee = self.min_fee().unwrap();
+        let mut fee = self.min_fee()?;
 
         let input_total = self.get_total_input()?;
         let output_total = self.get_total_output()?;
