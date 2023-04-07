@@ -1,6 +1,6 @@
 ---
 title: Type casting
-description: Cast plutus data to custom data types
+description: Cast plutus data to custom data types.
 order: 1
 ---
 

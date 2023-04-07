@@ -1,6 +1,6 @@
 ---
 title: Plutus core
-description: Selection of Plutus Core engine
+description: Selection of Plutus Core engine.
 order: 1
 ---
 
