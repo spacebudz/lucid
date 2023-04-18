@@ -519,6 +519,7 @@ impl TransactionBuilder {
         &mut self,
         inputs: &TransactionUnspentOutputs,
         change_address: &Address,
+        weights: &[u32], // default: [200, 1000, 1500, 800, 800, 5000]
     ) -> Result<(), JsError> {
         let coins_per_utxo_byte = self.config.coins_per_utxo_byte.clone();
 
@@ -700,9 +701,9 @@ impl TransactionBuilder {
             let weight_ideal = if current_ideal > 0.0 {
                 current_ideal * 0.0
             } else if inputs.len() > 100 {
-                -current_ideal * 200.0
+                -current_ideal * weights[0] as f64
             } else {
-                -current_ideal * 1000.0
+                -current_ideal * weights[1] as f64
             };
 
             /* Normalize the asset length through the max possible asset length */
@@ -714,7 +715,7 @@ impl TransactionBuilder {
 
             let weight_assets = if is_plutus {
                 /* Assets are expensive for Plutus scripts => penalize harder if more assets are in inputs */
-                asset_len * 1500.0
+                asset_len * weights[2] as f64
             } else {
                 /* Penalize more assets a bit, but try to find the ideal quantity in order to avoid asset fractions over time. */
                 let norm_current_vector = norm_vector(&current_vector);
@@ -722,12 +723,12 @@ impl TransactionBuilder {
 
                 let distance = distance_vectors(&norm_current_vector, &norm_ideal_vector);
 
-                asset_len * 800.0 + distance * 800.0
+                asset_len * weights[3] as f64 + distance * weights[4] as f64
             };
 
             /* If the UTxO set is getting quite large we start to take the UTxO count into consideration. */
             let weight_utxos = if inputs.len() > 100 && available.0 > 0 {
-                (inputs.len() as f64 / available.0 as f64) * 5000.0
+                (inputs.len() as f64 / available.0 as f64) * weights[5] as f64
             } else {
                 0.0
             };
@@ -2891,7 +2892,9 @@ mod tests {
         //     ))
         //     .unwrap();
 
-        tx_builder.add_inputs_from(&utxos, &addr_net_0).unwrap();
+        tx_builder
+            .add_inputs_from(&utxos, &addr_net_0, &[200, 1000, 1500, 800, 800, 5000])
+            .unwrap();
         tx_builder.balance(&addr_net_0, None).unwrap();
 
         let tx = tx_builder.build_tx().unwrap();
@@ -4744,7 +4747,11 @@ mod tests {
         .unwrap()
         .to_address();
         tx_builder
-            .add_inputs_from(&available_inputs, &change_addr)
+            .add_inputs_from(
+                &available_inputs,
+                &change_addr,
+                &[200, 1000, 1500, 800, 800, 5000],
+            )
             .unwrap();
         tx_builder.balance(&change_addr, None).unwrap();
         let tx = tx_builder.build().unwrap();
@@ -4790,7 +4797,11 @@ mod tests {
         .unwrap()
         .to_address();
         tx_builder
-            .add_inputs_from(&available_inputs, &change_addr)
+            .add_inputs_from(
+                &available_inputs,
+                &change_addr,
+                &[200, 1000, 1500, 800, 800, 5000],
+            )
             .unwrap();
         tx_builder.balance(&change_addr, None).unwrap();
         let tx = tx_builder.build().unwrap();
@@ -4885,7 +4896,11 @@ mod tests {
         .unwrap()
         .to_address();
         tx_builder
-            .add_inputs_from(&available_inputs, &change_addr)
+            .add_inputs_from(
+                &available_inputs,
+                &change_addr,
+                &[200, 1000, 1500, 800, 800, 5000],
+            )
             .unwrap();
         tx_builder.balance(&change_addr, None).unwrap();
         let tx = tx_builder.build().unwrap();
@@ -5004,7 +5019,11 @@ mod tests {
         .unwrap()
         .to_address();
         tx_builder
-            .add_inputs_from(&available_inputs, &change_addr)
+            .add_inputs_from(
+                &available_inputs,
+                &change_addr,
+                &[200, 1000, 1500, 800, 800, 5000],
+            )
             .unwrap();
         tx_builder.balance(&change_addr, None).unwrap();
         let tx = tx_builder.build().unwrap();
@@ -5049,7 +5068,11 @@ mod tests {
         )
         .unwrap()
         .to_address();
-        let add_inputs_res = tx_builder.add_inputs_from(&available_inputs, &change_addr);
+        let add_inputs_res = tx_builder.add_inputs_from(
+            &available_inputs,
+            &change_addr,
+            &[200, 1000, 1500, 800, 800, 5000],
+        );
         assert!(add_inputs_res.is_ok(), "{:?}", add_inputs_res.err());
         tx_builder.balance(&change_addr, None).unwrap();
         let tx_build_res = tx_builder.build();
@@ -5123,6 +5146,7 @@ mod tests {
             &available_inputs,
             &Address::from_bech32("addr1vyy6nhfyks7wdu3dudslys37v252w2nwhv0fw2nfawemmnqs6l44z")
                 .unwrap(),
+            &[200, 1000, 1500, 800, 800, 5000],
         );
         assert!(add_inputs_res.is_ok(), "{:?}", add_inputs_res.err());
     }
@@ -5172,7 +5196,11 @@ mod tests {
         )
         .unwrap()
         .to_address();
-        let add_inputs_res = tx_builder.add_inputs_from(&available_inputs, &change_addr);
+        let add_inputs_res = tx_builder.add_inputs_from(
+            &available_inputs,
+            &change_addr,
+            &[200, 1000, 1500, 800, 800, 5000],
+        );
         assert!(add_inputs_res.is_ok(), "{:?}", add_inputs_res.err());
         assert_eq!(tx_builder.min_fee().unwrap(), to_bignum(264));
         tx_builder.balance(&change_addr, None);
