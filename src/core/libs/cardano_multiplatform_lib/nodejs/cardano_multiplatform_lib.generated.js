@@ -1,7 +1,7 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: 162afe0a6f425d1fc5b15bd74925d55c55487a9f
+// source-hash: feeb9968db035bce728486ecc28b60007e003e45
 
 let imports = {};
 imports["__wbindgen_placeholder__"] = module.exports;
