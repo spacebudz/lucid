@@ -1,3 +1,4 @@
+use fraction::ToPrimitive;
 use itertools::Itertools;
 
 use super::fees;
@@ -622,21 +623,42 @@ impl TransactionBuilder {
                 available_coin || assets_relevant
             };
 
-        let norm_vector = |vector: &Vec<u64>| -> Vec<f64> {
-            let length = vector
+        let norm = |vector: &Vec<i128>| -> f64 {
+            vector
                 .iter()
-                .fold(0.0, |acc, coord| acc + coord.pow(2) as f64)
-                .sqrt();
-
-            vector.iter().map(|coord| *coord as f64 / length).collect()
+                .fold(num_bigint::BigUint::from(0u64), |acc, coord| {
+                    acc + num_bigint::BigInt::from(*coord)
+                        .pow(2)
+                        .to_biguint()
+                        .unwrap()
+                })
+                .sqrt()
+                .to_f64()
+                .unwrap()
         };
 
-        let distance_vectors = |vector1: &Vec<f64>, vector2: &Vec<f64>| -> f64 {
+        let sub_vectors = |vector1: &Vec<u64>, vector2: &Vec<u64>| -> Vec<i128> {
             vector1
                 .iter()
                 .zip(vector2.iter())
-                .fold(0.0, |acc, (x, y)| acc + (x - y).powi(2))
-                .sqrt()
+                .map(|(x, y)| *x as i128 - *y as i128)
+                .collect()
+        };
+
+        let get_normalization = |vector1: &Vec<u64>, vector2: &Vec<u64>| -> f64 {
+            (vector1
+                .iter()
+                .fold(num_bigint::BigUint::from(0_u64), |acc, x| {
+                    acc + num_bigint::BigUint::from(*x).pow(2)
+                })
+                * vector2
+                    .iter()
+                    .fold(num_bigint::BigUint::from(0_u64), |acc, x| {
+                        acc + num_bigint::BigUint::from(*x).pow(2)
+                    }))
+            .sqrt()
+            .to_f64()
+            .unwrap()
         };
 
         /*
@@ -718,12 +740,12 @@ impl TransactionBuilder {
                 asset_len * weights[2] as f64
             } else {
                 /* Penalize more assets a bit, but try to find the ideal quantity in order to avoid asset fractions over time. */
-                let norm_current_vector = norm_vector(&current_vector);
-                let norm_ideal_vector = norm_vector(&ideal_vector);
 
-                let distance = distance_vectors(&norm_current_vector, &norm_ideal_vector);
+                let distance = norm(&sub_vectors(&current_vector, &ideal_vector));
+                let normalization = get_normalization(&current_vector, &ideal_vector);
+                let norm_distance = distance / normalization;
 
-                asset_len * weights[3] as f64 + distance * weights[4] as f64
+                asset_len * weights[3] as f64 + norm_distance * weights[4] as f64
             };
 
             /* If the UTxO set is getting quite large we start to take the UTxO count into consideration. */
