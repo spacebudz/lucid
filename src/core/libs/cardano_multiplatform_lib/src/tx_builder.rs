@@ -2439,20 +2439,20 @@ impl TransactionBuilder {
                 && collateral_return.amount.coin >= new_total_col
                 && collateral_return.amount.multiasset.is_none()
             {
-                self.total_collateral = Some(collateral_return.amount.coin.clone());
+                new_total_col = collateral_return.amount.coin.clone();
+                self.total_collateral = Some(new_total_col);
                 self.collateral_return = None;
-                return Ok(collateral_return.amount.coin);
+            } else {
+                if collateral_return.amount.coin
+                    < min_ada_required(&collateral_return, &self.config.coins_per_utxo_byte)?
+                {
+                    return Err(JsError::from_str("Not enough ADA leftover to cover fees"));
+                }
+
+                self.total_collateral = Some(new_total_col.clone());
+
+                self.collateral_return = Some(collateral_return.clone());
             }
-
-            if collateral_return.amount.coin
-                < min_ada_required(&collateral_return, &self.config.coins_per_utxo_byte)?
-            {
-                return Err(JsError::from_str("Not enough ADA leftover to cover fees"));
-            }
-
-            self.total_collateral = Some(new_total_col.clone());
-
-            self.collateral_return = Some(collateral_return.clone());
 
             old_total_col = new_total_col.clone();
             new_total_col = self
