@@ -1,4 +1,9 @@
 import packageJson from "./package.json" assert { type: "json" };
+import { parse } from "https://deno.land/std@0.185.0/flags/mod.ts";
+
+const flags = parse(Deno.args, {
+  boolean: ["npm"],
+});
 
 type Blueprint = {
   preamble: {
@@ -49,7 +54,11 @@ const plutusVersion = "Plutus" +
 const definitions = plutusJson.definitions;
 
 const imports = `// deno-lint-ignore-file
-import { applyParamsToScript, Data, Validator } from "https://deno.land/x/lucid@${packageJson.version}/mod.ts"`;
+import { applyParamsToScript, Data, Validator } from "${
+  flags.npm
+    ? "lucid-cardano"
+    : `https://deno.land/x/lucid@${packageJson.version}/mod.ts`
+}"`;
 
 const validators = plutusJson.validators.map((validator) => {
   const title = validator.title;
