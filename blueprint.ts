@@ -103,6 +103,11 @@ await Deno.run({
   cmd: ["deno", "fmt", "plutus.ts"],
   stderr: "piped",
 }).status();
+console.log(
+  "%cGenerated %cplutus.ts",
+  "color: green; font-weight: bold",
+  "font-weight: bold",
+);
 
 function resolveSchema(schema: any, definitions: any): any {
   if (schema.items) {
