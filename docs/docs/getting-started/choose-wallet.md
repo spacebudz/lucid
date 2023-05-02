@@ -24,7 +24,9 @@ lucid.selectWalletFromSeed(seed);
 
 ### Select wallet from browser
 
-The wallet type works obviously only in the browser. This method works for any [CIP-0030](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0030) compliant wallet.
+The wallet type works obviously only in the browser. This method works for any
+[CIP-0030](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0030)
+compliant wallet.
 
 ```js
 const api = await window.cardano.nami.enable();
@@ -33,7 +35,8 @@ lucid.selectWallet(api);
 
 ### Select wallet from custom data
 
-This wallet is viewable and can only handle query requests. Signing operations do not work because no private key was selected via this method.
+This wallet is viewable and can only handle query requests. Signing operations
+do not work because no private key was selected via this method.
 
 ```js
 lucid.selectWalletFrom({address: "addr_test...", utxos: [...]});

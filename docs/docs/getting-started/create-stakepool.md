@@ -10,7 +10,9 @@ order: 5
 
 ## Register stake pool
 
-Cold key and vrf key were imported from the cardano-cli. The cold key is necessary to add a required witness to the transaction and the vrf key needs to be added to the pool parameters.
+Cold key and vrf key were imported from the cardano-cli. The cold key is
+necessary to add a required witness to the transaction and the vrf key needs to
+be added to the pool parameters.
 
 ```js
 /** StakePoolSigningKey_ed25519 cborHex from the cardano-cli */

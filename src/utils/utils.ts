@@ -39,7 +39,6 @@ import {
   unixTimeToEnclosingSlot,
 } from "../plutus/time.ts";
 import { Data } from "../plutus/data.ts";
-import { TSchema } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
 import { Json } from "../mod.ts";
 
 export class Utils {

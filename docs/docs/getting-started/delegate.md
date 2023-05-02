@@ -39,6 +39,7 @@ const txHash = await signedTx.submit();
 ```
 
 ## Withdraw rewards
+
 ```js
 const rewardAddress = await lucid.wallet.rewardAddress();
 
@@ -52,7 +53,6 @@ const signedTx = await tx.sign().complete();
 
 const txHash = await signedTx.submit();
 ```
-
 
 ## Deregister stake key
 
