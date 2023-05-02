@@ -53,10 +53,13 @@ import { applyParamsToScript, Data, Validator } from "https://deno.land/x/lucid@
 
 const validators = plutusJson.validators.map((validator) => {
   const title = validator.title;
-  const name = title.split(".")[0].slice(0, 1).toUpperCase() +
-    snakeToCamel(title.split(".")[0].slice(1)) +
-    title.split(".")[1].slice(0, 1).toUpperCase() +
-    title.split(".")[1].slice(1);
+  const name = (() => {
+    const [a, b] = title.split(".");
+    return a.slice(0, 1).toUpperCase() +
+      snakeToCamel(a.slice(1)) +
+      b.slice(0, 1).toUpperCase() +
+      b.slice(1);
+  })();
   const datum = validator.datum
     ? resolveSchema(validator.datum.schema, definitions)
     : null;
