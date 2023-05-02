@@ -1,4 +1,4 @@
-import { C, Core } from "../core/mod.ts";
+import { C } from "../core/mod.ts";
 import {
   coreToUtxo,
   createCostModels,
@@ -41,8 +41,8 @@ import { Emulator } from "../provider/emulator.ts";
 import { Credential } from "../types/types.ts";
 
 export class Lucid {
-  txBuilderConfig!: Core.TransactionBuilderConfig;
   protocolParameters: any;
+  txBuilderConfig!: C.TransactionBuilderConfig;
   wallet!: Wallet;
   provider!: Provider;
   network: Network = "Mainnet";
@@ -226,7 +226,7 @@ export class Lucid {
           .to_bech32(undefined),
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> => null,
-      getCollateralCore: (): Core.TransactionUnspentOutputs | undefined => {
+      getCollateralCore: (): C.TransactionUnspentOutputs | undefined => {
         return undefined;
       },
       getUtxos: async (): Promise<UTxO[]> => {
@@ -234,7 +234,7 @@ export class Lucid {
           paymentCredentialOf(await this.wallet.address())
         );
       },
-      getUtxosCore: async (): Promise<Core.TransactionUnspentOutputs> => {
+      getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const utxos = await this.utxosAt(
           paymentCredentialOf(await this.wallet.address())
         );
@@ -249,9 +249,7 @@ export class Lucid {
         return { poolId: null, rewards: 0n };
       },
       // deno-lint-ignore require-await
-      signTx: async (
-        tx: Core.Transaction
-      ): Promise<Core.TransactionWitnessSet> => {
+      signTx: async (tx: C.Transaction): Promise<C.TransactionWitnessSet> => {
         const witness = C.make_vkey_witness(
           C.hash_transaction(tx.body()),
           priv
@@ -311,7 +309,7 @@ export class Lucid {
           : null;
         return rewardAddress;
       },
-      getCollateralCore: (): Core.TransactionUnspentOutputs | undefined => {
+      getCollateralCore: (): C.TransactionUnspentOutputs | undefined => {
         return undefined;
       },
       getUtxos: async (): Promise<UTxO[]> => {
@@ -323,7 +321,7 @@ export class Lucid {
         });
         return utxos;
       },
-      getUtxosCore: async (): Promise<Core.TransactionUnspentOutputs> => {
+      getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const utxos = C.TransactionUnspentOutputs.new();
         ((await api.getUtxos()) || []).forEach((utxo) => {
           utxos.add(C.TransactionUnspentOutput.from_bytes(fromHex(utxo)));
@@ -337,9 +335,7 @@ export class Lucid {
           ? await this.delegationAt(rewardAddr)
           : { poolId: null, rewards: 0n };
       },
-      signTx: async (
-        tx: Core.Transaction
-      ): Promise<Core.TransactionWitnessSet> => {
+      signTx: async (tx: C.Transaction): Promise<C.TransactionWitnessSet> => {
         const witnessSet = await api.signTx(toHex(tx.to_bytes()), true);
         return C.TransactionWitnessSet.from_bytes(fromHex(witnessSet));
       },
@@ -401,7 +397,7 @@ export class Lucid {
             : rewardAddress;
         return rewardAddr || null;
       },
-      getCollateralCore: (): Core.TransactionUnspentOutputs | undefined => {
+      getCollateralCore: (): C.TransactionUnspentOutputs | undefined => {
         if (!collateral || !collateral.length) {
           return undefined;
         }
@@ -413,7 +409,7 @@ export class Lucid {
       getUtxos: async (): Promise<UTxO[]> => {
         return utxos ? utxos : await this.utxosAt(paymentCredentialOf(address));
       },
-      getUtxosCore: async (): Promise<Core.TransactionUnspentOutputs> => {
+      getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const coreUtxos = C.TransactionUnspentOutputs.new();
         (utxos
           ? utxos
@@ -429,7 +425,7 @@ export class Lucid {
           : { poolId: null, rewards: 0n };
       },
       // deno-lint-ignore require-await
-      signTx: async (): Promise<Core.TransactionWitnessSet> => {
+      signTx: async (): Promise<C.TransactionWitnessSet> => {
         throw new Error("Not implemented");
       },
       // deno-lint-ignore require-await
@@ -484,13 +480,13 @@ export class Lucid {
       // deno-lint-ignore require-await
       rewardAddress: async (): Promise<RewardAddress | null> =>
         rewardAddress || null,
-      getCollateralCore: (): Core.TransactionUnspentOutputs | undefined => {
+      getCollateralCore: (): C.TransactionUnspentOutputs | undefined => {
         return undefined;
       },
       // deno-lint-ignore require-await
       getUtxos: async (): Promise<UTxO[]> =>
         this.utxosAt(paymentCredentialOf(address)),
-      getUtxosCore: async (): Promise<Core.TransactionUnspentOutputs> => {
+      getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const coreUtxos = C.TransactionUnspentOutputs.new();
         (await this.utxosAt(paymentCredentialOf(address))).forEach((utxo) =>
           coreUtxos.add(utxoToCore(utxo))
@@ -504,9 +500,7 @@ export class Lucid {
           ? await this.delegationAt(rewardAddr)
           : { poolId: null, rewards: 0n };
       },
-      signTx: async (
-        tx: Core.Transaction
-      ): Promise<Core.TransactionWitnessSet> => {
+      signTx: async (tx: C.Transaction): Promise<C.TransactionWitnessSet> => {
         const utxos = await this.utxosAt(address);
 
         const ownKeyHashes: Array<KeyHash> = [paymentKeyHash, stakeKeyHash];

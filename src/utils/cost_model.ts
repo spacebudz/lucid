@@ -1,8 +1,8 @@
-import { C, Core } from "../core/mod.ts";
+import { C } from "../core/mod.ts";
 import { CostModels } from "../mod.ts";
 import { ProtocolParameters } from "../types/types.ts";
 
-export function createCostModels(costModels: CostModels): Core.Costmdls {
+export function createCostModels(costModels: CostModels): C.Costmdls {
   const costmdls = C.Costmdls.new();
 
   // add plutus v1
@@ -373,14 +373,14 @@ export const PROTOCOL_PARAMETERS_DEFAULT: ProtocolParameters = {
       "unListData-memory-arguments": 32,
       "unMapData-cpu-arguments": 38314,
       "unMapData-memory-arguments": 32,
-      "verifyEcdsaSecp256k1Signature-cpu-arguments": 20000000000,
-      "verifyEcdsaSecp256k1Signature-memory-arguments": 20000000000,
-      "verifyEd25519Signature-cpu-arguments-intercept": 9462713,
-      "verifyEd25519Signature-cpu-arguments-slope": 1021,
+      "verifyEcdsaSecp256k1Signature-cpu-arguments": 35892428,
+      "verifyEcdsaSecp256k1Signature-memory-arguments": 10,
+      "verifyEd25519Signature-cpu-arguments-intercept": 57996947,
+      "verifyEd25519Signature-cpu-arguments-slope": 18975,
       "verifyEd25519Signature-memory-arguments": 10,
-      "verifySchnorrSecp256k1Signature-cpu-arguments-intercept": 20000000000,
-      "verifySchnorrSecp256k1Signature-cpu-arguments-slope": 0,
-      "verifySchnorrSecp256k1Signature-memory-arguments": 20000000000,
+      "verifySchnorrSecp256k1Signature-cpu-arguments-intercept": 38887044,
+      "verifySchnorrSecp256k1Signature-cpu-arguments-slope": 32947,
+      "verifySchnorrSecp256k1Signature-memory-arguments": 10,
     },
   },
 };

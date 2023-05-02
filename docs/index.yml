@@ -7,7 +7,7 @@ header:
 install:
   title: "Run the following to [import Lucid](./docs/overview/import.md):"
   code: import { Lucid } from "https://deno.land/x/lucid/mod.ts"
-  url: /docs/getting-started/your-first-tx/
+  url: /docs/basics/your-first-tx/
 
 usage:
   - title: Interoperability
@@ -193,9 +193,9 @@ usage:
 
       ```ts { title="to.ts" }
       const Listing = Data.Object({
-        owner: Data.String,
-        amount: Data.BigInt,
-        private: Data.Boolean,
+        owner: Data.Bytes(),
+        amount: Data.Integer(),
+        private: Data.Boolean(),
       });
       type Listing = Data.Static<typeof Listing>;
 

@@ -11,10 +11,10 @@ lucid.selectWallet(api);
 
 // Type definition could be auto generated from on-chain script
 const MyDatum = Data.Object({
-  name: Data.String,
-  age: Data.BigInt,
-  colors: Data.Array(Data.String),
-  description: Data.Nullable(Data.String),
+  name: Data.Bytes(),
+  age: Data.Integer(),
+  colors: Data.Array(Data.Bytes()),
+  description: Data.Nullable(Data.Bytes()),
 });
 type MyDatum = Data.Static<typeof MyDatum>;
 

@@ -1,4 +1,4 @@
-import { Configuration } from 'types';
+import { Configuration } from '../types/mod.ts';
 
 export const defaultConfig: Configuration = {
   enableChangeSplitting: true,

@@ -1,7 +1,6 @@
 import {
   Address,
   C,
-  Core,
   fromHex,
   getAddressDetails,
   KeyHash,
@@ -81,7 +80,7 @@ export function walletFromSeed(
 }
 
 export function discoverOwnUsedTxKeyHashes(
-  tx: Core.Transaction,
+  tx: C.Transaction,
   ownKeyHashes: Array<KeyHash>,
   ownUtxos: Array<UTxO>,
 ): Array<KeyHash> {
@@ -107,7 +106,7 @@ export function discoverOwnUsedTxKeyHashes(
   const txBody = tx.body();
 
   // key hashes from certificates
-  function keyHashFromCert(txBody: Core.TransactionBody) {
+  function keyHashFromCert(txBody: C.TransactionBody) {
     const certs = txBody.certs();
     if (!certs) return;
     for (let i = 0; i < certs.len(); i++) {
@@ -172,7 +171,7 @@ export function discoverOwnUsedTxKeyHashes(
   // key hashes from withdrawals
 
   const withdrawals = txBody.withdrawals();
-  function keyHashFromWithdrawal(withdrawals: Core.Withdrawals) {
+  function keyHashFromWithdrawal(withdrawals: C.Withdrawals) {
     const rewardAddresses = withdrawals.keys();
     for (let i = 0; i < rewardAddresses.len(); i++) {
       const credential = rewardAddresses.get(i).payment_cred();
@@ -185,7 +184,7 @@ export function discoverOwnUsedTxKeyHashes(
 
   // key hashes from scripts
   const scripts = tx.witness_set().native_scripts();
-  function keyHashFromScript(scripts: Core.NativeScripts) {
+  function keyHashFromScript(scripts: C.NativeScripts) {
     for (let i = 0; i < scripts.len(); i++) {
       const script = scripts.get(i);
       if (script.kind() === 0) {

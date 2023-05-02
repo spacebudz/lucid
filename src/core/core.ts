@@ -1,92 +1,30 @@
-import type * as Core from "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib.js";
-import type * as Msg from "./wasm_modules/cardano_message_signing_web/cardano_message_signing.js";
-import * as CWeb from "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib.js";
-import * as MWeb from "./wasm_modules/cardano_message_signing_web/cardano_message_signing.js";
-import * as CNode from "./wasm_modules/cardano_multiplatform_lib_nodejs/cardano_multiplatform_lib.js";
-import * as MNode from "./wasm_modules/cardano_message_signing_nodejs/cardano_message_signing.js";
+import * as C from "./libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js";
+import * as M from "./libs/cardano_message_signing/cardano_message_signing.generated.js";
+import packageJson from "../../package.json" assert { type: "json" };
 
-export { Core };
+async function unsafeInstantiate(module: any, url: string) {
+  try {
+    await module.instantiate({
+      // Exception for Deno fresh framework
+      url: new URL(
+        url,
+        `https://deno.land/x/lucid@${packageJson.version}/src/core/libs/`,
+      ),
+    });
+  } catch (_e) {
+    // This only ever happens during SSR rendering
+  }
+}
 
-// dnt-shim-ignore
-const isNode = typeof window === "undefined";
+await Promise.all([
+  unsafeInstantiate(
+    C,
+    `cardano_multiplatform_lib/cardano_multiplatform_lib_bg.wasm`,
+  ),
+  unsafeInstantiate(
+    M,
+    `cardano_message_signing/cardano_message_signing_bg.wasm`,
+  ),
+]);
 
-// if (isNode) {
-//   // const fetch = await import(/* webpackIgnore: true */ "node-fetch" as string);
-//   // const { Crypto } = await import(
-//   //   /* webpackIgnore: true */ "" as string
-//   // );
-//   // const { WebSocket } = await import(/* webpackIgnore: true */ "ws" as string);
-
-//   // @ts-ignore : global
-//   if (!global.WebSocket) global.WebSocket = WebSocket;
-//   // @ts-ignore : global
-//   if (!global.crypto) global.crypto = new Crypto();
-//   // @ts-ignore : global
-//   if (!global.fetch) global.fetch = fetch.default;
-//   // @ts-ignore : global
-//   if (!global.Headers) global.Headers = fetch.Headers;
-//   // @ts-ignore : global
-//   if (!global.Request) global.Request = fetch.Request;
-//   // @ts-ignore : global
-//   if (!global.Response) global.Response = fetch.Response;
-// }
-
-// async function importForEnvironmentCore(): Promise<typeof Core | null> {
-//   try {
-//     if (isNode) {
-//       return (await import(
-//         /* webpackIgnore: true */
-//         "./wasm_modules/cardano_multiplatform_lib_nodejs/cardano_multiplatform_lib.js"
-//       )) as unknown as typeof Core;
-//     }
-
-//     const pkg = await import(
-//       "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib.js"
-//     );
-
-//     await pkg.default(
-//       await fetch(
-//         new URL(
-//           "./wasm_modules/cardano_multiplatform_lib_web/cardano_multiplatform_lib_bg.wasm",
-//           import.meta.url,
-//         ),
-//       ),
-//     );
-//     return pkg as unknown as typeof Core;
-//   } catch (_e) {
-//     // This only ever happens during SSR rendering
-//     return null;
-//   }
-// }
-
-// async function importForEnvironmentMessage(): Promise<typeof Msg | null> {
-//   try {
-//     if (isNode) {
-//       return (await import(
-//         /* webpackIgnore: true */
-//         "./wasm_modules/cardano_message_signing_nodejs/cardano_message_signing.js"
-//       )) as unknown as typeof Msg;
-//     }
-
-//     const pkg = await import(
-//       "./wasm_modules/cardano_message_signing_web/cardano_message_signing.js"
-//     );
-
-//     await pkg.default(
-//       await fetch(
-//         new URL(
-//           "./wasm_modules/cardano_message_signing_web/cardano_message_signing_bg.wasm",
-//           import.meta.url,
-//         ),
-//       ),
-//     );
-//     return pkg as unknown as typeof Msg;
-//   } catch (_e) {
-//     // This only ever happens during SSR rendering
-//     return null;
-//   }
-// }
-
-export const C: typeof Core = isNode ? (CNode as unknown as typeof Core) : CWeb;
-
-export const M: typeof Msg = isNode ? (MNode as unknown as typeof Msg) : MWeb;
+export { C, M };

@@ -1,8 +1,10 @@
 {
   "tasks": {
     "build": "deno run --allow-env --allow-write --allow-read --allow-net --allow-run build.ts",
-    "publish": "deno task build  && cd dist && npm publish",
-    "test": "deno test --allow-env --allow-read --allow-net tests"
+    "build:core": "cd src/core/libs/cardano_multiplatform_lib && deno run -A https://raw.githubusercontent.com/spacebudz/wasmbuild/f4fa6c730a7048488f32150ae421e0c3691cc666/main.ts --out ./; cd ../cardano_message_signing && deno run -A https://raw.githubusercontent.com/spacebudz/wasmbuild/f4fa6c730a7048488f32150ae421e0c3691cc666/main.ts --out ./",
+    "publish": "deno task build && cd dist && npm publish",
+    "test": "deno test --allow-env --allow-read --allow-net tests",
+    "test:core": "cd src/core/libs/cardano_multiplatform_lib && cargo test; cd ../cardano_message_signing && cargo test"
   },
   "lint": {
     "files": {

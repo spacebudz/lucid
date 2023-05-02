@@ -1,4 +1,4 @@
-import { C, Core } from "../core/mod.ts";
+import { C } from "../core/mod.ts";
 import {
   Address,
   Assets,
@@ -37,7 +37,7 @@ import { defaultConfig } from "./tx_config.ts";
 import { TxComplete } from "./tx_complete.ts";
 
 export class Tx {
-  txBuilder: Core.TransactionBuilder;
+  txBuilder: C.TransactionBuilder;
   /** Stores the tx instructions, which get executed after calling .complete() */
   private tasks: ((that: Tx) => unknown)[];
   private lucid: Lucid;
@@ -106,7 +106,7 @@ export class Tx {
   /**
    * All assets should be of the same policy id.
    * You can chain mintAssets functions together if you need to mint assets with different policy ids.
-   * If the plutus script doesn't need a redeemer, you still need to specifiy the empty redeemer.
+   * If the plutus script doesn't need a redeemer, you still need to specifiy the void redeemer.
    */
   mintAssets(assets: Assets, redeemer?: Redeemer): Tx {
     this.tasks.push((that) => {
@@ -116,7 +116,7 @@ export class Tx {
       units.forEach((unit) => {
         if (unit.slice(0, 56) !== policyId) {
           throw new Error(
-            "Only one Policy Id allowed. You can chain multiple mintAssets functions together if you need to mint assets with different Policy Ids."
+            "Only one policy id allowed. You can chain multiple mintAssets functions together if you need to mint assets with different policy ids."
           );
         }
         mintAssets.insert(
@@ -179,41 +179,41 @@ export class Tx {
           "Not allowed to set hash, asHash and inline at the same time."
         );
       }
-      const createOutput = (_assets) => {
+      const createOutput = (_assets: Assets, _outputData: OutputData) => {
         const output = C.TransactionOutput.new(
           addressFromWithNetworkCheck(address, that.lucid),
           assetsToValue(_assets)
         );
 
-        if (outputData.hash) {
+        if (_outputData.hash) {
           output.set_datum(
-            C.Datum.new_data_hash(C.DataHash.from_hex(outputData.hash))
+            C.Datum.new_data_hash(C.DataHash.from_hex(_outputData.hash))
           );
-        } else if (outputData.asHash) {
+        } else if (_outputData.asHash) {
           const plutusData = C.PlutusData.from_bytes(
-            fromHex(outputData.asHash)
+            fromHex(_outputData.asHash)
           );
           output.set_datum(
             C.Datum.new_data_hash(C.hash_plutus_data(plutusData))
           );
           that.txBuilder.add_plutus_data(plutusData);
-        } else if (outputData.inline) {
+        } else if (_outputData.inline) {
           const plutusData = C.PlutusData.from_bytes(
-            fromHex(outputData.inline)
+            fromHex(_outputData.inline)
           );
           output.set_datum(C.Datum.new_data(C.Data.new(plutusData)));
         }
 
-        const script = outputData.scriptRef;
+        const script = _outputData.scriptRef;
         if (script) {
           output.set_script_ref(toScriptRef(script));
         }
         return output;
       };
-      let output = createOutput(assets);
+      let output = createOutput(assets, outputData);
       const minAda = this.lucid.utils.getMinAdaForOutput(output);
       assets.lovelace = assets.lovelace > minAda ? assets.lovelace : minAda;
-      output = createOutput(assets);
+      output = createOutput(assets, outputData);
       that.txBuilder.add_output(output);
     });
     return this;
@@ -497,6 +497,16 @@ export class Tx {
     return this;
   }
 
+  /** Explicitely set the network id in the transaction body. */
+  addNetworkId(id: number): Tx {
+    this.tasks.push((that) => {
+      that.txBuilder.set_network_id(
+        C.NetworkId.from_bytes(fromHex(id.toString(16).padStart(2, "0")))
+      );
+    });
+    return this;
+  }
+
   attachSpendingValidator(spendingValidator: SpendingValidator): Tx {
     this.tasks.push((that) => {
       attachScript(that, spendingValidator);
@@ -570,13 +580,24 @@ export class Tx {
     const utxos = await this.lucid.wallet.getUtxosCore();
     const collateral = await this.lucid.wallet.getCollateralCore();
 
-    const changeAddress: Core.Address = addressFromWithNetworkCheck(
+    const changeAddress: C.Address = addressFromWithNetworkCheck(
       options?.change?.address || (await this.lucid.wallet.address()),
       this.lucid
     );
 
     if (options?.coinSelection || options?.coinSelection === undefined) {
-      this.txBuilder.add_inputs_from(utxos, changeAddress);
+      this.txBuilder.add_inputs_from(
+        utxos,
+        changeAddress,
+        Uint32Array.from([
+          200, // weight ideal > 100 inputs
+          1000, // weight ideal < 100 inputs
+          1500, // weight assets if plutus
+          800, // weight assets if not plutus
+          800, // weight distance if not plutus
+          5000, // weight utxos
+        ])
+      );
     }
 
     if (enableChangeSplitting) {
@@ -780,7 +801,7 @@ function attachScript(
 async function createPoolRegistration(
   poolParams: PoolParams,
   lucid: Lucid
-): Promise<Core.PoolRegistration> {
+): Promise<C.PoolRegistration> {
   const poolOwners = C.Ed25519KeyHashes.new();
   poolParams.owners.forEach((owner) => {
     const { stakeCredential } = lucid.utils.getAddressDetails(owner);
@@ -851,7 +872,7 @@ async function createPoolRegistration(
       poolOwners,
       relays,
       metadataHash
-        ? C.PoolMetadata.new(C.URL.new(poolParams.metadataUrl!), metadataHash)
+        ? C.PoolMetadata.new(C.Url.new(poolParams.metadataUrl!), metadataHash)
         : undefined
     )
   );
@@ -860,7 +881,7 @@ async function createPoolRegistration(
 function addressFromWithNetworkCheck(
   address: Address | RewardAddress,
   lucid: Lucid
-): Core.Address {
+): C.Address {
   const addressDetails = lucid.utils.getAddressDetails(address);
 
   const actualNetworkId = networkToId(lucid.network);

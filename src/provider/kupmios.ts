@@ -15,7 +15,7 @@ import {
   UTxO,
 } from "../types/mod.ts";
 import { C } from "../core/mod.ts";
-import { fromHex, fromUnit, getAddressDetails, toHex } from "../utils/mod.ts";
+import { fromHex, fromUnit, toHex } from "../utils/mod.ts";
 
 export class Kupmios implements Provider {
   kupoUrl: string;
@@ -148,9 +148,8 @@ export class Kupmios implements Provider {
   }
 
   async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
-    const { stakeCredential } = getAddressDetails(rewardAddress);
     const client = await this.ogmiosWsp("Query", {
-      query: { "delegationsAndRewards": [stakeCredential!.hash] },
+      query: { "delegationsAndRewards": [rewardAddress] },
     });
 
     return new Promise((res, rej) => {
@@ -193,8 +192,8 @@ export class Kupmios implements Provider {
         ).then((res) => res.json());
         if (isConfirmed && isConfirmed.length > 0) {
           clearInterval(confirmation);
-          res(true);
-          return;
+          await new Promise((res) => setTimeout(() => res(1), 1000));
+          return res(true);
         }
       }, checkInterval);
     });
