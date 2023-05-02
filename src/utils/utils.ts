@@ -40,6 +40,7 @@ import {
 } from "../plutus/time.ts";
 import { Data } from "../plutus/data.ts";
 import { TSchema } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
+import { Json } from "../mod.ts";
 
 export class Utils {
   private lucid: Lucid;
@@ -681,7 +682,7 @@ export function nativeScriptFromJson(nativeScript: NativeScript): Script {
 export function applyParamsToScript<T extends unknown[] = Data[]>(
   plutusScript: string,
   params: [...T],
-  shape?: TSchema,
+  shape?: Json,
 ): string {
   const p = (shape ? Data.castTo<T>(params, shape) : params) as Data[];
   return toHex(

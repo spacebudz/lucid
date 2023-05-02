@@ -443,22 +443,33 @@ function castFrom<T>(data: Data, shape: Json): T {
       return data as T;
     }
     case "constructor": {
-      if (
+      if (isVoid(shape)) {
+        if (
+          !(data instanceof Constr) || data.index !== 0 ||
+          data.fields.length !== 0
+        ) {
+          throw new Error("Could not type cast to void.");
+        }
+        return undefined as T;
+      } else if (
         data instanceof Constr && data.index === shape.index &&
         (shape.hasConstr || shape.hasConstr === undefined)
       ) {
         const fields: Record<string, T> = {};
         if (shape.fields.length !== data.fields.length) {
-          throw new Error("Could not ype cast to object. Fields do not match.");
+          throw new Error(
+            "Could not type cast to object. Fields do not match.",
+          );
         }
         shape.fields.forEach(
           (field: Json, fieldIndex: number) => {
-            if ((/[A-Z]/.test(field.title[0]))) {
+            const title = field.title || "wrapper";
+            if ((/[A-Z]/.test(title[0]))) {
               throw new Error(
                 "Could not type cast to object. Object properties need to start with a lowercase letter.",
               );
             }
-            fields[field.title] = castFrom<T>(
+            fields[title] = castFrom<T>(
               data.fields[fieldIndex],
               field,
             );
@@ -475,12 +486,13 @@ function castFrom<T>(data: Data, shape: Json): T {
         }
         shape.fields.forEach(
           (field: Json, fieldIndex: number) => {
-            if ((/[A-Z]/.test(field.title[0]))) {
+            const title = field.title || "wrapper";
+            if ((/[A-Z]/.test(title[0]))) {
               throw new Error(
                 "Could not type cast to object. Object properties need to start with a lowercase letter.",
               );
             }
-            fields[field.title] = castFrom<T>(
+            fields[title] = castFrom<T>(
               data[fieldIndex],
               field,
             );
@@ -638,11 +650,22 @@ function castTo<T>(struct: T, shape: Json): Data {
       return struct as string;
     }
     case "constructor": {
-      if (typeof struct !== "object" || struct === null) {
+      if (isVoid(shape)) {
+        if (struct !== undefined) {
+          throw new Error("Could not type cast to void.");
+        }
+        return new Constr(0, []);
+      } else if (
+        typeof struct !== "object" || struct === null ||
+        shape.fields.length !== Object.keys(struct).length
+      ) {
         throw new Error("Could not type cast to constructor.");
       }
       const fields = shape.fields.map((field: Json) =>
-        castTo<T>((struct as Record<string, T>)[field.title], field)
+        castTo<T>(
+          (struct as Record<string, T>)[field.title || "wrapper"],
+          field,
+        )
       );
       return (shape.hasConstr || shape.hasConstr === undefined)
         ? new Constr(shape.index, fields)
@@ -831,6 +854,10 @@ function mapConstraints(map: Map<unknown, unknown>, shape: TSchema) {
 function isBoolean(shape: TSchema): boolean {
   return shape.anyOf && shape.anyOf[0]?.title === "False" &&
     shape.anyOf[1]?.title === "True";
+}
+
+function isVoid(shape: TSchema): boolean {
+  return shape.index === 0 && shape.fields.length === 0;
 }
 
 function isNullable(shape: TSchema): boolean {
