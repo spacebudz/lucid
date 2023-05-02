@@ -48,8 +48,8 @@ const plutusVersion = "Plutus" +
 
 const definitions = plutusJson.definitions;
 
-const imports =
-  `import { applyParamsToScript, Data, Validator } from "https://deno.land/x/lucid@${packageJson.version}/mod.ts"`;
+const imports = `// deno-lint-ignore-file no-namespace
+import { applyParamsToScript, Data, Validator } from "https://deno.land/x/lucid@${packageJson.version}/mod.ts"`;
 
 const validators = plutusJson.validators.map((validator) => {
   const title = validator.title;
