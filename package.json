@@ -4,5 +4,8 @@
   "license": "MIT",
   "author": "Alessandro Konrad",
   "description": "Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript, Deno and Node.js.",
-  "repository": "https://github.com/spacebudz/lucid"
+  "repository": "https://github.com/spacebudz/lucid",
+  "dependencies": {
+    "@adabox/koios-ts-client": "^1.0.6"
+  }
 }
