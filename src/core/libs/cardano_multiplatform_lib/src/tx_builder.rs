@@ -1959,6 +1959,12 @@ impl TransactionBuilder {
 
                 /* We set change_total.coin here as amount to make sure we can don't exceed the max val size by a few bytes */
                 let mut change_output = TransactionOutput {
+                    format: if datum.is_some() && datum.as_ref().unwrap().kind() == DatumKind::Data
+                    {
+                        1
+                    } else {
+                        0
+                    },
                     address: change_address.clone(),
                     amount: Value::new(&change_total.coin).clone(),
                     datum: datum.clone(),
