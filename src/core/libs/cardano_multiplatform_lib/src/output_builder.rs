@@ -107,6 +107,7 @@ impl TransactionOutputAmountBuilder {
 
     pub fn build(&self) -> Result<TransactionOutput, JsError> {
         Ok(TransactionOutput {
+            format: 0,
             address: self.address.clone(),
             amount: self.amount.clone().ok_or(JsError::from_str(
                 "TransactionOutputAmountBuilder: amount missing",

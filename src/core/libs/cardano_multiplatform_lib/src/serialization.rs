@@ -883,6 +883,7 @@ impl DeserializeEmbeddedGroup for TransactionOutput {
                 Err(_) => None,
             };
                 Ok(TransactionOutput {
+                    format: 0,
                     address,
                     amount,
                     datum: match data_hash {
@@ -1009,6 +1010,7 @@ impl DeserializeEmbeddedGroup for TransactionOutput {
                 read_len.finish()?;
 
                 Ok(TransactionOutput {
+                    format: 1,
                     address,
                     amount,
                     datum,
@@ -4880,6 +4882,7 @@ mod tests {
         let addr = Address::from_bech32("addr1qyxwnq9kylzrtqprmyu35qt8gwylk3eemq53kqd38m9kyduv2q928esxmrz4y5e78cvp0nffhxklfxsqy3vdjn3nty9s8zygkm").unwrap();
         let val = &Value::new(&BigNum::from_str("435464757").unwrap());
         let txo = TransactionOutput {
+            format: 0,
             address: addr.clone(),
             amount: val.clone(),
             datum: None,
