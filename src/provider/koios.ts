@@ -15,11 +15,10 @@ import {
     Unit,
     UTxO,
 } from "../types/mod.ts";
-import {BackendFactory, KoiosHttpError, KoiosTimeoutError} from "@adabox/koios-ts-client/dist/index.js"
-import {C} from "../core/core.ts";
+import {BackendFactory, KoiosHttpError, KoiosTimeoutError} from "https://esm.sh/@adabox/koios-ts-client@1.0.6/dist/index.js"
 import {applyDoubleCborEncoding, fromHex, fromUnit} from "../utils/utils.ts";
 
-export class KoiosProvider implements Provider {
+export class Koios implements Provider {
 
     private readonly backendService
 
@@ -57,22 +56,15 @@ export class KoiosProvider implements Provider {
     }
 
     async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
-        const queryPredicate = (() => {
-            if (typeof addressOrCredential === "string") return addressOrCredential;
-             // should be 'script' (CIP-0005)
-            return addressOrCredential.type === "Key"
-                ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32("addr_vkh")
-                : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32("addr_vkh");
-        })();
-        try {
-            const result = await this.backendService.getAddressService().getAddressInformation([queryPredicate])
+        if (typeof addressOrCredential === "string") {
+            const result = await this.backendService.getAddressService().getAddressInformation([addressOrCredential]);
             if (Array.isArray(result) && result.length > 0 && result[0].utxo_set && result[0].utxo_set.length > 0) {
-                return this.koiosUtxosToUtxos(result[0].utxo_set, result[0].address)
+                return (await this.koiosUtxosToUtxos(result[0].utxo_set, result[0].address))
             } else {
                 return []
             }
-        } catch (e) {
-            throw new Error("Could not fetch UTxOs from Koios. Try again.");
+        } else {
+            throw Error('getUtxos by Credential Type is not supported in Koios yet.')
         }
     }
 
@@ -100,25 +92,18 @@ export class KoiosProvider implements Provider {
     }
 
     async getUtxosWithUnit(addressOrCredential: Address | Credential, unit: Unit): Promise<UTxO[]> {
-        const queryPredicate = (() => {
-            if (typeof addressOrCredential === "string") return addressOrCredential;
-            // should be 'script' (CIP-0005)
-            return addressOrCredential.type === "Key"
-                ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32("addr_vkh")
-                : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32("addr_vkh");
-        })();
-        try {
-            const result = await this.backendService.getAddressService().getAddressInformation([queryPredicate])
-            if (Array.isArray(result) && result.length > 0 && result[0].utxo_set && result[0].utxo_set.length > 0) {
-                return (await this.koiosUtxosToUtxos(result[0].utxo_set, result[0].address)).filter((utxo): utxo is UTxO => {
+        if (typeof addressOrCredential === "string") {
+            const utxos = await this.getUtxos(addressOrCredential);
+            if (utxos && utxos.length > 0) {
+                return utxos.filter((utxo): utxo is UTxO => {
                     const keys = Object.keys(utxo.assets)
                     return keys.length > 0 && keys.includes(unit)
                 })
             } else {
                 return []
             }
-        } catch (e) {
-            throw new Error("Could not fetch UTxOs from Koios. Try again.");
+        } else {
+            throw Error('getUtxosWithUnit by Credential Type is not supported in Koios yet.')
         }
     }
 

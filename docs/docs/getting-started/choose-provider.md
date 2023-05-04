@@ -21,6 +21,12 @@ const lucid = await Lucid.new(
 );
 ```
 
+```js
+import { Lucid, Koios } from "https://deno.land/x/lucid/mod.ts";
+
+const lucid = await Lucid.new(new Koios("Preprod"), "Preprod");
+```
+
 ### Kupmios
 
 Kupmios is a mix of [Ogmios](https://ogmios.dev/) and [Kupo](https://cardanosolutions.github.io/kupo/).
