@@ -36,9 +36,8 @@ import { signData, verifyData } from "../misc/sign_data.ts";
 import { Message } from "./message.ts";
 import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
 import { Data } from "../plutus/data.ts";
-import { TSchema } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
 import { Emulator } from "../provider/emulator.ts";
-import { Credential } from "../types/types.ts";
+import { Credential, Json } from "../types/types.ts";
 
 export class Lucid {
   txBuilderConfig!: C.TransactionBuilderConfig;
@@ -197,7 +196,7 @@ export class Lucid {
     return this.provider.awaitTx(txHash, checkInterval);
   }
 
-  async datumOf<T = Datum>(utxo: UTxO, shape?: TSchema): Promise<T> {
+  async datumOf<T = Datum>(utxo: UTxO, shape?: Json): Promise<T> {
     if (!utxo.datum) {
       if (!utxo.datumHash) {
         throw new Error("This UTxO does not have a datum hash.");
