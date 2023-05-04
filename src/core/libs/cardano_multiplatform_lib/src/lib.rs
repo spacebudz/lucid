@@ -481,6 +481,7 @@ impl TransactionInput {
     Debug, Clone, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize, JsonSchema,
 )]
 pub struct TransactionOutput {
+    format: u8, // 0: legacy, 1: post alonzo
     address: Address,
     pub(crate) amount: Value,
     datum: Option<Datum>,
@@ -513,20 +514,29 @@ impl TransactionOutput {
     }
 
     pub fn set_datum(&mut self, datum: &Datum) {
+        if datum.kind() == DatumKind::Data {
+            self.format = 1;
+        }
         self.datum = Some(datum.clone());
     }
 
     pub fn set_script_ref(&mut self, script_ref: &ScriptRef) {
+        self.format = 1;
         self.script_ref = Some(script_ref.clone());
     }
 
     pub fn new(address: &Address, amount: &Value) -> Self {
         Self {
+            format: 0,
             address: address.clone(),
             amount: amount.clone(),
             datum: None,
             script_ref: None,
         }
+    }
+
+    pub fn format(&self) -> u8 {
+        self.format
     }
 
     /// legacy support: serialize output as array array

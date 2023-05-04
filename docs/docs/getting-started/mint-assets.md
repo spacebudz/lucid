@@ -10,7 +10,9 @@ order: 6
 
 ## Mint
 
-First we need to create a minting policy for the assets we want to mint. In this example we utilize a native script time-locking policy with our wallet as required signer:
+First we need to create a minting policy for the assets we want to mint. In this
+example we utilize a native script time-locking policy with our wallet as
+required signer:
 
 ```js
 const { paymentCredential } = lucid.utils.getAddressDetails(
