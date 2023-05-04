@@ -91,8 +91,8 @@ const validators = plutusJson.validators.map((validator) => {
     ${
     datum
       ? `\nexport const Datum = ${JSON.stringify(datum)};
-      export type Datum = ${schemaToType(datum)};`
-      : "\n"
+    export type Datum = ${schemaToType(datum)};`
+      : ""
   }
     export const Redeemer = ${JSON.stringify(redeemer)};
     export type Redeemer = ${schemaToType(redeemer)};
@@ -103,7 +103,7 @@ const validators = plutusJson.validators.map((validator) => {
       }): Validator { return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${
         paramsArgs.map((param) => param[0]).join(",")
       }], ${JSON.stringify(paramsSchema)}) }; }`
-      : `export function validator(): Validator { return { type: "${plutusVersion}", script: "${script}"}; }`
+      : `export function validator(): Validator {return {type: "${plutusVersion}", script: "${script}"};}`
   };
   }`;
 });
@@ -111,10 +111,10 @@ const validators = plutusJson.validators.map((validator) => {
 const plutus = imports + "\n\n" + validators.join("\n\n");
 
 await Deno.writeTextFile("plutus.ts", plutus);
-await Deno.run({
-  cmd: ["deno", "fmt", "plutus.ts"],
+await new Deno.Command(Deno.execPath(), {
+  args: ["fmt", "plutus.ts"],
   stderr: "piped",
-}).status();
+}).output();
 console.log(
   "%cGenerated %cplutus.ts",
   "color: green; font-weight: bold",
