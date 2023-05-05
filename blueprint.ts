@@ -90,12 +90,16 @@ const validators = plutusJson.validators.map((validator) => {
     // ${title}
     ${
     datum
-      ? `\nexport const Datum = ${JSON.stringify(datum)};
-    export type Datum = ${schemaToType(datum)};`
+      ? `\n// Datum\nexport const ${datum.title || "Datum"} = ${
+        JSON.stringify(datum)
+      };
+    export type ${datum.title || "Datum"} = ${schemaToType(datum)};`
       : ""
   }
-    export const Redeemer = ${JSON.stringify(redeemer)};
-    export type Redeemer = ${schemaToType(redeemer)};
+    // Redeemer
+    export const ${redeemer.title || "Redeemer"} = ${JSON.stringify(redeemer)};
+    export type ${redeemer.title || "Redeemer"} = ${schemaToType(redeemer)};
+    // Validator
     ${
     paramsArgs
       ? `export function validator(${
