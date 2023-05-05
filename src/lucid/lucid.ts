@@ -10,7 +10,6 @@ import {
 } from "../utils/mod.ts";
 import {
   Address,
-  Datum,
   Delegation,
   ExternalWallet,
   KeyHash,
@@ -37,7 +36,7 @@ import { Message } from "./message.ts";
 import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
 import { Data } from "../plutus/data.ts";
 import { Emulator } from "../provider/emulator.ts";
-import { Credential, Json } from "../types/types.ts";
+import { Credential } from "../types/types.ts";
 
 export class Lucid {
   txBuilderConfig!: C.TransactionBuilderConfig;
