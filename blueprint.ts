@@ -92,12 +92,14 @@ const validators = plutusJson.validators.map((validator) => {
     datum
       ? `\n// Datum\nexport const ${datum.title || "Datum"} = ${
         JSON.stringify(datum)
-      };
+      } as unknown as ${datum.title || "Datum"};
     export type ${datum.title || "Datum"} = ${schemaToType(datum)};`
       : ""
   }
     // Redeemer
-    export const ${redeemer.title || "Redeemer"} = ${JSON.stringify(redeemer)};
+    export const ${redeemer.title || "Redeemer"} = ${
+    JSON.stringify(redeemer)
+  } as unknown as ${redeemer.title || "Redeemer"};
     export type ${redeemer.title || "Redeemer"} = ${schemaToType(redeemer)};
     // Validator
     ${
@@ -204,9 +206,17 @@ function schemaToType(schema: any): string {
       return schema.anyOf.map((entry: any) =>
         entry.fields.length === 0
           ? `"${entry.title}"`
-          : `{${entry.title}: [${
-            entry.fields.map((field: any) => schemaToType(field)).join(",")
-          }]}`
+          : `{${entry.title}: ${
+            entry.fields[0].title
+              ? `{${
+                entry.fields.map((field: any) =>
+                  [field.title, schemaToType(field)].join(":")
+                ).join(",")
+              }}}`
+              : `[${
+                entry.fields.map((field: any) => schemaToType(field)).join(",")
+              }]}`
+          }`
       ).join(" | ");
     }
     case "list": {

@@ -196,14 +196,14 @@ export class Lucid {
     return this.provider.awaitTx(txHash, checkInterval);
   }
 
-  async datumOf<T = Datum>(utxo: UTxO, shape?: Json): Promise<T> {
+  async datumOf<T = null>(utxo: UTxO, type?: T): Promise<T> {
     if (!utxo.datum) {
       if (!utxo.datumHash) {
         throw new Error("This UTxO does not have a datum hash.");
       }
       utxo.datum = await this.provider.getDatum(utxo.datumHash);
     }
-    return shape ? Data.from<T>(utxo.datum, shape) : utxo.datum as T;
+    return type ? Data.from<T>(utxo.datum, type) : utxo.datum as T;
   }
 
   /**
