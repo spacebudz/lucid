@@ -98,7 +98,7 @@ const validators = plutusJson.validators.map((validator) => {
     paramsArgs.length > 0
       ? `return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${
         paramsArgs.map((param) => param[0]).join(",")
-      }], ${JSON.stringify(paramsSchema)}) };`
+      }], ${JSON.stringify(paramsSchema)} as any) };`
       : `return {type: "${plutusVersion}", script: "${script}"};`
   }},
     ${datum ? `{${datumTitle}: ${JSON.stringify(datumSchema)}},` : ""}
