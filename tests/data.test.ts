@@ -210,15 +210,15 @@ Deno.test("Roundtrip data enum with named args", () => {
   /*
     - TypeScript:
 
-    type MyDatum = "Left" | "Down" | "Right" | { Up: [string]; }
+    type MyDatum = "Left" | "Down" | { Right: [string]; } | { Up: { x: bigint; y: bigint;}; }
 
     - Aiken:
 
     type MyDatum {
       Left
       Down
-      Right
-      Up(ByteArray)
+      Right(ByteArray)
+      Up {x: Int, y: Int}
     }
   */
   const MyDatumSchema = Data.Enum([

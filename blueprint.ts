@@ -64,54 +64,46 @@ const validators = plutusJson.validators.map((validator) => {
   const title = validator.title;
   const name = (() => {
     const [a, b] = title.split(".");
-    return a.slice(0, 1).toUpperCase() +
-      snakeToCamel(a.slice(1)) +
-      b.slice(0, 1).toUpperCase() +
-      b.slice(1);
+    return snakeToCamel(a) + upperFirst(snakeToCamel(b));
   })();
-  const datum = validator.datum
-    ? resolveSchema(validator.datum.schema, definitions)
-    : null;
-  const redeemer = resolveSchema(validator.redeemer.schema, definitions);
+  const datum = validator.datum;
+  const datumTitle = datum ? snakeToCamel(datum.title) : null;
+  const datumSchema = datum ? resolveSchema(datum.schema, definitions) : null;
+
+  const redeemer = validator.redeemer;
+  const redeemerTitle = snakeToCamel(redeemer.title);
+  const redeemerSchema = resolveSchema(redeemer.schema, definitions);
+
   const params = validator.parameters || [];
   const paramsSchema = {
     dataType: "list",
     items: params.map((param) => resolveSchema(param.schema, definitions)),
   };
-  const paramsArgs = params && params.length > 0
-    ? params.map((
-      param,
-      index,
-    ) => [snakeToCamel(param.title), schemaToType(paramsSchema.items[index])])
-    : null;
+  const paramsArgs = params.map((
+    param,
+    index,
+  ) => [snakeToCamel(param.title), schemaToType(paramsSchema.items[index])]);
+
   const script = validator.compiledCode;
 
-  return `export namespace ${name} {
-    // ${title}
-    ${
-    datum
-      ? `\n// Datum\nexport const ${datum.title || "Datum"} = ${
-        JSON.stringify(datum)
-      } as unknown as ${datum.title || "Datum"};
-    export type ${datum.title || "Datum"} = ${schemaToType(datum)};`
-      : ""
+  return `export interface ${upperFirst(name)} {
+    new (${paramsArgs.map((param) => param.join(":")).join(",")}): Validator;${
+    datum ? `\n${datumTitle}: ${schemaToType(datumSchema)};` : ""
   }
-    // Redeemer
-    export const ${redeemer.title || "Redeemer"} = ${
-    JSON.stringify(redeemer)
-  } as unknown as ${redeemer.title || "Redeemer"};
-    export type ${redeemer.title || "Redeemer"} = ${schemaToType(redeemer)};
-    // Validator
-    ${
-    paramsArgs
-      ? `export function validator(${
-        paramsArgs.map((param) => param.join(":")).join(",")
-      }): Validator { return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${
-        paramsArgs.map((param) => param[0]).join(",")
-      }], ${JSON.stringify(paramsSchema)}) }; }`
-      : `export function validator(): Validator {return {type: "${plutusVersion}", script: "${script}"};}`
+    ${redeemerTitle}: ${schemaToType(redeemerSchema)};
   };
-  }`;
+
+  export const ${upperFirst(name)} = Object.assign(
+    function (${paramsArgs.map((param) => param.join(":")).join(",")}) {${
+    paramsArgs.length > 0
+      ? `return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${
+        paramsArgs.map((param) => param[0]).join(",")
+      }], ${JSON.stringify(paramsSchema)}) };`
+      : `return {type: "${plutusVersion}", script: "${script}"};`
+  }},
+    ${datum ? `{${datumTitle}: ${JSON.stringify(datumSchema)}},` : ""}
+    {${redeemerTitle}: ${JSON.stringify(redeemerSchema)}},
+  ) as unknown as ${upperFirst(name)};`;
 });
 
 const plutus = imports + "\n\n" + validators.join("\n\n");
@@ -255,9 +247,21 @@ function isNullable(shape: any): boolean {
 }
 
 function snakeToCamel(s: string): string {
-  return s.toLowerCase().replace(/([-_][a-z])/g, (group) =>
-    group
-      .toUpperCase()
-      .replace("-", "")
-      .replace("_", ""));
+  const withUnderscore = s.charAt(0) === "_" ? s.charAt(0) : "";
+  return withUnderscore +
+    (withUnderscore ? s.slice(1) : s).toLowerCase().replace(
+      /([-_][a-z])/g,
+      (group) =>
+        group
+          .toUpperCase()
+          .replace("-", "")
+          .replace("_", ""),
+    );
+}
+
+function upperFirst(s: string): string {
+  const withUnderscore = s.charAt(0) === "_" ? s.charAt(0) : "";
+  return withUnderscore +
+    s.charAt(withUnderscore ? 1 : 0).toUpperCase() +
+    s.slice((withUnderscore ? 1 : 0) + 1);
 }
