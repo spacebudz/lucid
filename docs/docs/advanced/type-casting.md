@@ -23,7 +23,7 @@ Furthermore, we can generate a TypeScript type definition from the data
 structure:
 
 ```ts
-type Listing = Data.Static<typeof Listing>;
+type Listing = Data.Static<typeof ListingSchema>;
 const Listing = ListingSchema as unknown as Listing;
 ```
 
