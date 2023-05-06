@@ -217,7 +217,7 @@ function schemaToType(schema: any): string {
           schema.items.map((item: any) => schemaToType(item)).join(",")
         }]`;
       } else {
-        return `${schemaToType(schema.items)}[]`;
+        return `Array<${schemaToType(schema.items)}>`;
       }
     }
     case "map": {

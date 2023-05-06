@@ -262,7 +262,7 @@ export const Data = {
  * Convert PlutusData to Cbor encoded data.\
  * Or apply a shape and convert the provided data struct to Cbor encoded data.
  */
-function to<T = null>(data: Exact<T>, type?: T): Datum | Redeemer {
+function to<T = Data>(data: Exact<T>, type?: T): Datum | Redeemer {
   function serialize(data: Data): C.PlutusData {
     try {
       if (

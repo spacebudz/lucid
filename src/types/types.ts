@@ -1,5 +1,4 @@
 import { C } from "../core/mod.ts";
-import { Data } from "../plutus/mod.ts";
 
 type CostModel = Record<string, number>;
 
@@ -237,4 +236,4 @@ export type SlotConfig = {
   slotLength: number; // number of milliseconds.
 };
 
-export type Exact<T> = T extends null ? Data : T extends infer U ? U : never;
+export type Exact<T> = T extends infer U ? U : never;
