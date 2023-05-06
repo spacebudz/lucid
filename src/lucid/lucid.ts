@@ -195,7 +195,7 @@ export class Lucid {
     return this.provider.awaitTx(txHash, checkInterval);
   }
 
-  async datumOf<T = null>(utxo: UTxO, type?: T): Promise<T> {
+  async datumOf<T = Data>(utxo: UTxO, type?: T): Promise<T> {
     if (!utxo.datum) {
       if (!utxo.datumHash) {
         throw new Error("This UTxO does not have a datum hash.");
