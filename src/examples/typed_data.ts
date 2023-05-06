@@ -10,13 +10,14 @@ const api = await window.cardano.nami.enable();
 lucid.selectWallet(api);
 
 // Type definition could be auto generated from on-chain script
-const MyDatum = Data.Object({
+const MyDatumSchema = Data.Object({
   name: Data.Bytes(),
   age: Data.Integer(),
   colors: Data.Array(Data.Bytes()),
   description: Data.Nullable(Data.Bytes()),
 });
-type MyDatum = Data.Static<typeof MyDatum>;
+type MyDatum = Data.Static<typeof MyDatumSchema>;
+const MyDatum = MyDatumSchema as unknown as MyDatum;
 
 export async function send(): Promise<TxHash> {
   const datum: MyDatum = {
@@ -28,7 +29,7 @@ export async function send(): Promise<TxHash> {
 
   const tx = await lucid
     .newTx()
-    .payToAddressWithData("addr_test...", Data.to<MyDatum>(datum, MyDatum), {
+    .payToAddressWithData("addr_test...", Data.to(datum, MyDatum), {
       lovelace: 10000000n,
     })
     .complete();
