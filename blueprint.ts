@@ -64,7 +64,7 @@ const validators = plutusJson.validators.map((validator) => {
   const title = validator.title;
   const name = (() => {
     const [a, b] = title.split(".");
-    return snakeToCamel(a) + upperFirst(snakeToCamel(b));
+    return upperFirst(snakeToCamel(a)) + upperFirst(snakeToCamel(b));
   })();
   const datum = validator.datum;
   const datumTitle = datum ? snakeToCamel(datum.title) : null;
@@ -86,14 +86,14 @@ const validators = plutusJson.validators.map((validator) => {
 
   const script = validator.compiledCode;
 
-  return `export interface ${upperFirst(name)} {
+  return `export interface ${name} {
     new (${paramsArgs.map((param) => param.join(":")).join(",")}): Validator;${
     datum ? `\n${datumTitle}: ${schemaToType(datumSchema)};` : ""
   }
     ${redeemerTitle}: ${schemaToType(redeemerSchema)};
   };
 
-  export const ${upperFirst(name)} = Object.assign(
+  export const ${name} = Object.assign(
     function (${paramsArgs.map((param) => param.join(":")).join(",")}) {${
     paramsArgs.length > 0
       ? `return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${
@@ -103,7 +103,7 @@ const validators = plutusJson.validators.map((validator) => {
   }},
     ${datum ? `{${datumTitle}: ${JSON.stringify(datumSchema)}},` : ""}
     {${redeemerTitle}: ${JSON.stringify(redeemerSchema)}},
-  ) as unknown as ${upperFirst(name)};`;
+  ) as unknown as ${name};`;
 });
 
 const plutus = imports + "\n\n" + validators.join("\n\n");
