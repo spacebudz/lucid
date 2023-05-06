@@ -12,7 +12,7 @@ tool called [Typebox](https://github.com/sinclairzx81/typebox).
 ```ts
 import { Data } from "https://deno.land/x/lucid/mod.ts";
 
-const Listing = Data.Object({
+const ListingSchema = Data.Object({
   owner: Data.Bytes(),
   amount: Data.Integer(),
   private: Data.Boolean(),
@@ -24,12 +24,13 @@ structure:
 
 ```ts
 type Listing = Data.Static<typeof Listing>;
+const Listing = ListingSchema as unknown as Listing;
 ```
 
 Cast to plutus data:
 
 ```ts
-const listing = Data.to<Listing>(
+const listing = Data.to(
   { owner: "31313131313131", amount: 5252352323n, private: false },
   Listing,
 );
@@ -38,7 +39,7 @@ const listing = Data.to<Listing>(
 Cast from plutus data:
 
 ```ts
-const listing: Listing = Data.from<Listing>(
+const listing: Listing = Data.from(
   "d8799f47313131313131311b0000000139108943d87980ff",
   Listing,
 );

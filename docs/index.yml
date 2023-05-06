@@ -192,21 +192,22 @@ usage:
       <lume-code>
 
       ```ts { title="to.ts" }
-      const Listing = Data.Object({
+      const ListingSchema = Data.Object({
         owner: Data.Bytes(),
         amount: Data.Integer(),
         private: Data.Boolean(),
       });
       type Listing = Data.Static<typeof Listing>;
+      const Listing = ListingSchema as unknown as Listing;
 
-      const listing = Data.to<Listing>(
+      const listing = Data.to(
         { owner: "31313131313131", amount: 5252352323n, private: false },
         Listing,
       );
       ```
 
       ```ts { title="from.ts" }
-      const listing: Listing = Data.from<Listing>(
+      const listing: Listing = Data.from(
         "d8799f47313131313131311b0000000139108943d87980ff",
         Listing,
       );
