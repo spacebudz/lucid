@@ -963,6 +963,17 @@ impl TransactionBuilder {
             self.add_input(&input, None);
         }
 
+        // We need at least one input in the transaction
+        if self.inputs.len() <= 0 {
+            let utxo = match available_inputs.get(0) {
+                Some(utxo) => utxo,
+                None => return Err(JsError::from_str(
+                    "No UTxO found. At least one UTxO is required to make the transaction valid.",
+                )),
+            };
+            self.add_input(&utxo, None);
+        }
+
         Ok(())
     }
 
