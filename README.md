@@ -22,4 +22,5 @@ For details about documentation go to the original repo and check the documentat
 
 ```
 npm install @jpg-store/lucid-cardano
+yarn add @jpg-store/lucid-cardano
 ```

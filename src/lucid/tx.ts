@@ -749,7 +749,6 @@ export class Tx {
         val.set_coin(coin);
         changeAda = changeAda.checked_sub(coin);
 
-        console.log("adding change", changeAda.to_str(), coin.to_str());
         this.txBuilder.add_output(
           C.TransactionOutput.new(
             C.Address.from_bech32(await this.lucid.wallet.address()),
@@ -766,7 +765,6 @@ export class Tx {
         .compare(C.BigNum.from_str(changeMinUtxo)) >= 0
     ) {
       const half = changeAda.checked_div(C.BigNum.from_str("2"));
-      console.log("while", half.to_str(), changeAda.to_str());
       changeAda = changeAda.checked_sub(half);
       this.txBuilder.add_output(
         C.TransactionOutput.new(

@@ -55,6 +55,7 @@ const txHash = await signedTx.submit();
 ```
 
 ## Send ADA with metadata
+
 ```js
 const tx = await lucid.newTx()
   .payToAddress("addr_test...", { lovelace: 5000000n })
@@ -68,13 +69,17 @@ const txHash = await signedTx.submit();
 
 ## Send ADA with datum
 
-The datum will be attached to the witness set and the datum hash is stored in the UTxO.
-To inline the datum directly in the UTxO use `{ inline: Data.to("31313131") }`.\
-Like with native tokens Lucid implicitly adds the minimum ADA requirement for datums.
+The datum will be attached to the witness set and the datum hash is stored in
+the UTxO. To inline the datum directly in the UTxO use
+`{ inline: Data.to("31313131") }`.\
+Like with native tokens Lucid implicitly adds the minimum ADA requirement for
+datums.
 
 ```js
 const tx = await lucid.newTx()
-  .payToAddressWithData("addr_test...", Data.to("31313131"), { lovelace: 5000000n })
+  .payToAddressWithData("addr_test...", Data.to("31313131"), {
+    lovelace: 5000000n,
+  })
   .complete();
 
 const signedTx = await tx.sign().complete();

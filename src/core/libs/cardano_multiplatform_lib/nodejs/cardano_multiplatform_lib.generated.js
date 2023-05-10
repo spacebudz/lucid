@@ -1,7 +1,7 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: e67634d97fca67156dbf2e19510eaac7a72aa0ad
+// source-hash: af75a833cd852bfe905f2f323fc0077290205bd5
 
 let imports = {};
 imports["__wbindgen_placeholder__"] = module.exports;
@@ -849,7 +849,7 @@ function handleError(f, args) {
     wasm.__wbindgen_exn_store(addHeapObject(e));
   }
 }
-function __wbg_adapter_1371(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1372(arg0, arg1, arg2, arg3) {
   wasm.wasm_bindgen__convert__closures__invoke2_mut__h36afefe016e25d40(
     arg0,
     arg1,
@@ -20390,6 +20390,13 @@ class TransactionOutput {
     return TransactionOutput.__wrap(ret);
   }
   /**
+   * @returns {number}
+   */
+  format() {
+    const ret = wasm.transactionoutput_format(this.ptr);
+    return ret;
+  }
+  /**
    * legacy support: serialize output as array array
    *
    * does not support inline datum and script_ref!
@@ -23305,7 +23312,7 @@ module.exports.__wbg_new_9d3a9ce4282a18a8 = function (arg0, arg1) {
       const a = state0.a;
       state0.a = 0;
       try {
-        return __wbg_adapter_1371(a, state0.b, arg0, arg1);
+        return __wbg_adapter_1372(a, state0.b, arg0, arg1);
       } finally {
         state0.a = a;
       }
@@ -23428,7 +23435,7 @@ module.exports.__wbindgen_memory = function () {
   return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper5957 = function (arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper5962 = function (arg0, arg1, arg2) {
   const ret = makeMutClosure(arg0, arg1, 194, __wbg_adapter_30);
   return addHeapObject(ret);
 };

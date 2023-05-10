@@ -963,6 +963,17 @@ impl TransactionBuilder {
             self.add_input(&input, None);
         }
 
+        // We need at least one input in the transaction
+        if self.inputs.len() <= 0 {
+            let utxo = match available_inputs.get(0) {
+                Some(utxo) => utxo,
+                None => return Err(JsError::from_str(
+                    "No UTxO found. At least one UTxO is required to make the transaction valid.",
+                )),
+            };
+            self.add_input(&utxo, None);
+        }
+
         Ok(())
     }
 
@@ -1959,6 +1970,12 @@ impl TransactionBuilder {
 
                 /* We set change_total.coin here as amount to make sure we can don't exceed the max val size by a few bytes */
                 let mut change_output = TransactionOutput {
+                    format: if datum.is_some() && datum.as_ref().unwrap().kind() == DatumKind::Data
+                    {
+                        1
+                    } else {
+                        0
+                    },
                     address: change_address.clone(),
                     amount: Value::new(&change_total.coin).clone(),
                     datum: datum.clone(),
