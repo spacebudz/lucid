@@ -187,21 +187,6 @@ export type Json = any;
 /** Time in milliseconds */
 export type UnixTime = number;
 
-type NFTFile = {
-  name?: string;
-  mediaType: string;
-  src: string | string[];
-};
-
-export type NFTMetadataDetails = {
-  name: string;
-  image: string;
-  mediaType?: string;
-  description?: string | string[];
-  files?: NFTFile[];
-  [key: string]: unknown;
-};
-
 export type PoolParams = {
   poolId: PoolId;
   vrfKeyHash: VrfKeyHash;
@@ -237,3 +222,28 @@ export type SlotConfig = {
 };
 
 export type Exact<T> = T extends infer U ? U : never;
+
+export type Metadata = {
+  222: {
+    name: string;
+    image: string;
+    mediaType?: string;
+    description?: string;
+    files?: {
+      name?: string;
+      mediaType: string;
+      src: string;
+    }[];
+    [key: string]: Json;
+  };
+  333: {
+    name: string;
+    description: string;
+    ticker?: string;
+    url?: string;
+    logo?: string;
+    decimals?: number;
+    [key: string]: Json;
+  };
+  444: Metadata["222"] & { decimals?: number };
+};
