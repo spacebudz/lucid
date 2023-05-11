@@ -39,6 +39,20 @@ const lucid = await Lucid.new(
 );
 ```
 
+### Maestro
+
+```js
+import { Maestro, Lucid } from "https://deno.land/x/lucid/mod.ts";
+
+const lucid = await Lucid.new(
+  new Maestro(
+    "https://preprod.gomaestro-api.org/",
+    "<project_id>",
+  ),
+  "Preprod",
+);
+```
+
 ### Custom
 
 Lucid may add more providers in the future, but you also have the option to
