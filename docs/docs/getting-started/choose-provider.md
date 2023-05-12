@@ -39,6 +39,20 @@ const lucid = await Lucid.new(
 );
 ```
 
+### Maestro
+
+```js
+import { Maestro, Lucid } from "https://deno.land/x/lucid/mod.ts";
+
+const lucid = await Lucid.new(
+  new Maestro(
+    "https://preprod.gomaestro-api.org/v0",  // For MAINNET: "https://mainnet.gomaestro-api.org/v0".
+    "<api-key>", // Get yours @ https://docs.gomaestro.org/docs/Getting-started/Sign-up-login.
+  ),
+  "Preprod",  // For MAINNET: "Mainnet".
+);
+```
+
 ### Custom
 
 Lucid may add more providers in the future, but you also have the option to
