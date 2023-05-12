@@ -46,10 +46,10 @@ import { Maestro, Lucid } from "https://deno.land/x/lucid/mod.ts";
 
 const lucid = await Lucid.new(
   new Maestro(
-    "https://preprod.gomaestro-api.org/",
-    "<project_id>",
+    "https://preprod.gomaestro-api.org/v0",  // For MAINNET: "https://mainnet.gomaestro-api.org/v0".
+    "<api-key>",
   ),
-  "Preprod",
+  "Preprod",  // For MAINNET: "Mainnet".
 );
 ```
 

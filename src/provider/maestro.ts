@@ -20,16 +20,21 @@ import packageJson from "../../package.json" assert { type: "json" };
 
 export class Maestro implements Provider {
   url: string;
-  projectId: string;
+  apiKey: string;
 
-  constructor(url: string, projectId?: string) {
-    this.url = url;
-    this.projectId = projectId || "";
+  constructor(url: string, apiKey: string = "") {
+    // Return the given `url` without the last '/' if it exists.
+    this.url =
+      // Safe even if `url` is an empty string.
+      url.slice(-1) === '/' ?
+        url.slice(0, -1) :
+        url;
+    this.apiKey = apiKey;
   }
 
   async getProtocolParameters(): Promise<ProtocolParameters> {
     const result = await fetch(`${this.url}/protocol-params`, {
-      headers: { "api-key": this.projectId, lucid },
+      headers: { "api-key": this.apiKey, lucid },
     }).then((res) => res.json());
     // Read two numbers which are given in format of number one, then a seperator '/', then number two.
     const readTwoNumbers = (str: string): number => parseInt(str.substring(0, str.indexOf('/'))) / parseInt(str.slice(str.indexOf('/') + 1));
@@ -78,7 +83,7 @@ export class Maestro implements Provider {
       const pageResult =
         await fetch(
           `${this.url}/addresses/${queryPredicate}/utxos?page=${page}`,
-          { headers: { "api-key": this.projectId, lucid } },
+          { headers: { "api-key": this.apiKey, lucid } },
         ).then((res) => res.json());
       if (pageResult.message) {
         throw new Error("Could not fetch UTxOs from Maestro. Try again.");
@@ -102,7 +107,7 @@ export class Maestro implements Provider {
   async getUtxoByUnit(unit: Unit): Promise<UTxO> {
     const addresses = await fetch(
       `${this.url}/assets/${unit}/addresses?count=2`,
-      { headers: { "api-key": this.projectId, lucid } },
+      { headers: { "api-key": this.apiKey, lucid } },
     ).then((res) => res.json());
 
     if (!addresses || addresses.message) {
@@ -127,7 +132,7 @@ export class Maestro implements Provider {
     const utxos = await Promise.all(outRefs.map(async (outRef) => {
       const result = await fetch(
         `${this.url}/transactions/${outRef.txHash}/outputs/${outRef.outputIndex}/utxo`,
-        { headers: { "api-key": this.projectId, lucid } },
+        { headers: { "api-key": this.apiKey, lucid } },
       ).then((res) => res.json());
       if (!result || result.message) {
         return [];
@@ -140,7 +145,7 @@ export class Maestro implements Provider {
   async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
     const result = await fetch(
       `${this.url}/accounts/${rewardAddress}`,
-      { headers: { "api-key": this.projectId, lucid } },
+      { headers: { "api-key": this.apiKey, lucid } },
     ).then((res) => res.json());
     if (!result || result.message) {
       return { poolId: null, rewards: 0n };
@@ -155,7 +160,7 @@ export class Maestro implements Provider {
     const result = await fetch(
       `${this.url}/datum/${datumHash}`,
       {
-        headers: { "api-key": this.projectId, lucid },
+        headers: { "api-key": this.apiKey, lucid },
       },
     )
       .then((res) => res.json())
@@ -169,7 +174,7 @@ export class Maestro implements Provider {
     return new Promise((res) => {
       const confirmation = setInterval(async () => {
         const isConfirmed = await fetch(`${this.url}/transactions/${txHash}/cbor`, {
-          headers: { "api-key": this.projectId, lucid },
+          headers: { "api-key": this.apiKey, lucid },
         }).then((res) => res.json());
         if (isConfirmed && !isConfirmed.message) {
           clearInterval(confirmation);
@@ -185,7 +190,7 @@ export class Maestro implements Provider {
       method: "POST",
       headers: {
         "Content-Type": "application/cbor",
-        "api-key": this.projectId,
+        "api-key": this.apiKey,
         lucid,
       },
       body: fromHex(tx),
