@@ -7,6 +7,7 @@ import {
   Datum,
   DatumHash,
   Delegation,
+  Json,
   OutRef,
   ProtocolParameters,
   Provider,
@@ -227,7 +228,7 @@ type MaestroDatumOption = {
   type: MaestroDatumOptionType;
   hash: string;
   bytes?: string;  // Hex encoded datum CBOR bytes (`null` if datum type is `hash` and corresponding datum bytes have not been seen on-chain).
-  json?: object;
+  json?: Json;
 };
 
 type MaestroScriptType = "native" | "plutusv1" | "plutusv2"
@@ -236,7 +237,7 @@ type MaestroScript = {
   hash: string;
   type: MaestroScriptType;
   bytes?: string; // Script bytes (`null` if `native` script).
-  json?: object;
+  json?: Json;
 }
 
 type MaestroAsset = {
