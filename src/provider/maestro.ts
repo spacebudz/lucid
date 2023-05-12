@@ -187,7 +187,7 @@ export class Maestro implements Provider {
   }
 
   async submitTx(tx: Transaction): Promise<TxHash> {
-    const response = await fetch(`${this.url}/submit/tx`, {
+    const response = await fetch(`${this.url}/transactions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/cbor",
