@@ -219,7 +219,7 @@ export class Maestro implements Provider {
       })(),
       address: result.address,
       datumHash: result.datum ? result.datum.type == 'inline' ? undefined : result.datum.hash : undefined,
-      datum: result.datum ? result.datum.bytes : undefined,
+      datum: result?.datum?.bytes ? result.datum.bytes : undefined,
       scriptRef: result.reference_script ? result.reference_script.type == 'native' ? undefined : { type: result.reference_script.type == 'plutusv1' ? "PlutusV1" : "PlutusV2", script: applyDoubleCborEncoding(result.reference_script.bytes!) } : undefined
     }
   }
