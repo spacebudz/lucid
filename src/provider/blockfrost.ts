@@ -2,7 +2,6 @@ import { C } from "../core/mod.ts";
 import { applyDoubleCborEncoding, fromHex, toHex } from "../utils/mod.ts";
 import {
   Address,
-  Assets,
   Credential,
   Datum,
   DatumHash,
@@ -148,6 +147,7 @@ export class Blockfrost implements Provider {
   }
 
   async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
+    // TODO: Make sure old already spent UTxOs are not retrievable.
     const queryHashes = [...new Set(outRefs.map((outRef) => outRef.txHash))];
     const utxos = await Promise.all(queryHashes.map(async (txHash) => {
       const result = await fetch(
@@ -242,18 +242,14 @@ export class Blockfrost implements Provider {
       result.map(async (r) => ({
         txHash: r.tx_hash,
         outputIndex: r.output_index,
-        assets: (() => {
-          const a: Assets = {};
-          r.amount.forEach((am) => {
-            a[am.unit] = BigInt(am.quantity);
-          });
-          return a;
-        })(),
+        assets: Object.fromEntries(
+          r.amount.map(({ unit, quantity }) => [unit, BigInt(quantity)]),
+        ),
         address: r.address,
-        datumHash: !r.inline_datum ? r.data_hash : undefined,
-        datum: r.inline_datum,
-        scriptRef: r.reference_script_hash &&
-          (await (async () => {
+        datumHash: (!r.inline_datum && r.data_hash) || undefined,
+        datum: r.inline_datum || undefined,
+        scriptRef: r.reference_script_hash
+          ? (await (async () => {
             const {
               type,
             } = await fetch(
@@ -274,7 +270,8 @@ export class Blockfrost implements Provider {
               type: type === "plutusV1" ? "PlutusV1" : "PlutusV2",
               script: applyDoubleCborEncoding(script),
             };
-          })()),
+          })())
+          : undefined,
       })),
     )) as UTxO[];
   }

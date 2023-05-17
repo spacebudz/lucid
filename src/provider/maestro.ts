@@ -27,9 +27,7 @@ export class Maestro implements Provider {
     // Return the given `url` without the last '/' if it exists.
     this.url =
       // Safe even if `url` is an empty string.
-      url.slice(-1) === '/' ?
-        url.slice(0, -1) :
-        url;
+      url.slice(-1) === "/" ? url.slice(0, -1) : url;
     this.apiKey = apiKey;
   }
 
@@ -38,16 +36,24 @@ export class Maestro implements Provider {
       headers: this.commonHeaders(),
     }).then((res) => res.json());
     // Read two numbers which are given in format of number one, then a seperator '/', then number two.
-    const readTwoNumbers = (str: string): number => parseInt(str.substring(0, str.indexOf('/'))) / parseInt(str.slice(str.indexOf('/') + 1));
+    const readTwoNumbers = (str: string): number =>
+      parseInt(str.substring(0, str.indexOf("/"))) /
+      parseInt(str.slice(str.indexOf("/") + 1));
     // To rename keys in an object by the given key-map.
     // deno-lint-ignore no-explicit-any
-    const renameKeys = (obj: any, newKeys: any) => {
-      const entries = Object.keys(obj).map(key => {
+    const renameKeysAndSort = (obj: any, newKeys: any) => {
+      const entries = Object.keys(obj).map((key) => {
         const newKey = newKeys[key] || key;
-        return { [newKey]: obj[key] };
+        return {
+          [newKey]: Object.fromEntries(
+            Object.entries(obj[key]).sort(([k, _v], [k2, _v2]) =>
+              k.localeCompare(k2)
+            ),
+          ),
+        };
       });
       return Object.assign({}, ...entries);
-    }
+    };
     return {
       minFeeA: parseInt(result.min_fee_constant),
       minFeeB: parseInt(result.min_fee_coefficient),
@@ -62,7 +68,10 @@ export class Maestro implements Provider {
       coinsPerUtxoByte: BigInt(result.coins_per_utxo_byte),
       collateralPercentage: parseInt(result.collateral_percentage),
       maxCollateralInputs: parseInt(result.max_collateral_inputs),
-      costModels: renameKeys(result.cost_models, { "plutus:v1": "PlutusV1", "plutus:v2": "PlutusV2" }),
+      costModels: renameKeysAndSort(result.cost_models, {
+        "plutus:v1": "PlutusV1",
+        "plutus:v2": "PlutusV2",
+      }),
     };
   }
 
@@ -81,11 +90,10 @@ export class Maestro implements Provider {
     let result: MaestroUtxos = [];
     let page = 1;
     while (true) {
-      const response =
-        await fetch(
-          `${this.url}/addresses/${queryPredicate}/utxos?page=${page}`,
-          { headers: this.commonHeaders() },
-        );
+      const response = await fetch(
+        `${this.url}/addresses/${queryPredicate}/utxos?page=${page}`,
+        { headers: this.commonHeaders() },
+      );
       const pageResult = await response.json();
       if (!response.ok) {
         throw new Error("Could not fetch UTxOs from Maestro. Try again.");
@@ -111,7 +119,7 @@ export class Maestro implements Provider {
       { headers: this.commonHeaders() },
     ).then((res) => res.json());
 
-    if (addresses.length === 0) {  // In case of invalid parameters also we get an empty list.
+    if (addresses.length === 0) { // In case of invalid parameters also we get an empty list.
       throw new Error("Unit not found.");
     }
     if (addresses.length > 1) {
@@ -164,7 +172,7 @@ export class Maestro implements Provider {
         headers: this.commonHeaders(),
       },
     )
-      .then((res) => res.json())
+      .then((res) => res.json());
     if (!result || result.message) {
       throw new Error(`No datum found for datum hash: ${datumHash}`);
     }
@@ -174,9 +182,12 @@ export class Maestro implements Provider {
   awaitTx(txHash: TxHash, checkInterval = 3000): Promise<boolean> {
     return new Promise((res) => {
       const confirmation = setInterval(async () => {
-        const isConfirmed = await fetch(`${this.url}/transactions/${txHash}/cbor`, {
-          headers: this.commonHeaders(),
-        }).then((res) => res.json());
+        const isConfirmed = await fetch(
+          `${this.url}/transactions/${txHash}/cbor`,
+          {
+            headers: this.commonHeaders(),
+          },
+        ).then((res) => res.json());
         if (isConfirmed && !isConfirmed.message) {
           clearInterval(confirmation);
           await new Promise((res) => setTimeout(() => res(1), 1000));
@@ -191,7 +202,7 @@ export class Maestro implements Provider {
       method: "POST",
       headers: {
         "Content-Type": "application/cbor",
-        ...this.commonHeaders()
+        ...this.commonHeaders(),
       },
       body: fromHex(tx),
     });
@@ -199,12 +210,13 @@ export class Maestro implements Provider {
     if (!response.ok) {
       if (response.status === 400) throw new Error(result);
       else throw new Error("Could not submit transaction.");
-
     }
     return result;
   }
 
-  private commonHeaders() { return { "api-key": this.apiKey, lucid } }
+  private commonHeaders() {
+    return { "api-key": this.apiKey, lucid };
+  }
 
   private maestroUtxoToUtxo(result: MaestroUtxo): UTxO {
     return {
@@ -213,15 +225,24 @@ export class Maestro implements Provider {
       assets: (() => {
         const a: Assets = {};
         result.assets.forEach((am) => {
-          a[am.unit.replace('#', '')] = BigInt(am.quantity);
+          a[am.unit.replace("#", "")] = BigInt(am.quantity);
         });
         return a;
       })(),
       address: result.address,
-      datumHash: result.datum ? result.datum.type == 'inline' ? undefined : result.datum.hash : undefined,
+      datumHash: result.datum
+        ? result.datum.type == "inline" ? undefined : result.datum.hash
+        : undefined,
       datum: result?.datum?.bytes ? result.datum.bytes : undefined,
-      scriptRef: result.reference_script ? result.reference_script.type == 'native' ? undefined : { type: result.reference_script.type == 'plutusv1' ? "PlutusV1" : "PlutusV2", script: applyDoubleCborEncoding(result.reference_script.bytes!) } : undefined
-    }
+      scriptRef: result.reference_script
+        ? result.reference_script.type == "native" ? undefined : {
+          type: result.reference_script.type == "plutusv1"
+            ? "PlutusV1"
+            : "PlutusV2",
+          script: applyDoubleCborEncoding(result.reference_script.bytes!),
+        }
+        : undefined,
+    };
   }
 }
 
@@ -230,23 +251,23 @@ type MaestroDatumOptionType = "hash" | "inline";
 type MaestroDatumOption = {
   type: MaestroDatumOptionType;
   hash: string;
-  bytes?: string;  // Hex encoded datum CBOR bytes (`null` if datum type is `hash` and corresponding datum bytes have not been seen on-chain).
+  bytes?: string; // Hex encoded datum CBOR bytes (`null` if datum type is `hash` and corresponding datum bytes have not been seen on-chain).
   json?: Json;
 };
 
-type MaestroScriptType = "native" | "plutusv1" | "plutusv2"
+type MaestroScriptType = "native" | "plutusv1" | "plutusv2";
 
 type MaestroScript = {
   hash: string;
   type: MaestroScriptType;
   bytes?: string; // Script bytes (`null` if `native` script).
   json?: Json;
-}
+};
 
 type MaestroAsset = {
   unit: string;
   quantity: number;
-}
+};
 
 type MaestroUtxo = {
   tx_hash: TxHash;
@@ -257,7 +278,6 @@ type MaestroUtxo = {
   reference_script?: MaestroScript;
 };
 
-type MaestroUtxos = Array<MaestroUtxo>
+type MaestroUtxos = Array<MaestroUtxo>;
 
 const lucid = packageJson.version; // Lucid version
-
