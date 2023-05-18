@@ -69,7 +69,7 @@ usage:
       const tx = await lucid.newTx()
         .payToAddress("addr..", {lovelace: 40000000n})
         .complete();
-      const signedTx = await lucid.sign().complete();
+      const signedTx = await tx.sign().complete();
       const txHash = await signedTx.submit();
       ```
 
