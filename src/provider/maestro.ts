@@ -55,8 +55,8 @@ export class Maestro implements Provider {
       return Object.assign({}, ...entries);
     };
     return {
-      minFeeA: parseInt(result.min_fee_constant),
-      minFeeB: parseInt(result.min_fee_coefficient),
+      minFeeA: parseInt(result.min_fee_coefficient),
+      minFeeB: parseInt(result.min_fee_constant),
       maxTxSize: parseInt(result.max_tx_size),
       maxValSize: parseInt(result.max_value_size),
       keyDeposit: BigInt(result.stake_key_deposit),
