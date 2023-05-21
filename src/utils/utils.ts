@@ -703,3 +703,14 @@ export function applyDoubleCborEncoding(script: string): string {
     return toHex(C.PlutusScript.new(fromHex(script)).to_bytes());
   }
 }
+
+export function addAssets(...assets: Assets[]): Assets {
+  return assets.reduce((a, b) => {
+    for (const k in b) {
+      if (Object.hasOwn(b, k)) {
+        a[k] = (a[k] || 0n) + b[k];
+      }
+    }
+    return a;
+  }, {});
+}
