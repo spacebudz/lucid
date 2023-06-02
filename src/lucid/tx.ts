@@ -1,4 +1,5 @@
 import { C } from "../core/mod.ts";
+import { Data } from "../mod.ts";
 import {
   Address,
   Assets,
@@ -49,7 +50,7 @@ export class Tx {
     this.tasks.push(async (that) => {
       for (const utxo of utxos) {
         if (utxo.datumHash) {
-          utxo.datum = await that.lucid.datumOf(utxo);
+          utxo.datum = Data.to(await that.lucid.datumOf(utxo));
           // Add datum to witness set, so it can be read from validators
           const plutusData = C.PlutusData.from_bytes(fromHex(utxo.datum!));
           that.txBuilder.add_plutus_data(plutusData);
@@ -69,7 +70,7 @@ export class Tx {
     this.tasks.push(async (that) => {
       for (const utxo of utxos) {
         if (utxo.datumHash && !utxo.datum) {
-          utxo.datum = await that.lucid.datumOf(utxo);
+          utxo.datum = Data.to(await that.lucid.datumOf(utxo));
         }
         const coreUtxo = utxoToCore(utxo);
         that.txBuilder.add_input(
