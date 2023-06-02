@@ -35,10 +35,11 @@ export class Maestro implements Provider {
     const result = await fetch(`${this.url}/protocol-params`, {
       headers: this.commonHeaders(),
     }).then((res) => res.json());
-    // Read two numbers which are given in format of number one, then a seperator '/', then number two.
-    const readTwoNumbers = (str: string): number =>
-      parseInt(str.substring(0, str.indexOf("/"))) /
-      parseInt(str.slice(str.indexOf("/") + 1));
+    // Decimal numbers in Maestro are given as ratio of two numbers represented by string of format "firstNumber/secondNumber".
+    const decimalFromRationalString = (str: string): number => {
+      const forwardSlashIndex = str.indexOf("/");
+      return parseInt(str.slice(0, forwardSlashIndex)) / parseInt(str.slice(forwardSlashIndex + 1));
+    }
     // To rename keys in an object by the given key-map.
     // deno-lint-ignore no-explicit-any
     const renameKeysAndSort = (obj: any, newKeys: any) => {
@@ -61,8 +62,8 @@ export class Maestro implements Provider {
       maxValSize: parseInt(result.max_value_size),
       keyDeposit: BigInt(result.stake_key_deposit),
       poolDeposit: BigInt(result.pool_deposit),
-      priceMem: readTwoNumbers(result.prices.memory),
-      priceStep: readTwoNumbers(result.prices.steps),
+      priceMem: decimalFromRationalString(result.prices.memory),
+      priceStep: decimalFromRationalString(result.prices.steps),
       maxTxExMem: BigInt(result.max_execution_units_per_transaction.memory),
       maxTxExSteps: BigInt(result.max_execution_units_per_transaction.steps),
       coinsPerUtxoByte: BigInt(result.coins_per_utxo_byte),
@@ -198,7 +199,7 @@ export class Maestro implements Provider {
   }
 
   async submitTx(tx: Transaction): Promise<TxHash> {
-    const response = await fetch(`${this.url}/transactions`, {
+    const response = await fetch(`${this.url}/txmanager`, {
       method: "POST",
       headers: {
         "Content-Type": "application/cbor",
@@ -233,7 +234,7 @@ export class Maestro implements Provider {
       datumHash: result.datum
         ? result.datum.type == "inline" ? undefined : result.datum.hash
         : undefined,
-      datum: result?.datum?.bytes ? result.datum.bytes : undefined,
+      datum: result.datum?.bytes,
       scriptRef: result.reference_script
         ? result.reference_script.type == "native" ? undefined : {
           type: result.reference_script.type == "plutusv1"
