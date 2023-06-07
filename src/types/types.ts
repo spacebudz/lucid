@@ -137,7 +137,12 @@ export type UTxO = {
 
 export type OutRef = { txHash: TxHash; outputIndex: number };
 
-export type AddressType = "Base" | "Enterprise" | "Pointer" | "Reward";
+export type AddressType =
+  | "Base"
+  | "Enterprise"
+  | "Pointer"
+  | "Reward"
+  | "Byron";
 
 export type Network = "Mainnet" | "Preview" | "Preprod" | "Custom";
 

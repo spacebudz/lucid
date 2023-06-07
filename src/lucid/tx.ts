@@ -740,13 +740,15 @@ function addressFromWithNetworkCheck(
   address: Address | RewardAddress,
   lucid: Lucid,
 ): C.Address {
-  const addressDetails = lucid.utils.getAddressDetails(address);
+  const { type, networkId } = lucid.utils.getAddressDetails(address);
 
   const actualNetworkId = networkToId(lucid.network);
-  if (addressDetails.networkId !== actualNetworkId) {
+  if (networkId !== actualNetworkId) {
     throw new Error(
-      `Invalid address: Expected address with network id ${actualNetworkId}, but got ${addressDetails.networkId}`,
+      `Invalid address: Expected address with network id ${actualNetworkId}, but got ${networkId}`,
     );
   }
-  return C.Address.from_bech32(address);
+  return type === "Byron"
+    ? C.ByronAddress.from_base58(address).to_address()
+    : C.Address.from_bech32(address);
 }
