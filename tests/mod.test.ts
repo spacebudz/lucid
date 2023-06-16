@@ -41,6 +41,7 @@ const lucid = await Lucid.new(undefined, "Preprod");
 const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
 
 const protocolParameters = PROTOCOL_PARAMETERS_DEFAULT;
+lucid.protocolParameters = protocolParameters;
 
 lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
   .coins_per_utxo_byte(
