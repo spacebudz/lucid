@@ -384,6 +384,30 @@ export function getAddressDetails(address: string): AddressDetails {
     /* pass */
   }
 
+  // Limited support for Byron addresses
+  try {
+    const parsedAddress = ((address: string): C.ByronAddress => {
+      try {
+        return C.ByronAddress.from_bytes(fromHex(address));
+      } catch (_e) {
+        try {
+          return C.ByronAddress.from_base58(address);
+        } catch (_e) {
+          throw new Error("Could not deserialize address.");
+        }
+      }
+    })(address);
+
+    return {
+      type: "Byron",
+      networkId: parsedAddress.network_id(),
+      address: {
+        bech32: "",
+        hex: toHex(parsedAddress.to_address().to_bytes()),
+      },
+    };
+  } catch (_e) { /* pass */ }
+
   throw new Error("No address type matched for: " + address);
 }
 
@@ -723,4 +747,15 @@ export function applyDoubleCborEncoding(script: string): string {
   } catch (_e) {
     return toHex(C.PlutusScript.new(fromHex(script)).to_bytes());
   }
+}
+
+export function addAssets(...assets: Assets[]): Assets {
+  return assets.reduce((a, b) => {
+    for (const k in b) {
+      if (Object.hasOwn(b, k)) {
+        a[k] = (a[k] || 0n) + b[k];
+      }
+    }
+    return a;
+  }, {});
 }

@@ -69,7 +69,7 @@ usage:
       const tx = await lucid.newTx()
         .payToAddress("addr..", {lovelace: 40000000n})
         .complete();
-      const signedTx = await lucid.sign().complete();
+      const signedTx = await tx.sign().complete();
       const txHash = await signedTx.submit();
       ```
 
@@ -143,6 +143,17 @@ usage:
           "http://localhost:1442",
           "ws://localhost:1337",
         ),
+      );
+      ```
+      ```js { title="maestro.js" }
+      import { Maestro, Lucid } from "https://deno.land/x/lucid/mod.ts";
+
+      const lucid = await Lucid.new(
+        new Maestro(
+          "https://preprod.gomaestro-api.org/v0",  // For MAINNET: "https://mainnet.gomaestro-api.org/v0".
+          "<api-key>", // Get yours @ https://docs.gomaestro.org/docs/Getting-started/Sign-up-login.
+        ),
+        "Preprod",  // For MAINNET: "Mainnet".
       );
       ```
       ```js { title="custom.ts" }
