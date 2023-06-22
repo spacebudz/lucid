@@ -1,18 +1,23 @@
 import { C } from "../core/mod.js";
 import { Utils } from "../utils/mod.js";
-import { Address, Credential, Delegation, ExternalWallet, Json, Network, OutRef, Payload, PrivateKey, Provider, RewardAddress, SignedMessage, Slot, Transaction, TxHash, Unit, UTxO, Wallet, WalletApi } from "../types/mod.js";
+import { Address, Credential, Delegation, ExternalWallet, Json, Network, OutRef, Payload, PrivateKey, ProtocolParameters, Provider, RewardAddress, SignedMessage, Slot, Transaction, TxHash, Unit, UTxO, Wallet, WalletApi } from "../types/mod.js";
 import { Tx } from "./tx.js";
 import { TxComplete } from "./tx_complete.js";
 import { Message } from "./message.js";
 import { Data } from "../plutus/data.js";
+declare type LucidConstructorArgs = {
+    provider?: Provider;
+    network?: Network;
+    protocolParameters?: ProtocolParameters;
+};
 export declare class Lucid {
-    protocolParameters: any;
+    protocolParameters: ProtocolParameters;
     txBuilderConfig: C.TransactionBuilderConfig;
     wallet: Wallet;
     provider: Provider;
     network: Network;
     utils: Utils;
-    static new(provider?: Provider, network?: Network): Promise<Lucid>;
+    static new({ provider, network, protocolParameters, }: LucidConstructorArgs): Promise<Lucid>;
     /**
      * Switch provider and/or network.
      * If provider or network unset, no overwriting happens. Provider or network from current instance are taken then.
@@ -56,3 +61,4 @@ export declare class Lucid {
         password?: string;
     }): Lucid;
 }
+export {};

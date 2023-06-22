@@ -47,14 +47,17 @@ export class Lucid {
             value: void 0
         });
     }
-    static async new(provider, network) {
+    static async new({ provider, network, protocolParameters, }) {
         const lucid = new this();
         if (network)
             lucid.network = network;
-        if (provider) {
-            lucid.provider = provider;
-            const protocolParameters = await provider.getProtocolParameters();
+        if (protocolParameters) {
             lucid.protocolParameters = protocolParameters;
+        }
+        if (provider && !protocolParameters) {
+            lucid.provider = provider;
+            const protocolParams = await provider.getProtocolParameters();
+            lucid.protocolParameters = protocolParams;
             if (lucid.provider instanceof Emulator) {
                 lucid.network = "Custom";
                 SLOT_CONFIG_NETWORK[lucid.network] = {
@@ -63,18 +66,20 @@ export class Lucid {
                     slotLength: 1000,
                 };
             }
+        }
+        if (lucid.protocolParameters) {
             const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
             lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
-                .coins_per_utxo_byte(C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString()))
-                .fee_algo(C.LinearFee.new(C.BigNum.from_str(protocolParameters.minFeeA.toString()), C.BigNum.from_str(protocolParameters.minFeeB.toString())))
-                .key_deposit(C.BigNum.from_str(protocolParameters.keyDeposit.toString()))
-                .pool_deposit(C.BigNum.from_str(protocolParameters.poolDeposit.toString()))
-                .max_tx_size(protocolParameters.maxTxSize)
-                .max_value_size(protocolParameters.maxValSize)
-                .collateral_percentage(protocolParameters.collateralPercentage)
-                .max_collateral_inputs(protocolParameters.maxCollateralInputs)
-                .max_tx_ex_units(C.ExUnits.new(C.BigNum.from_str(protocolParameters.maxTxExMem.toString()), C.BigNum.from_str(protocolParameters.maxTxExSteps.toString())))
-                .ex_unit_prices(C.ExUnitPrices.from_float(protocolParameters.priceMem, protocolParameters.priceStep))
+                .coins_per_utxo_byte(C.BigNum.from_str(lucid.protocolParameters.coinsPerUtxoByte.toString()))
+                .fee_algo(C.LinearFee.new(C.BigNum.from_str(lucid.protocolParameters.minFeeA.toString()), C.BigNum.from_str(lucid.protocolParameters.minFeeB.toString())))
+                .key_deposit(C.BigNum.from_str(lucid.protocolParameters.keyDeposit.toString()))
+                .pool_deposit(C.BigNum.from_str(lucid.protocolParameters.poolDeposit.toString()))
+                .max_tx_size(lucid.protocolParameters.maxTxSize)
+                .max_value_size(lucid.protocolParameters.maxValSize)
+                .collateral_percentage(lucid.protocolParameters.collateralPercentage)
+                .max_collateral_inputs(lucid.protocolParameters.maxCollateralInputs)
+                .max_tx_ex_units(C.ExUnits.new(C.BigNum.from_str(lucid.protocolParameters.maxTxExMem.toString()), C.BigNum.from_str(lucid.protocolParameters.maxTxExSteps.toString())))
+                .ex_unit_prices(C.ExUnitPrices.from_float(lucid.protocolParameters.priceMem, lucid.protocolParameters.priceStep))
                 .slot_config(C.BigNum.from_str(slotConfig.zeroTime.toString()), C.BigNum.from_str(slotConfig.zeroSlot.toString()), slotConfig.slotLength)
                 .blockfrost(
             // We have Aiken now as native plutus core engine (primary), but we still support blockfrost (secondary) in case of bugs.
@@ -83,7 +88,7 @@ export class Lucid {
             (provider?.url || "") + "/utils/txs/evaluate", 
             // deno-lint-ignore no-explicit-any
             provider?.projectId || ""))
-                .costmdls(createCostModels(protocolParameters.costModels))
+                .costmdls(createCostModels(lucid.protocolParameters.costModels))
                 .build();
         }
         lucid.utils = new Utils(lucid);

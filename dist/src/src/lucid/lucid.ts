@@ -21,6 +21,7 @@ import {
   OutRef,
   Payload,
   PrivateKey,
+  ProtocolParameters,
   Provider,
   RewardAddress,
   SignedMessage,
@@ -41,21 +42,34 @@ import { SLOT_CONFIG_NETWORK } from "../plutus/time.js";
 import { Constr, Data } from "../plutus/data.js";
 import { Emulator } from "../provider/emulator.js";
 
+type LucidConstructorArgs = {
+  provider?: Provider;
+  network?: Network;
+  protocolParameters?: ProtocolParameters;
+};
+
 export class Lucid {
-  protocolParameters: any;
+  protocolParameters: ProtocolParameters;
   txBuilderConfig!: C.TransactionBuilderConfig;
   wallet!: Wallet;
   provider!: Provider;
   network: Network = "Mainnet";
   utils!: Utils;
 
-  static async new(provider?: Provider, network?: Network): Promise<Lucid> {
+  static async new({
+    provider,
+    network,
+    protocolParameters,
+  }: LucidConstructorArgs): Promise<Lucid> {
     const lucid = new this();
     if (network) lucid.network = network;
-    if (provider) {
-      lucid.provider = provider;
-      const protocolParameters = await provider.getProtocolParameters();
+    if (protocolParameters) {
       lucid.protocolParameters = protocolParameters;
+    }
+    if (provider && !protocolParameters) {
+      lucid.provider = provider;
+      const protocolParams = await provider.getProtocolParameters();
+      lucid.protocolParameters = protocolParams;
 
       if (lucid.provider instanceof Emulator) {
         lucid.network = "Custom";
@@ -65,38 +79,41 @@ export class Lucid {
           slotLength: 1000,
         };
       }
-
+    }
+    if (lucid.protocolParameters) {
       const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
       lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
         .coins_per_utxo_byte(
-          C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString())
+          C.BigNum.from_str(
+            lucid.protocolParameters.coinsPerUtxoByte.toString()
+          )
         )
         .fee_algo(
           C.LinearFee.new(
-            C.BigNum.from_str(protocolParameters.minFeeA.toString()),
-            C.BigNum.from_str(protocolParameters.minFeeB.toString())
+            C.BigNum.from_str(lucid.protocolParameters.minFeeA.toString()),
+            C.BigNum.from_str(lucid.protocolParameters.minFeeB.toString())
           )
         )
         .key_deposit(
-          C.BigNum.from_str(protocolParameters.keyDeposit.toString())
+          C.BigNum.from_str(lucid.protocolParameters.keyDeposit.toString())
         )
         .pool_deposit(
-          C.BigNum.from_str(protocolParameters.poolDeposit.toString())
+          C.BigNum.from_str(lucid.protocolParameters.poolDeposit.toString())
         )
-        .max_tx_size(protocolParameters.maxTxSize)
-        .max_value_size(protocolParameters.maxValSize)
-        .collateral_percentage(protocolParameters.collateralPercentage)
-        .max_collateral_inputs(protocolParameters.maxCollateralInputs)
+        .max_tx_size(lucid.protocolParameters.maxTxSize)
+        .max_value_size(lucid.protocolParameters.maxValSize)
+        .collateral_percentage(lucid.protocolParameters.collateralPercentage)
+        .max_collateral_inputs(lucid.protocolParameters.maxCollateralInputs)
         .max_tx_ex_units(
           C.ExUnits.new(
-            C.BigNum.from_str(protocolParameters.maxTxExMem.toString()),
-            C.BigNum.from_str(protocolParameters.maxTxExSteps.toString())
+            C.BigNum.from_str(lucid.protocolParameters.maxTxExMem.toString()),
+            C.BigNum.from_str(lucid.protocolParameters.maxTxExSteps.toString())
           )
         )
         .ex_unit_prices(
           C.ExUnitPrices.from_float(
-            protocolParameters.priceMem,
-            protocolParameters.priceStep
+            lucid.protocolParameters.priceMem,
+            lucid.protocolParameters.priceStep
           )
         )
         .slot_config(
@@ -113,7 +130,7 @@ export class Lucid {
             (provider as any)?.projectId || ""
           )
         )
-        .costmdls(createCostModels(protocolParameters.costModels))
+        .costmdls(createCostModels(lucid.protocolParameters.costModels))
         .build();
     }
     lucid.utils = new Utils(lucid);
