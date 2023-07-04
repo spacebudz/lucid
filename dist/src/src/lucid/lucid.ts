@@ -66,8 +66,10 @@ export class Lucid {
     if (protocolParameters) {
       lucid.protocolParameters = protocolParameters;
     }
-    if (provider && !protocolParameters) {
+    if (provider) {
       lucid.provider = provider;
+    }
+    if (provider && !protocolParameters) {
       const protocolParams = await provider.getProtocolParameters();
       lucid.protocolParameters = protocolParams;
 
