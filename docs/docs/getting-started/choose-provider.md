@@ -47,7 +47,7 @@ import { Lucid, Maestro } from "https://deno.land/x/lucid/mod.ts";
 const lucid = await Lucid.new(
   new Maestro({
     network: "Preprod",  // For MAINNET: "Mainnet".
-    apiKey: "<Your-API-KEY>",  // Get yours @ https://docs.gomaestro.org/docs/Getting-started/Sign-up-login.
+    apiKey: "<Your-API-KEY>",  // Get yours by visiting https://docs.gomaestro.org/docs/Getting-started/Sign-up-login.
     turboSubmit: false  // Read about paid turbo transaction submission feature at https://docs-v1.gomaestro.org/docs/Dapp%20Platform/Turbo%20Transaction.
   }),
   "Preprod", // For MAINNET: "Mainnet".
