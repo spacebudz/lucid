@@ -108,7 +108,7 @@ export class Maestro implements Provider {
       );
       const pageResult = await response.json();
       if (!response.ok) {
-        throw new Error("Could not fetch UTxOs from Maestro. Try again.");
+        throw new Error("Could not fetch UTxOs from Maestro. Received status code: " + response.status);
       }
       nextCursor = pageResult.next_cursor;
       result = result.concat(pageResult.data as MaestroUtxos);
@@ -133,7 +133,7 @@ export class Maestro implements Provider {
     const timestampedAddresses = await timestampedAddressesResponse.json()
     if (!timestampedAddressesResponse.ok) {
       if (timestampedAddresses.message) throw new Error(timestampedAddresses.message)
-      throw new Error("Couldn't perform query.")
+      throw new Error("Couldn't perform query. Received status code: " + timestampedAddressesResponse.status)
     }
     const addressesWithAmount = timestampedAddresses.data;
     if (addressesWithAmount.length === 0) {
@@ -192,7 +192,10 @@ export class Maestro implements Provider {
       },
     );
     if (!timestampedResultResponse.ok) {
-      throw new Error(`No datum found for datum hash: ${datumHash}`);
+      if (timestampedResultResponse.status === 404)
+        throw new Error(`No datum found for datum hash: ${datumHash}`);
+      else
+        throw new Error("Couldn't successfully perform query. Received status code: " + timestampedResultResponse.status);
     }
     const timestampedResult = await timestampedResultResponse.json();
     return timestampedResult.data.bytes;
@@ -232,7 +235,7 @@ export class Maestro implements Provider {
     const result = await response.text();
     if (!response.ok) {
       if (response.status === 400) throw new Error(result);
-      else throw new Error("Could not submit transaction.");
+      else throw new Error("Could not submit transaction. Received status code: " + response.status);
     }
     return result;
   }
