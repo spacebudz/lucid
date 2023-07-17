@@ -86,7 +86,7 @@ export class Maestro implements Provider {
   }
 
   async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
-    let queryPredicate = (() => {
+    const queryPredicate = (() => {
       if (typeof addressOrCredential === "string") return "/addresses/" + addressOrCredential;
       let credentialBech32Query = "/addresses/cred/"
       credentialBech32Query += addressOrCredential.type === "Key"
