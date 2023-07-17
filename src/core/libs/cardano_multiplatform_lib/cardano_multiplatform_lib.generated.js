@@ -23473,6 +23473,7 @@ async function instantiateModule(opts) {
 
   switch (wasmUrl.protocol) {
     case "": // relative URL
+    case "chrome-extension:":
     case "file:":
     case "https:":
     case "http:": {
