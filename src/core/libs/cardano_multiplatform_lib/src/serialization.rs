@@ -1803,6 +1803,18 @@ impl cbor_event::se::Serialize for CertificateEnum {
             CertificateEnum::PoolRetirement(x) => x.serialize(serializer),
             CertificateEnum::GenesisKeyDelegation(x) => x.serialize(serializer),
             CertificateEnum::MoveInstantaneousRewardsCert(x) => x.serialize(serializer),
+            // Conway
+            CertificateEnum::RegCert(x) => x.serialize(serializer),
+            CertificateEnum::UnregCert(x) => x.serialize(serializer),
+            CertificateEnum::VoteDelegCert(x) => x.serialize(serializer),
+            CertificateEnum::StakeVoteDelegCert(x) => x.serialize(serializer),
+            CertificateEnum::StakeRegDelegCert(x) => x.serialize(serializer),
+            CertificateEnum::VoteRegDelegCert(x) => x.serialize(serializer),
+            CertificateEnum::StakeVoteRegDelegCert(x) => x.serialize(serializer),
+            CertificateEnum::RegCommitteeHotKeyCert(x) => x.serialize(serializer),
+            CertificateEnum::UnregCommitteeHotKeyCert(x) => x.serialize(serializer),
+            CertificateEnum::RegDrepCert(x) => x.serialize(serializer),
+            CertificateEnum::UnregDrepCert(x) => x.serialize(serializer),
         }
     }
 }
@@ -1910,6 +1922,122 @@ impl DeserializeEmbeddedGroup for CertificateEnum {
         })(raw)
         {
             Ok(variant) => return Ok(CertificateEnum::MoveInstantaneousRewardsCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(RegCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::RegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(UnregCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::UnregCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(VoteDelegCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::VoteDelegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(StakeVoteDelegCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::StakeVoteDelegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(StakeRegDelegCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::StakeRegDelegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(VoteRegDelegCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::VoteRegDelegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(StakeVoteRegDelegCert::deserialize_as_embedded_group(
+                raw, len,
+            )?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::StakeVoteRegDelegCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(RegCommitteeHotKeyCert::deserialize_as_embedded_group(
+                raw, len,
+            )?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::RegCommitteeHotKeyCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(UnregCommitteeHotKeyCert::deserialize_as_embedded_group(
+                raw, len,
+            )?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::UnregCommitteeHotKeyCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(RegDrepCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::RegDrepCert(variant)),
+            Err(_) => raw
+                .as_mut_ref()
+                .seek(SeekFrom::Start(initial_position))
+                .unwrap(),
+        };
+        match (|raw: &mut Deserializer<_>| -> Result<_, DeserializeError> {
+            Ok(UnregDrepCert::deserialize_as_embedded_group(raw, len)?)
+        })(raw)
+        {
+            Ok(variant) => return Ok(CertificateEnum::UnregDrepCert(variant)),
             Err(_) => raw
                 .as_mut_ref()
                 .seek(SeekFrom::Start(initial_position))

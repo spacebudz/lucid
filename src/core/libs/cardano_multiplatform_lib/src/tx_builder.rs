@@ -129,6 +129,7 @@ fn witness_keys_for_cert(
         }
         // not witness as there is no single core node or genesis key that posts the certificate
         CertificateEnum::MoveInstantaneousRewardsCert(_cert) => {}
+        _ => todo!("Conway certificates not yet implemented!"),
     }
 }
 
