@@ -48,7 +48,7 @@ const lucid = await Lucid.new(
   new Maestro({
     network: "Preprod",  // For MAINNET: "Mainnet".
     apiKey: "<Your-API-Key>",  // Get yours by visiting https://docs.gomaestro.org/docs/Getting-started/Sign-up-login.
-    turboSubmit: false  // Read about paid turbo transaction submission feature at https://docs-v1.gomaestro.org/docs/Dapp%20Platform/Turbo%20Transaction.
+    turboSubmit: false  // Read about paid turbo transaction submission feature at https://docs.gomaestro.org/docs/Dapp%20Platform/Turbo%20Transaction.
   }),
   "Preprod", // For MAINNET: "Mainnet".
 );
