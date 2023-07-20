@@ -4437,11 +4437,6 @@ impl Deserialize for ProtocolParamUpdate {
                                 .map_err(|e| e.annotate("drep_deposit"))?,
                             );
                         }
-                        unknown_key => {
-                            return Err(
-                                DeserializeFailure::UnknownKey(Key::Uint(unknown_key)).into()
-                            )
-                        }
                         32 => {
                             if drep_inactivity_period.is_some() {
                                 return Err(DeserializeFailure::DuplicateKey(Key::Uint(32)).into());
