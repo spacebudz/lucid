@@ -745,7 +745,7 @@ export class Tx {
           C.BigNum.from_str(coinsPerUtxoByte.toString())
         );
 
-        let coin = minAda;
+        const coin = minAda;
 
         val.set_coin(coin);
         changeAda = changeAda.checked_sub(coin);

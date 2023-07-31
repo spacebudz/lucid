@@ -455,7 +455,7 @@ export class Tx {
                 }
                 const val = assetsToValue(piece.reduce((res, key) => Object.assign(res, { [key]: changeAssets[key] }), {}));
                 const minAda = C.min_ada_required(C.TransactionOutput.new(C.Address.from_bech32(await this.lucid.wallet.address()), val), C.BigNum.from_str(coinsPerUtxoByte.toString()));
-                let coin = minAda;
+                const coin = minAda;
                 val.set_coin(coin);
                 changeAda = changeAda.checked_sub(coin);
                 this.txBuilder.add_output(C.TransactionOutput.new(C.Address.from_bech32(await this.lucid.wallet.address()), val));

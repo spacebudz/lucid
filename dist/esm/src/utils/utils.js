@@ -399,6 +399,8 @@ export function utxoToCore(utxo) {
     return C.TransactionUnspentOutput.new(C.TransactionInput.new(C.TransactionHash.from_bytes(fromHex(utxo.txHash)), C.BigNum.from_str(utxo.outputIndex.toString())), output);
 }
 export function coreToUtxo(coreUtxo) {
+    const datum = coreUtxo.output()?.datum()?.as_data()?.get();
+    const datumHash = coreUtxo.output()?.datum()?.as_data_hash()?.to_hex();
     return {
         txHash: toHex(coreUtxo.input().transaction_id().to_bytes()),
         outputIndex: parseInt(coreUtxo.input().index().to_str()),
@@ -406,9 +408,8 @@ export function coreToUtxo(coreUtxo) {
         address: coreUtxo.output().address().as_byron()
             ? coreUtxo.output().address().as_byron()?.to_base58()
             : coreUtxo.output().address().to_bech32(undefined),
-        datumHash: coreUtxo.output()?.datum()?.as_data_hash()?.to_hex(),
-        datum: coreUtxo.output()?.datum()?.as_data() &&
-            toHex(coreUtxo.output().datum().as_data().to_bytes()),
+        datumHash: datum ? C.hash_plutus_data(datum).to_hex() : datumHash,
+        datum: datum && toHex(datum.to_bytes()),
         scriptRef: coreUtxo.output()?.script_ref() &&
             fromScriptRef(coreUtxo.output().script_ref()),
     };

@@ -1,4 +1,3 @@
-import { PlutusData } from 'utils/plutusData';
 import {
   Address,
   Blockfrost,
@@ -20,10 +19,10 @@ import {
   validate a b _ = a == b
  */
 
-const lucid = await Lucid.new(
-  new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
-  "Preview",
-);
+const lucid = await Lucid.new({
+ provider:  new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
+ network: "Preview"
+});
 
 const api = await window.cardano.nami.enable();
 // Assumes you are in a browser environment
