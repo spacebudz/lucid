@@ -68,11 +68,6 @@ export class Lucid {
     }
     if (provider) {
       lucid.provider = provider;
-    }
-    if (provider && !protocolParameters) {
-      const protocolParams = await provider.getProtocolParameters();
-      lucid.protocolParameters = protocolParams;
-
       if (lucid.provider instanceof Emulator) {
         lucid.network = "Custom";
         SLOT_CONFIG_NETWORK[lucid.network] = {
@@ -81,6 +76,10 @@ export class Lucid {
           slotLength: 1000,
         };
       }
+    }
+    if (provider && !protocolParameters) {
+      const protocolParams = await provider.getProtocolParameters();
+      lucid.protocolParameters = protocolParams;
     }
     if (lucid.protocolParameters) {
       const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
