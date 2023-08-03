@@ -19,22 +19,31 @@ import {
 } from "../types/mod.ts";
 import packageJson from "../../package.json" assert { type: "json" };
 
+export type MaestroSupportedNetworks = "Mainnet" | "Preprod" | "Preview"
+
+export interface MaestroConfig {
+  network: MaestroSupportedNetworks,
+  apiKey: string,
+  turboSubmit?: boolean  // Read about paid turbo transaction submission feature at https://docs-v1.gomaestro.org/docs/Dapp%20Platform/Turbo%20Transaction.
+}
+
 export class Maestro implements Provider {
+
   url: string;
   apiKey: string;
+  turboSubmit: boolean;
 
-  constructor(url: string, apiKey: string = "") {
-    // Return the given `url` without the last '/' if it exists.
-    this.url =
-      // Safe even if `url` is an empty string.
-      url.slice(-1) === "/" ? url.slice(0, -1) : url;
+  constructor({ network, apiKey, turboSubmit = false }: MaestroConfig) {
+    this.url = `https://${network}.gomaestro-api.org/v1`
     this.apiKey = apiKey;
+    this.turboSubmit = turboSubmit;
   }
 
   async getProtocolParameters(): Promise<ProtocolParameters> {
-    const result = await fetch(`${this.url}/protocol-params`, {
+    const timestampedResult = await fetch(`${this.url}/protocol-params`, {
       headers: this.commonHeaders(),
     }).then((res) => res.json());
+    const result = timestampedResult.data;
     // Decimal numbers in Maestro are given as ratio of two numbers represented by string of format "firstNumber/secondNumber".
     const decimalFromRationalString = (str: string): number => {
       const forwardSlashIndex = str.indexOf("/");
@@ -43,7 +52,7 @@ export class Maestro implements Provider {
     // To rename keys in an object by the given key-map.
     // deno-lint-ignore no-explicit-any
     const renameKeysAndSort = (obj: any, newKeys: any) => {
-      const entries = Object.keys(obj).map((key) => {
+      const entries = Object.keys(obj).sort().map((key) => {
         const newKey = newKeys[key] || key;
         return {
           [newKey]: Object.fromEntries(
@@ -78,30 +87,32 @@ export class Maestro implements Provider {
 
   async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
     const queryPredicate = (() => {
-      if (typeof addressOrCredential === "string") return addressOrCredential;
-      const credentialBech32 = addressOrCredential.type === "Key"
+      if (typeof addressOrCredential === "string") return "/addresses/" + addressOrCredential;
+      let credentialBech32Query = "/addresses/cred/"
+      credentialBech32Query += addressOrCredential.type === "Key"
         ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
           "addr_vkh",
         )
         : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
-          "script",
+          "addr_shared_vkh",
         );
-      return credentialBech32;
+      return credentialBech32Query;
     })();
     let result: MaestroUtxos = [];
-    let page = 1;
+    let nextCursor = null;
     while (true) {
+      const appendCursorString = nextCursor === null ? "" : `&cursor=${nextCursor}`
       const response = await fetch(
-        `${this.url}/addresses/${queryPredicate}/utxos?page=${page}`,
+        `${this.url}${queryPredicate}/utxos?count=100${appendCursorString}`,
         { headers: this.commonHeaders() },
       );
       const pageResult = await response.json();
       if (!response.ok) {
-        throw new Error("Could not fetch UTxOs from Maestro. Try again.");
+        throw new Error("Could not fetch UTxOs from Maestro. Received status code: " + response.status);
       }
-      result = result.concat(pageResult as MaestroUtxos);
-      if ((pageResult as MaestroUtxos).length <= 0) break;
-      page++;
+      nextCursor = pageResult.next_cursor;
+      result = result.concat(pageResult.data as MaestroUtxos);
+      if (nextCursor == null) break;
     }
     return result.map(this.maestroUtxoToUtxo);
   }
@@ -115,19 +126,24 @@ export class Maestro implements Provider {
   }
 
   async getUtxoByUnit(unit: Unit): Promise<UTxO> {
-    const addresses = await fetch(
+    const timestampedAddressesResponse = await fetch(
       `${this.url}/assets/${unit}/addresses?count=2`,
       { headers: this.commonHeaders() },
-    ).then((res) => res.json());
-
-    if (addresses.length === 0) { // In case of invalid parameters also we get an empty list.
+    );
+    const timestampedAddresses = await timestampedAddressesResponse.json()
+    if (!timestampedAddressesResponse.ok) {
+      if (timestampedAddresses.message) throw new Error(timestampedAddresses.message)
+      throw new Error("Couldn't perform query. Received status code: " + timestampedAddressesResponse.status)
+    }
+    const addressesWithAmount = timestampedAddresses.data;
+    if (addressesWithAmount.length === 0) {
       throw new Error("Unit not found.");
     }
-    if (addresses.length > 1) {
+    if (addressesWithAmount.length > 1) {
       throw new Error("Unit needs to be an NFT or only held by one address.");
     }
 
-    const address = addresses[0];
+    const address = addressesWithAmount[0].address;
 
     const utxos = await this.getUtxosWithUnit(address, unit);
 
@@ -139,27 +155,29 @@ export class Maestro implements Provider {
   }
 
   async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
-    const utxos = await Promise.all(outRefs.map(async (outRef) => {
-      const result = await fetch(
-        `${this.url}/transactions/${outRef.txHash}/outputs/${outRef.outputIndex}/utxo`,
-        { headers: this.commonHeaders() },
-      ).then((res) => res.json());
-      if (!result || result.message) {
-        return [];
-      }
-      return [this.maestroUtxoToUtxo(result)];
-    }));
-    return utxos.reduce((acc, utxo) => acc.concat(utxo), []);
+    const response = await fetch(`${this.url}/transactions/outputs`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        ...this.commonHeaders()
+      },
+      body: JSON.stringify(outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`)),
+    });
+    if (!response.ok) return [];
+    const utxos = (await response.json()).data;
+    return utxos.map(this.maestroUtxoToUtxo)
   }
 
   async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
-    const result = await fetch(
+    const timestampedResultResponse = await fetch(
       `${this.url}/accounts/${rewardAddress}`,
       { headers: this.commonHeaders() },
-    ).then((res) => res.json());
-    if (!result || result.message) {
+    );
+    if (!timestampedResultResponse.ok) {
       return { poolId: null, rewards: 0n };
     }
+    const timestampedResult = await timestampedResultResponse.json();
+    const result = timestampedResult.data;
     return {
       poolId: result.delegated_pool || null,
       rewards: BigInt(result.rewards_available),
@@ -167,29 +185,33 @@ export class Maestro implements Provider {
   }
 
   async getDatum(datumHash: DatumHash): Promise<Datum> {
-    const result = await fetch(
+    const timestampedResultResponse = await fetch(
       `${this.url}/datum/${datumHash}`,
       {
         headers: this.commonHeaders(),
       },
-    )
-      .then((res) => res.json());
-    if (!result || result.message) {
-      throw new Error(`No datum found for datum hash: ${datumHash}`);
+    );
+    if (!timestampedResultResponse.ok) {
+      if (timestampedResultResponse.status === 404)
+        throw new Error(`No datum found for datum hash: ${datumHash}`);
+      else
+        throw new Error("Couldn't successfully perform query. Received status code: " + timestampedResultResponse.status);
     }
-    return result.bytes;
+    const timestampedResult = await timestampedResultResponse.json();
+    return timestampedResult.data.bytes;
   }
 
   awaitTx(txHash: TxHash, checkInterval = 3000): Promise<boolean> {
     return new Promise((res) => {
       const confirmation = setInterval(async () => {
-        const isConfirmed = await fetch(
+        const isConfirmedResponse = await fetch(
           `${this.url}/transactions/${txHash}/cbor`,
           {
             headers: this.commonHeaders(),
           },
-        ).then((res) => res.json());
-        if (isConfirmed && !isConfirmed.message) {
+        );
+        if (isConfirmedResponse.ok) {
+          await isConfirmedResponse.json()
           clearInterval(confirmation);
           await new Promise((res) => setTimeout(() => res(1), 1000));
           return res(true);
@@ -199,10 +221,13 @@ export class Maestro implements Provider {
   }
 
   async submitTx(tx: Transaction): Promise<TxHash> {
-    const response = await fetch(`${this.url}/txmanager`, {
+    let queryUrl = `${this.url}/txmanager`;
+    queryUrl += this.turboSubmit ? '/turbosubmit' : ''
+    const response = await fetch(queryUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/cbor",
+        "Accept": "text/plain",
         ...this.commonHeaders(),
       },
       body: fromHex(tx),
@@ -210,7 +235,7 @@ export class Maestro implements Provider {
     const result = await response.text();
     if (!response.ok) {
       if (response.status === 400) throw new Error(result);
-      else throw new Error("Could not submit transaction.");
+      else throw new Error("Could not submit transaction. Received status code: " + response.status);
     }
     return result;
   }
@@ -226,7 +251,7 @@ export class Maestro implements Provider {
       assets: (() => {
         const a: Assets = {};
         result.assets.forEach((am) => {
-          a[am.unit.replace("#", "")] = BigInt(am.quantity);
+          a[am.unit] = BigInt(am.amount);
         });
         return a;
       })(),
@@ -267,7 +292,7 @@ type MaestroScript = {
 
 type MaestroAsset = {
   unit: string;
-  quantity: number;
+  amount: number;
 };
 
 type MaestroUtxo = {
@@ -277,6 +302,7 @@ type MaestroUtxo = {
   address: Address;
   datum?: MaestroDatumOption;
   reference_script?: MaestroScript;
+  // Other fields such as `slot` & `txout_cbor` are ignored.
 };
 
 type MaestroUtxos = Array<MaestroUtxo>;
