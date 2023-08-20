@@ -48,7 +48,12 @@ export class Emulator implements Provider {
   datumTable: Record<DatumHash, Datum> = {};
 
   constructor(
-    accounts: { address: Address; assets: Assets }[],
+    accounts: {
+      address: Address;
+      assets: Assets;
+      datum?: Datum;
+      datumHash?: DatumHash;
+    }[],
     protocolParameters: ProtocolParameters = PROTOCOL_PARAMETERS_DEFAULT,
   ) {
     const GENESIS_HASH = "00".repeat(32);
@@ -56,13 +61,15 @@ export class Emulator implements Provider {
     this.slot = 0;
     this.time = Date.now();
     this.ledger = {};
-    accounts.forEach(({ address, assets }, index) => {
+    accounts.forEach(({ address, assets, datum, datumHash }, index) => {
       this.ledger[GENESIS_HASH + index] = {
         utxo: {
           txHash: GENESIS_HASH,
           outputIndex: index,
           address,
           assets,
+          datum,
+          datumHash,
         },
         spent: false,
       };
