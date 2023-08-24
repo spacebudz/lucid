@@ -7,6 +7,7 @@ import {
   DatumHash,
   Delegation,
   Lovelace,
+  OutputData,
   OutRef,
   PoolId,
   ProtocolParameters,
@@ -51,8 +52,7 @@ export class Emulator implements Provider {
     accounts: {
       address: Address;
       assets: Assets;
-      datum?: Datum;
-      datumHash?: DatumHash;
+      outputData?: OutputData;
     }[],
     protocolParameters: ProtocolParameters = PROTOCOL_PARAMETERS_DEFAULT,
   ) {
@@ -61,15 +61,33 @@ export class Emulator implements Provider {
     this.slot = 0;
     this.time = Date.now();
     this.ledger = {};
-    accounts.forEach(({ address, assets, datum, datumHash }, index) => {
+    accounts.forEach(({ address, assets, outputData }, index) => {
+      if (
+        [
+          outputData?.hash,
+          outputData?.asHash,
+          outputData?.inline,
+        ].filter((b) => b)
+          .length > 1
+      ) {
+        throw new Error(
+          "Not allowed to set hash, asHash and inline at the same time.",
+        );
+      }
+
       this.ledger[GENESIS_HASH + index] = {
         utxo: {
           txHash: GENESIS_HASH,
           outputIndex: index,
           address,
           assets,
-          datum,
-          datumHash,
+          datumHash: outputData?.asHash
+            ? C.hash_plutus_data(
+              C.PlutusData.from_bytes(fromHex(outputData.asHash)),
+            ).to_hex()
+            : outputData?.hash,
+          datum: outputData?.inline,
+          scriptRef: outputData?.scriptRef,
         },
         spent: false,
       };
