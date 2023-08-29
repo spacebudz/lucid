@@ -232,6 +232,8 @@ export class Hydra implements Provider {
     });
   }
 
+  /* Listen to all messages until receiving "CommandFailed", "TxValid", or "TxInvalid"
+    The Caller is responsible for cleanup of `client`, even in the error case. */
   private async awaitTxValid(
     txHash: string,
     client: WebSocket,
@@ -269,13 +271,16 @@ export class Hydra implements Provider {
       client.addEventListener("message", listener);
 
       /* If the user calls awaitTxValid in an inappropriate way, it
-         may leak the client and listeners. This timeout guarantees cleanup. */
+         may leak the client and listener, or hang. This timeout guarantees cleanup. */
 
       setTimeout(() => {
-        if (client.readyState !== WebSocket.CLOSING || WebSocket.CLOSED) {
-          client.removeEventListener("message", listener);
+        client.removeEventListener("message", listener);
+        if (
+          client.readyState !== WebSocket.CLOSING &&
+          client.readyState !== WebSocket.CLOSED
+        ) {
           rej(
-            new Error(`Hydra never reported success or failure of ${txHash}`),
+            new Error(`Hydra never reported success or failure of ${txHash}.`),
           );
         }
       }, timeoutMs);
