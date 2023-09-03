@@ -15,11 +15,13 @@ Deno.test("Roundtrip data bigint", () => {
 
     type MyDatum = Int
   */
-  const MyDatum = Data.Integer();
-  type MyDatum = Data.Static<typeof MyDatum>;
+  const MyDatumSchema = Data.Integer();
+  type MyDatum = Data.Static<typeof MyDatumSchema>;
+  const MyDatum = MyDatumSchema as unknown as MyDatum;
+
   const datum: MyDatum = 1234n;
-  const newDatum = Data.from<MyDatum>(
-    Data.to<MyDatum>(datum, MyDatum),
+  const newDatum = Data.from(
+    Data.to(datum, MyDatum),
     MyDatum,
   );
   assertEquals(datum, newDatum);
@@ -35,11 +37,13 @@ Deno.test("Roundtrip data string", () => {
 
     type MyDatum = ByteArray
   */
-  const MyDatum = Data.Bytes();
-  type MyDatum = Data.Static<typeof MyDatum>;
+  const MyDatumSchema = Data.Bytes();
+  type MyDatum = Data.Static<typeof MyDatumSchema>;
+  const MyDatum = MyDatumSchema as unknown as MyDatum;
+
   const datum: MyDatum = "31313131"; //hex
-  const newDatum = Data.from<MyDatum>(
-    Data.to<MyDatum>(datum, MyDatum),
+  const newDatum = Data.from(
+    Data.to(datum, MyDatum),
     MyDatum,
   );
   assertEquals(datum, newDatum);
@@ -55,11 +59,13 @@ Deno.test("Roundtrip data boolean", () => {
 
     type MyDatum = Bool
   */
-  const MyDatum = Data.Boolean();
-  type MyDatum = Data.Static<typeof MyDatum>;
+  const MyDatumSchema = Data.Boolean();
+  type MyDatum = Data.Static<typeof MyDatumSchema>;
+  const MyDatum = MyDatumSchema as unknown as MyDatum;
+
   const datum: MyDatum = true;
-  const newDatum = Data.from<MyDatum>(
-    Data.to<MyDatum>(datum, MyDatum),
+  const newDatum = Data.from(
+    Data.to(datum, MyDatum),
     MyDatum,
   );
   assertEquals(datum, newDatum);
@@ -81,18 +87,19 @@ Deno.test("Roundtrip data object", () => {
       myVariableB: Option(Int),
     }
   */
-  const MyDatum = Data.Object({
+  const MyDatumSchema = Data.Object({
     myVariableA: Data.Bytes(),
     myVariableB: Data.Nullable(Data.Integer()),
   });
-  type MyDatum = Data.Static<typeof MyDatum>;
+  type MyDatum = Data.Static<typeof MyDatumSchema>;
+  const MyDatum = MyDatumSchema as unknown as MyDatum;
 
   const datum: MyDatum = {
     myVariableA: "313131",
     myVariableB: 5555n,
   };
-  const newDatum = Data.from<MyDatum>(
-    Data.to<MyDatum>(datum, MyDatum),
+  const newDatum = Data.from(
+    Data.to(datum, MyDatum),
     MyDatum,
   );
   assertEquals(datum, newDatum);
@@ -101,8 +108,8 @@ Deno.test("Roundtrip data object", () => {
     myVariableA: "313131",
     myVariableB: null,
   };
-  const newDatumNullable = Data.from<MyDatum>(
-    Data.to<MyDatum>(datumNullable, MyDatum),
+  const newDatumNullable = Data.from(
+    Data.to(datumNullable, MyDatum),
     MyDatum,
   );
 
@@ -119,11 +126,16 @@ Deno.test("Roundtrip data array", () => {
 
     type MyDatum = List<Int>
   */
-  const MyDatum = Data.Array(Data.Integer(), { minItems: 3, maxItems: 4 });
-  type MyDatum = Data.Static<typeof MyDatum>;
+  const MyDatumSchema = Data.Array(Data.Integer(), {
+    minItems: 3,
+    maxItems: 4,
+  });
+  type MyDatum = Data.Static<typeof MyDatumSchema>;
+  const MyDatum = MyDatumSchema as unknown as MyDatum;
+
   const datum: MyDatum = [45n, 100n, 9994n, 4281958210985912095n];
-  const newDatum = Data.from<MyDatum>(
-    Data.to<MyDatum>(datum, MyDatum),
+  const newDatum = Data.from(
+    Data.to(datum, MyDatum),
     MyDatum,
   );
   assertEquals(datum, newDatum);
@@ -139,14 +151,16 @@ Deno.test("Roundtrip data map", () => {
 
     type MyDatum = Dict<Int, ByteArray>
   */
-  const MyDatum = Data.Map(Data.Integer(), Data.Bytes());
-  type MyDatum = Data.Static<typeof MyDatum>;
+  const MyDatumSchema = Data.Map(Data.Integer(), Data.Bytes());
+  type MyDatum = Data.Static<typeof MyDatumSchema>;
+  const MyDatum = MyDatumSchema as unknown as MyDatum;
+
   const datum: MyDatum = new Map([[3209n, "3131"], [
     249218490182n,
     "32323232",
   ]]);
-  const newDatum = Data.from<MyDatum>(
-    Data.to<MyDatum>(datum, MyDatum),
+  const newDatum = Data.from(
+    Data.to(datum, MyDatum),
     MyDatum,
   );
   assertEquals(datum, newDatum);
@@ -167,27 +181,72 @@ Deno.test("Roundtrip data enum", () => {
       Up(ByteArray)
     }
   */
-  const MyDatum = Data.Enum([
+  const MyDatumSchema = Data.Enum([
     Data.Literal("Left"),
     Data.Literal("Down"),
     Data.Literal("Right"),
     Data.Object({ Up: Data.Tuple([Data.Bytes()]) }),
   ]);
 
-  type MyDatum = Data.Static<typeof MyDatum>;
+  type MyDatum = Data.Static<typeof MyDatumSchema>;
+  const MyDatum = MyDatumSchema as unknown as MyDatum;
+
   const datumLeft: MyDatum = "Left";
-  const newDatumLeft = Data.from<MyDatum>(
-    Data.to<MyDatum>(datumLeft, MyDatum),
+  const newDatumLeft = Data.from(
+    Data.to(datumLeft, MyDatum),
     MyDatum,
   );
   assertEquals(datumLeft, newDatumLeft);
 
   const datumUp: MyDatum = { Up: ["313131"] };
-  const newDatumUp = Data.from<MyDatum>(
-    Data.to<MyDatum>(datumUp, MyDatum),
+  const newDatumUp = Data.from(
+    Data.to(datumUp, MyDatum),
     MyDatum,
   );
   assertEquals(datumUp, newDatumUp);
+});
+
+Deno.test("Roundtrip data enum with named args", () => {
+  /*
+    - TypeScript:
+
+    type MyDatum = "Left" | "Down" | { Right: [string]; } | { Up: { x: bigint; y: bigint;}; }
+
+    - Aiken:
+
+    type MyDatum {
+      Left
+      Down
+      Right(ByteArray)
+      Up {x: Int, y: Int}
+    }
+  */
+  const MyDatumSchema = Data.Enum([
+    Data.Literal("Left"),
+    Data.Literal("Down"),
+    Data.Object({ Right: Data.Tuple([Data.Bytes()]) }),
+    Data.Object({ Up: Data.Object({ x: Data.Integer(), y: Data.Bytes() }) }),
+  ]);
+  type MyDatum = Data.Static<typeof MyDatumSchema>;
+  const MyDatum = MyDatumSchema as unknown as MyDatum;
+
+  const datumLeft: MyDatum = "Left";
+  const newDatumLeft = Data.from(
+    Data.to(datumLeft, MyDatum),
+    MyDatum,
+  );
+  assertEquals(datumLeft, newDatumLeft);
+
+  const datumUp: MyDatum = { Up: { x: 100n, y: "3131" } };
+  const newDatumUp = Data.from(
+    Data.to(datumUp, MyDatum),
+    MyDatum,
+  );
+  assertEquals(datumUp, newDatumUp);
+  assertEquals(
+    Data.to({ Up: { x: 100n, y: "3131" } }, MyDatum),
+    Data.to({ Up: { y: "3131", x: 100n } }, MyDatum),
+  );
 });
 
 Deno.test("Roundtrip data any", () => {
@@ -200,12 +259,30 @@ Deno.test("Roundtrip data any", () => {
 
     type MyDatum = Data
   */
-  type MyDatum = Data;
-  const datum: MyDatum = new Constr(0, []);
-  const newDatum = Data.from<MyDatum>(
-    Data.to<MyDatum>(datum, Data.Any()),
-    Data.Any(),
+  const datum: Data = new Constr(0, []);
+  const newDatum = Data.from(
+    Data.to(datum, Data.Any() as unknown as Data),
+    Data.Any() as unknown as Data,
   );
+  assertEquals(datum, newDatum);
+});
+
+Deno.test("Roundtrip data void", () => {
+  /*
+    - TypeScript:
+
+    type MyDatum = undefined
+
+    - Aiken:
+
+    type MyDatum = Void
+  */
+  const MyDatum = {
+    anyOf: [{ dataType: "constructor", index: 0, fields: [] }],
+  } as unknown as MyDatum;
+  type MyDatum = undefined;
+  const datum: MyDatum = void 0;
+  const newDatum = Data.from(Data.to(void 0, MyDatum), MyDatum);
   assertEquals(datum, newDatum);
 });
 
@@ -219,11 +296,12 @@ Deno.test("Roundtrip data tuple", () => {
 
     type MyDatum = (Int, ByteArray)
   */
-  const MyDatum = Data.Tuple([Data.Integer(), Data.Bytes()]);
-  type MyDatum = Data.Static<typeof MyDatum>;
+  const MyDatumSchema = Data.Tuple([Data.Integer(), Data.Bytes()]);
+  type MyDatum = Data.Static<typeof MyDatumSchema>;
+  const MyDatum = MyDatumSchema as unknown as MyDatum;
   const datum: MyDatum = [123n, "313131"];
-  const newDatum = Data.from<MyDatum>(
-    Data.to<MyDatum>(datum, MyDatum),
+  const newDatum = Data.from(
+    Data.to(datum, MyDatum),
     MyDatum,
   );
   assertEquals(datum, newDatum);
@@ -250,7 +328,7 @@ Deno.test("Complex data structure", () => {
       someVariable: Option(Int)
     }
   */
-  const MyDatum = Data.Enum([
+  const MyDatumSchema = Data.Enum([
     Data.Object({
       Up: Data.Tuple([
         Data.Array(
@@ -261,14 +339,15 @@ Deno.test("Complex data structure", () => {
     }),
     Data.Literal("Down"),
   ]);
-  type MyDatum = Data.Static<typeof MyDatum>;
+  type MyDatum = Data.Static<typeof MyDatumSchema>;
+  const MyDatum = MyDatumSchema as unknown as MyDatum;
   const datum: MyDatum = {
     Up: [[{ someVariable: null }, { someVariable: 123n }, {
       someVariable: 9990324235325n,
     }], "3131"],
   };
-  const newDatum = Data.from<MyDatum>(
-    Data.to<MyDatum>(datum, MyDatum),
+  const newDatum = Data.from(
+    Data.to(datum, MyDatum),
     MyDatum,
   );
   assertEquals(datum, newDatum);
@@ -280,10 +359,10 @@ Deno.test("Apply params to script", () => {
   try {
     const mintingPolicy = {
       type: "PlutusV2",
-      script: applyParamsToScript<[bigint]>(
+      script: applyParamsToScript(
         script,
         [10n],
-        Data.Tuple([Data.Integer()]),
+        Data.Tuple([Data.Integer()]) as unknown as [bigint],
       ),
     };
     assert(mintingPolicy);
@@ -293,10 +372,10 @@ Deno.test("Apply params to script", () => {
   try {
     const mintingPolicy = {
       type: "PlutusV2",
-      script: applyParamsToScript<unknown[]>(
+      script: applyParamsToScript(
         script,
         [10n, "3131"],
-        Data.Tuple([Data.Integer()]), // this is the real type we check against
+        Data.Tuple([Data.Integer()]) as unknown as unknown[], // this is the real type we check against
       ),
     };
     assert(!mintingPolicy);

@@ -64,57 +64,55 @@ const validators = plutusJson.validators.map((validator) => {
   const title = validator.title;
   const name = (() => {
     const [a, b] = title.split(".");
-    return a.slice(0, 1).toUpperCase() +
-      snakeToCamel(a.slice(1)) +
-      b.slice(0, 1).toUpperCase() +
-      b.slice(1);
+    return upperFirst(snakeToCamel(a)) + upperFirst(snakeToCamel(b));
   })();
-  const datum = validator.datum
-    ? resolveSchema(validator.datum.schema, definitions)
-    : null;
-  const redeemer = resolveSchema(validator.redeemer.schema, definitions);
+  const datum = validator.datum;
+  const datumTitle = datum ? snakeToCamel(datum.title) : null;
+  const datumSchema = datum ? resolveSchema(datum.schema, definitions) : null;
+
+  const redeemer = validator.redeemer;
+  const redeemerTitle = snakeToCamel(redeemer.title);
+  const redeemerSchema = resolveSchema(redeemer.schema, definitions);
+
   const params = validator.parameters || [];
   const paramsSchema = {
     dataType: "list",
     items: params.map((param) => resolveSchema(param.schema, definitions)),
   };
-  const paramsArgs = params && params.length > 0
-    ? params.map((
-      param,
-      index,
-    ) => [snakeToCamel(param.title), schemaToType(paramsSchema.items[index])])
-    : null;
+  const paramsArgs = params.map((
+    param,
+    index,
+  ) => [snakeToCamel(param.title), schemaToType(paramsSchema.items[index])]);
+
   const script = validator.compiledCode;
 
-  return `export namespace ${name} {
-    // ${title}
-    ${
-    datum
-      ? `\nexport const Datum = ${JSON.stringify(datum)};
-      export type Datum = ${schemaToType(datum)};`
-      : "\n"
+  return `export interface ${name} {
+    new (${paramsArgs.map((param) => param.join(":")).join(",")}): Validator;${
+    datum ? `\n${datumTitle}: ${schemaToType(datumSchema)};` : ""
   }
-    export const Redeemer = ${JSON.stringify(redeemer)};
-    export type Redeemer = ${schemaToType(redeemer)};
-    ${
-    paramsArgs
-      ? `export function validator(${
-        paramsArgs.map((param) => param.join(":")).join(",")
-      }): Validator { return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${
-        paramsArgs.map((param) => param[0]).join(",")
-      }], ${JSON.stringify(paramsSchema)}) }; }`
-      : `export function validator(): Validator { return { type: "${plutusVersion}", script: "${script}"}; }`
+    ${redeemerTitle}: ${schemaToType(redeemerSchema)};
   };
-  }`;
+
+  export const ${name} = Object.assign(
+    function (${paramsArgs.map((param) => param.join(":")).join(",")}) {${
+    paramsArgs.length > 0
+      ? `return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${
+        paramsArgs.map((param) => param[0]).join(",")
+      }], ${JSON.stringify(paramsSchema)} as any) };`
+      : `return {type: "${plutusVersion}", script: "${script}"};`
+  }},
+    ${datum ? `{${datumTitle}: ${JSON.stringify(datumSchema)}},` : ""}
+    {${redeemerTitle}: ${JSON.stringify(redeemerSchema)}},
+  ) as unknown as ${name};`;
 });
 
 const plutus = imports + "\n\n" + validators.join("\n\n");
 
 await Deno.writeTextFile("plutus.ts", plutus);
-await Deno.run({
-  cmd: ["deno", "fmt", "plutus.ts"],
+await new Deno.Command(Deno.execPath(), {
+  args: ["fmt", "plutus.ts"],
   stderr: "piped",
-}).status();
+}).output();
 console.log(
   "%cGenerated %cplutus.ts",
   "color: green; font-weight: bold",
@@ -200,9 +198,17 @@ function schemaToType(schema: any): string {
       return schema.anyOf.map((entry: any) =>
         entry.fields.length === 0
           ? `"${entry.title}"`
-          : `{${entry.title}: [${
-            entry.fields.map((field: any) => schemaToType(field)).join(",")
-          }]}`
+          : `{${entry.title}: ${
+            entry.fields[0].title
+              ? `{${
+                entry.fields.map((field: any) =>
+                  [field.title, schemaToType(field)].join(":")
+                ).join(",")
+              }}}`
+              : `[${
+                entry.fields.map((field: any) => schemaToType(field)).join(",")
+              }]}`
+          }`
       ).join(" | ");
     }
     case "list": {
@@ -211,7 +217,7 @@ function schemaToType(schema: any): string {
           schema.items.map((item: any) => schemaToType(item)).join(",")
         }]`;
       } else {
-        return `${schemaToType(schema.items)}[]`;
+        return `Array<${schemaToType(schema.items)}>`;
       }
     }
     case "map": {
@@ -241,9 +247,21 @@ function isNullable(shape: any): boolean {
 }
 
 function snakeToCamel(s: string): string {
-  return s.toLowerCase().replace(/([-_][a-z])/g, (group) =>
-    group
-      .toUpperCase()
-      .replace("-", "")
-      .replace("_", ""));
+  const withUnderscore = s.charAt(0) === "_" ? s.charAt(0) : "";
+  return withUnderscore +
+    (withUnderscore ? s.slice(1) : s).toLowerCase().replace(
+      /([-_][a-z])/g,
+      (group) =>
+        group
+          .toUpperCase()
+          .replace("-", "")
+          .replace("_", ""),
+    );
+}
+
+function upperFirst(s: string): string {
+  const withUnderscore = s.charAt(0) === "_" ? s.charAt(0) : "";
+  return withUnderscore +
+    s.charAt(withUnderscore ? 1 : 0).toUpperCase() +
+    s.slice((withUnderscore ? 1 : 0) + 1);
 }

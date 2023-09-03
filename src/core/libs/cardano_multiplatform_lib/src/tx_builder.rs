@@ -43,6 +43,9 @@ fn witness_keys_for_cert(
                                             &plutus_witness.script().unwrap(),
                                         );
                                     }
+                                    LanguageKind::PlutusV3 => {
+                                        todo!("PlutusV3 not implemented yet.")
+                                    }
                                 }
                                 tx_builder.input_types.scripts.insert(hash.clone());
                             }
@@ -86,6 +89,9 @@ fn witness_keys_for_cert(
                                             &plutus_witness.script().unwrap(),
                                         );
                                     }
+                                    LanguageKind::PlutusV3 => {
+                                        todo!("PlutusV3 not implemented yet.")
+                                    }
                                 }
                                 tx_builder.input_types.scripts.insert(hash.clone());
                             }
@@ -123,6 +129,7 @@ fn witness_keys_for_cert(
         }
         // not witness as there is no single core node or genesis key that posts the certificate
         CertificateEnum::MoveInstantaneousRewardsCert(_cert) => {}
+        _ => todo!("Conway certificates not yet implemented!"),
     }
 }
 
@@ -225,6 +232,7 @@ fn fake_full_tx(
         plutus_data: tx_builder.collect_plutus_data(),
         redeemers: tx_builder.redeemers.clone(),
         plutus_v2_scripts: tx_builder.plutus_v2_scripts.clone(),
+        plutus_v3_scripts: None, // TODO
     };
     Ok(Transaction {
         body,
@@ -963,6 +971,17 @@ impl TransactionBuilder {
             self.add_input(&input, None);
         }
 
+        // We need at least one input in the transaction
+        if self.inputs.len() <= 0 {
+            let utxo = match available_inputs.get(0) {
+                Some(utxo) => utxo,
+                None => return Err(JsError::from_str(
+                    "No UTxO found. At least one UTxO is required to make the transaction valid.",
+                )),
+            };
+            self.add_input(&utxo, None);
+        }
+
         Ok(())
     }
 
@@ -1016,6 +1035,9 @@ impl TransactionBuilder {
                             }
                             LanguageKind::PlutusV2 => {
                                 self.add_plutus_v2_script(&plutus_witness.script().unwrap());
+                            }
+                            LanguageKind::PlutusV3 => {
+                                todo!("PlutusV3 not implemented yet.")
                             }
                         }
                     }
@@ -1090,6 +1112,7 @@ impl TransactionBuilder {
                     self.plutus_versions
                         .insert(script_hash, Language::new_plutus_v2());
                 }
+                ScriptKind::PlutusScriptV3 => todo!("PlutusV3 not yet implemented."),
                 ScriptKind::NativeScript => (),
             },
             None => (),
@@ -1185,6 +1208,7 @@ impl TransactionBuilder {
                     self.plutus_versions
                         .insert(script_hash, Language::new_plutus_v2());
                 }
+                ScriptKind::PlutusScriptV3 => todo!("PlutusV3 not yet implemented."),
                 ScriptKind::NativeScript => (),
             },
             None => (),
@@ -1425,6 +1449,9 @@ impl TransactionBuilder {
                                                 &plutus_witness.script().unwrap(),
                                             );
                                         }
+                                        LanguageKind::PlutusV3 => {
+                                            todo!("PlutusV3 not implemented yet.")
+                                        }
                                     }
                                 }
                                 self.used_plutus_scripts.insert(hash.clone());
@@ -1557,6 +1584,9 @@ impl TransactionBuilder {
                             }
                             LanguageKind::PlutusV2 => {
                                 self.add_plutus_v2_script(&plutus_witness.script().unwrap());
+                            }
+                            LanguageKind::PlutusV3 => {
+                                todo!("PlutusV3 not implemented yet.")
                             }
                         }
                     }
@@ -2193,6 +2223,9 @@ impl TransactionBuilder {
                 )),
                 None => None,
             },
+            // TODO: Conway
+            voting_procedures: None,
+            proposal_procedures: None,
         };
         // we must build a tx with fake data (of correct size) to check the final Transaction size
         let full_tx = fake_full_tx(self, built)?;

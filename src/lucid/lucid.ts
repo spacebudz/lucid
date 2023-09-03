@@ -3,16 +3,19 @@ import {
   coreToUtxo,
   createCostModels,
   fromHex,
+  fromUnit,
   paymentCredentialOf,
   toHex,
+  toUnit,
   Utils,
   utxoToCore,
 } from "../utils/mod.ts";
 import {
   Address,
-  Datum,
+  Credential,
   Delegation,
   ExternalWallet,
+  Json,
   KeyHash,
   Network,
   OutRef,
@@ -35,10 +38,8 @@ import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../misc/wallet.ts";
 import { signData, verifyData } from "../misc/sign_data.ts";
 import { Message } from "./message.ts";
 import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
-import { Data } from "../plutus/data.ts";
-import { TSchema } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
+import { Constr, Data } from "../plutus/data.ts";
 import { Emulator } from "../provider/emulator.ts";
-import { Credential } from "../types/types.ts";
 
 export class Lucid {
   txBuilderConfig!: C.TransactionBuilderConfig;
@@ -197,14 +198,30 @@ export class Lucid {
     return this.provider.awaitTx(txHash, checkInterval);
   }
 
-  async datumOf<T = Datum>(utxo: UTxO, shape?: TSchema): Promise<T> {
+  async datumOf<T = Data>(utxo: UTxO, type?: T): Promise<T> {
     if (!utxo.datum) {
       if (!utxo.datumHash) {
         throw new Error("This UTxO does not have a datum hash.");
       }
       utxo.datum = await this.provider.getDatum(utxo.datumHash);
     }
-    return shape ? Data.from<T>(utxo.datum, shape) : utxo.datum as T;
+    return Data.from<T>(utxo.datum, type);
+  }
+
+  /** Query CIP-0068 metadata for a specifc asset. */
+  async metadataOf<T = Json>(unit: Unit): Promise<T> {
+    const { policyId, name, label } = fromUnit(unit);
+    switch (label) {
+      case 222:
+      case 333:
+      case 444: {
+        const utxo = await this.utxoByUnit(toUnit(policyId, name, 100));
+        const metadata = await this.datumOf(utxo) as Constr<Data>;
+        return Data.toJson(metadata.fields[0]);
+      }
+      default:
+        throw new Error("No variant matched.");
+    }
   }
 
   /**

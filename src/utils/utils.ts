@@ -12,6 +12,7 @@ import {
   Credential,
   Datum,
   DatumHash,
+  Exact,
   KeyHash,
   MintingPolicy,
   NativeScript,
@@ -39,7 +40,6 @@ import {
   unixTimeToEnclosingSlot,
 } from "../plutus/time.ts";
 import { Data } from "../plutus/data.ts";
-import { Json } from "../mod.ts";
 
 export class Utils {
   private lucid: Lucid;
@@ -375,6 +375,30 @@ export function getAddressDetails(address: string): AddressDetails {
     };
   } catch (_e) { /* pass */ }
 
+  // Limited support for Byron addresses
+  try {
+    const parsedAddress = ((address: string): C.ByronAddress => {
+      try {
+        return C.ByronAddress.from_bytes(fromHex(address));
+      } catch (_e) {
+        try {
+          return C.ByronAddress.from_base58(address);
+        } catch (_e) {
+          throw new Error("Could not deserialize address.");
+        }
+      }
+    })(address);
+
+    return {
+      type: "Byron",
+      networkId: parsedAddress.network_id(),
+      address: {
+        bech32: "",
+        hex: toHex(parsedAddress.to_address().to_bytes()),
+      },
+    };
+  } catch (_e) { /* pass */ }
+
   throw new Error("No address type matched for: " + address);
 }
 
@@ -680,10 +704,10 @@ export function nativeScriptFromJson(nativeScript: NativeScript): Script {
 
 export function applyParamsToScript<T extends unknown[] = Data[]>(
   plutusScript: string,
-  params: [...T],
-  shape?: Json,
+  params: Exact<[...T]>,
+  type?: T,
 ): string {
-  const p = (shape ? Data.castTo<T>(params, shape) : params) as Data[];
+  const p = (type ? Data.castTo<T>(params, type) : params) as Data[];
   return toHex(
     C.apply_params_to_plutus_script(
       C.PlutusList.from_bytes(fromHex(Data.to<Data[]>(p))),
@@ -702,4 +726,15 @@ export function applyDoubleCborEncoding(script: string): string {
   } catch (_e) {
     return toHex(C.PlutusScript.new(fromHex(script)).to_bytes());
   }
+}
+
+export function addAssets(...assets: Assets[]): Assets {
+  return assets.reduce((a, b) => {
+    for (const k in b) {
+      if (Object.hasOwn(b, k)) {
+        a[k] = (a[k] || 0n) + b[k];
+      }
+    }
+    return a;
+  }, {});
 }

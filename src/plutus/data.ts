@@ -8,7 +8,7 @@ import {
   Type,
 } from "https://deno.land/x/typebox@0.25.13/src/typebox.ts";
 import { C } from "../core/mod.ts";
-import { Datum, Json, Redeemer } from "../types/mod.ts";
+import { Datum, Exact, Json, Redeemer } from "../types/mod.ts";
 import { fromHex, fromText, toHex } from "../utils/utils.ts";
 
 export class Constr<T> {
@@ -165,7 +165,8 @@ export const Data = {
                 return item.anyOf[0].fields[0].title;
               })(),
               index,
-              fields: item.anyOf[0].fields[0].items,
+              fields: item.anyOf[0].fields[0].items ||
+                item.anyOf[0].fields[0].anyOf[0].fields,
             })
         ),
       },
@@ -261,7 +262,7 @@ export const Data = {
  * Convert PlutusData to Cbor encoded data.\
  * Or apply a shape and convert the provided data struct to Cbor encoded data.
  */
-function to<T = Data>(data: T, shape?: Json): Datum | Redeemer {
+function to<T = Data>(data: Exact<T>, type?: T): Datum | Redeemer {
   function serialize(data: Data): C.PlutusData {
     try {
       if (
@@ -302,7 +303,7 @@ function to<T = Data>(data: T, shape?: Json): Datum | Redeemer {
       throw new Error("Could not serialize the data: " + error);
     }
   }
-  const d = shape ? castTo<T>(data, shape) : data as Data;
+  const d = type ? castTo<T>(data, type) : data as Data;
   return toHex(serialize(d).to_bytes()) as Datum | Redeemer;
 }
 
@@ -310,7 +311,7 @@ function to<T = Data>(data: T, shape?: Json): Datum | Redeemer {
  *  Convert Cbor encoded data to Data.\
  *  Or apply a shape and cast the cbor encoded data to a certain type.
  */
-function from<T = Data>(raw: Datum | Redeemer, shape?: Json): T {
+function from<T = Data>(raw: Datum | Redeemer, type?: T): T {
   function deserialize(data: C.PlutusData): Data {
     if (data.kind() === 0) {
       const constr = data.as_constr_plutus_data()!;
@@ -344,7 +345,7 @@ function from<T = Data>(raw: Datum | Redeemer, shape?: Json): T {
   }
   const data = deserialize(C.PlutusData.from_bytes(fromHex(raw)));
 
-  return shape ? castFrom<T>(data, shape) : data as T;
+  return type ? castFrom<T>(data, type) : data as T;
 }
 
 /**
@@ -423,7 +424,8 @@ function toJson(plutusData: Data): Json {
   return fromData(plutusData);
 }
 
-function castFrom<T>(data: Data, shape: Json): T {
+function castFrom<T = Data>(data: Data, type: T): T {
+  const shape = type as Json;
   if (!shape) throw new Error("Could not type cast data.");
   const shapeType = (shape.anyOf ? "enum" : "") || shape.dataType;
 
@@ -570,11 +572,19 @@ function castFrom<T>(data: Data, shape: Json): T {
               throw new Error("Could not type cast to enum.");
             }
 
-            return {
-              [enumShape.title]: enumShape.fields.map((
+            // check if named args
+            const args = enumShape.fields[0].title
+              ? Object.fromEntries(enumShape.fields.map((
                 field: Json,
                 index: number,
-              ) => castFrom<T>(data.fields[index], field)),
+              ) => [field.title, castFrom<T>(data.fields[index], field)]))
+              : enumShape.fields.map((
+                field: Json,
+                index: number,
+              ) => castFrom<T>(data.fields[index], field));
+
+            return {
+              [enumShape.title]: args,
             } as T;
           }
         }
@@ -630,7 +640,8 @@ function castFrom<T>(data: Data, shape: Json): T {
   throw new Error("Could not type cast data.");
 }
 
-function castTo<T>(struct: T, shape: Json): Data {
+function castTo<T>(struct: Exact<T>, type: T): Data {
+  const shape = type as Json;
   if (!shape) throw new Error("Could not type cast struct.");
   const shapeType = (shape.anyOf ? "enum" : "") || shape.dataType;
 
@@ -663,7 +674,7 @@ function castTo<T>(struct: T, shape: Json): Data {
       }
       const fields = shape.fields.map((field: Json) =>
         castTo<T>(
-          (struct as Record<string, T>)[field.title || "wrapper"],
+          (struct as Record<string, Json>)[field.title || "wrapper"],
           field,
         )
       );
@@ -729,11 +740,23 @@ function castTo<T>(struct: T, shape: Json): Data {
 
           if (!enumEntry) throw new Error("Could not type cast to enum.");
 
+          const args = (struct as Record<string, T[] | Json>)[structTitle];
+
           return new Constr(
             enumEntry.index,
-            (struct as Record<string, T[]>)[structTitle].map((item, index) =>
-              castTo<T>(item, enumEntry.fields[index])
-            ),
+            // check if named args
+            args instanceof Array
+              ? args.map((item, index) =>
+                castTo<T>(item, enumEntry.fields[index])
+              )
+              : enumEntry.fields.map(
+                (entry: Json) => {
+                  const [_, item]: [string, Json] = Object.entries(args).find((
+                    [title],
+                  ) => title === entry.title)!;
+                  return castTo<T>(item, entry);
+                },
+              ),
           );
         }
       }
