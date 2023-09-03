@@ -1,3 +1,4 @@
+import {applyDoubleCborEncoding, fromHex, fromUnit} from "../utils/utils.ts";
 import {
     Address,
     Assets,
@@ -5,7 +6,6 @@ import {
     Datum,
     DatumHash,
     Delegation,
-    Network,
     OutRef,
     ProtocolParameters,
     Provider,
@@ -15,27 +15,17 @@ import {
     Unit,
     UTxO,
 } from "../types/mod.ts";
-import {BackendFactory, KoiosHttpError, KoiosTimeoutError} from "https://esm.sh/@adabox/koios-ts-client@1.0.6/dist/index.js"
-import {applyDoubleCborEncoding, fromHex, fromUnit} from "../utils/utils.ts";
 
 export class Koios implements Provider {
 
-    private readonly backendService
+    private readonly baseUrl: string
 
-    constructor(network: Network) {
-        if (network === 'Mainnet') {
-            this.backendService = BackendFactory.getKoiosMainnetService()
-        } else if (network === 'Preview') {
-            this.backendService = BackendFactory.getKoiosPreviewService()
-        } else if (network === 'Preprod') {
-            this.backendService = BackendFactory.getKoiosPreprodService()
-        } else {
-            throw Error("Unsupported Network Type")
-        }
+    constructor(baseUrl: string) {
+        this.baseUrl = baseUrl
     }
 
     async getProtocolParameters(): Promise<ProtocolParameters> {
-        const result = await this.backendService.getEpochService().getEpochProtocolParameters()
+        const result = await fetch(`${this.baseUrl}/epoch_params?limit=1`).then((res) => res.json());
 
         return {
             minFeeA: parseInt(result[0].min_fee_a),
@@ -57,7 +47,16 @@ export class Koios implements Provider {
 
     async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
         if (typeof addressOrCredential === "string") {
-            const result = await this.backendService.getAddressService().getAddressInformation([addressOrCredential]);
+            const body: any = {}
+            body['_addresses'] = [addressOrCredential]
+            const result = await fetch(`${this.baseUrl}/address_info`, {
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify(body)
+            }).then((res: Response) => res.json());
             if (Array.isArray(result) && result.length > 0 && result[0].utxo_set && result[0].utxo_set.length > 0) {
                 return (await this.koiosUtxosToUtxos(result[0].utxo_set, result[0].address))
             } else {
@@ -110,9 +109,10 @@ export class Koios implements Provider {
     async getUtxoByUnit(unit: Unit): Promise<UTxO> {
         let assetAddresses
         try {
-            let { policyId, assetName } = fromUnit(unit)
+            let {policyId, assetName} = fromUnit(unit)
             assetName = String(assetName)
-            assetAddresses = await this.backendService.getAssetService().getAssetAddresses(policyId, assetName)
+            assetAddresses = await fetch(`${this.baseUrl}/asset_addresses?_asset_policy=${policyId}&_asset_name=${assetName}`)
+                .then((res: Response) => res.json());
         } catch (e) {
             throw new Error("Could not fetch UTxO from Koios. Try again.");
         }
@@ -140,8 +140,16 @@ export class Koios implements Provider {
     async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
         try {
             const utxos = []
-            const queryHashes = [...new Set(outRefs.map((outRef) => outRef.txHash))];
-            const result = await this.backendService.getTransactionsService().getTransactionUTxOs(queryHashes)
+            const body: any = {}
+            body['_tx_hashes'] = [...new Set(outRefs.map((outRef) => outRef.txHash))];
+            const result = await fetch(`${this.baseUrl}/tx_utxos`, {
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify(body)
+            }).then((res: Response) => res.json());
             if (Array.isArray(result) && result.length > 0) {
                 for (const utxo of result) {
                     if (utxo.outputs && utxo.outputs.length > 0) {
@@ -163,7 +171,16 @@ export class Koios implements Provider {
 
     async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
         try {
-            const result = await this.backendService.getAccountService().getAccountInformation([rewardAddress])
+            const body: any = {}
+            body['_stake_addresses'] = [rewardAddress];
+            const result = await fetch(`${this.baseUrl}/account_info`, {
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify(body)
+            }).then((res: Response) => res.json());
             if (Array.isArray(result) && result.length > 0) {
                 return {
                     poolId: result[0].delegated_pool || null,
@@ -178,7 +195,16 @@ export class Koios implements Provider {
 
     async getDatum(datumHash: DatumHash): Promise<Datum> {
         try {
-            const result = await this.backendService.getScriptService().getDatumInformation([datumHash])
+            const body: any = {}
+            body['_datum_hashes'] = [datumHash];
+            const result = await fetch(`${this.baseUrl}/datum_info`, {
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify(body)
+            }).then((res: Response) => res.json());
             if (Array.isArray(result) && result.length > 0) {
                 return result[0].bytes
             }
@@ -192,7 +218,16 @@ export class Koios implements Provider {
         return new Promise((res) => {
             const confirmation = setInterval(async () => {
                 try {
-                    const result = await this.backendService.getTransactionsService().getTransactionInformation([txHash])
+                    const body: any = {}
+                    body['_tx_hashes'] = [txHash];
+                    const result = await fetch(`${this.baseUrl}/tx_info`, {
+                        headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        method: "POST",
+                        body: JSON.stringify(body)
+                    }).then((res: Response) => res.json());
                     if (Array.isArray(result) && result.length > 0) {
                         clearInterval(confirmation);
                         await new Promise((res) => setTimeout(() => res(1), 1000));
@@ -206,16 +241,18 @@ export class Koios implements Provider {
     }
 
     async submitTx(tx: Transaction): Promise<TxHash> {
-        try {
-            return await this.backendService.getTransactionsService().submitTransaction(fromHex(tx))
-        } catch (e) {
-            if (e instanceof KoiosHttpError) {
-                throw new Error(`Transaction Submission Error: ${e.message}`);
-            } else if (e instanceof KoiosTimeoutError) {
-                throw new Error("Timeout Error.");
-            } else {
-                throw new Error("Could not submit transaction.");
-            }
+        const result = await fetch(`${this.baseUrl}/tx_info`, {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/cbor'
+            },
+            method: "POST",
+            body: fromHex(tx)
+        }).then((res: Response) => res.json())
+        if (!result || result.error) {
+            if (result?.status_code === 400) throw new Error(result.message);
+            else throw new Error("Could not submit transaction.");
         }
+        return result
     }
 }
