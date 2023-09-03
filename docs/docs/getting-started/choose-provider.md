@@ -60,6 +60,19 @@ const lucid = await Lucid.new(
 );
 ```
 
+### Koios
+
+```js
+import { Lucid, Koios } from "https://deno.land/x/lucid/mod.ts";
+
+const lucid = await Lucid.new(
+  new Koios(
+    "https://prepod.koios.rest/api/v0", // For MAINNET: "https://api.koios.rest/api/v0".
+  ),
+  "Preprod", // For MAINNET: "Mainnet".
+);
+```
+
 ### Custom
 
 Lucid may add more providers in the future, but you also have the option to
