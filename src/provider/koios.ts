@@ -47,9 +47,10 @@ export class Koios implements Provider {
 
     async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
         if (typeof addressOrCredential === "string") {
-            const body: any = {}
-            body['_addresses'] = [addressOrCredential]
-            const result = await fetch(`${this.baseUrl}/address_info`, {
+            const body = {
+                '_addresses': [addressOrCredential]
+            }
+            const result: KoiosAddressInfoResponse = await fetch(`${this.baseUrl}/address_info`, {
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json'
@@ -67,19 +68,19 @@ export class Koios implements Provider {
         }
     }
 
-    private async koiosUtxosToUtxos(result: any, address?: string): Promise<UTxO[]> {
+    private async koiosUtxosToUtxos(result: Array<KoiosUTxO>, address?: string): Promise<UTxO[]> {
         return (await Promise.all(
-            result.map(async (r: any) => ({
+            result.map((r: KoiosUTxO) => ({
                 txHash: r.tx_hash,
                 outputIndex: r.tx_index,
                 assets: (() => {
                     const a: Assets = {};
-                    r.asset_list.forEach((am: any) => {
+                    r.asset_list.forEach((am: KoiosAsset) => {
                         a[am.policy_id + am.asset_name] = BigInt(am.quantity);
                     });
                     return a;
                 })(),
-                address: address ? address : r.payment_addr.bech32,
+                address: address,
                 datumHash: !r.inline_datum ? r.datum_hash : undefined,
                 datum: r.inline_datum,
                 scriptRef: {
@@ -107,134 +108,114 @@ export class Koios implements Provider {
     }
 
     async getUtxoByUnit(unit: Unit): Promise<UTxO> {
-        let assetAddresses
-        try {
-            let {policyId, assetName} = fromUnit(unit)
-            assetName = String(assetName)
-            assetAddresses = await fetch(`${this.baseUrl}/asset_addresses?_asset_policy=${policyId}&_asset_name=${assetName}`)
+        let {policyId, assetName} = fromUnit(unit)
+        assetName = String(assetName)
+        const assetAddresses = await fetch(`${this.baseUrl}/asset_addresses?_asset_policy=${policyId}&_asset_name=${assetName}`)
                 .then((res: Response) => res.json());
-        } catch (e) {
-            throw new Error("Could not fetch UTxO from Koios. Try again.");
-        }
         if (Array.isArray(assetAddresses) && assetAddresses.length > 0) {
             if (assetAddresses.length > 1) {
                 throw new Error("Unit needs to be an NFT or only held by one address.");
             }
-            const address = assetAddresses[0].payment_address
-            try {
-                const utxos: UTxO[] = await this.getUtxos(address)
-                const result = utxos.find<UTxO>((utxo): utxo is UTxO => {
-                    const keys = Object.keys(utxo.assets)
-                    return keys.length > 0 && keys.includes(unit)
-                })
-                if (result) {
-                    return result
-                }
-            } catch (e) {
-                throw new Error("Could not fetch UTxO from Koios. Try again.");
+            const utxos: UTxO[] = await this.getUtxos(assetAddresses[0].payment_address)
+            const result = utxos.find<UTxO>((utxo): utxo is UTxO => {
+                const keys = Object.keys(utxo.assets)
+                return keys.length > 0 && keys.includes(unit)
+            })
+            if (result) {
+                return result
             }
         }
         throw new Error("Unit not found.");
     }
 
     async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
-        try {
-            const utxos = []
-            const body: any = {}
-            body['_tx_hashes'] = [...new Set(outRefs.map((outRef) => outRef.txHash))];
-            const result = await fetch(`${this.baseUrl}/tx_utxos`, {
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                method: "POST",
-                body: JSON.stringify(body)
-            }).then((res: Response) => res.json());
-            if (Array.isArray(result) && result.length > 0) {
-                for (const utxo of result) {
-                    if (utxo.outputs && utxo.outputs.length > 0) {
-                        utxos.push(await this.koiosUtxosToUtxos(utxo.outputs))
-                    }
+        const utxos = []
+        const body = {
+            '_tx_hashes': [...new Set(outRefs.map((outRef) => outRef.txHash))]
+        }
+        const result = await fetch(`${this.baseUrl}/tx_utxos`, {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            method: "POST",
+            body: JSON.stringify(body)
+        }).then((res: Response) => res.json());
+        if (Array.isArray(result) && result.length > 0) {
+            for (const utxo of result) {
+                if (utxo.outputs && utxo.outputs.length > 0) {
+                    utxos.push(await this.koiosUtxosToUtxos(utxo.outputs))
                 }
-                return utxos.reduce((acc, utxos) => acc.concat(utxos), []).filter((utxo) =>
-                    outRefs.some((outRef) =>
-                        utxo.txHash === outRef.txHash && utxo.outputIndex === outRef.outputIndex
-                    )
-                );
-            } else {
-                return []
             }
-        } catch (e) {
-            throw new Error("Could not fetch UTxOs from Koios. Try again.");
+            return utxos.reduce((acc, utxos) => acc.concat(utxos), []).filter((utxo) =>
+                outRefs.some((outRef) =>
+                    utxo.txHash === outRef.txHash && utxo.outputIndex === outRef.outputIndex
+                )
+            );
+        } else {
+            return []
         }
     }
 
     async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
-        try {
-            const body: any = {}
-            body['_stake_addresses'] = [rewardAddress];
-            const result = await fetch(`${this.baseUrl}/account_info`, {
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                method: "POST",
-                body: JSON.stringify(body)
-            }).then((res: Response) => res.json());
-            if (Array.isArray(result) && result.length > 0) {
-                return {
-                    poolId: result[0].delegated_pool || null,
-                    rewards: BigInt(result[0].rewards_available),
-                }
-            }
-        } catch (e) {
-            throw new Error("Could not fetch Account Information from Koios. Try again.");
+        const body = {
+            '_stake_addresses': [rewardAddress]
         }
-        throw new Error("No Delegation Found by Reward Address");
+        const result = await fetch(`${this.baseUrl}/account_info`, {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            method: "POST",
+            body: JSON.stringify(body)
+        }).then((res: Response) => res.json());
+        if (Array.isArray(result) && result.length > 0) {
+            return {
+                poolId: result[0].delegated_pool || null,
+                rewards: BigInt(result[0].rewards_available),
+            }
+        } else {
+            throw new Error("No Delegation Found by Reward Address");
+        }
     }
 
     async getDatum(datumHash: DatumHash): Promise<Datum> {
-        try {
-            const body: any = {}
-            body['_datum_hashes'] = [datumHash];
-            const result = await fetch(`${this.baseUrl}/datum_info`, {
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                method: "POST",
-                body: JSON.stringify(body)
-            }).then((res: Response) => res.json());
-            if (Array.isArray(result) && result.length > 0) {
-                return result[0].bytes
-            }
-        } catch (e) {
-            throw new Error("Could not fetch Datum Information from Koios. Try again.");
+        const body = {
+            '_datum_hashes': [datumHash]
         }
-        throw new Error("No Datum Found by Datum Hash");
+        const datum = await fetch(`${this.baseUrl}/datum_info`, {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            method: "POST",
+            body: JSON.stringify(body)
+        }).then((res: Response) => res.json());
+        if (Array.isArray(datum) && datum.length > 0) {
+            return datum[0].bytes
+        } else {
+            throw new Error("No Datum Found by Datum Hash");
+        }
     }
 
     awaitTx(txHash: TxHash, checkInterval = 3000): Promise<boolean> {
         return new Promise((res) => {
             const confirmation = setInterval(async () => {
-                try {
-                    const body: any = {}
-                    body['_tx_hashes'] = [txHash];
-                    const result = await fetch(`${this.baseUrl}/tx_info`, {
-                        headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        method: "POST",
-                        body: JSON.stringify(body)
-                    }).then((res: Response) => res.json());
-                    if (Array.isArray(result) && result.length > 0) {
-                        clearInterval(confirmation);
-                        await new Promise((res) => setTimeout(() => res(1), 1000));
-                        return res(true)
-                    }
-                } catch (e) {
-                    throw new Error("Could not fetch Datum Information from Koios. Try again.");
+                const body = {
+                    '_tx_hashes': [txHash]
+                }
+                const result = await fetch(`${this.baseUrl}/tx_info`, {
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    method: "POST",
+                    body: JSON.stringify(body)
+                }).then((res: Response) => res.json());
+                if (Array.isArray(result) && result.length > 0) {
+                    clearInterval(confirmation);
+                    await new Promise((res) => setTimeout(() => res(1), 1000));
+                    return res(true)
                 }
             }, checkInterval);
         });
@@ -256,3 +237,40 @@ export class Koios implements Provider {
         return result
     }
 }
+
+type KoiosAddressInfoResponse = Array<{
+    address: Address;
+    balance: string;
+    stake_address?: string
+    script_address: string
+    utxo_set: Array<KoiosUTxO>
+}>;
+
+type KoiosUTxO = {
+    tx_hash: string;
+    tx_index: number;
+    block_height?: number;
+    block_time: number;
+    value: string;
+    datum_hash?: string;
+    inline_datum?: {
+        bytes: string;
+        value: object;
+    }
+    reference_script?: {
+        hash: string;
+        size: number;
+        type: string;
+        bytes: string;
+        value?: object;
+    }
+    asset_list: Array<KoiosAsset>
+}
+
+type KoiosAsset = {
+    policy_id: string;
+    asset_name?: string;
+    fingerprint: string;
+    decimals: number;
+    quantity: string;
+};
