@@ -13,6 +13,7 @@ async function unsafeInstantiate(module: any, url: string) {
     });
   } catch (_e) {
     // This only ever happens during SSR rendering
+    console.error(_e);
   }
 }
 
