@@ -85,7 +85,10 @@ export class Maestro implements Provider {
     };
   }
 
-  async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
+  private async getUtxosInternal(
+    addressOrCredential: Address | Credential,
+    unit?: Unit,
+  ): Promise<UTxO[]> {
     const queryPredicate = (() => {
       if (typeof addressOrCredential === "string") {
         return "/addresses/" + addressOrCredential;
@@ -100,33 +103,29 @@ export class Maestro implements Provider {
         );
       return credentialBech32Query;
     })();
-    const qparams = new URLSearchParams({ count: "100" });
+    const qparams = new URLSearchParams({
+      count: "100",
+      ...(unit && { asset: unit }),
+    });
     const result: MaestroUtxos = await this.getAllPagesData(
       async (qry: string) =>
         await fetch(qry, { headers: this.commonHeaders() }),
       `${this.url}${queryPredicate}/utxos`,
       qparams,
-      "Location: getUtxos. Error: Could not fetch UTxOs from Maestro",
+      "Location: getUtxosInternal. Error: Could not fetch UTxOs from Maestro",
     );
     return result.map(this.maestroUtxoToUtxo);
   }
 
-  async getUtxosWithUnit(
+  getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
+    return this.getUtxosInternal(addressOrCredential);
+  }
+
+  getUtxosWithUnit(
     addressOrCredential: Address | Credential,
     unit: Unit,
   ): Promise<UTxO[]> {
-    if (typeof addressOrCredential === "string") {
-      return (await this.getAllPagesData<MaestroUtxo>(
-        async (qry: string) =>
-          await fetch(qry, { headers: this.commonHeaders() }),
-        `${this.url}/assets/${unit}/utxos`,
-        new URLSearchParams({ count: "100", address: addressOrCredential }),
-        "Location: getUtxosWithUnit. Error: Could not fetch UTxOs from Maestro",
-      )).map(this.maestroUtxoToUtxo);
-    } else {
-      const utxos = await this.getUtxos(addressOrCredential);
-      return utxos.filter((utxo) => utxo.assets[unit]);
-    }
+    return this.getUtxosInternal(addressOrCredential, unit);
   }
 
   async getUtxoByUnit(unit: Unit): Promise<UTxO> {
