@@ -3806,12 +3806,25 @@ export function isInstantiated() {
   return instanceWithExports != null;
 }
 
+function requiresFallbackUrl() {
+  if (import.meta.url.includes("_frsh")) {
+    return true;
+  }
+  if (globalThis.process?.env?.VERCEL_ENV === 'production') {
+    return true;
+  }
+  if (globalThis.process?.env?.NEXT_RUNTIME === 'nodejs') {
+    return true;
+  }
+  return false;
+}
+
 /**
  * @param {InstantiateOptions} opts
  */
 async function instantiateModule(opts) {
   // Temporary exception for fresh framework
-  const wasmUrl = import.meta.url.includes("_frsh")
+  const wasmUrl = requiresFallbackUrl()
     ? opts.url
     : new URL("cardano_message_signing_bg.wasm", import.meta.url);
   const decompress = opts.decompress;
