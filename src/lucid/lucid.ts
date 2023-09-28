@@ -498,7 +498,7 @@ export class Lucid {
       signTx: async (
         tx: C.Transaction,
       ): Promise<C.TransactionWitnessSet> => {
-        const utxos = await this.utxosAt(address);
+        const utxos = await this.utxosAt(paymentCredentialOf(address));
 
         const ownKeyHashes: Array<KeyHash> = [paymentKeyHash, stakeKeyHash];
 
