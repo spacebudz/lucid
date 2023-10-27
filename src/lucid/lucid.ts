@@ -1,15 +1,9 @@
 import { C } from "../core/mod.ts";
-import {
-  coreToUtxo,
-  createCostModels,
-  fromHex,
-  fromUnit,
-  paymentCredentialOf,
-  toHex,
-  toUnit,
-  Utils,
-  utxoToCore,
-} from "../utils/mod.ts";
+import { signData, verifyData } from "../misc/sign_data.ts";
+import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../misc/wallet.ts";
+import { Constr, Data } from "../plutus/data.ts";
+import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
+import { Emulator } from "../provider/emulator.ts";
 import {
   Address,
   Credential,
@@ -32,14 +26,20 @@ import {
   Wallet,
   WalletApi,
 } from "../types/mod.ts";
+import {
+  coreToUtxo,
+  createCostModels,
+  fromHex,
+  fromUnit,
+  paymentCredentialOf,
+  toHex,
+  toUnit,
+  Utils,
+  utxoToCore,
+} from "../utils/mod.ts";
+import { Message } from "./message.ts";
 import { Tx } from "./tx.ts";
 import { TxComplete } from "./tx_complete.ts";
-import { discoverOwnUsedTxKeyHashes, walletFromSeed } from "../misc/wallet.ts";
-import { signData, verifyData } from "../misc/sign_data.ts";
-import { Message } from "./message.ts";
-import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
-import { Constr, Data } from "../plutus/data.ts";
-import { Emulator } from "../provider/emulator.ts";
 
 export class Lucid {
   txBuilderConfig!: C.TransactionBuilderConfig;

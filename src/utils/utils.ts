@@ -4,6 +4,15 @@ import {
   encodeToString,
 } from "https://deno.land/std@0.100.0/encoding/hex.ts";
 import { C } from "../core/mod.ts";
+import { Lucid, TxComplete } from "../lucid/mod.ts";
+import { generateMnemonic } from "../misc/bip39.ts";
+import { crc8 } from "../misc/crc8.ts";
+import { Data } from "../plutus/data.ts";
+import {
+  SLOT_CONFIG_NETWORK,
+  slotToBeginUnixTime,
+  unixTimeToEnclosingSlot,
+} from "../plutus/time.ts";
 import {
   Address,
   AddressDetails,
@@ -17,6 +26,7 @@ import {
   MintingPolicy,
   NativeScript,
   Network,
+  OutRef,
   PolicyId,
   PrivateKey,
   PublicKey,
@@ -25,21 +35,13 @@ import {
   ScriptHash,
   Slot,
   SpendingValidator,
+  TxOutput,
   Unit,
   UnixTime,
   UTxO,
   Validator,
   WithdrawalValidator,
 } from "../types/mod.ts";
-import { Lucid } from "../lucid/mod.ts";
-import { generateMnemonic } from "../misc/bip39.ts";
-import { crc8 } from "../misc/crc8.ts";
-import {
-  SLOT_CONFIG_NETWORK,
-  slotToBeginUnixTime,
-  unixTimeToEnclosingSlot,
-} from "../plutus/time.ts";
-import { Data } from "../plutus/data.ts";
 
 export class Utils {
   private lucid: Lucid;
@@ -565,21 +567,76 @@ export function utxoToCore(utxo: UTxO): C.TransactionUnspentOutput {
     output,
   );
 }
+export function utxosToCores(utxos: UTxO[]): C.TransactionUnspentOutputs {
+  const result = C.TransactionUnspentOutputs.new();
+  utxos.map(utxoToCore).forEach((utxo) => result.add(utxo));
+  return result;
+}
 
 export function coreToUtxo(coreUtxo: C.TransactionUnspentOutput): UTxO {
   return {
-    txHash: toHex(coreUtxo.input().transaction_id().to_bytes()),
-    outputIndex: parseInt(coreUtxo.input().index().to_str()),
-    assets: valueToAssets(coreUtxo.output().amount()),
-    address: coreUtxo.output().address().as_byron()
-      ? coreUtxo.output().address().as_byron()?.to_base58()!
-      : coreUtxo.output().address().to_bech32(undefined),
-    datumHash: coreUtxo.output()?.datum()?.as_data_hash()?.to_hex(),
-    datum: coreUtxo.output()?.datum()?.as_data() &&
-      toHex(coreUtxo.output().datum()!.as_data()!.get().to_bytes()),
-    scriptRef: coreUtxo.output()?.script_ref() &&
-      fromScriptRef(coreUtxo.output().script_ref()!),
+    ...coreToOutRef(coreUtxo.input()),
+    ...coreToTxOutput(coreUtxo.output()),
   };
+}
+
+export function coresToUtxos(utxos: C.TransactionUnspentOutputs): UTxO[] {
+  const result: UTxO[] = [];
+  for (let i = 0; i < utxos.len(); i++) {
+    result.push(coreToUtxo(utxos.get(i)));
+  }
+  return result;
+}
+
+export function coreToOutRef(input: C.TransactionInput): OutRef {
+  return {
+    txHash: toHex(input.transaction_id().to_bytes()),
+    outputIndex: parseInt(input.index().to_str()),
+  };
+}
+
+export function coresToOutRefs(inputs: C.TransactionInputs): OutRef[] {
+  const result: OutRef[] = [];
+  for (let i = 0; i < inputs.len(); i++) {
+    result.push(coreToOutRef(inputs.get(i)));
+  }
+  return result;
+}
+
+export function coreToTxOutput(output: C.TransactionOutput): TxOutput {
+  return {
+    assets: valueToAssets(output.amount()),
+    address: output.address().as_byron()
+      ? output.address().as_byron()?.to_base58()!
+      : output.address().to_bech32(undefined),
+    datumHash: output.datum()?.as_data_hash()?.to_hex(),
+    datum: output.datum()?.as_data() &&
+      toHex(output.datum()!.as_data()!.get().to_bytes()),
+    scriptRef: output.script_ref() && fromScriptRef(output.script_ref()!),
+  };
+}
+
+export function coresToTxOutputs(outputs: C.TransactionOutputs): TxOutput[] {
+  const result: TxOutput[] = [];
+  for (let i = 0; i < outputs.len(); i++) {
+    result.push(coreToTxOutput(outputs.get(i)));
+  }
+  return result;
+}
+
+export function producedUtxosFrom(unsignedTx: TxComplete): UTxO[] {
+  const result: UTxO[] = [];
+  const hash = unsignedTx.toHash();
+  coresToTxOutputs(unsignedTx.txComplete.body().outputs()).forEach(
+    (output, index) => {
+      result.push({
+        outputIndex: index,
+        txHash: hash,
+        ...output,
+      });
+    },
+  );
+  return result;
 }
 
 export function networkToId(network: Network): number {

@@ -1,4 +1,10 @@
 import {
+  assert,
+  assertEquals,
+  assertNotEquals,
+} from "https://deno.land/std@0.145.0/testing/asserts.ts";
+import * as fc from "https://esm.sh/fast-check@3.1.1";
+import {
   Assets,
   assetsToValue,
   C,
@@ -20,12 +26,7 @@ import {
   utxoToCore,
   valueToAssets,
 } from "../src/mod.ts";
-import {
-  assert,
-  assertEquals,
-  assertNotEquals,
-} from "https://deno.land/std@0.145.0/testing/asserts.ts";
-import * as fc from "https://esm.sh/fast-check@3.1.1";
+import { coresToTxOutputs } from "../src/utils/utils.ts";
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
 const lucid = await Lucid.new(undefined, "Preprod");
@@ -483,4 +484,127 @@ Deno.test("Preserve task/transaction order", async () => {
     );
     assertEquals(num, outputNum);
   });
+});
+
+Deno.test("chain value transactions", async () => {
+  lucid.selectWalletFrom({
+    address:
+      "addr_test1qq90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sts2cfa",
+    utxos: [
+      {
+        txHash:
+          "222fc93bc0dda80e78890f1f965733239e1f64f76555e8dcde1a4aa7db67b129",
+        outputIndex: 0,
+        assets: { lovelace: 1_100_000n },
+        address:
+          "addr_test1qq90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sts2cfa",
+        datumHash: null,
+        datum: null,
+        scriptRef: null,
+      },
+      {
+        txHash:
+          "111fc93bc0dda80e78890f1f965733239e1f64f76555e8dcde1a4aa7db67b129",
+        outputIndex: 0,
+        assets: { lovelace: 10_000_000n },
+        address:
+          "addr_test1qq90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sts2cfa",
+        datumHash: null,
+        datum: null,
+        scriptRef: null,
+      },
+    ],
+  });
+
+  const tx1 = await lucid.newTx()
+    .payToAddress(
+      "addr_test1qrqcwuw9ju33z2l0zayt38wsthsldyrgyt82p2p3trccucffejwnp8afwa8v58aw7dpj7hpf9dh8txr0qlksqtcsxheqhekxra",
+      { lovelace: 2_000_000n },
+    )
+    .complete();
+
+  const tx1Outs = coresToTxOutputs(tx1.txComplete.body().outputs());
+  assertEquals(2, tx1Outs.length, "Expected 2 tx outputs for tx1");
+  assertEquals(
+    2_000_000n,
+    tx1Outs.at(0)!.assets.lovelace,
+    `Expected 2 ADA pay out as defined. Actual ${
+      tx1Outs.at(0)!.assets.lovelace
+    }`,
+  );
+  const tx2 = await tx1
+    .chain((utxos) =>
+      utxos.find(({ address }) =>
+        address ===
+          "addr_test1qq90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sts2cfa"
+      )!
+    )
+    .payToAddress(
+      "addr_test1qqnjvrr0rph6uylhucl58shxgpu64kmzpulqccmqdeds5ht72xn7hte3evkx34mg0dlulhzc9suyczrfnv9e4m95d22q3ma4ud",
+      { lovelace: 2_000_000n },
+    )
+    .payToAddress(
+      "addr_test1qqnjvrr0rph6uylhucl58shxgpu64kmzpulqccmqdeds5ht72xn7hte3evkx34mg0dlulhzc9suyczrfnv9e4m95d22q3ma4ud",
+      { lovelace: 1_000_000n },
+    )
+    .payToAddress(
+      "addr_test1qq90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sts2cfa",
+      { lovelace: 2_000_000n },
+    )
+    .complete();
+
+  assertEquals(
+    1,
+    tx2.txComplete.body().inputs().len(),
+    `Expected 1 tx input for tx2. Actual ${tx2.txComplete.body().inputs().len()}`,
+  );
+  const tx2Outs = coresToTxOutputs(tx2.txComplete.body().outputs());
+  assertEquals(
+    4,
+    tx2Outs.length,
+    `Expected 4 tx outputs for tx2. Actual ${tx2Outs.length}`,
+  );
+  assertEquals(
+    2_000_000n,
+    tx2Outs.at(0)!.assets.lovelace,
+    `Expected 2 ADA first tx output for tx2. Actual ${
+      tx2Outs.at(0)!.assets.lovelace
+    }`,
+  );
+  assertEquals(
+    1_000_000n,
+    tx2Outs.at(1)!.assets.lovelace,
+    `Expected 1 ADA second tx output for tx2. Actual ${
+      tx2Outs.at(1)!.assets.lovelace
+    }`,
+  );
+  assertEquals(
+    2_000_000n,
+    tx2Outs.at(2)!.assets.lovelace,
+    `Expected 2 ADA second tx output for tx2. Actual ${
+      tx2Outs.at(2)!.assets.lovelace
+    }`,
+  );
+
+  const tx3 = await tx2
+    .chain((utxos) =>
+      utxos.find(({ address }) =>
+        address ===
+          "addr_test1qqnjvrr0rph6uylhucl58shxgpu64kmzpulqccmqdeds5ht72xn7hte3evkx34mg0dlulhzc9suyczrfnv9e4m95d22q3ma4ud"
+      )!
+    )
+    .payToAddress(
+      "addr_test1qqnjvrr0rph6uylhucl58shxgpu64kmzpulqccmqdeds5ht72xn7hte3evkx34mg0dlulhzc9suyczrfnv9e4m95d22q3ma4ud",
+      { lovelace: 1_000_000n },
+    )
+    .payToAddress(
+      "addr_test1qrqcwuw9ju33z2l0zayt38wsthsldyrgyt82p2p3trccucffejwnp8afwa8v58aw7dpj7hpf9dh8txr0qlksqtcsxheqhekxra",
+      { lovelace: 1_000_000n },
+    )
+    .complete();
+  assertEquals(
+    2,
+    tx3.txComplete.body().inputs().len(),
+    `Expected 1 tx input for tx3. Actual ${tx3.txComplete.body().inputs().len()}`,
+  );
 });

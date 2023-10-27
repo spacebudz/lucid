@@ -29,7 +29,11 @@ import {
   toScriptRef,
   utxoToCore,
 } from "../utils/mod.ts";
-import { applyDoubleCborEncoding } from "../utils/utils.ts";
+import {
+  applyDoubleCborEncoding,
+  coresToUtxos,
+  utxosToCores,
+} from "../utils/utils.ts";
 import { Lucid } from "./lucid.ts";
 import { TxComplete } from "./tx_complete.ts";
 
@@ -37,7 +41,9 @@ export class Tx {
   txBuilder: C.TransactionBuilder;
   /** Stores the tx instructions, which get executed after calling .complete() */
   private tasks: ((that: Tx) => unknown)[];
-  private lucid: Lucid;
+  protected lucid: Lucid;
+  /** Stores the available input utxo set for this tx (for tx chaining), if undefined falls back to wallet utxos */
+  private inputUTxOs?: UTxO[];
 
   constructor(lucid: Lucid) {
     this.lucid = lucid;
@@ -88,6 +94,18 @@ export class Tx {
         );
       }
     });
+    return this;
+  }
+
+  /**
+   * Defines the set of UTxOs that is considered as inputs for balancing this transactions.
+   * If not set explicitely, falls back to the wallet's UTxO set.
+   */
+  collectTxInputsFrom(utxos: UTxO[]): Tx {
+    // NOTE: merge exisitng input utxos to support tx composition
+    this.tasks.push((tx) =>
+      tx.inputUTxOs = [...(tx.inputUTxOs ?? []), ...utxos]
+    );
     return this;
   }
 
@@ -546,13 +564,14 @@ export class Tx {
       task = this.tasks.shift();
     }
 
-    const utxos = await this.lucid.wallet.getUtxosCore();
+    const utxos = this.inputUTxOs !== undefined
+      ? utxosToCores(this.inputUTxOs)
+      : await this.lucid.wallet.getUtxosCore();
 
     const changeAddress: C.Address = addressFromWithNetworkCheck(
       options?.change?.address || (await this.lucid.wallet.address()),
       this.lucid,
     );
-
     if (options?.coinSelection || options?.coinSelection === undefined) {
       this.txBuilder.add_inputs_from(
         utxos,
@@ -567,7 +586,6 @@ export class Tx {
         ]),
       );
     }
-
     this.txBuilder.balance(
       changeAddress,
       (() => {
@@ -602,6 +620,8 @@ export class Tx {
       })(),
     );
 
+    const utxoSet = this.inputUTxOs ??
+      coresToUtxos(await this.lucid.wallet.getUtxosCore());
     return new TxComplete(
       this.lucid,
       await this.txBuilder.construct(
@@ -609,6 +629,7 @@ export class Tx {
         changeAddress,
         options?.nativeUplc === undefined ? true : options?.nativeUplc,
       ),
+      utxoSet,
     );
   }
 
