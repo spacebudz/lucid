@@ -41,7 +41,9 @@ export class Tx {
 
   constructor(lucid: Lucid) {
     this.lucid = lucid;
-    this.txBuilder = C.TransactionBuilder.new(this.lucid.txBuilderConfig);
+    this.txBuilder = C.TransactionBuilder.new(
+      lucid.getTransactionBuilderConfig(),
+    );
     this.tasks = [];
   }
 
@@ -216,10 +218,7 @@ export class Tx {
     this.tasks.push((that) => {
       const addressDetails = that.lucid.utils.getAddressDetails(rewardAddress);
 
-      if (
-        addressDetails.type !== "Reward" ||
-        !addressDetails.stakeCredential
-      ) {
+      if (addressDetails.type !== "Reward" || !addressDetails.stakeCredential) {
         throw new Error("Not a reward address provided.");
       }
       const credential = addressDetails.stakeCredential.type === "Key"
@@ -260,10 +259,7 @@ export class Tx {
     this.tasks.push((that) => {
       const addressDetails = that.lucid.utils.getAddressDetails(rewardAddress);
 
-      if (
-        addressDetails.type !== "Reward" ||
-        !addressDetails.stakeCredential
-      ) {
+      if (addressDetails.type !== "Reward" || !addressDetails.stakeCredential) {
         throw new Error("Not a reward address provided.");
       }
       const credential = addressDetails.stakeCredential.type === "Key"
@@ -293,10 +289,7 @@ export class Tx {
     this.tasks.push((that) => {
       const addressDetails = that.lucid.utils.getAddressDetails(rewardAddress);
 
-      if (
-        addressDetails.type !== "Reward" ||
-        !addressDetails.stakeCredential
-      ) {
+      if (addressDetails.type !== "Reward" || !addressDetails.stakeCredential) {
         throw new Error("Not a reward address provided.");
       }
       const credential = addressDetails.stakeCredential.type === "Key"
@@ -337,9 +330,7 @@ export class Tx {
         that.lucid,
       );
 
-      const certificate = C.Certificate.new_pool_registration(
-        poolRegistration,
-      );
+      const certificate = C.Certificate.new_pool_registration(poolRegistration);
 
       that.txBuilder.add_certificate(certificate, undefined);
     });
@@ -357,9 +348,7 @@ export class Tx {
       // This flag makes sure a pool deposit is not required
       poolRegistration.set_is_update(true);
 
-      const certificate = C.Certificate.new_pool_registration(
-        poolRegistration,
-      );
+      const certificate = C.Certificate.new_pool_registration(poolRegistration);
 
       that.txBuilder.add_certificate(certificate, undefined);
     });
@@ -412,9 +401,7 @@ export class Tx {
   addSigner(address: Address | RewardAddress): Tx {
     const addressDetails = this.lucid.utils.getAddressDetails(address);
 
-    if (
-      !addressDetails.paymentCredential && !addressDetails.stakeCredential
-    ) {
+    if (!addressDetails.paymentCredential && !addressDetails.stakeCredential) {
       throw new Error("Not a valid address.");
     }
 
@@ -532,8 +519,7 @@ export class Tx {
         options?.change?.outputData?.hash,
         options?.change?.outputData?.asHash,
         options?.change?.outputData?.inline,
-      ].filter((b) => b)
-        .length > 1
+      ].filter((b) => b).length > 1
     ) {
       throw new Error(
         "Not allowed to set hash, asHash and inline at the same time.",
@@ -573,9 +559,7 @@ export class Tx {
       (() => {
         if (options?.change?.outputData?.hash) {
           return C.Datum.new_data_hash(
-            C.DataHash.from_hex(
-              options.change.outputData.hash,
-            ),
+            C.DataHash.from_hex(options.change.outputData.hash),
           );
         } else if (options?.change?.outputData?.asHash) {
           this.txBuilder.add_plutus_data(
@@ -626,7 +610,10 @@ export class Tx {
 
 function attachScript(
   tx: Tx,
-  { type, script }:
+  {
+    type,
+    script,
+  }:
     | SpendingValidator
     | MintingPolicy
     | CertificateValidator
@@ -661,16 +648,11 @@ async function createPoolRegistration(
   });
 
   const metadata = poolParams.metadataUrl
-    ? await fetch(
-      poolParams.metadataUrl,
-    )
-      .then((res) => res.arrayBuffer())
+    ? await fetch(poolParams.metadataUrl).then((res) => res.arrayBuffer())
     : null;
 
   const metadataHash = metadata
-    ? C.PoolMetadataHash.from_bytes(
-      C.hash_blake2b256(new Uint8Array(metadata)),
-    )
+    ? C.PoolMetadataHash.from_bytes(C.hash_blake2b256(new Uint8Array(metadata)))
     : null;
 
   const relays = C.Relays.new();
@@ -727,10 +709,7 @@ async function createPoolRegistration(
       poolOwners,
       relays,
       metadataHash
-        ? C.PoolMetadata.new(
-          C.Url.new(poolParams.metadataUrl!),
-          metadataHash,
-        )
+        ? C.PoolMetadata.new(C.Url.new(poolParams.metadataUrl!), metadataHash)
         : undefined,
     ),
   );
