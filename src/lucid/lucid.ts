@@ -287,34 +287,45 @@ export class Lucid {
     };
 
     this.wallet = {
-      address: async (): Promise<Address> =>
-        C.Address.from_bytes(fromHex(await getAddressHex())).to_bech32(
-          undefined
-        ),
+      address: async (): Promise<Address> => {
+        const addressHex = await getAddressHex();
+        const address = C.Address.from_bytes(fromHex(addressHex));
+        const bech32 = address.to_bech32(undefined);
+        address.free();
+        return bech32;
+      },
+
       rewardAddress: async (): Promise<RewardAddress | null> => {
         const [rewardAddressHex] = await api.getRewardAddresses();
-        const rewardAddress = rewardAddressHex
-          ? C.RewardAddress.from_address(
-              C.Address.from_bytes(fromHex(rewardAddressHex))
-            )!
-              .to_address()
-              .to_bech32(undefined)
-          : null;
-        return rewardAddress;
+        if (rewardAddressHex) {
+          const address = C.Address.from_bytes(fromHex(rewardAddressHex));
+          const rewardAddress = C.RewardAddress.from_address(address)!;
+          address.free();
+          const addr = rewardAddress.to_address();
+          rewardAddress.free();
+          const bech32 = addr.to_bech32(undefined);
+          addr.free();
+          return bech32;
+        }
+        return null;
       },
       getUtxos: async (): Promise<UTxO[]> => {
         const utxos = ((await api.getUtxos()) || []).map((utxo) => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
             fromHex(utxo)
           );
-          return coreToUtxo(parsedUtxo);
+          const finalUtxo = coreToUtxo(parsedUtxo);
+          parsedUtxo.free();
+          return finalUtxo;
         });
         return utxos;
       },
       getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const utxos = C.TransactionUnspentOutputs.new();
         ((await api.getUtxos()) || []).forEach((utxo) => {
-          utxos.add(C.TransactionUnspentOutput.from_bytes(fromHex(utxo)));
+          const cUtxo = C.TransactionUnspentOutput.from_bytes(fromHex(utxo));
+          utxos.add(cUtxo);
+          cUtxo.free();
         });
         return utxos;
       },
@@ -333,7 +344,9 @@ export class Lucid {
         address: Address | RewardAddress,
         payload: Payload
       ): Promise<SignedMessage> => {
-        const hexAddress = toHex(C.Address.from_bech32(address).to_bytes());
+        const cAddress = C.Address.from_bech32(address);
+        const hexAddress = toHex(cAddress.to_bytes());
+        cAddress.free();
         return await api.signData(hexAddress, payload);
       },
       submitTx: async (tx: Transaction): Promise<TxHash> => {
