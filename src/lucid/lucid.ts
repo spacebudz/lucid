@@ -364,36 +364,29 @@ export class Lucid {
   selectWalletFrom({ address, utxos, rewardAddress }: ExternalWallet): Lucid {
     const addressDetails = this.utils.getAddressDetails(address);
     this.wallet = {
-      // deno-lint-ignore require-await
-      address: async (): Promise<Address> => address,
-      // deno-lint-ignore require-await
-      rewardAddress: async (): Promise<RewardAddress | null> => {
-        const rewardAddr =
-          !rewardAddress && addressDetails.stakeCredential
-            ? (() => {
-                if (addressDetails.stakeCredential.type === "Key") {
-                  return C.RewardAddress.new(
-                    this.network === "Mainnet" ? 1 : 0,
-                    C.StakeCredential.from_keyhash(
-                      C.Ed25519KeyHash.from_hex(
-                        addressDetails.stakeCredential.hash
-                      )
-                    )
-                  )
-                    .to_address()
-                    .to_bech32(undefined);
-                }
-                return C.RewardAddress.new(
-                  this.network === "Mainnet" ? 1 : 0,
-                  C.StakeCredential.from_scripthash(
-                    C.ScriptHash.from_hex(addressDetails.stakeCredential.hash)
-                  )
-                )
-                  .to_address()
-                  .to_bech32(undefined);
-              })()
-            : rewardAddress;
-        return rewardAddr || null;
+      address: (): Promise<Address> => Promise.resolve(address),
+      rewardAddress: (): Promise<RewardAddress | null> => {
+        if (!rewardAddress && addressDetails.stakeCredential) {
+          if (addressDetails.stakeCredential.type === "Key") {
+            const keyHash = C.Ed25519KeyHash.from_hex(
+              addressDetails.stakeCredential.hash
+            );
+            const stakeCredential = C.StakeCredential.from_keyhash(keyHash);
+            keyHash.free();
+            const rewardAddress = C.RewardAddress.new(
+              this.network === "Mainnet" ? 1 : 0,
+              stakeCredential
+            );
+            stakeCredential.free();
+            const address = rewardAddress.to_address();
+            rewardAddress.free();
+            const bech32 = address.to_bech32(undefined);
+            address.free();
+            return Promise.resolve(bech32);
+          }
+        }
+
+        return Promise.resolve(rewardAddress ?? null);
       },
       getUtxos: async (): Promise<UTxO[]> => {
         return utxos ? utxos : await this.utxosAt(paymentCredentialOf(address));
@@ -403,7 +396,11 @@ export class Lucid {
         (utxos
           ? utxos
           : await this.utxosAt(paymentCredentialOf(address))
-        ).forEach((utxo) => coreUtxos.add(utxoToCore(utxo)));
+        ).forEach((utxo) => {
+          const coreUtxo = utxoToCore(utxo);
+          coreUtxos.add(coreUtxo);
+          coreUtxo.free();
+        });
         return coreUtxos;
       },
       getDelegation: async (): Promise<Delegation> => {
@@ -413,17 +410,14 @@ export class Lucid {
           ? await this.delegationAt(rewardAddr)
           : { poolId: null, rewards: 0n };
       },
-      // deno-lint-ignore require-await
-      signTx: async (): Promise<C.TransactionWitnessSet> => {
-        throw new Error("Not implemented");
-      },
-      // deno-lint-ignore require-await
-      signMessage: async (): Promise<SignedMessage> => {
-        throw new Error("Not implemented");
-      },
-      submitTx: async (tx: Transaction): Promise<TxHash> => {
-        return await this.provider.submitTx(tx);
-      },
+      signTx: (): Promise<C.TransactionWitnessSet> =>
+        Promise.reject("Not implemented"),
+
+      signMessage: (): Promise<SignedMessage> =>
+        Promise.reject("Not implemented"),
+
+      submitTx: (tx: Transaction): Promise<TxHash> =>
+        this.provider.submitTx(tx),
     };
     return this;
   }
