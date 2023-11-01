@@ -69,8 +69,12 @@ export class Lucid {
       const txBuilderConfig = getTransactionBuilderConfig(
         protocolParameters,
         slotConfig,
-        // deno-lint-ignore no-explicit-any
-        { url: (provider as any)?.url, projectId: (provider as any)?.projectId }
+        {
+          // deno-lint-ignore no-explicit-any
+          url: (provider as any)?.url,
+          // deno-lint-ignore no-explicit-any
+          projectId: (provider as any)?.projectId,
+        }
       );
       lucid.txBuilderConfig = txBuilderConfig;
     }

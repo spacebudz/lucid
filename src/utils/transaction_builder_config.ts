@@ -9,13 +9,13 @@ export function getTransactionBuilderConfig(
   blockfrostConfig: {
     url?: string;
     projectId?: string;
-  }
+  },
 ) {
   const bucket: Freeable[] = [];
   let builderA = C.TransactionBuilderConfigBuilder.new();
 
   const coinsPerUtxoByte = C.BigNum.from_str(
-    protocolParameters.coinsPerUtxoByte.toString()
+    protocolParameters.coinsPerUtxoByte.toString(),
   );
   bucket.push(coinsPerUtxoByte);
   let builderB = builderA.coins_per_utxo_byte(coinsPerUtxoByte);
@@ -31,14 +31,14 @@ export function getTransactionBuilderConfig(
   builderB.free();
 
   const keyDeposit = C.BigNum.from_str(
-    protocolParameters.keyDeposit.toString()
+    protocolParameters.keyDeposit.toString(),
   );
   bucket.push(keyDeposit);
   builderB = builderA.key_deposit(keyDeposit);
   builderA.free();
 
   const poolDeposit = C.BigNum.from_str(
-    protocolParameters.poolDeposit.toString()
+    protocolParameters.poolDeposit.toString(),
   );
   bucket.push(poolDeposit);
   builderA = builderB.pool_deposit(poolDeposit);
@@ -51,21 +51,21 @@ export function getTransactionBuilderConfig(
   builderB.free();
 
   builderB = builderA.collateral_percentage(
-    protocolParameters.collateralPercentage
+    protocolParameters.collateralPercentage,
   );
   builderA.free();
 
   builderA = builderB.max_collateral_inputs(
-    protocolParameters.maxCollateralInputs
+    protocolParameters.maxCollateralInputs,
   );
   builderB.free();
 
   const maxTxExMem = C.BigNum.from_str(
-    protocolParameters.maxTxExMem.toString()
+    protocolParameters.maxTxExMem.toString(),
   );
   bucket.push(maxTxExMem);
   const maxTxExSteps = C.BigNum.from_str(
-    protocolParameters.maxTxExSteps.toString()
+    protocolParameters.maxTxExSteps.toString(),
   );
   bucket.push(maxTxExSteps);
   const exUnits = C.ExUnits.new(maxTxExMem, maxTxExSteps);
@@ -75,7 +75,7 @@ export function getTransactionBuilderConfig(
 
   const exUnitPrices = C.ExUnitPrices.from_float(
     protocolParameters.priceMem,
-    protocolParameters.priceStep
+    protocolParameters.priceStep,
   );
   bucket.push(exUnitPrices);
   builderA = builderB.ex_unit_prices(exUnitPrices);
@@ -90,7 +90,7 @@ export function getTransactionBuilderConfig(
 
   const blockfrost = C.Blockfrost.new(
     blockfrostConfig?.url ?? "" + "utils/tx/evaulate",
-    blockfrostConfig?.projectId ?? ""
+    blockfrostConfig?.projectId ?? "",
   );
   bucket.push(blockfrost);
   builderA = builderB.blockfrost(blockfrost);
