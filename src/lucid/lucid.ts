@@ -1,7 +1,6 @@
 import { C } from "../core/mod.ts";
 import {
   coreToUtxo,
-  createCostModels,
   fromHex,
   fromUnit,
   paymentCredentialOf,
@@ -41,6 +40,7 @@ import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
 import { Constr, Data } from "../plutus/data.ts";
 import { Emulator } from "../provider/emulator.ts";
 import { getTransactionBuilderConfig } from "../utils/transaction_builder_config.ts";
+import { Freeable, Freeables } from "../utils/freeable.ts";
 
 export class Lucid {
   txBuilderConfig!: C.TransactionBuilderConfig;
@@ -189,20 +189,33 @@ export class Lucid {
    * Only an Enteprise address (without stake credential) is derived.
    */
   selectWalletFromPrivateKey(privateKey: PrivateKey): Lucid {
+    const bucket: Freeable[] = [];
     const priv = C.PrivateKey.from_bech32(privateKey);
+    bucket.push(priv);
+    const publicKey = priv.to_public();
+    bucket.push(publicKey);
     const pubKeyHash = priv.to_public().hash();
+    bucket.push(pubKeyHash);
 
     this.wallet = {
-      // deno-lint-ignore require-await
-      address: async (): Promise<Address> =>
-        C.EnterpriseAddress.new(
+      address: (): Promise<Address> => {
+        const bucket: Freeable[] = [];
+        const stakeCredential = C.StakeCredential.from_keyhash(pubKeyHash);
+        bucket.push(stakeCredential);
+        const enterpriseAddress = C.EnterpriseAddress.new(
           this.network === "Mainnet" ? 1 : 0,
-          C.StakeCredential.from_keyhash(pubKeyHash)
-        )
-          .to_address()
-          .to_bech32(undefined),
-      // deno-lint-ignore require-await
-      rewardAddress: async (): Promise<RewardAddress | null> => null,
+          stakeCredential
+        );
+        bucket.push(enterpriseAddress);
+        const address = enterpriseAddress.to_address();
+        bucket.push(address);
+        const bech32 = address.to_bech32(undefined);
+        Freeables.free(...bucket);
+
+        return Promise.resolve(bech32);
+      },
+
+      rewardAddress: (): Promise<RewardAddress | null> => Promise.resolve(null),
       getUtxos: async (): Promise<UTxO[]> => {
         return await this.utxosAt(
           paymentCredentialOf(await this.wallet.address())
@@ -218,22 +231,26 @@ export class Lucid {
         });
         return coreUtxos;
       },
-      // deno-lint-ignore require-await
-      getDelegation: async (): Promise<Delegation> => {
-        return { poolId: null, rewards: 0n };
+      getDelegation: (): Promise<Delegation> => {
+        return Promise.resolve({ poolId: null, rewards: 0n });
       },
-      // deno-lint-ignore require-await
-      signTx: async (tx: C.Transaction): Promise<C.TransactionWitnessSet> => {
-        const witness = C.make_vkey_witness(
-          C.hash_transaction(tx.body()),
-          priv
-        );
+      signTx: (tx: C.Transaction): Promise<C.TransactionWitnessSet> => {
+        const bucket: Freeable[] = [];
+        const txBody = tx.body();
+        bucket.push(txBody);
+        const hash = C.hash_transaction(txBody);
+        bucket.push(hash);
+        const witness = C.make_vkey_witness(hash, priv);
+        bucket.push(witness);
         const txWitnessSetBuilder = C.TransactionWitnessSetBuilder.new();
+        bucket.push(txWitnessSetBuilder);
         txWitnessSetBuilder.add_vkey(witness);
-        return txWitnessSetBuilder.build();
+        const witnessSet = txWitnessSetBuilder.build();
+
+        Freeables.free(...bucket);
+        return Promise.resolve(witnessSet);
       },
-      // deno-lint-ignore require-await
-      signMessage: async (
+      signMessage: (
         address: Address | RewardAddress,
         payload: Payload
       ): Promise<SignedMessage> => {
@@ -249,12 +266,14 @@ export class Lucid {
           throw new Error(`Cannot sign message for address: ${address}.`);
         }
 
-        return signData(hexAddress, payload, privateKey);
+        return Promise.resolve(signData(hexAddress, payload, privateKey));
       },
       submitTx: async (tx: Transaction): Promise<TxHash> => {
         return await this.provider.submitTx(tx);
       },
     };
+
+    Freeables.free(...bucket);
     return this;
   }
 
