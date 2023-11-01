@@ -74,7 +74,7 @@ export class Lucid {
           url: (provider as any)?.url,
           // deno-lint-ignore no-explicit-any
           projectId: (provider as any)?.projectId,
-        }
+        },
       );
       lucid.txBuilderConfig = txBuilderConfig;
     }
@@ -117,7 +117,7 @@ export class Lucid {
   verifyMessage(
     address: Address | RewardAddress,
     payload: Payload,
-    signedMessage: SignedMessage
+    signedMessage: SignedMessage,
   ): boolean {
     const {
       paymentCredential,
@@ -140,7 +140,7 @@ export class Lucid {
 
   utxosAtWithUnit(
     addressOrCredential: Address | Credential,
-    unit: Unit
+    unit: Unit,
   ): Promise<UTxO[]> {
     return this.provider.getUtxosWithUnit(addressOrCredential, unit);
   }
@@ -193,13 +193,11 @@ export class Lucid {
    * Only an Enteprise address (without stake credential) is derived.
    */
   selectWalletFromPrivateKey(privateKey: PrivateKey): Lucid {
-    const bucket: Freeable[] = [];
     const priv = C.PrivateKey.from_bech32(privateKey);
-    bucket.push(priv);
     const publicKey = priv.to_public();
-    bucket.push(publicKey);
-    const pubKeyHash = priv.to_public().hash();
-    bucket.push(pubKeyHash);
+    priv.free();
+    const pubKeyHash = publicKey.hash();
+    publicKey.free();
 
     this.wallet = {
       address: (): Promise<Address> => {
@@ -208,7 +206,7 @@ export class Lucid {
         bucket.push(stakeCredential);
         const enterpriseAddress = C.EnterpriseAddress.new(
           this.network === "Mainnet" ? 1 : 0,
-          stakeCredential
+          stakeCredential,
         );
         bucket.push(enterpriseAddress);
         const address = enterpriseAddress.to_address();
@@ -222,16 +220,18 @@ export class Lucid {
       rewardAddress: (): Promise<RewardAddress | null> => Promise.resolve(null),
       getUtxos: async (): Promise<UTxO[]> => {
         return await this.utxosAt(
-          paymentCredentialOf(await this.wallet.address())
+          paymentCredentialOf(await this.wallet.address()),
         );
       },
       getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const utxos = await this.utxosAt(
-          paymentCredentialOf(await this.wallet.address())
+          paymentCredentialOf(await this.wallet.address()),
         );
         const coreUtxos = C.TransactionUnspentOutputs.new();
         utxos.forEach((utxo) => {
-          coreUtxos.add(utxoToCore(utxo));
+          const coreUtxo = utxoToCore(utxo);
+          coreUtxos.add(coreUtxo);
+          coreUtxo.free();
         });
         return coreUtxos;
       },
@@ -256,7 +256,7 @@ export class Lucid {
       },
       signMessage: (
         address: Address | RewardAddress,
-        payload: Payload
+        payload: Payload,
       ): Promise<SignedMessage> => {
         const {
           paymentCredential,
@@ -277,7 +277,6 @@ export class Lucid {
       },
     };
 
-    Freeables.free(...bucket);
     return this;
   }
 
@@ -316,7 +315,7 @@ export class Lucid {
       getUtxos: async (): Promise<UTxO[]> => {
         const utxos = ((await api.getUtxos()) || []).map((utxo) => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
-            fromHex(utxo)
+            fromHex(utxo),
           );
           const finalUtxo = coreToUtxo(parsedUtxo);
           parsedUtxo.free();
@@ -327,9 +326,9 @@ export class Lucid {
       getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const utxos = C.TransactionUnspentOutputs.new();
         ((await api.getUtxos()) || []).forEach((utxo) => {
-          const cUtxo = C.TransactionUnspentOutput.from_bytes(fromHex(utxo));
-          utxos.add(cUtxo);
-          cUtxo.free();
+          const coreUtxo = C.TransactionUnspentOutput.from_bytes(fromHex(utxo));
+          utxos.add(coreUtxo);
+          coreUtxo.free();
         });
         return utxos;
       },
@@ -346,7 +345,7 @@ export class Lucid {
       },
       signMessage: async (
         address: Address | RewardAddress,
-        payload: Payload
+        payload: Payload,
       ): Promise<SignedMessage> => {
         const cAddress = C.Address.from_bech32(address);
         const hexAddress = toHex(cAddress.to_bytes());
@@ -373,13 +372,13 @@ export class Lucid {
         if (!rewardAddress && addressDetails.stakeCredential) {
           if (addressDetails.stakeCredential.type === "Key") {
             const keyHash = C.Ed25519KeyHash.from_hex(
-              addressDetails.stakeCredential.hash
+              addressDetails.stakeCredential.hash,
             );
             const stakeCredential = C.StakeCredential.from_keyhash(keyHash);
             keyHash.free();
             const rewardAddress = C.RewardAddress.new(
               this.network === "Mainnet" ? 1 : 0,
-              stakeCredential
+              stakeCredential,
             );
             stakeCredential.free();
             const address = rewardAddress.to_address();
@@ -397,14 +396,13 @@ export class Lucid {
       },
       getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const coreUtxos = C.TransactionUnspentOutputs.new();
-        (utxos
-          ? utxos
-          : await this.utxosAt(paymentCredentialOf(address))
-        ).forEach((utxo) => {
-          const coreUtxo = utxoToCore(utxo);
-          coreUtxos.add(coreUtxo);
-          coreUtxo.free();
-        });
+        (utxos ? utxos : await this.utxosAt(paymentCredentialOf(address)))
+          .forEach((utxo) => {
+            const coreUtxo = utxoToCore(utxo);
+            coreUtxos.add(coreUtxo);
+            coreUtxo.free();
+          });
+
         return coreUtxos;
       },
       getDelegation: async (): Promise<Delegation> => {
@@ -436,7 +434,7 @@ export class Lucid {
       addressType?: "Base" | "Enterprise";
       accountIndex?: number;
       password?: string;
-    }
+    },
   ): Lucid {
     const bucket: Freeable[] = [];
     const { address, rewardAddress, paymentKey, stakeKey } = walletFromSeed(
@@ -446,7 +444,7 @@ export class Lucid {
         accountIndex: options?.accountIndex || 0,
         password: options?.password,
         network: this.network,
-      }
+      },
     );
 
     const paymentPrivateKey = C.PrivateKey.from_bech32(paymentKey);
@@ -486,7 +484,7 @@ export class Lucid {
         (await this.utxosAt(paymentCredentialOf(address))).forEach((utxo) => {
           const coreUtxo = utxoToCore(utxo);
           coreUtxos.add(coreUtxo);
-          coreUtxos.free();
+          coreUtxo.free();
         });
         return coreUtxos;
       },
@@ -505,7 +503,7 @@ export class Lucid {
         const usedKeyHashes = discoverOwnUsedTxKeyHashes(
           tx,
           ownKeyHashes,
-          utxos
+          utxos,
         );
 
         const txWitnessSetBuilder = C.TransactionWitnessSetBuilder.new();
@@ -527,7 +525,7 @@ export class Lucid {
       },
       signMessage: (
         address: Address | RewardAddress,
-        payload: Payload
+        payload: Payload,
       ): Promise<SignedMessage> => {
         const {
           paymentCredential,
