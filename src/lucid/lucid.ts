@@ -91,6 +91,8 @@ export class Lucid {
     this.provider = provider || this.provider;
     this.network = network || this.network;
     this.wallet = lucid.wallet;
+
+    lucid.free();
     return this;
   }
 
