@@ -434,6 +434,7 @@ export class Lucid {
       password?: string;
     }
   ): Lucid {
+    const bucket: Freeable[] = [];
     const { address, rewardAddress, paymentKey, stakeKey } = walletFromSeed(
       seed,
       {
@@ -444,13 +445,26 @@ export class Lucid {
       }
     );
 
-    const paymentKeyHash = C.PrivateKey.from_bech32(paymentKey)
-      .to_public()
-      .hash()
-      .to_hex();
-    const stakeKeyHash = stakeKey
-      ? C.PrivateKey.from_bech32(stakeKey).to_public().hash().to_hex()
-      : "";
+    const paymentPrivateKey = C.PrivateKey.from_bech32(paymentKey);
+    bucket.push(paymentPrivateKey);
+    const paymentPublicKey = paymentPrivateKey.to_public();
+    bucket.push(paymentPublicKey);
+    const paymentPubKeyHash = paymentPublicKey.hash();
+    bucket.push(paymentPubKeyHash);
+    const paymentKeyHash = paymentPubKeyHash.to_hex();
+
+    const getStakeKeyHash = (stakeKey: string) => {
+      const stakePrivateKey = C.PrivateKey.from_bech32(stakeKey);
+      bucket.push(stakePrivateKey);
+      const stakePublicKey = stakePrivateKey.to_public();
+      bucket.push(stakePublicKey);
+      const stakePubKeyHash = stakePublicKey.hash();
+      bucket.push(stakePubKeyHash);
+      const stakeKeyHash = stakePubKeyHash.to_hex();
+      return stakeKeyHash;
+    };
+
+    const stakeKeyHash = stakeKey ? getStakeKeyHash(stakeKey) : "";
 
     const privKeyHashMap = {
       [paymentKeyHash]: paymentKey,
@@ -458,19 +472,18 @@ export class Lucid {
     };
 
     this.wallet = {
-      // deno-lint-ignore require-await
-      address: async (): Promise<Address> => address,
-      // deno-lint-ignore require-await
-      rewardAddress: async (): Promise<RewardAddress | null> =>
-        rewardAddress || null,
-      // deno-lint-ignore require-await
-      getUtxos: async (): Promise<UTxO[]> =>
+      address: (): Promise<Address> => Promise.resolve(address),
+      rewardAddress: (): Promise<RewardAddress | null> =>
+        Promise.resolve(rewardAddress || null),
+      getUtxos: (): Promise<UTxO[]> =>
         this.utxosAt(paymentCredentialOf(address)),
       getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const coreUtxos = C.TransactionUnspentOutputs.new();
-        (await this.utxosAt(paymentCredentialOf(address))).forEach((utxo) =>
-          coreUtxos.add(utxoToCore(utxo))
-        );
+        (await this.utxosAt(paymentCredentialOf(address))).forEach((utxo) => {
+          const coreUtxo = utxoToCore(utxo);
+          coreUtxos.add(coreUtxo);
+          coreUtxos.free();
+        });
         return coreUtxos;
       },
       getDelegation: async (): Promise<Delegation> => {
@@ -493,16 +506,22 @@ export class Lucid {
 
         const txWitnessSetBuilder = C.TransactionWitnessSetBuilder.new();
         usedKeyHashes.forEach((keyHash) => {
-          const witness = C.make_vkey_witness(
-            C.hash_transaction(tx.body()),
-            C.PrivateKey.from_bech32(privKeyHashMap[keyHash]!)
-          );
+          const txBody = tx.body();
+          const hash = C.hash_transaction(txBody);
+          txBody.free();
+          const privateKey = C.PrivateKey.from_bech32(privKeyHashMap[keyHash]!);
+          const witness = C.make_vkey_witness(hash, privateKey);
+          hash.free();
+          privateKey.free();
           txWitnessSetBuilder.add_vkey(witness);
+          witness.free();
         });
-        return txWitnessSetBuilder.build();
+
+        const txWitnessSet = txWitnessSetBuilder.build();
+        txWitnessSetBuilder.free();
+        return txWitnessSet;
       },
-      // deno-lint-ignore require-await
-      signMessage: async (
+      signMessage: (
         address: Address | RewardAddress,
         payload: Payload
       ): Promise<SignedMessage> => {
@@ -520,12 +539,14 @@ export class Lucid {
           throw new Error(`Cannot sign message for address: ${address}.`);
         }
 
-        return signData(hexAddress, payload, privateKey);
+        return Promise.resolve(signData(hexAddress, payload, privateKey));
       },
       submitTx: async (tx: Transaction): Promise<TxHash> => {
         return await this.provider.submitTx(tx);
       },
     };
+
+    Freeables.free(...bucket);
     return this;
   }
 
