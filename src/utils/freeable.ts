@@ -2,10 +2,10 @@ export interface Freeable {
   free(): void;
 }
 
-export type FreeableBucket = Array<Freeable | undefined>;
+export type FreeableBucket = Array<Freeable | undefined | null>;
 
 export abstract class Freeables {
-  static free(...bucket: (Freeable | undefined)[]) {
+  static free(...bucket: FreeableBucket) {
     bucket.forEach((freeable) => {
       freeable?.free();
     });
