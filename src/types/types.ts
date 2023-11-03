@@ -125,17 +125,15 @@ export type ScriptRef = string;
 /** Hex */
 export type Payload = string;
 
-export type UTxO = {
-  txHash: TxHash;
-  outputIndex: number;
-  assets: Assets;
+export type UTxO = OutRef & TxOutput;
+export type OutRef = { txHash: TxHash; outputIndex: number };
+export type TxOutput = {
   address: Address;
+  assets: Assets;
   datumHash?: DatumHash | null;
   datum?: Datum | null;
   scriptRef?: Script | null;
 };
-
-export type OutRef = { txHash: TxHash; outputIndex: number };
 
 export type AddressType =
   | "Base"
