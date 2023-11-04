@@ -46,22 +46,26 @@ export class Maestro implements Provider {
     // Decimal numbers in Maestro are given as ratio of two numbers represented by string of format "firstNumber/secondNumber".
     const decimalFromRationalString = (str: string): number => {
       const forwardSlashIndex = str.indexOf("/");
-      return parseInt(str.slice(0, forwardSlashIndex)) /
-        parseInt(str.slice(forwardSlashIndex + 1));
+      return (
+        parseInt(str.slice(0, forwardSlashIndex)) /
+        parseInt(str.slice(forwardSlashIndex + 1))
+      );
     };
     // To rename keys in an object by the given key-map.
     // deno-lint-ignore no-explicit-any
     const renameKeysAndSort = (obj: any, newKeys: any) => {
-      const entries = Object.keys(obj).sort().map((key) => {
-        const newKey = newKeys[key] || key;
-        return {
-          [newKey]: Object.fromEntries(
-            Object.entries(obj[key]).sort(([k, _v], [k2, _v2]) =>
-              k.localeCompare(k2)
+      const entries = Object.keys(obj)
+        .sort()
+        .map((key) => {
+          const newKey = newKeys[key] || key;
+          return {
+            [newKey]: Object.fromEntries(
+              Object.entries(obj[key]).sort(([k, _v], [k2, _v2]) =>
+                k.localeCompare(k2)
+              )
             ),
-          ),
-        };
-      });
+          };
+        });
       return Object.assign({}, ...entries);
     };
     return {
@@ -87,20 +91,24 @@ export class Maestro implements Provider {
 
   private async getUtxosInternal(
     addressOrCredential: Address | Credential,
-    unit?: Unit,
+    unit?: Unit
   ): Promise<UTxO[]> {
     const queryPredicate = (() => {
       if (typeof addressOrCredential === "string") {
         return "/addresses/" + addressOrCredential;
       }
+      const hash =
+        addressOrCredential.type == "Key"
+          ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash)
+          : C.ScriptHash.from_hex(addressOrCredential.hash);
       let credentialBech32Query = "/addresses/cred/";
-      credentialBech32Query += addressOrCredential.type === "Key"
-        ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_vkh",
-        )
-        : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_shared_vkh",
-        );
+      credentialBech32Query +=
+        addressOrCredential.type === "Key"
+          ? hash.to_bech32("addr_vkh")
+          : hash.to_bech32("addr_shared_vkh");
+
+      hash.free();
+
       return credentialBech32Query;
     })();
     const qparams = new URLSearchParams({
@@ -112,7 +120,7 @@ export class Maestro implements Provider {
         await fetch(qry, { headers: this.commonHeaders() }),
       `${this.url}${queryPredicate}/utxos`,
       qparams,
-      "Location: getUtxosInternal. Error: Could not fetch UTxOs from Maestro",
+      "Location: getUtxosInternal. Error: Could not fetch UTxOs from Maestro"
     );
     return result.map(this.maestroUtxoToUtxo);
   }
@@ -123,7 +131,7 @@ export class Maestro implements Provider {
 
   getUtxosWithUnit(
     addressOrCredential: Address | Credential,
-    unit: Unit,
+    unit: Unit
   ): Promise<UTxO[]> {
     return this.getUtxosInternal(addressOrCredential, unit);
   }
@@ -131,7 +139,7 @@ export class Maestro implements Provider {
   async getUtxoByUnit(unit: Unit): Promise<UTxO> {
     const timestampedAddressesResponse = await fetch(
       `${this.url}/assets/${unit}/addresses?count=2`,
-      { headers: this.commonHeaders() },
+      { headers: this.commonHeaders() }
     );
     const timestampedAddresses = await timestampedAddressesResponse.json();
     if (!timestampedAddressesResponse.ok) {
@@ -140,7 +148,7 @@ export class Maestro implements Provider {
       }
       throw new Error(
         "Location: getUtxoByUnit. Error: Couldn't perform query. Received status code: " +
-          timestampedAddressesResponse.status,
+          timestampedAddressesResponse.status
       );
     }
     const addressesWithAmount = timestampedAddresses.data;
@@ -149,7 +157,7 @@ export class Maestro implements Provider {
     }
     if (addressesWithAmount.length > 1) {
       throw new Error(
-        "Location: getUtxoByUnit. Error: Unit needs to be an NFT or only held by one address.",
+        "Location: getUtxoByUnit. Error: Unit needs to be an NFT or only held by one address."
       );
     }
 
@@ -159,7 +167,7 @@ export class Maestro implements Provider {
 
     if (utxos.length > 1) {
       throw new Error(
-        "Location: getUtxoByUnit. Error: Unit needs to be an NFT or only held by one address.",
+        "Location: getUtxoByUnit. Error: Unit needs to be an NFT or only held by one address."
       );
     }
 
@@ -169,7 +177,7 @@ export class Maestro implements Provider {
   async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
     const qry = `${this.url}/transactions/outputs`;
     const body = JSON.stringify(
-      outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`),
+      outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`)
     );
     const utxos = await this.getAllPagesData<MaestroUtxo>(
       async (qry: string) =>
@@ -183,7 +191,7 @@ export class Maestro implements Provider {
         }),
       qry,
       new URLSearchParams({}),
-      "Location: getUtxosByOutRef. Error: Could not fetch UTxOs by references from Maestro",
+      "Location: getUtxosByOutRef. Error: Could not fetch UTxOs by references from Maestro"
     );
     return utxos.map(this.maestroUtxoToUtxo);
   }
@@ -191,7 +199,7 @@ export class Maestro implements Provider {
   async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
     const timestampedResultResponse = await fetch(
       `${this.url}/accounts/${rewardAddress}`,
-      { headers: this.commonHeaders() },
+      { headers: this.commonHeaders() }
     );
     if (!timestampedResultResponse.ok) {
       return { poolId: null, rewards: 0n };
@@ -209,7 +217,7 @@ export class Maestro implements Provider {
       `${this.url}/datum/${datumHash}`,
       {
         headers: this.commonHeaders(),
-      },
+      }
     );
     if (!timestampedResultResponse.ok) {
       if (timestampedResultResponse.status === 404) {
@@ -217,7 +225,7 @@ export class Maestro implements Provider {
       } else {
         throw new Error(
           "Location: getDatum. Error: Couldn't successfully perform query. Received status code: " +
-            timestampedResultResponse.status,
+            timestampedResultResponse.status
         );
       }
     }
@@ -232,7 +240,7 @@ export class Maestro implements Provider {
           `${this.url}/transactions/${txHash}/cbor`,
           {
             headers: this.commonHeaders(),
-          },
+          }
         );
         if (isConfirmedResponse.ok) {
           await isConfirmedResponse.json();
@@ -251,7 +259,7 @@ export class Maestro implements Provider {
       method: "POST",
       headers: {
         "Content-Type": "application/cbor",
-        "Accept": "text/plain",
+        Accept: "text/plain",
         ...this.commonHeaders(),
       },
       body: fromHex(tx),
@@ -259,10 +267,12 @@ export class Maestro implements Provider {
     const result = await response.text();
     if (!response.ok) {
       if (response.status === 400) throw new Error(result);
-      else {throw new Error(
+      else {
+        throw new Error(
           "Could not submit transaction. Received status code: " +
-            response.status,
-        );}
+            response.status
+        );
+      }
     }
     return result;
   }
@@ -284,16 +294,21 @@ export class Maestro implements Provider {
       })(),
       address: result.address,
       datumHash: result.datum
-        ? result.datum.type == "inline" ? undefined : result.datum.hash
+        ? result.datum.type == "inline"
+          ? undefined
+          : result.datum.hash
         : undefined,
       datum: result.datum?.bytes,
       scriptRef: result.reference_script
-        ? result.reference_script.type == "native" ? undefined : {
-          type: result.reference_script.type == "plutusv1"
-            ? "PlutusV1"
-            : "PlutusV2",
-          script: applyDoubleCborEncoding(result.reference_script.bytes!),
-        }
+        ? result.reference_script.type == "native"
+          ? undefined
+          : {
+              type:
+                result.reference_script.type == "plutusv1"
+                  ? "PlutusV1"
+                  : "PlutusV2",
+              script: applyDoubleCborEncoding(result.reference_script.bytes!),
+            }
         : undefined,
     };
   }
@@ -301,7 +316,7 @@ export class Maestro implements Provider {
     getResponse: (qry: string) => Promise<Response>,
     qry: string,
     paramsGiven: URLSearchParams,
-    errorMsg: string,
+    errorMsg: string
   ): Promise<Array<T>> {
     let nextCursor = null;
     let result: Array<T> = [];
@@ -313,7 +328,7 @@ export class Maestro implements Provider {
       const pageResult = await response.json();
       if (!response.ok) {
         throw new Error(
-          `${errorMsg}. Received status code: ${response.status}`,
+          `${errorMsg}. Received status code: ${response.status}`
         );
       }
       nextCursor = pageResult.next_cursor;
