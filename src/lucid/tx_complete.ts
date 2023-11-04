@@ -94,15 +94,26 @@ export class TxComplete {
    * Add an extra signature from a private key.
    */
   partialSignWithPrivateKey(privateKey: PrivateKey): TransactionWitnesses {
+    const bucket: FreeableBucket = [];
     const priv = C.PrivateKey.from_bech32(privateKey);
-    const witness = C.make_vkey_witness(
-      C.hash_transaction(this.txComplete.body()),
-      priv
-    );
+    bucket.push(priv);
+    const body = this.txComplete.body();
+    bucket.push(body);
+    const hash = C.hash_transaction(body);
+    bucket.push(hash);
+    const witness = C.make_vkey_witness(hash, priv);
+    bucket.push(witness);
+
     this.witnessSetBuilder.add_vkey(witness);
     const witnesses = C.TransactionWitnessSetBuilder.new();
+    bucket.push(witnesses);
     witnesses.add_vkey(witness);
-    return toHex(witnesses.build().to_bytes());
+    const witnessSet = witnesses.build();
+    bucket.push(witnessSet);
+    const bytes = witnessSet.to_bytes();
+
+    Freeables.free(...bucket);
+    return toHex(bytes);
   }
 
   /** Sign the transaction with the given witnesses. */
