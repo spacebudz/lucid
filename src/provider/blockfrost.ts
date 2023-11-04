@@ -52,13 +52,13 @@ export class Blockfrost implements Provider {
   async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
     const queryPredicate = (() => {
       if (typeof addressOrCredential === "string") return addressOrCredential;
-      const credentialBech32 = addressOrCredential.type === "Key"
-        ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_vkh",
-        )
-        : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_vkh",
-        ); // should be 'script' (CIP-0005)
+      const hash =
+        addressOrCredential.type === "Key"
+          ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash)
+          : C.ScriptHash.from_hex(addressOrCredential.hash);
+
+      const credentialBech32 = hash.to_bech32("addr_vkh"); // should be 'script' according to CIP-0005, but to maintain bakcwards compatabiltiy I am not changing this
+      hash.free();
       return credentialBech32;
     })();
     let result: BlockfrostUtxoResult = [];
@@ -67,7 +67,7 @@ export class Blockfrost implements Provider {
       const pageResult: BlockfrostUtxoResult | BlockfrostUtxoError =
         await fetch(
           `${this.url}/addresses/${queryPredicate}/utxos?page=${page}`,
-          { headers: { project_id: this.projectId, lucid } },
+          { headers: { project_id: this.projectId, lucid } }
         ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
         if ((pageResult as BlockfrostUtxoError).status_code === 404) {
@@ -86,17 +86,18 @@ export class Blockfrost implements Provider {
 
   async getUtxosWithUnit(
     addressOrCredential: Address | Credential,
-    unit: Unit,
+    unit: Unit
   ): Promise<UTxO[]> {
     const queryPredicate = (() => {
       if (typeof addressOrCredential === "string") return addressOrCredential;
-      const credentialBech32 = addressOrCredential.type === "Key"
-        ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_vkh",
-        )
-        : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_vkh",
-        ); // should be 'script' (CIP-0005)
+      const credentialBech32 =
+        addressOrCredential.type === "Key"
+          ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
+              "addr_vkh"
+            )
+          : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
+              "addr_vkh"
+            ); // should be 'script' (CIP-0005)
       return credentialBech32;
     })();
     let result: BlockfrostUtxoResult = [];
@@ -105,7 +106,7 @@ export class Blockfrost implements Provider {
       const pageResult: BlockfrostUtxoResult | BlockfrostUtxoError =
         await fetch(
           `${this.url}/addresses/${queryPredicate}/utxos/${unit}?page=${page}`,
-          { headers: { project_id: this.projectId, lucid } },
+          { headers: { project_id: this.projectId, lucid } }
         ).then((res) => res.json());
       if ((pageResult as BlockfrostUtxoError).error) {
         if ((pageResult as BlockfrostUtxoError).status_code === 404) {
@@ -125,7 +126,7 @@ export class Blockfrost implements Provider {
   async getUtxoByUnit(unit: Unit): Promise<UTxO> {
     const addresses = await fetch(
       `${this.url}/assets/${unit}/addresses?count=2`,
-      { headers: { project_id: this.projectId, lucid } },
+      { headers: { project_id: this.projectId, lucid } }
     ).then((res) => res.json());
 
     if (!addresses || addresses.error) {
@@ -149,36 +150,42 @@ export class Blockfrost implements Provider {
   async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
     // TODO: Make sure old already spent UTxOs are not retrievable.
     const queryHashes = [...new Set(outRefs.map((outRef) => outRef.txHash))];
-    const utxos = await Promise.all(queryHashes.map(async (txHash) => {
-      const result = await fetch(
-        `${this.url}/txs/${txHash}/utxos`,
-        { headers: { project_id: this.projectId, lucid } },
-      ).then((res) => res.json());
-      if (!result || result.error) {
-        return [];
-      }
-      const utxosResult: BlockfrostUtxoResult = result.outputs.map((
-        // deno-lint-ignore no-explicit-any
-        r: any,
-      ) => ({
-        ...r,
-        tx_hash: txHash,
-      }));
-      return this.blockfrostUtxosToUtxos(utxosResult);
-    }));
-
-    return utxos.reduce((acc, utxos) => acc.concat(utxos), []).filter((utxo) =>
-      outRefs.some((outRef) =>
-        utxo.txHash === outRef.txHash && utxo.outputIndex === outRef.outputIndex
-      )
+    const utxos = await Promise.all(
+      queryHashes.map(async (txHash) => {
+        const result = await fetch(`${this.url}/txs/${txHash}/utxos`, {
+          headers: { project_id: this.projectId, lucid },
+        }).then((res) => res.json());
+        if (!result || result.error) {
+          return [];
+        }
+        const utxosResult: BlockfrostUtxoResult = result.outputs.map(
+          (
+            // deno-lint-ignore no-explicit-any
+            r: any
+          ) => ({
+            ...r,
+            tx_hash: txHash,
+          })
+        );
+        return this.blockfrostUtxosToUtxos(utxosResult);
+      })
     );
+
+    return utxos
+      .reduce((acc, utxos) => acc.concat(utxos), [])
+      .filter((utxo) =>
+        outRefs.some(
+          (outRef) =>
+            utxo.txHash === outRef.txHash &&
+            utxo.outputIndex === outRef.outputIndex
+        )
+      );
   }
 
   async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
-    const result = await fetch(
-      `${this.url}/accounts/${rewardAddress}`,
-      { headers: { project_id: this.projectId, lucid } },
-    ).then((res) => res.json());
+    const result = await fetch(`${this.url}/accounts/${rewardAddress}`, {
+      headers: { project_id: this.projectId, lucid },
+    }).then((res) => res.json());
     if (!result || result.error) {
       return { poolId: null, rewards: 0n };
     }
@@ -189,12 +196,9 @@ export class Blockfrost implements Provider {
   }
 
   async getDatum(datumHash: DatumHash): Promise<Datum> {
-    const datum = await fetch(
-      `${this.url}/scripts/datum/${datumHash}/cbor`,
-      {
-        headers: { project_id: this.projectId, lucid },
-      },
-    )
+    const datum = await fetch(`${this.url}/scripts/datum/${datumHash}/cbor`, {
+      headers: { project_id: this.projectId, lucid },
+    })
       .then((res) => res.json())
       .then((res) => res.cbor);
     if (!datum || datum.error) {
@@ -236,43 +240,41 @@ export class Blockfrost implements Provider {
   }
 
   private async blockfrostUtxosToUtxos(
-    result: BlockfrostUtxoResult,
+    result: BlockfrostUtxoResult
   ): Promise<UTxO[]> {
     return (await Promise.all(
       result.map(async (r) => ({
         txHash: r.tx_hash,
         outputIndex: r.output_index,
         assets: Object.fromEntries(
-          r.amount.map(({ unit, quantity }) => [unit, BigInt(quantity)]),
+          r.amount.map(({ unit, quantity }) => [unit, BigInt(quantity)])
         ),
         address: r.address,
         datumHash: (!r.inline_datum && r.data_hash) || undefined,
         datum: r.inline_datum || undefined,
         scriptRef: r.reference_script_hash
-          ? (await (async () => {
-            const {
-              type,
-            } = await fetch(
-              `${this.url}/scripts/${r.reference_script_hash}`,
-              {
-                headers: { project_id: this.projectId, lucid },
-              },
-            ).then((res) => res.json());
-            // TODO: support native scripts
-            if (type === "Native" || type === "native") {
-              throw new Error("Native script ref not implemented!");
-            }
-            const { cbor: script } = await fetch(
-              `${this.url}/scripts/${r.reference_script_hash}/cbor`,
-              { headers: { project_id: this.projectId, lucid } },
-            ).then((res) => res.json());
-            return {
-              type: type === "plutusV1" ? "PlutusV1" : "PlutusV2",
-              script: applyDoubleCborEncoding(script),
-            };
-          })())
+          ? await (async () => {
+              const { type } = await fetch(
+                `${this.url}/scripts/${r.reference_script_hash}`,
+                {
+                  headers: { project_id: this.projectId, lucid },
+                }
+              ).then((res) => res.json());
+              // TODO: support native scripts
+              if (type === "Native" || type === "native") {
+                throw new Error("Native script ref not implemented!");
+              }
+              const { cbor: script } = await fetch(
+                `${this.url}/scripts/${r.reference_script_hash}/cbor`,
+                { headers: { project_id: this.projectId, lucid } }
+              ).then((res) => res.json());
+              return {
+                type: type === "plutusV1" ? "PlutusV1" : "PlutusV2",
+                script: applyDoubleCborEncoding(script),
+              };
+            })()
           : undefined,
-      })),
+      }))
     )) as UTxO[];
   }
 }
@@ -307,8 +309,8 @@ export function datumJsonToCbor(json: DatumJson): Datum {
       return C.PlutusData.new_constr_plutus_data(
         C.ConstrPlutusData.new(
           C.BigNum.from_str(json.constructor!.toString()),
-          l,
-        ),
+          l
+        )
       );
     }
     throw new Error("Unsupported type");
