@@ -123,6 +123,7 @@ export class TxComplete {
         fromHex(witness)
       );
       this.witnessSetBuilder.add_existing(witnessParsed);
+      witnessParsed.free();
     });
     return this;
   }
