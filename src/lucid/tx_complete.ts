@@ -84,7 +84,9 @@ export class TxComplete {
   async partialSign(): Promise<TransactionWitnesses> {
     const witnesses = await this.lucid.wallet.signTx(this.txComplete);
     this.witnessSetBuilder.add_existing(witnesses);
-    return toHex(witnesses.to_bytes());
+    const bytes = witnesses.to_bytes();
+    witnesses.free();
+    return toHex(bytes);
   }
 
   /**
