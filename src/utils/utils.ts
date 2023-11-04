@@ -109,39 +109,68 @@ export class Utils {
     paymentCredential: Credential,
     stakeCredential?: Credential
   ): Address {
-    if (stakeCredential) {
-      return C.BaseAddress.new(
-        networkToId(this.lucid.network),
-        paymentCredential.type === "Key"
-          ? C.StakeCredential.from_keyhash(
-              C.Ed25519KeyHash.from_hex(paymentCredential.hash)
-            )
-          : C.StakeCredential.from_scripthash(
-              C.ScriptHash.from_hex(paymentCredential.hash)
-            ),
-        stakeCredential.type === "Key"
-          ? C.StakeCredential.from_keyhash(
-              C.Ed25519KeyHash.from_hex(stakeCredential.hash)
-            )
-          : C.StakeCredential.from_scripthash(
-              C.ScriptHash.from_hex(stakeCredential.hash)
-            )
-      )
-        .to_address()
-        .to_bech32(undefined);
-    } else {
-      return C.EnterpriseAddress.new(
-        networkToId(this.lucid.network),
-        paymentCredential.type === "Key"
-          ? C.StakeCredential.from_keyhash(
-              C.Ed25519KeyHash.from_hex(paymentCredential.hash)
-            )
-          : C.StakeCredential.from_scripthash(
-              C.ScriptHash.from_hex(paymentCredential.hash)
-            )
-      )
-        .to_address()
-        .to_bech32(undefined);
+    const networkId = networkToId(this.lucid.network);
+    const bucket: FreeableBucket = [];
+    try {
+      if (stakeCredential) {
+        let paymentPart: C.StakeCredential;
+        let stakePart: C.StakeCredential;
+        if (paymentCredential.type === "Key") {
+          const keyHash = C.Ed25519KeyHash.from_hex(paymentCredential.hash);
+          bucket.push(keyHash);
+          paymentPart = C.StakeCredential.from_keyhash(keyHash);
+        } else {
+          const scriptHash = C.ScriptHash.from_hex(paymentCredential.hash);
+          bucket.push(scriptHash);
+          paymentPart = C.StakeCredential.from_scripthash(scriptHash);
+        }
+        bucket.push(paymentPart);
+        if (stakeCredential.type === "Key") {
+          const keyHash = C.Ed25519KeyHash.from_hex(stakeCredential.hash);
+          bucket.push(keyHash);
+          stakePart = C.StakeCredential.from_keyhash(keyHash);
+        } else {
+          const scriptHash = C.ScriptHash.from_hex(stakeCredential.hash);
+          bucket.push(scriptHash);
+          stakePart = C.StakeCredential.from_scripthash(scriptHash);
+        }
+        bucket.push(stakePart);
+
+        const baseAddress = C.BaseAddress.new(
+          networkId,
+          paymentPart,
+          stakePart
+        );
+        bucket.push(baseAddress);
+        const address = baseAddress.to_address();
+        bucket.push(address);
+
+        return address.to_bech32(undefined);
+      } else {
+        let paymentPart: C.StakeCredential;
+        if (paymentCredential.type === "Key") {
+          const keyHash = C.Ed25519KeyHash.from_hex(paymentCredential.hash);
+          bucket.push(keyHash);
+          paymentPart = C.StakeCredential.from_keyhash(keyHash);
+        } else {
+          const scriptHash = C.ScriptHash.from_hex(paymentCredential.hash);
+          bucket.push(scriptHash);
+          paymentPart = C.StakeCredential.from_scripthash(scriptHash);
+        }
+        bucket.push(paymentPart);
+
+        const enterpriseAddress = C.EnterpriseAddress.new(
+          networkId,
+          paymentPart
+        );
+        bucket.push(enterpriseAddress);
+        const address = enterpriseAddress.to_address();
+        bucket.push(address);
+
+        return address.to_bech32(undefined);
+      }
+    } finally {
+      Freeables.free(...bucket);
     }
   }
 
