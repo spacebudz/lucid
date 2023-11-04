@@ -603,23 +603,34 @@ export function generateSeedPhrase(): string {
 }
 
 export function valueToAssets(value: C.Value): Assets {
+  const bucket: FreeableBucket = [];
   const assets: Assets = {};
-  assets["lovelace"] = BigInt(value.coin().to_str());
+  const lovelace = value.coin();
+  bucket.push(lovelace);
+  assets["lovelace"] = BigInt(lovelace.to_str());
   const ma = value.multiasset();
+  bucket.push(ma);
   if (ma) {
     const multiAssets = ma.keys();
+    bucket.push(multiAssets);
     for (let j = 0; j < multiAssets.len(); j++) {
       const policy = multiAssets.get(j);
+      bucket.push(policy);
       const policyAssets = ma.get(policy)!;
+      bucket.push(policyAssets);
       const assetNames = policyAssets.keys();
+      bucket.push(assetNames);
       for (let k = 0; k < assetNames.len(); k++) {
         const policyAsset = assetNames.get(k);
+        bucket.push(policyAsset);
         const quantity = policyAssets.get(policyAsset)!;
+        bucket.push(quantity);
         const unit = toHex(policy.to_bytes()) + toHex(policyAsset.name());
         assets[unit] = BigInt(quantity.to_str());
       }
     }
   }
+  Freeables.free(...bucket);
   return assets;
 }
 
