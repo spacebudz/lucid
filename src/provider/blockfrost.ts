@@ -16,6 +16,7 @@ import {
   UTxO,
 } from "../types/mod.ts";
 import packageJson from "../../package.json" assert { type: "json" };
+import { FreeableBucket, Freeables } from "../utils/freeable.ts";
 
 export class Blockfrost implements Provider {
   url: string;
@@ -284,38 +285,61 @@ export class Blockfrost implements Provider {
  */
 export function datumJsonToCbor(json: DatumJson): Datum {
   const convert = (json: DatumJson): C.PlutusData => {
-    if (!isNaN(json.int!)) {
-      return C.PlutusData.new_integer(C.BigInt.from_str(json.int!.toString()));
-    } else if (json.bytes || !isNaN(Number(json.bytes))) {
-      return C.PlutusData.new_bytes(fromHex(json.bytes!));
-    } else if (json.map) {
-      const m = C.PlutusMap.new();
-      json.map.forEach(({ k, v }: { k: unknown; v: unknown }) => {
-        m.insert(convert(k as DatumJson), convert(v as DatumJson));
-      });
-      return C.PlutusData.new_map(m);
-    } else if (json.list) {
-      const l = C.PlutusList.new();
-      json.list.forEach((v: DatumJson) => {
-        l.add(convert(v));
-      });
-      return C.PlutusData.new_list(l);
-    } else if (!isNaN(json.constructor! as unknown as number)) {
-      const l = C.PlutusList.new();
-      json.fields!.forEach((v: DatumJson) => {
-        l.add(convert(v));
-      });
-      return C.PlutusData.new_constr_plutus_data(
-        C.ConstrPlutusData.new(
-          C.BigNum.from_str(json.constructor!.toString()),
-          l
-        )
-      );
+    const bucket: FreeableBucket = [];
+    try {
+      if (!isNaN(json.int!)) {
+        const int = C.BigInt.from_str(json.int!.toString());
+        bucket.push(int);
+        return C.PlutusData.new_integer(int);
+      } else if (json.bytes || !isNaN(Number(json.bytes))) {
+        return C.PlutusData.new_bytes(fromHex(json.bytes!));
+      } else if (json.map) {
+        const m = C.PlutusMap.new();
+        bucket.push(m);
+        json.map.forEach(({ k, v }: { k: unknown; v: unknown }) => {
+          const key = convert(k as DatumJson);
+          bucket.push(key);
+          const value = convert(v as DatumJson);
+          bucket.push(value);
+
+          m.insert(key, value);
+        });
+        return C.PlutusData.new_map(m);
+      } else if (json.list) {
+        const l = C.PlutusList.new();
+        bucket.push(l);
+        json.list.forEach((v: DatumJson) => {
+          const value = convert(v);
+          bucket.push(value);
+          l.add(value);
+        });
+        return C.PlutusData.new_list(l);
+      } else if (!isNaN(json.constructor! as unknown as number)) {
+        const l = C.PlutusList.new();
+        bucket.push(l);
+        json.fields!.forEach((v: DatumJson) => {
+          const value = convert(v);
+          bucket.push(value);
+          l.add(value);
+        });
+        const constructorIndex = C.BigNum.from_str(
+          json.constructor!.toString()
+        );
+        bucket.push(constructorIndex);
+        const plutusData = C.ConstrPlutusData.new(constructorIndex, l);
+        bucket.push(plutusData);
+        return C.PlutusData.new_constr_plutus_data(plutusData);
+      }
+      throw new Error("Unsupported type");
+    } finally {
+      Freeables.free(...bucket);
     }
-    throw new Error("Unsupported type");
   };
 
-  return toHex(convert(json).to_bytes());
+  const convertedJson = convert(json);
+  const cbor = convertedJson.to_bytes();
+  convertedJson.free();
+  return toHex(cbor);
 }
 
 type DatumJson = {
