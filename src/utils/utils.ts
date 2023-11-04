@@ -267,7 +267,12 @@ export class Utils {
   }
 
   datumToHash(datum: Datum): DatumHash {
-    return C.hash_plutus_data(C.PlutusData.from_bytes(fromHex(datum))).to_hex();
+    const plutusData = C.PlutusData.from_bytes(fromHex(datum));
+    const hash = C.hash_plutus_data(plutusData);
+    plutusData.free();
+    const datumHash = hash.to_hex();
+    hash.free();
+    return datumHash;
   }
 
   scriptHashToCredential(scriptHash: ScriptHash): Credential {
