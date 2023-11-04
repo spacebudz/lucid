@@ -40,7 +40,7 @@ import {
   unixTimeToEnclosingSlot,
 } from "../plutus/time.ts";
 import { Data } from "../plutus/data.ts";
-import { Freeable, FreeableBucket, Freeables } from "./freeable.ts";
+import { FreeableBucket, Freeables } from "./freeable.ts";
 
 export class Utils {
   private lucid: Lucid;
@@ -712,29 +712,39 @@ export function fromScriptRef(scriptRef: C.ScriptRef): Script {
 }
 
 export function toScriptRef(script: Script): C.ScriptRef {
-  switch (script.type) {
-    case "Native":
-      return C.ScriptRef.new(
-        C.Script.new_native(C.NativeScript.from_bytes(fromHex(script.script)))
-      );
-    case "PlutusV1":
-      return C.ScriptRef.new(
-        C.Script.new_plutus_v1(
-          C.PlutusScript.from_bytes(
-            fromHex(applyDoubleCborEncoding(script.script))
-          )
-        )
-      );
-    case "PlutusV2":
-      return C.ScriptRef.new(
-        C.Script.new_plutus_v2(
-          C.PlutusScript.from_bytes(
-            fromHex(applyDoubleCborEncoding(script.script))
-          )
-        )
-      );
-    default:
-      throw new Error("No variant matched.");
+  const bucket: FreeableBucket = [];
+  try {
+    switch (script.type) {
+      case "Native": {
+        const nativeScript = C.NativeScript.from_bytes(fromHex(script.script));
+        bucket.push(nativeScript);
+        const cScript = C.Script.new_native(nativeScript);
+        bucket.push(cScript);
+        return C.ScriptRef.new(cScript);
+      }
+      case "PlutusV1": {
+        const plutusScript = C.PlutusScript.from_bytes(
+          fromHex(applyDoubleCborEncoding(script.script))
+        );
+        bucket.push(plutusScript);
+        const cScript = C.Script.new_plutus_v1(plutusScript);
+        bucket.push(cScript);
+        return C.ScriptRef.new(cScript);
+      }
+      case "PlutusV2": {
+        const plutusScript = C.PlutusScript.from_bytes(
+          fromHex(applyDoubleCborEncoding(script.script))
+        );
+        bucket.push(plutusScript);
+        const cScript = C.Script.new_plutus_v2(plutusScript);
+        bucket.push(cScript);
+        return C.ScriptRef.new(cScript);
+      }
+      default:
+        throw new Error("No variant matched.");
+    }
+  } finally {
+    Freeables.free(...bucket);
   }
 }
 
