@@ -66,12 +66,17 @@ export class TxComplete {
 
   /** Add an extra signature from a private key. */
   signWithPrivateKey(privateKey: PrivateKey): TxComplete {
+    const bucket: FreeableBucket = [];
     const priv = C.PrivateKey.from_bech32(privateKey);
-    const witness = C.make_vkey_witness(
-      C.hash_transaction(this.txComplete.body()),
-      priv
-    );
+    bucket.push(priv);
+    const body = this.txComplete.body();
+    bucket.push(body);
+    const hash = C.hash_transaction(body);
+    bucket.push(hash);
+    const witness = C.make_vkey_witness(hash, priv);
+    bucket.push(witness);
     this.witnessSetBuilder.add_vkey(witness);
+    Freeables.free(...bucket);
     return this;
   }
 
