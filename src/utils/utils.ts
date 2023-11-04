@@ -966,15 +966,17 @@ export function fromUnit(unit: Unit): {
  * It follows this Json format: https://github.com/input-output-hk/cardano-node/blob/master/doc/reference/simple-scripts.md
  */
 export function nativeScriptFromJson(nativeScript: NativeScript): Script {
+  const cNativeScript = C.encode_json_str_to_native_script(
+    JSON.stringify(nativeScript),
+    "",
+    C.ScriptSchema.Node
+  );
+  const script = toHex(cNativeScript.to_bytes());
+  cNativeScript.free();
+
   return {
     type: "Native",
-    script: toHex(
-      C.encode_json_str_to_native_script(
-        JSON.stringify(nativeScript),
-        "",
-        C.ScriptSchema.Node
-      ).to_bytes()
-    ),
+    script,
   };
 }
 
