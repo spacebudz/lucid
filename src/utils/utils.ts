@@ -1000,12 +1000,15 @@ export function applyParamsToScript<T extends unknown[] = Data[]>(
 /** Returns double cbor encoded script. If script is already double cbor encoded it's returned as it is. */
 export function applyDoubleCborEncoding(script: string): string {
   try {
-    C.PlutusScript.from_bytes(
-      C.PlutusScript.from_bytes(fromHex(script)).bytes()
-    );
+    const plutusScript = C.PlutusScript.from_bytes(fromHex(script));
+    const doublePlutusScript = C.PlutusScript.new(plutusScript.to_bytes());
+    Freeables.free(plutusScript, doublePlutusScript);
     return script;
   } catch (_e) {
-    return toHex(C.PlutusScript.new(fromHex(script)).to_bytes());
+    const plutusScript = C.PlutusScript.new(fromHex(script));
+    const bytes = plutusScript.to_bytes();
+    plutusScript.free();
+    return toHex(bytes);
   }
 }
 
