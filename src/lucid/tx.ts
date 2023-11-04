@@ -534,13 +534,14 @@ export class Tx {
         task = this.tasks.shift();
       }
 
+      // We don't free `utxos` as it is passed as an Option to the txBuilder and the ownership is passed when passing an Option
       const utxos = await this.lucid.wallet.getUtxosCore();
 
+      // We don't free `changeAddress` as it is passed as an Option to the txBuilder and the ownership is passed when passing an Option
       const changeAddress: C.Address = addressFromWithNetworkCheck(
         options?.change?.address || (await this.lucid.wallet.address()),
         this.lucid
       );
-      bucket.push(utxos, changeAddress);
 
       if (options?.coinSelection || options?.coinSelection === undefined) {
         this.txBuilder.add_inputs_from(
