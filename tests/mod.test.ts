@@ -35,46 +35,8 @@ const lucid = await Lucid.new(undefined, "Preprod");
 const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
 
 const protocolParameters = PROTOCOL_PARAMETERS_DEFAULT;
-
-lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
-  .coins_per_utxo_byte(
-    C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString()),
-  )
-  .fee_algo(
-    C.LinearFee.new(
-      C.BigNum.from_str(protocolParameters.minFeeA.toString()),
-      C.BigNum.from_str(protocolParameters.minFeeB.toString()),
-    ),
-  )
-  .key_deposit(
-    C.BigNum.from_str(protocolParameters.keyDeposit.toString()),
-  )
-  .pool_deposit(
-    C.BigNum.from_str(protocolParameters.poolDeposit.toString()),
-  )
-  .max_tx_size(protocolParameters.maxTxSize)
-  .max_value_size(protocolParameters.maxValSize)
-  .collateral_percentage(protocolParameters.collateralPercentage)
-  .max_collateral_inputs(protocolParameters.maxCollateralInputs)
-  .max_tx_ex_units(
-    C.ExUnits.new(
-      C.BigNum.from_str(protocolParameters.maxTxExMem.toString()),
-      C.BigNum.from_str(protocolParameters.maxTxExSteps.toString()),
-    ),
-  )
-  .ex_unit_prices(
-    C.ExUnitPrices.from_float(
-      protocolParameters.priceMem,
-      protocolParameters.priceStep,
-    ),
-  )
-  .slot_config(
-    C.BigNum.from_str(slotConfig.zeroTime.toString()),
-    C.BigNum.from_str(slotConfig.zeroSlot.toString()),
-    slotConfig.slotLength,
-  )
-  .costmdls(createCostModels(protocolParameters.costModels))
-  .build();
+lucid.protocolParameters = protocolParameters;
+lucid.slotConfig = slotConfig;
 
 lucid.selectWalletFromPrivateKey(privateKey);
 
@@ -415,10 +377,12 @@ Deno.test("toUnit/fromUnit property test", () => {
         const policyId = toHex(policyRaw);
         const name = nameRaw.length > 0 ? toHex(nameRaw) : null;
         const assetName = toLabel(label) + (name || "");
-        assertEquals(
-          fromUnit(toUnit(policyId, name, label)),
-          { policyId, assetName, name, label },
-        );
+        assertEquals(fromUnit(toUnit(policyId, name, label)), {
+          policyId,
+          assetName,
+          name,
+          label,
+        });
       },
     ),
   );
@@ -428,58 +392,77 @@ Deno.test("Preserve task/transaction order", async () => {
   lucid.selectWalletFrom({
     address:
       "addr_test1qq90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sts2cfa",
-    utxos: [{
-      txHash:
-        "2eefc93bc0dda80e78890f1f965733239e1f64f76555e8dcde1a4aa7db67b129",
-      outputIndex: 3,
-      assets: { lovelace: 6770556044n },
-      address:
-        "addr_test1qq90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sts2cfa",
-      datumHash: null,
-      datum: null,
-      scriptRef: null,
-    }],
+    utxos: [
+      {
+        txHash:
+          "2eefc93bc0dda80e78890f1f965733239e1f64f76555e8dcde1a4aa7db67b129",
+        outputIndex: 3,
+        assets: { lovelace: 6770556044n },
+        address:
+          "addr_test1qq90qrxyw5qtkex0l7mc86xy9a6xkn5t3fcwm6wq33c38t8nhh356yzp7k3qwmhe4fk0g5u6kx5ka4rz5qcq4j7mvh2sts2cfa",
+        datumHash: null,
+        datum: null,
+        scriptRef: null,
+      },
+    ],
   });
 
-  const txCompA = lucid.newTx().payToAddressWithData(
-    await lucid.wallet.address(),
-    { inline: Data.to(0n) },
-    {},
-  );
+  const txCompA = lucid
+    .newTx()
+    .payToAddressWithData(
+      await lucid.wallet.address(),
+      { inline: Data.to(0n) },
+      {},
+    );
 
-  const txCompB = lucid.newTx()
+  const txCompB = lucid
+    .newTx()
     .payToAddressWithData(
       await lucid.wallet.address(),
       { inline: Data.to(10n) },
       {},
     )
     .compose(
-      lucid.newTx().payToAddressWithData(
-        await lucid.wallet.address(),
-        { inline: Data.to(1n) },
-        {},
-      ).compose(
-        lucid.newTx().payToAddressWithData(
+      lucid
+        .newTx()
+        .payToAddressWithData(
           await lucid.wallet.address(),
-          { inline: Data.to(2n) },
+          { inline: Data.to(1n) },
           {},
+        )
+        .compose(
+          lucid
+            .newTx()
+            .payToAddressWithData(
+              await lucid.wallet.address(),
+              { inline: Data.to(2n) },
+              {},
+            ),
         ),
-      ),
     );
 
-  const tx = await lucid.newTx()
+  const tx = await lucid
+    .newTx()
     .compose(txCompA)
     .compose(txCompB)
     .payToAddressWithData(
       await lucid.wallet.address(),
       { inline: Data.to(3n) },
       {},
-    ).complete();
+    )
+    .complete();
 
   [0n, 10n, 1n, 2n, 3n].forEach((num, i) => {
     const outputNum = BigInt(
-      tx.txComplete.body().outputs().get(i).datum()?.as_data()?.get()
-        .as_integer()?.to_str()!,
+      tx.txComplete
+        .body()
+        .outputs()
+        .get(i)
+        .datum()
+        ?.as_data()
+        ?.get()
+        .as_integer()
+        ?.to_str()!,
     );
     assertEquals(num, outputNum);
   });

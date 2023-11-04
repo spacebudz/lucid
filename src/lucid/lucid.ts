@@ -1,7 +1,6 @@
 import { C } from "../core/mod.ts";
 import {
   coreToUtxo,
-  createCostModels,
   fromHex,
   fromUnit,
   paymentCredentialOf,
@@ -21,10 +20,12 @@ import {
   OutRef,
   Payload,
   PrivateKey,
+  ProtocolParameters,
   Provider,
   RewardAddress,
   SignedMessage,
   Slot,
+  SlotConfig,
   Transaction,
   TxHash,
   Unit,
@@ -40,20 +41,29 @@ import { Message } from "./message.ts";
 import { SLOT_CONFIG_NETWORK } from "../plutus/time.ts";
 import { Constr, Data } from "../plutus/data.ts";
 import { Emulator } from "../provider/emulator.ts";
+import { Freeable, Freeables } from "../utils/freeable.ts";
+import { getTransactionBuilderConfig } from "../utils/transaction_builder_config.ts";
 
 export class Lucid {
-  txBuilderConfig!: C.TransactionBuilderConfig;
+  protocolParameters?: ProtocolParameters;
+  slotConfig!: SlotConfig;
   wallet!: Wallet;
   provider!: Provider;
   network: Network = "Mainnet";
   utils!: Utils;
 
-  static async new(provider?: Provider, network?: Network): Promise<Lucid> {
+  static async new(
+    provider?: Provider,
+    network?: Network,
+    protocolParameters?: ProtocolParameters,
+  ): Promise<Lucid> {
     const lucid = new this();
     if (network) lucid.network = network;
+    if (protocolParameters) {
+      lucid.protocolParameters = protocolParameters;
+    }
     if (provider) {
       lucid.provider = provider;
-      const protocolParameters = await provider.getProtocolParameters();
 
       if (lucid.provider instanceof Emulator) {
         lucid.network = "Custom";
@@ -63,59 +73,33 @@ export class Lucid {
           slotLength: 1000,
         };
       }
-
-      const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
-      lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
-        .coins_per_utxo_byte(
-          C.BigNum.from_str(protocolParameters.coinsPerUtxoByte.toString()),
-        )
-        .fee_algo(
-          C.LinearFee.new(
-            C.BigNum.from_str(protocolParameters.minFeeA.toString()),
-            C.BigNum.from_str(protocolParameters.minFeeB.toString()),
-          ),
-        )
-        .key_deposit(
-          C.BigNum.from_str(protocolParameters.keyDeposit.toString()),
-        )
-        .pool_deposit(
-          C.BigNum.from_str(protocolParameters.poolDeposit.toString()),
-        )
-        .max_tx_size(protocolParameters.maxTxSize)
-        .max_value_size(protocolParameters.maxValSize)
-        .collateral_percentage(protocolParameters.collateralPercentage)
-        .max_collateral_inputs(protocolParameters.maxCollateralInputs)
-        .max_tx_ex_units(
-          C.ExUnits.new(
-            C.BigNum.from_str(protocolParameters.maxTxExMem.toString()),
-            C.BigNum.from_str(protocolParameters.maxTxExSteps.toString()),
-          ),
-        )
-        .ex_unit_prices(
-          C.ExUnitPrices.from_float(
-            protocolParameters.priceMem,
-            protocolParameters.priceStep,
-          ),
-        )
-        .slot_config(
-          C.BigNum.from_str(slotConfig.zeroTime.toString()),
-          C.BigNum.from_str(slotConfig.zeroSlot.toString()),
-          slotConfig.slotLength,
-        )
-        .blockfrost(
-          // We have Aiken now as native plutus core engine (primary), but we still support blockfrost (secondary) in case of bugs.
-          C.Blockfrost.new(
-            // deno-lint-ignore no-explicit-any
-            ((provider as any)?.url || "") + "/utils/txs/evaluate",
-            // deno-lint-ignore no-explicit-any
-            (provider as any)?.projectId || "",
-          ),
-        )
-        .costmdls(createCostModels(protocolParameters.costModels))
-        .build();
     }
+    if (provider && !lucid.protocolParameters) {
+      const protocolParameters = await provider.getProtocolParameters();
+      lucid.protocolParameters = protocolParameters;
+    }
+    lucid.slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
+
     lucid.utils = new Utils(lucid);
     return lucid;
+  }
+
+  getTransactionBuilderConfig(): C.TransactionBuilderConfig {
+    if (!this.protocolParameters) {
+      throw new Error(
+        "Protocol parameters or slot config not set. Set a provider or iniatilize with protocol parameters.",
+      );
+    }
+    return getTransactionBuilderConfig(
+      this.protocolParameters,
+      this.slotConfig,
+      {
+        // deno-lint-ignore no-explicit-any
+        url: (this.provider as any)?.url,
+        // deno-lint-ignore no-explicit-any
+        projectId: (this.provider as any)?.projectId,
+      },
+    );
   }
 
   /**
@@ -126,14 +110,17 @@ export class Lucid {
     if (this.network === "Custom") {
       throw new Error("Cannot switch when on custom network.");
     }
-    const lucid = await Lucid.new(
-      provider,
-      network,
-    );
-    this.txBuilderConfig = lucid.txBuilderConfig;
+    const lucid = await Lucid.new(provider, network);
+    this.protocolParameters = lucid.protocolParameters;
+    this.slotConfig = lucid.slotConfig;
     this.provider = provider || this.provider;
+    // Given that protoclParameters and provider are optional we should fetch protocol parameters if they are not set when switiching providers
+    if (!this.protocolParameters && provider) {
+      this.protocolParameters = await provider.getProtocolParameters();
+    }
     this.network = network || this.network;
     this.wallet = lucid.wallet;
+
     return this;
   }
 
@@ -156,10 +143,11 @@ export class Lucid {
     payload: Payload,
     signedMessage: SignedMessage,
   ): boolean {
-    const { paymentCredential, stakeCredential, address: { hex: addressHex } } =
-      this.utils.getAddressDetails(
-        address,
-      );
+    const {
+      paymentCredential,
+      stakeCredential,
+      address: { hex: addressHex },
+    } = this.utils.getAddressDetails(address);
     const keyHash = paymentCredential?.hash || stakeCredential?.hash;
     if (!keyHash) throw new Error("Not a valid address provided.");
 
@@ -216,7 +204,7 @@ export class Lucid {
       case 333:
       case 444: {
         const utxo = await this.utxoByUnit(toUnit(policyId, name, 100));
-        const metadata = await this.datumOf(utxo) as Constr<Data>;
+        const metadata = (await this.datumOf(utxo)) as Constr<Data>;
         return Data.toJson(metadata.fields[0]);
       }
       default:
@@ -230,19 +218,30 @@ export class Lucid {
    */
   selectWalletFromPrivateKey(privateKey: PrivateKey): Lucid {
     const priv = C.PrivateKey.from_bech32(privateKey);
-    const pubKeyHash = priv.to_public().hash();
+    const publicKey = priv.to_public();
+    priv.free();
+    const pubKeyHash = publicKey.hash();
+    publicKey.free();
 
     this.wallet = {
-      // deno-lint-ignore require-await
-      address: async (): Promise<Address> =>
-        C.EnterpriseAddress.new(
+      address: (): Promise<Address> => {
+        const bucket: Freeable[] = [];
+        const stakeCredential = C.StakeCredential.from_keyhash(pubKeyHash);
+        bucket.push(stakeCredential);
+        const enterpriseAddress = C.EnterpriseAddress.new(
           this.network === "Mainnet" ? 1 : 0,
-          C.StakeCredential.from_keyhash(pubKeyHash),
-        )
-          .to_address()
-          .to_bech32(undefined),
-      // deno-lint-ignore require-await
-      rewardAddress: async (): Promise<RewardAddress | null> => null,
+          stakeCredential,
+        );
+        bucket.push(enterpriseAddress);
+        const address = enterpriseAddress.to_address();
+        bucket.push(address);
+        const bech32 = address.to_bech32(undefined);
+        Freeables.free(...bucket);
+
+        return Promise.resolve(bech32);
+      },
+
+      rewardAddress: (): Promise<RewardAddress | null> => Promise.resolve(null),
       getUtxos: async (): Promise<UTxO[]> => {
         return await this.utxosAt(
           paymentCredentialOf(await this.wallet.address()),
@@ -254,33 +253,39 @@ export class Lucid {
         );
         const coreUtxos = C.TransactionUnspentOutputs.new();
         utxos.forEach((utxo) => {
-          coreUtxos.add(utxoToCore(utxo));
+          const coreUtxo = utxoToCore(utxo);
+          coreUtxos.add(coreUtxo);
+          coreUtxo.free();
         });
         return coreUtxos;
       },
-      // deno-lint-ignore require-await
-      getDelegation: async (): Promise<Delegation> => {
-        return { poolId: null, rewards: 0n };
+      getDelegation: (): Promise<Delegation> => {
+        return Promise.resolve({ poolId: null, rewards: 0n });
       },
-      // deno-lint-ignore require-await
-      signTx: async (
-        tx: C.Transaction,
-      ): Promise<C.TransactionWitnessSet> => {
-        const witness = C.make_vkey_witness(
-          C.hash_transaction(tx.body()),
-          priv,
-        );
+      signTx: (tx: C.Transaction): Promise<C.TransactionWitnessSet> => {
+        const bucket: Freeable[] = [];
+        const txBody = tx.body();
+        bucket.push(txBody);
+        const hash = C.hash_transaction(txBody);
+        bucket.push(hash);
+        const witness = C.make_vkey_witness(hash, priv);
+        bucket.push(witness);
         const txWitnessSetBuilder = C.TransactionWitnessSetBuilder.new();
+        bucket.push(txWitnessSetBuilder);
         txWitnessSetBuilder.add_vkey(witness);
-        return txWitnessSetBuilder.build();
+        const witnessSet = txWitnessSetBuilder.build();
+
+        Freeables.free(...bucket);
+        return Promise.resolve(witnessSet);
       },
-      // deno-lint-ignore require-await
-      signMessage: async (
+      signMessage: (
         address: Address | RewardAddress,
         payload: Payload,
       ): Promise<SignedMessage> => {
-        const { paymentCredential, address: { hex: hexAddress } } = this.utils
-          .getAddressDetails(address);
+        const {
+          paymentCredential,
+          address: { hex: hexAddress },
+        } = this.utils.getAddressDetails(address);
         const keyHash = paymentCredential?.hash;
 
         const originalKeyHash = pubKeyHash.to_hex();
@@ -289,12 +294,13 @@ export class Lucid {
           throw new Error(`Cannot sign message for address: ${address}.`);
         }
 
-        return signData(hexAddress, payload, privateKey);
+        return Promise.resolve(signData(hexAddress, payload, privateKey));
       },
       submitTx: async (tx: Transaction): Promise<TxHash> => {
         return await this.provider.submitTx(tx);
       },
     };
+
     return this;
   }
 
@@ -308,34 +314,45 @@ export class Lucid {
     };
 
     this.wallet = {
-      address: async (): Promise<Address> =>
-        C.Address.from_bytes(
-          fromHex(await getAddressHex()),
-        ).to_bech32(undefined),
+      address: async (): Promise<Address> => {
+        const addressHex = await getAddressHex();
+        const address = C.Address.from_bytes(fromHex(addressHex));
+        const bech32 = address.to_bech32(undefined);
+        address.free();
+        return bech32;
+      },
+
       rewardAddress: async (): Promise<RewardAddress | null> => {
         const [rewardAddressHex] = await api.getRewardAddresses();
-        const rewardAddress = rewardAddressHex
-          ? C.RewardAddress.from_address(
-            C.Address.from_bytes(fromHex(rewardAddressHex)),
-          )!
-            .to_address()
-            .to_bech32(undefined)
-          : null;
-        return rewardAddress;
+        if (rewardAddressHex) {
+          const address = C.Address.from_bytes(fromHex(rewardAddressHex));
+          const rewardAddress = C.RewardAddress.from_address(address)!;
+          address.free();
+          const addr = rewardAddress.to_address();
+          rewardAddress.free();
+          const bech32 = addr.to_bech32(undefined);
+          addr.free();
+          return bech32;
+        }
+        return null;
       },
       getUtxos: async (): Promise<UTxO[]> => {
         const utxos = ((await api.getUtxos()) || []).map((utxo) => {
           const parsedUtxo = C.TransactionUnspentOutput.from_bytes(
             fromHex(utxo),
           );
-          return coreToUtxo(parsedUtxo);
+          const finalUtxo = coreToUtxo(parsedUtxo);
+          parsedUtxo.free();
+          return finalUtxo;
         });
         return utxos;
       },
       getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const utxos = C.TransactionUnspentOutputs.new();
         ((await api.getUtxos()) || []).forEach((utxo) => {
-          utxos.add(C.TransactionUnspentOutput.from_bytes(fromHex(utxo)));
+          const coreUtxo = C.TransactionUnspentOutput.from_bytes(fromHex(utxo));
+          utxos.add(coreUtxo);
+          coreUtxo.free();
         });
         return utxos;
       },
@@ -346,9 +363,7 @@ export class Lucid {
           ? await this.delegationAt(rewardAddr)
           : { poolId: null, rewards: 0n };
       },
-      signTx: async (
-        tx: C.Transaction,
-      ): Promise<C.TransactionWitnessSet> => {
+      signTx: async (tx: C.Transaction): Promise<C.TransactionWitnessSet> => {
         const witnessSet = await api.signTx(toHex(tx.to_bytes()), true);
         return C.TransactionWitnessSet.from_bytes(fromHex(witnessSet));
       },
@@ -356,7 +371,9 @@ export class Lucid {
         address: Address | RewardAddress,
         payload: Payload,
       ): Promise<SignedMessage> => {
-        const hexAddress = toHex(C.Address.from_bech32(address).to_bytes());
+        const cAddress = C.Address.from_bech32(address);
+        const hexAddress = toHex(cAddress.to_bytes());
+        cAddress.free();
         return await api.signData(hexAddress, payload);
       },
       submitTx: async (tx: Transaction): Promise<TxHash> => {
@@ -371,42 +388,32 @@ export class Lucid {
    * Emulates a wallet by constructing it with the utxos and an address.
    * If utxos are not set, utxos are fetched from the provided address.
    */
-  selectWalletFrom({
-    address,
-    utxos,
-    rewardAddress,
-  }: ExternalWallet): Lucid {
+  selectWalletFrom({ address, utxos, rewardAddress }: ExternalWallet): Lucid {
     const addressDetails = this.utils.getAddressDetails(address);
     this.wallet = {
-      // deno-lint-ignore require-await
-      address: async (): Promise<Address> => address,
-      // deno-lint-ignore require-await
-      rewardAddress: async (): Promise<RewardAddress | null> => {
-        const rewardAddr = !rewardAddress && addressDetails.stakeCredential
-          ? (() => {
-            if (addressDetails.stakeCredential.type === "Key") {
-              return C.RewardAddress.new(
-                this.network === "Mainnet" ? 1 : 0,
-                C.StakeCredential.from_keyhash(
-                  C.Ed25519KeyHash.from_hex(
-                    addressDetails.stakeCredential.hash,
-                  ),
-                ),
-              )
-                .to_address()
-                .to_bech32(undefined);
-            }
-            return C.RewardAddress.new(
+      address: (): Promise<Address> => Promise.resolve(address),
+      rewardAddress: (): Promise<RewardAddress | null> => {
+        if (!rewardAddress && addressDetails.stakeCredential) {
+          if (addressDetails.stakeCredential.type === "Key") {
+            const keyHash = C.Ed25519KeyHash.from_hex(
+              addressDetails.stakeCredential.hash,
+            );
+            const stakeCredential = C.StakeCredential.from_keyhash(keyHash);
+            keyHash.free();
+            const rewardAddress = C.RewardAddress.new(
               this.network === "Mainnet" ? 1 : 0,
-              C.StakeCredential.from_scripthash(
-                C.ScriptHash.from_hex(addressDetails.stakeCredential.hash),
-              ),
-            )
-              .to_address()
-              .to_bech32(undefined);
-          })()
-          : rewardAddress;
-        return rewardAddr || null;
+              stakeCredential,
+            );
+            stakeCredential.free();
+            const address = rewardAddress.to_address();
+            rewardAddress.free();
+            const bech32 = address.to_bech32(undefined);
+            address.free();
+            return Promise.resolve(bech32);
+          }
+        }
+
+        return Promise.resolve(rewardAddress ?? null);
       },
       getUtxos: async (): Promise<UTxO[]> => {
         return utxos ? utxos : await this.utxosAt(paymentCredentialOf(address));
@@ -414,7 +421,12 @@ export class Lucid {
       getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const coreUtxos = C.TransactionUnspentOutputs.new();
         (utxos ? utxos : await this.utxosAt(paymentCredentialOf(address)))
-          .forEach((utxo) => coreUtxos.add(utxoToCore(utxo)));
+          .forEach((utxo) => {
+            const coreUtxo = utxoToCore(utxo);
+            coreUtxos.add(coreUtxo);
+            coreUtxo.free();
+          });
+
         return coreUtxos;
       },
       getDelegation: async (): Promise<Delegation> => {
@@ -424,17 +436,14 @@ export class Lucid {
           ? await this.delegationAt(rewardAddr)
           : { poolId: null, rewards: 0n };
       },
-      // deno-lint-ignore require-await
-      signTx: async (): Promise<C.TransactionWitnessSet> => {
-        throw new Error("Not implemented");
-      },
-      // deno-lint-ignore require-await
-      signMessage: async (): Promise<SignedMessage> => {
-        throw new Error("Not implemented");
-      },
-      submitTx: async (tx: Transaction): Promise<TxHash> => {
-        return await this.provider.submitTx(tx);
-      },
+      signTx: (): Promise<C.TransactionWitnessSet> =>
+        Promise.reject("Not implemented"),
+
+      signMessage: (): Promise<SignedMessage> =>
+        Promise.reject("Not implemented"),
+
+      submitTx: (tx: Transaction): Promise<TxHash> =>
+        this.provider.submitTx(tx),
     };
     return this;
   }
@@ -451,6 +460,7 @@ export class Lucid {
       password?: string;
     },
   ): Lucid {
+    const bucket: Freeable[] = [];
     const { address, rewardAddress, paymentKey, stakeKey } = walletFromSeed(
       seed,
       {
@@ -461,11 +471,26 @@ export class Lucid {
       },
     );
 
-    const paymentKeyHash = C.PrivateKey.from_bech32(paymentKey).to_public()
-      .hash().to_hex();
-    const stakeKeyHash = stakeKey
-      ? C.PrivateKey.from_bech32(stakeKey).to_public().hash().to_hex()
-      : "";
+    const paymentPrivateKey = C.PrivateKey.from_bech32(paymentKey);
+    bucket.push(paymentPrivateKey);
+    const paymentPublicKey = paymentPrivateKey.to_public();
+    bucket.push(paymentPublicKey);
+    const paymentPubKeyHash = paymentPublicKey.hash();
+    bucket.push(paymentPubKeyHash);
+    const paymentKeyHash = paymentPubKeyHash.to_hex();
+
+    const getStakeKeyHash = (stakeKey: string) => {
+      const stakePrivateKey = C.PrivateKey.from_bech32(stakeKey);
+      bucket.push(stakePrivateKey);
+      const stakePublicKey = stakePrivateKey.to_public();
+      bucket.push(stakePublicKey);
+      const stakePubKeyHash = stakePublicKey.hash();
+      bucket.push(stakePubKeyHash);
+      const stakeKeyHash = stakePubKeyHash.to_hex();
+      return stakeKeyHash;
+    };
+
+    const stakeKeyHash = stakeKey ? getStakeKeyHash(stakeKey) : "";
 
     const privKeyHashMap = {
       [paymentKeyHash]: paymentKey,
@@ -473,19 +498,18 @@ export class Lucid {
     };
 
     this.wallet = {
-      // deno-lint-ignore require-await
-      address: async (): Promise<Address> => address,
-      // deno-lint-ignore require-await
-      rewardAddress: async (): Promise<RewardAddress | null> =>
-        rewardAddress || null,
-      // deno-lint-ignore require-await
-      getUtxos: async (): Promise<UTxO[]> =>
+      address: (): Promise<Address> => Promise.resolve(address),
+      rewardAddress: (): Promise<RewardAddress | null> =>
+        Promise.resolve(rewardAddress || null),
+      getUtxos: (): Promise<UTxO[]> =>
         this.utxosAt(paymentCredentialOf(address)),
       getUtxosCore: async (): Promise<C.TransactionUnspentOutputs> => {
         const coreUtxos = C.TransactionUnspentOutputs.new();
-        (await this.utxosAt(paymentCredentialOf(address))).forEach((utxo) =>
-          coreUtxos.add(utxoToCore(utxo))
-        );
+        (await this.utxosAt(paymentCredentialOf(address))).forEach((utxo) => {
+          const coreUtxo = utxoToCore(utxo);
+          coreUtxos.add(coreUtxo);
+          coreUtxo.free();
+        });
         return coreUtxos;
       },
       getDelegation: async (): Promise<Delegation> => {
@@ -495,9 +519,7 @@ export class Lucid {
           ? await this.delegationAt(rewardAddr)
           : { poolId: null, rewards: 0n };
       },
-      signTx: async (
-        tx: C.Transaction,
-      ): Promise<C.TransactionWitnessSet> => {
+      signTx: async (tx: C.Transaction): Promise<C.TransactionWitnessSet> => {
         const utxos = await this.utxosAt(address);
 
         const ownKeyHashes: Array<KeyHash> = [paymentKeyHash, stakeKeyHash];
@@ -510,16 +532,22 @@ export class Lucid {
 
         const txWitnessSetBuilder = C.TransactionWitnessSetBuilder.new();
         usedKeyHashes.forEach((keyHash) => {
-          const witness = C.make_vkey_witness(
-            C.hash_transaction(tx.body()),
-            C.PrivateKey.from_bech32(privKeyHashMap[keyHash]!),
-          );
+          const txBody = tx.body();
+          const hash = C.hash_transaction(txBody);
+          txBody.free();
+          const privateKey = C.PrivateKey.from_bech32(privKeyHashMap[keyHash]!);
+          const witness = C.make_vkey_witness(hash, privateKey);
+          hash.free();
+          privateKey.free();
           txWitnessSetBuilder.add_vkey(witness);
+          witness.free();
         });
-        return txWitnessSetBuilder.build();
+
+        const txWitnessSet = txWitnessSetBuilder.build();
+        txWitnessSetBuilder.free();
+        return txWitnessSet;
       },
-      // deno-lint-ignore require-await
-      signMessage: async (
+      signMessage: (
         address: Address | RewardAddress,
         payload: Payload,
       ): Promise<SignedMessage> => {
@@ -527,8 +555,7 @@ export class Lucid {
           paymentCredential,
           stakeCredential,
           address: { hex: hexAddress },
-        } = this.utils
-          .getAddressDetails(address);
+        } = this.utils.getAddressDetails(address);
 
         const keyHash = paymentCredential?.hash || stakeCredential?.hash;
 
@@ -538,12 +565,14 @@ export class Lucid {
           throw new Error(`Cannot sign message for address: ${address}.`);
         }
 
-        return signData(hexAddress, payload, privateKey);
+        return Promise.resolve(signData(hexAddress, payload, privateKey));
       },
       submitTx: async (tx: Transaction): Promise<TxHash> => {
         return await this.provider.submitTx(tx);
       },
     };
+
+    Freeables.free(...bucket);
     return this;
   }
 }

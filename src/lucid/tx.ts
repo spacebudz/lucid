@@ -50,7 +50,9 @@ export class Tx {
 
   constructor(lucid: Lucid) {
     this.lucid = lucid;
-    this.txBuilder = C.TransactionBuilder.new(this.lucid.txBuilderConfig);
+    this.txBuilder = C.TransactionBuilder.new(
+      lucid.getTransactionBuilderConfig(),
+    );
     this.tasks = [];
   }
 
@@ -326,6 +328,7 @@ export class Tx {
       );
 
       const certificate = C.Certificate.new_pool_registration(poolRegistration);
+
       that.txBuilder.add_certificate(certificate, undefined);
       Freeables.free(certificate, poolRegistration);
     });
@@ -564,6 +567,7 @@ export class Tx {
       }
       bucket.push(datum, plutusData);
       this.txBuilder.balance(changeAddress, datum);
+
 
       const tx = await this.txBuilder.construct(
         utxos,
