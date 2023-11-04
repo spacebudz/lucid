@@ -8,6 +8,7 @@ import {
 import { Lucid } from "./lucid.ts";
 import { TxSigned } from "./tx_signed.ts";
 import { fromHex, toHex } from "../utils/mod.ts";
+import { FreeableBucket, Freeables } from "../utils/freeable.ts";
 
 export class TxComplete {
   txComplete: C.Transaction;
@@ -18,22 +19,41 @@ export class TxComplete {
   exUnits: { cpu: number; mem: number } | null = null;
 
   constructor(lucid: Lucid, tx: C.Transaction) {
+    const bucket: FreeableBucket = [];
     this.lucid = lucid;
     this.txComplete = tx;
     this.witnessSetBuilder = C.TransactionWitnessSetBuilder.new();
     this.tasks = [];
 
-    this.fee = parseInt(tx.body().fee().to_str());
-    const redeemers = tx.witness_set().redeemers();
+    const body = tx.body();
+    bucket.push(body);
+    const fee = body.fee();
+    bucket.push(fee);
+    const witnessSet = tx.witness_set();
+    bucket.push(witnessSet);
+
+    this.fee = parseInt(fee.to_str());
+    const redeemers = witnessSet.redeemers();
+    bucket.push(redeemers);
     if (redeemers) {
       const exUnits = { cpu: 0, mem: 0 };
       for (let i = 0; i < redeemers.len(); i++) {
         const redeemer = redeemers.get(i);
-        exUnits.cpu += parseInt(redeemer.ex_units().steps().to_str());
-        exUnits.mem += parseInt(redeemer.ex_units().mem().to_str());
+        bucket.push(redeemer);
+        const cExUnits = redeemer.ex_units();
+        bucket.push(cExUnits);
+        const steps = cExUnits.steps();
+        bucket.push(steps);
+        const mem = cExUnits.mem();
+        bucket.push(mem);
+
+        exUnits.cpu += parseInt(steps.to_str());
+        exUnits.mem += parseInt(mem.to_str());
       }
       this.exUnits = exUnits;
     }
+
+    Freeables.free(...bucket);
   }
   sign(): TxComplete {
     this.tasks.push(async () => {
@@ -48,7 +68,7 @@ export class TxComplete {
     const priv = C.PrivateKey.from_bech32(privateKey);
     const witness = C.make_vkey_witness(
       C.hash_transaction(this.txComplete.body()),
-      priv,
+      priv
     );
     this.witnessSetBuilder.add_vkey(witness);
     return this;
@@ -69,7 +89,7 @@ export class TxComplete {
     const priv = C.PrivateKey.from_bech32(privateKey);
     const witness = C.make_vkey_witness(
       C.hash_transaction(this.txComplete.body()),
-      priv,
+      priv
     );
     this.witnessSetBuilder.add_vkey(witness);
     const witnesses = C.TransactionWitnessSetBuilder.new();
@@ -81,7 +101,7 @@ export class TxComplete {
   assemble(witnesses: TransactionWitnesses[]): TxComplete {
     witnesses.forEach((witness) => {
       const witnessParsed = C.TransactionWitnessSet.from_bytes(
-        fromHex(witness),
+        fromHex(witness)
       );
       this.witnessSetBuilder.add_existing(witnessParsed);
     });
@@ -97,7 +117,7 @@ export class TxComplete {
     const signedTx = C.Transaction.new(
       this.txComplete.body(),
       this.witnessSetBuilder.build(),
-      this.txComplete.auxiliary_data(),
+      this.txComplete.auxiliary_data()
     );
     return new TxSigned(this.lucid, signedTx);
   }
