@@ -986,12 +986,15 @@ export function applyParamsToScript<T extends unknown[] = Data[]>(
   type?: T
 ): string {
   const p = (type ? Data.castTo<T>(params, type) : params) as Data[];
-  return toHex(
-    C.apply_params_to_plutus_script(
-      C.PlutusList.from_bytes(fromHex(Data.to<Data[]>(p))),
-      C.PlutusScript.from_bytes(fromHex(applyDoubleCborEncoding(plutusScript)))
-    ).to_bytes()
+  const cPlutusScript = C.PlutusScript.from_bytes(
+    fromHex(applyDoubleCborEncoding(plutusScript))
   );
+  const cParams = C.PlutusList.from_bytes(fromHex(Data.to<Data[]>(p)));
+  const cScript = C.apply_params_to_plutus_script(cParams, cPlutusScript);
+  const script = toHex(cScript.to_bytes());
+  Freeables.free(cPlutusScript, cParams, cScript);
+
+  return script;
 }
 
 /** Returns double cbor encoded script. If script is already double cbor encoded it's returned as it is. */
