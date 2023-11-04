@@ -133,12 +133,19 @@ export class TxComplete {
       await task();
     }
 
-    this.witnessSetBuilder.add_existing(this.txComplete.witness_set());
-    const signedTx = C.Transaction.new(
-      this.txComplete.body(),
-      this.witnessSetBuilder.build(),
-      this.txComplete.auxiliary_data()
-    );
+    const bucket: FreeableBucket = [];
+    const txCompleteWitnessSet = this.txComplete.witness_set();
+    bucket.push(txCompleteWitnessSet);
+    this.witnessSetBuilder.add_existing(txCompleteWitnessSet);
+    const body = this.txComplete.body();
+    bucket.push(body);
+    const witnessSet = this.witnessSetBuilder.build();
+    bucket.push(witnessSet);
+    const auxiliaryData = this.txComplete.auxiliary_data();
+    bucket.push(auxiliaryData);
+    const signedTx = C.Transaction.new(body, witnessSet, auxiliaryData);
+
+    Freeables.free(...bucket);
     return new TxSigned(this.lucid, signedTx);
   }
 
