@@ -344,164 +344,231 @@ function addressFromHexOrBech32(address: string): C.Address {
 
 /** Address can be in Bech32 or Hex. */
 export function getAddressDetails(address: string): AddressDetails {
-  // Base Address
+  const bucket: FreeableBucket = [];
+  // wrapped in an outer try to ensure that memory is freed
   try {
-    const parsedAddress = C.BaseAddress.from_address(
-      addressFromHexOrBech32(address)
-    )!;
-    const paymentCredential: Credential =
-      parsedAddress.payment_cred().kind() === 0
-        ? {
-            type: "Key",
-            hash: toHex(parsedAddress.payment_cred().to_keyhash()!.to_bytes()),
-          }
-        : {
-            type: "Script",
-            hash: toHex(
-              parsedAddress.payment_cred().to_scripthash()!.to_bytes()
-            ),
-          };
-    const stakeCredential: Credential =
-      parsedAddress.stake_cred().kind() === 0
-        ? {
-            type: "Key",
-            hash: toHex(parsedAddress.stake_cred().to_keyhash()!.to_bytes()),
-          }
-        : {
-            type: "Script",
-            hash: toHex(parsedAddress.stake_cred().to_scripthash()!.to_bytes()),
-          };
-    return {
-      type: "Base",
-      networkId: parsedAddress.to_address().network_id(),
-      address: {
-        bech32: parsedAddress.to_address().to_bech32(undefined),
-        hex: toHex(parsedAddress.to_address().to_bytes()),
-      },
-      paymentCredential,
-      stakeCredential,
-    };
-  } catch (_e) {
-    /* pass */
-  }
+    // Base Address
+    try {
+      const parsedAddress = addressFromHexOrBech32(address);
+      bucket.push(parsedAddress);
+      const baseAddress = C.BaseAddress.from_address(parsedAddress)!;
+      bucket.push(baseAddress);
 
-  // Enterprise Address
-  try {
-    const parsedAddress = C.EnterpriseAddress.from_address(
-      addressFromHexOrBech32(address)
-    )!;
-    const paymentCredential: Credential =
-      parsedAddress.payment_cred().kind() === 0
-        ? {
-            type: "Key",
-            hash: toHex(parsedAddress.payment_cred().to_keyhash()!.to_bytes()),
-          }
-        : {
-            type: "Script",
-            hash: toHex(
-              parsedAddress.payment_cred().to_scripthash()!.to_bytes()
-            ),
-          };
-    return {
-      type: "Enterprise",
-      networkId: parsedAddress.to_address().network_id(),
-      address: {
-        bech32: parsedAddress.to_address().to_bech32(undefined),
-        hex: toHex(parsedAddress.to_address().to_bytes()),
-      },
-      paymentCredential,
-    };
-  } catch (_e) {
-    /* pass */
-  }
-
-  // Pointer Address
-  try {
-    const parsedAddress = C.PointerAddress.from_address(
-      addressFromHexOrBech32(address)
-    )!;
-    const paymentCredential: Credential =
-      parsedAddress.payment_cred().kind() === 0
-        ? {
-            type: "Key",
-            hash: toHex(parsedAddress.payment_cred().to_keyhash()!.to_bytes()),
-          }
-        : {
-            type: "Script",
-            hash: toHex(
-              parsedAddress.payment_cred().to_scripthash()!.to_bytes()
-            ),
-          };
-    return {
-      type: "Pointer",
-      networkId: parsedAddress.to_address().network_id(),
-      address: {
-        bech32: parsedAddress.to_address().to_bech32(undefined),
-        hex: toHex(parsedAddress.to_address().to_bytes()),
-      },
-      paymentCredential,
-    };
-  } catch (_e) {
-    /* pass */
-  }
-
-  // Reward Address
-  try {
-    const parsedAddress = C.RewardAddress.from_address(
-      addressFromHexOrBech32(address)
-    )!;
-    const stakeCredential: Credential =
-      parsedAddress.payment_cred().kind() === 0
-        ? {
-            type: "Key",
-            hash: toHex(parsedAddress.payment_cred().to_keyhash()!.to_bytes()),
-          }
-        : {
-            type: "Script",
-            hash: toHex(
-              parsedAddress.payment_cred().to_scripthash()!.to_bytes()
-            ),
-          };
-    return {
-      type: "Reward",
-      networkId: parsedAddress.to_address().network_id(),
-      address: {
-        bech32: parsedAddress.to_address().to_bech32(undefined),
-        hex: toHex(parsedAddress.to_address().to_bytes()),
-      },
-      stakeCredential,
-    };
-  } catch (_e) {
-    /* pass */
-  }
-
-  // Limited support for Byron addresses
-  try {
-    const parsedAddress = ((address: string): C.ByronAddress => {
-      try {
-        return C.ByronAddress.from_bytes(fromHex(address));
-      } catch (_e) {
-        try {
-          return C.ByronAddress.from_base58(address);
-        } catch (_e) {
-          throw new Error("Could not deserialize address.");
-        }
+      let paymentCredential: Credential;
+      const paymentCred = baseAddress.payment_cred();
+      bucket.push(paymentCred);
+      if (paymentCred.kind() === 0) {
+        const keyHash = paymentCred.to_keyhash()!;
+        bucket.push(keyHash);
+        paymentCredential = {
+          type: "Key",
+          hash: toHex(keyHash.to_bytes()),
+        };
+      } else {
+        const scriptHash = paymentCred.to_scripthash()!;
+        bucket.push(scriptHash);
+        paymentCredential = {
+          type: "Script",
+          hash: toHex(scriptHash.to_bytes()),
+        };
       }
-    })(address);
 
-    return {
-      type: "Byron",
-      networkId: parsedAddress.network_id(),
-      address: {
-        bech32: "",
-        hex: toHex(parsedAddress.to_address().to_bytes()),
-      },
-    };
-  } catch (_e) {
-    /* pass */
+      let stakeCredential: Credential;
+      const stakeCred = baseAddress.stake_cred();
+      bucket.push(stakeCred);
+      if (stakeCred.kind() === 0) {
+        const keyHash = stakeCred.to_keyhash()!;
+        bucket.push(keyHash);
+        stakeCredential = {
+          type: "Key",
+          hash: toHex(keyHash.to_bytes()),
+        };
+      } else {
+        const scriptHash = stakeCred.to_scripthash()!;
+        bucket.push(scriptHash);
+        stakeCredential = {
+          type: "Script",
+          hash: toHex(scriptHash.to_bytes()),
+        };
+      }
+
+      const cAddress = baseAddress.to_address();
+      bucket.push(cAddress);
+
+      return {
+        type: "Base",
+        networkId: cAddress.network_id(),
+        address: {
+          bech32: cAddress.to_bech32(undefined),
+          hex: toHex(cAddress.to_bytes()),
+        },
+        paymentCredential,
+        stakeCredential,
+      };
+    } catch (_e) {
+      /* pass */
+    }
+
+    // Enterprise Address
+    try {
+      const parsedAddress = addressFromHexOrBech32(address);
+      bucket.push(parsedAddress);
+      const enterpriseAddress =
+        C.EnterpriseAddress.from_address(parsedAddress)!;
+      bucket.push(enterpriseAddress);
+
+      let paymentCredential: Credential;
+      const paymentCred = enterpriseAddress.payment_cred();
+      bucket.push(paymentCred);
+      if (paymentCred.kind() === 0) {
+        const keyHash = paymentCred.to_keyhash()!;
+        bucket.push(keyHash);
+        paymentCredential = {
+          type: "Key",
+          hash: toHex(keyHash.to_bytes()),
+        };
+      } else {
+        const scriptHash = paymentCred.to_scripthash()!;
+        bucket.push(scriptHash);
+        paymentCredential = {
+          type: "Script",
+          hash: toHex(scriptHash.to_bytes()),
+        };
+      }
+
+      const cAddress = enterpriseAddress.to_address();
+      bucket.push(cAddress);
+      return {
+        type: "Enterprise",
+        networkId: cAddress.network_id(),
+        address: {
+          bech32: cAddress.to_bech32(undefined),
+          hex: toHex(cAddress.to_bytes()),
+        },
+        paymentCredential,
+      };
+    } catch (_e) {
+      /* pass */
+    }
+
+    // Pointer Address
+    try {
+      const parsedAddress = addressFromHexOrBech32(address);
+      bucket.push(parsedAddress);
+      const pointerAddress = C.PointerAddress.from_address(parsedAddress)!;
+      bucket.push(pointerAddress);
+
+      let paymentCredential: Credential;
+      const paymentCred = pointerAddress.payment_cred();
+      bucket.push(paymentCred);
+      if (paymentCred.kind() === 0) {
+        const keyHash = paymentCred.to_keyhash()!;
+        bucket.push(keyHash);
+        paymentCredential = {
+          type: "Key",
+          hash: toHex(keyHash.to_bytes()),
+        };
+      } else {
+        const scriptHash = paymentCred.to_scripthash()!;
+        bucket.push(scriptHash);
+        paymentCredential = {
+          type: "Script",
+          hash: toHex(scriptHash.to_bytes()),
+        };
+      }
+
+      const cAddress = pointerAddress.to_address();
+      bucket.push(cAddress);
+
+      return {
+        type: "Pointer",
+        networkId: cAddress.network_id(),
+        address: {
+          bech32: cAddress.to_bech32(undefined),
+          hex: toHex(cAddress.to_bytes()),
+        },
+        paymentCredential,
+      };
+    } catch (_e) {
+      /* pass */
+    }
+
+    // Reward Address
+    try {
+      const parsedAddress = addressFromHexOrBech32(address);
+      bucket.push(parsedAddress);
+      const rewardAddress = C.RewardAddress.from_address(parsedAddress)!;
+      bucket.push(rewardAddress);
+
+      let stakeCredential: Credential;
+      const paymentCred = rewardAddress.payment_cred();
+      bucket.push(paymentCred);
+      if (paymentCred.kind() === 0) {
+        const keyHash = paymentCred.to_keyhash()!;
+        bucket.push(keyHash);
+        stakeCredential = {
+          type: "Key",
+          hash: toHex(keyHash.to_bytes()),
+        };
+      } else {
+        const scriptHash = paymentCred.to_scripthash()!;
+        bucket.push(scriptHash);
+        stakeCredential = {
+          type: "Script",
+          hash: toHex(scriptHash.to_bytes()),
+        };
+      }
+
+      const cAddress = rewardAddress.to_address();
+      bucket.push(cAddress);
+
+      return {
+        type: "Reward",
+        networkId: cAddress.network_id(),
+        address: {
+          bech32: cAddress.to_bech32(undefined),
+          hex: toHex(cAddress.to_bytes()),
+        },
+        stakeCredential,
+      };
+    } catch (_e) {
+      /* pass */
+    }
+
+    // Limited support for Byron addresses
+    try {
+      const parsedAddress = ((address: string): C.ByronAddress => {
+        try {
+          return C.ByronAddress.from_bytes(fromHex(address));
+        } catch (_e) {
+          try {
+            return C.ByronAddress.from_base58(address);
+          } catch (_e) {
+            throw new Error("Could not deserialize address.");
+          }
+        }
+      })(address);
+      bucket.push(parsedAddress);
+
+      const cAddress = parsedAddress.to_address();
+      bucket.push(cAddress);
+
+      return {
+        type: "Byron",
+        networkId: parsedAddress.network_id(),
+        address: {
+          bech32: "",
+          hex: toHex(cAddress.to_bytes()),
+        },
+      };
+    } catch (_e) {
+      /* pass */
+    }
+
+    throw new Error("No address type matched for: " + address);
+  } finally {
+    Freeables.free(...bucket);
   }
-
-  throw new Error("No address type matched for: " + address);
 }
 
 export function paymentCredentialOf(address: Address): Credential {
