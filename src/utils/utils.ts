@@ -889,7 +889,12 @@ export function fromText(text: string): string {
 }
 
 export function toPublicKey(privateKey: PrivateKey): PublicKey {
-  return C.PrivateKey.from_bech32(privateKey).to_public().to_bech32();
+  const sKey = C.PrivateKey.from_bech32(privateKey);
+  const vKey = sKey.to_public();
+  const bech32 = vKey.to_bech32();
+  Freeables.free(sKey, vKey);
+
+  return bech32;
 }
 
 /** Padded number in Hex. */
