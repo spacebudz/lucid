@@ -36,28 +36,31 @@ type Blueprint = {
     compiledCode: string;
     hash: string;
   }[];
-  definitions: Record<string, {
-    title: string;
-    schema: {
-      $ref: string;
-    };
-  }>;
+  definitions: Record<
+    string,
+    {
+      title: string;
+      schema: {
+        $ref: string;
+      };
+    }
+  >;
 };
 
 const plutusJson: Blueprint = JSON.parse(
-  await Deno.readTextFile("plutus.json"),
+  await Deno.readTextFile("plutus.json")
 );
 
-const plutusVersion = "Plutus" +
-  plutusJson.preamble.plutusVersion.toUpperCase();
+const plutusVersion =
+  "Plutus" + plutusJson.preamble.plutusVersion.toUpperCase();
 
 const definitions = plutusJson.definitions;
 
 const imports = `// deno-lint-ignore-file
 import { applyParamsToScript, Data, Validator } from "${
   flags.npm
-    ? "lucid-cardano"
-    : `https://deno.land/x/lucid@${packageJson.version}/mod.ts`
+    ? "jucid-cardano"
+    : `https://deno.land/x/jucid@${packageJson.version}/mod.ts`
 }"`;
 
 const validators = plutusJson.validators.map((validator) => {
@@ -79,10 +82,10 @@ const validators = plutusJson.validators.map((validator) => {
     dataType: "list",
     items: params.map((param) => resolveSchema(param.schema, definitions)),
   };
-  const paramsArgs = params.map((
-    param,
-    index,
-  ) => [snakeToCamel(param.title), schemaToType(paramsSchema.items[index])]);
+  const paramsArgs = params.map((param, index) => [
+    snakeToCamel(param.title),
+    schemaToType(paramsSchema.items[index]),
+  ]);
 
   const script = validator.compiledCode;
 
@@ -96,9 +99,9 @@ const validators = plutusJson.validators.map((validator) => {
   export const ${name} = Object.assign(
     function (${paramsArgs.map((param) => param.join(":")).join(",")}) {${
     paramsArgs.length > 0
-      ? `return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${
-        paramsArgs.map((param) => param[0]).join(",")
-      }], ${JSON.stringify(paramsSchema)} as any) };`
+      ? `return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${paramsArgs
+          .map((param) => param[0])
+          .join(",")}], ${JSON.stringify(paramsSchema)} as any) };`
       : `return {type: "${plutusVersion}", script: "${script}"};`
   }},
     ${datum ? `{${datumTitle}: ${JSON.stringify(datumSchema)}},` : ""}
@@ -116,7 +119,7 @@ await new Deno.Command(Deno.execPath(), {
 console.log(
   "%cGenerated %cplutus.ts",
   "color: green; font-weight: bold",
-  "font-weight: bold",
+  "font-weight: bold"
 );
 
 function resolveSchema(schema: any, definitions: any): any {
@@ -153,8 +156,9 @@ function resolveSchema(schema: any, definitions: any): any {
     };
   } else {
     if (schema["$ref"]) {
-      const refKey =
-        schema["$ref"].replaceAll("~1", "/").split("#/definitions/")[1];
+      const refKey = schema["$ref"]
+        .replaceAll("~1", "/")
+        .split("#/definitions/")[1];
       return resolveSchema(definitions[refKey], definitions);
     } else {
       return schema;
@@ -177,11 +181,11 @@ function schemaToType(schema: any): string {
       if (isVoid(schema)) {
         return "undefined";
       } else {
-        return `{${
-          schema.fields.map((field: any) =>
-            `${field.title || "wrapper"}:${schemaToType(field)}`
-          ).join(";")
-        }}`;
+        return `{${schema.fields
+          .map(
+            (field: any) => `${field.title || "wrapper"}:${schemaToType(field)}`
+          )
+          .join(";")}}`;
       }
     }
     case "enum": {
@@ -195,35 +199,37 @@ function schemaToType(schema: any): string {
       if (isNullable(schema)) {
         return `${schemaToType(schema.anyOf[0].fields[0])} | null`;
       }
-      return schema.anyOf.map((entry: any) =>
-        entry.fields.length === 0
-          ? `"${entry.title}"`
-          : `{${entry.title}: ${
-            entry.fields[0].title
-              ? `{${
-                entry.fields.map((field: any) =>
-                  [field.title, schemaToType(field)].join(":")
-                ).join(",")
-              }}}`
-              : `[${
-                entry.fields.map((field: any) => schemaToType(field)).join(",")
-              }]}`
-          }`
-      ).join(" | ");
+      return schema.anyOf
+        .map((entry: any) =>
+          entry.fields.length === 0
+            ? `"${entry.title}"`
+            : `{${entry.title}: ${
+                entry.fields[0].title
+                  ? `{${entry.fields
+                      .map((field: any) =>
+                        [field.title, schemaToType(field)].join(":")
+                      )
+                      .join(",")}}}`
+                  : `[${entry.fields
+                      .map((field: any) => schemaToType(field))
+                      .join(",")}]}`
+              }`
+        )
+        .join(" | ");
     }
     case "list": {
       if (schema.items instanceof Array) {
-        return `[${
-          schema.items.map((item: any) => schemaToType(item)).join(",")
-        }]`;
+        return `[${schema.items
+          .map((item: any) => schemaToType(item))
+          .join(",")}]`;
       } else {
         return `Array<${schemaToType(schema.items)}>`;
       }
     }
     case "map": {
-      return `Map<${schemaToType(schema.keys)}, ${
-        schemaToType(schema.values)
-      }>`;
+      return `Map<${schemaToType(schema.keys)}, ${schemaToType(
+        schema.values
+      )}>`;
     }
     case undefined: {
       return "Data";
@@ -233,8 +239,11 @@ function schemaToType(schema: any): string {
 }
 
 function isBoolean(shape: any): boolean {
-  return shape.anyOf && shape.anyOf[0]?.title === "False" &&
-    shape.anyOf[1]?.title === "True";
+  return (
+    shape.anyOf &&
+    shape.anyOf[0]?.title === "False" &&
+    shape.anyOf[1]?.title === "True"
+  );
 }
 
 function isVoid(shape: any): boolean {
@@ -242,26 +251,30 @@ function isVoid(shape: any): boolean {
 }
 
 function isNullable(shape: any): boolean {
-  return shape.anyOf && shape.anyOf[0]?.title === "Some" &&
-    shape.anyOf[1]?.title === "None";
+  return (
+    shape.anyOf &&
+    shape.anyOf[0]?.title === "Some" &&
+    shape.anyOf[1]?.title === "None"
+  );
 }
 
 function snakeToCamel(s: string): string {
   const withUnderscore = s.charAt(0) === "_" ? s.charAt(0) : "";
-  return withUnderscore +
-    (withUnderscore ? s.slice(1) : s).toLowerCase().replace(
-      /([-_][a-z])/g,
-      (group) =>
-        group
-          .toUpperCase()
-          .replace("-", "")
-          .replace("_", ""),
-    );
+  return (
+    withUnderscore +
+    (withUnderscore ? s.slice(1) : s)
+      .toLowerCase()
+      .replace(/([-_][a-z])/g, (group) =>
+        group.toUpperCase().replace("-", "").replace("_", "")
+      )
+  );
 }
 
 function upperFirst(s: string): string {
   const withUnderscore = s.charAt(0) === "_" ? s.charAt(0) : "";
-  return withUnderscore +
+  return (
+    withUnderscore +
     s.charAt(withUnderscore ? 1 : 0).toUpperCase() +
-    s.slice((withUnderscore ? 1 : 0) + 1);
+    s.slice((withUnderscore ? 1 : 0) + 1)
+  );
 }
