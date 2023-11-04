@@ -163,7 +163,7 @@ export class TxComplete {
     return txHash;
   }
 
-  /** Since this object has WASM parameters, we must use the free method to free the parameters */
+  /** Since this object has WASM fields, we must use the free method to free the fields */
   free() {
     this.txComplete.free();
     this.witnessSetBuilder.free();
