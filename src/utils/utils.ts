@@ -177,13 +177,23 @@ export class Utils {
   validatorToRewardAddress(
     validator: CertificateValidator | WithdrawalValidator
   ): RewardAddress {
+    const bucket: FreeableBucket = [];
     const validatorHash = this.validatorToScriptHash(validator);
-    return C.RewardAddress.new(
+    const scriptHash = C.ScriptHash.from_hex(validatorHash);
+    bucket.push(scriptHash);
+    const stakePart = C.StakeCredential.from_scripthash(scriptHash);
+    bucket.push(stakePart);
+    const rewardAddress = C.RewardAddress.new(
       networkToId(this.lucid.network),
-      C.StakeCredential.from_scripthash(C.ScriptHash.from_hex(validatorHash))
-    )
-      .to_address()
-      .to_bech32(undefined);
+      stakePart
+    );
+    bucket.push(rewardAddress);
+    const address = rewardAddress.to_address();
+    bucket.push(address);
+    const bech32 = address.to_bech32(undefined);
+
+    Freeables.free(...bucket);
+    return bech32;
   }
 
   credentialToRewardAddress(stakeCredential: Credential): RewardAddress {
