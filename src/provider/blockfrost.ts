@@ -90,14 +90,13 @@ export class Blockfrost implements Provider {
   ): Promise<UTxO[]> {
     const queryPredicate = (() => {
       if (typeof addressOrCredential === "string") return addressOrCredential;
-      const credentialBech32 =
+      const hash =
         addressOrCredential.type === "Key"
-          ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
-              "addr_vkh"
-            )
-          : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
-              "addr_vkh"
-            ); // should be 'script' (CIP-0005)
+          ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash)
+          : C.ScriptHash.from_hex(addressOrCredential.hash);
+
+      const credentialBech32 = hash.to_bech32("addr_vkh"); // should be 'script' according to CIP-0005, but to maintain bakcwards compatabiltiy I am not changing this
+      hash.free();
       return credentialBech32;
     })();
     let result: BlockfrostUtxoResult = [];
