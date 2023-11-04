@@ -749,55 +749,110 @@ export function toScriptRef(script: Script): C.ScriptRef {
 }
 
 export function utxoToCore(utxo: UTxO): C.TransactionUnspentOutput {
+  const bucket: FreeableBucket = [];
   const address: C.Address = (() => {
     try {
       return C.Address.from_bech32(utxo.address);
     } catch (_e) {
-      return C.ByronAddress.from_base58(utxo.address).to_address();
+      const byronAddress = C.ByronAddress.from_base58(utxo.address);
+      bucket.push(byronAddress);
+      return byronAddress.to_address();
     }
   })();
-  const output = C.TransactionOutput.new(address, assetsToValue(utxo.assets));
+  bucket.push(address);
+  const value = assetsToValue(utxo.assets);
+  bucket.push(address);
+  const output = C.TransactionOutput.new(address, value);
+  bucket.push(output);
   if (utxo.datumHash) {
-    output.set_datum(
-      C.Datum.new_data_hash(C.DataHash.from_bytes(fromHex(utxo.datumHash)))
-    );
+    const dataHash = C.DataHash.from_bytes(fromHex(utxo.datumHash));
+    bucket.push(dataHash);
+    const datum = C.Datum.new_data_hash(dataHash);
+    bucket.push(datum);
+    output.set_datum(datum);
   }
   // inline datum
   if (!utxo.datumHash && utxo.datum) {
-    output.set_datum(
-      C.Datum.new_data(C.Data.new(C.PlutusData.from_bytes(fromHex(utxo.datum))))
-    );
+    const plutusData = C.PlutusData.from_bytes(fromHex(utxo.datum));
+    bucket.push(plutusData);
+    const data = C.Data.new(plutusData);
+    bucket.push(data);
+    const datum = C.Datum.new_data(data);
+    bucket.push(datum);
+    output.set_datum(datum);
   }
 
   if (utxo.scriptRef) {
-    output.set_script_ref(toScriptRef(utxo.scriptRef));
+    const scriptRef = toScriptRef(utxo.scriptRef);
+    bucket.push(scriptRef);
+    output.set_script_ref(scriptRef);
   }
 
-  return C.TransactionUnspentOutput.new(
-    C.TransactionInput.new(
-      C.TransactionHash.from_bytes(fromHex(utxo.txHash)),
-      C.BigNum.from_str(utxo.outputIndex.toString())
-    ),
-    output
-  );
+  const hash = C.TransactionHash.from_bytes(fromHex(utxo.txHash));
+  bucket.push(hash);
+  const index = C.BigNum.from_str(utxo.outputIndex.toString());
+  bucket.push(index);
+  const input = C.TransactionInput.new(hash, index);
+  bucket.push(input);
+  const coreUtxo = C.TransactionUnspentOutput.new(input, output);
+
+  Freeables.free(...bucket);
+  return coreUtxo;
 }
 
 export function coreToUtxo(coreUtxo: C.TransactionUnspentOutput): UTxO {
-  return {
-    txHash: toHex(coreUtxo.input().transaction_id().to_bytes()),
-    outputIndex: parseInt(coreUtxo.input().index().to_str()),
-    assets: valueToAssets(coreUtxo.output().amount()),
-    address: coreUtxo.output().address().as_byron()
-      ? coreUtxo.output().address().as_byron()?.to_base58()!
-      : coreUtxo.output().address().to_bech32(undefined),
-    datumHash: coreUtxo.output()?.datum()?.as_data_hash()?.to_hex(),
-    datum:
-      coreUtxo.output()?.datum()?.as_data() &&
-      toHex(coreUtxo.output().datum()!.as_data()!.get().to_bytes()),
-    scriptRef:
-      coreUtxo.output()?.script_ref() &&
-      fromScriptRef(coreUtxo.output().script_ref()!),
+  const bucket: FreeableBucket = [];
+  const input = coreUtxo.input();
+  bucket.push(input);
+  const output = coreUtxo.output();
+  bucket.push(output);
+
+  const txId = input.transaction_id();
+  bucket.push(txId);
+  const txHash = toHex(txId.to_bytes());
+
+  const index = input.index();
+  bucket.push(index);
+  const outputIndex = parseInt(index.to_str());
+
+  const amount = output.amount();
+  bucket.push(amount);
+  const assets = valueToAssets(amount);
+
+  const cAddress = output.address();
+  bucket.push(cAddress);
+  const byronAddress = cAddress.as_byron();
+  bucket.push(byronAddress);
+  const address = byronAddress
+    ? byronAddress.to_base58()
+    : cAddress.to_bech32(undefined);
+
+  const cDatum = output.datum();
+  bucket.push(cDatum);
+  const dataHash = cDatum?.as_data_hash();
+  bucket.push(dataHash);
+  const datumHash = dataHash?.to_hex();
+
+  const cDatumData = cDatum?.as_data();
+  bucket.push(cDatumData);
+  const plutusData = cDatumData?.get();
+  bucket.push(plutusData);
+  const datum = plutusData && toHex(plutusData.to_bytes());
+  const cScriptRef = output.script_ref();
+  bucket.push(cScriptRef);
+  const scriptRef = cScriptRef && fromScriptRef(cScriptRef);
+  const utxo = {
+    txHash,
+    outputIndex,
+    assets,
+    address,
+    datumHash,
+    datum,
+    scriptRef,
   };
+
+  Freeables.free(...bucket);
+  return utxo;
 }
 
 export function networkToId(network: Network): number {
