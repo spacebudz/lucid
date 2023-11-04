@@ -59,6 +59,7 @@ export class TxComplete {
     this.tasks.push(async () => {
       const witnesses = await this.lucid.wallet.signTx(this.txComplete);
       this.witnessSetBuilder.add_existing(witnesses);
+      witnesses.free();
     });
     return this;
   }
