@@ -1,33 +1,34 @@
 <p align="center">
-  <img width="100px" src="./logo/lucid.svg" align="center"/>
-  <h1 align="center">Lucid</h1>
-  <p align="center">Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript, Deno and Node.js.</p>
+  <h1 align="center">Jucid</h1>
+  <p align="center">Jucid a fork of Lucid, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript, Deno and Node.js without worrying about memory leaks.</p>
 
 <p align="center">
-    <img src="https://img.shields.io/github/commit-activity/m/berry-pool/lucid?style=for-the-badge" />
-    <a href="https://www.npmjs.com/package/lucid-cardano">
-      <img src="https://img.shields.io/npm/v/lucid-cardano?style=for-the-badge" />
+    <img src="https://img.shields.io/github/commit-activity/m/yHSJ/jucid?style=for-the-badge" />
+    <a href="https://www.npmjs.com/package/jucid-cardano">
+      <img src="https://img.shields.io/npm/v/jucid-cardano?style=for-the-badge" />
     </a>
-     <a href="https://doc.deno.land/https://deno.land/x/lucid/mod.ts">
-      <img src="https://img.shields.io/readthedocs/cardano-lucid?style=for-the-badge" />
     </a>
-    <a href="https://www.npmjs.com/package/lucid-cardano">
-      <img src="https://img.shields.io/npm/dw/lucid-cardano?style=for-the-badge" />
+    <a href="https://www.npmjs.com/package/jucid-cardano">
+      <img src="https://img.shields.io/npm/dw/jucid-cardano?style=for-the-badge" />
     </a>
-    <img src="https://img.shields.io/npm/l/lucid-cardano?style=for-the-badge" />
-    <a href="https://twitter.com/spacebudzNFT">
-      <img src="https://img.shields.io/twitter/follow/spacebudzNFT?style=for-the-badge&logo=twitter" />
+    <img src="https://img.shields.io/npm/l/jucid-cardano?style=for-the-badge" />
+    <a href="https://twitter.com/JSHyCS">
+      <img src="https://img.shields.io/twitter/follow/JSHyCS?style=for-the-badge&logo=twitter" />
     </a>
   </p>
 
 </p>
+
+### Lucid Fork
+
+Jucid is JSHy's fork of Lucid (Jshy + Lucid = Jucid). Lucid accidentally introduces memory leaks into applications due to incorrect memory management of WASM objects. Jucid handles internal memory correctly, exposes new interfaces to allow you to management objects you use correclty, and is a drop-in replacement for Lucid. Once this fork is merged into Lucid, it is unlikely it will be maintained.
 
 ### Get started
 
 #### NPM
 
 ```
-npm install lucid-cardano
+npm install jucid-cardano
 ```
 
 #### Deno 🦕
@@ -35,19 +36,19 @@ npm install lucid-cardano
 For JavaScript and TypeScript
 
 ```js
-import { Lucid } from "https://deno.land/x/lucid@0.10.7/mod.ts";
+import { jucid } from "https://deno.land/x/jucid@1.0.0-alpha.1/mod.ts";
 ```
 
 #### Web
 
 ```html
 <script type="module">
-import { Lucid } from "https://unpkg.com/lucid-cardano@0.10.7/web/mod.js"
-// ...
+  import { Lucid } from "https://unpkg.com/jucid@1.0.0-alpha.1/web/mod.js";
+  // ...
 </script>
 ```
 
-### 
+###
 
 ### Build from source
 
@@ -61,31 +62,29 @@ Outputs a `dist` folder
 
 ### Examples
 
-- [Basic examples](./src/examples/)
-- [Next.js Blockfrost Proxy API Example](https://github.com/GGAlanSmithee/cardano-lucid-blockfrost-proxy-example)
+- Coming Soon
 
 ### Basic usage
 
 ```js
-// import { Blockfrost, Lucid } from "https://deno.land/x/lucid@0.10.7/mod.ts"; Deno
-import { Blockfrost, Lucid } from "lucid-cardano"; // NPM
+// import { Blockfrost, Lucid } from "https://deno.land/x/jucid@1.0.0-alpha.1/mod.ts"; Deno
+import { Blockfrost, Lucid } from "jucid-cardano"; // NPM
 
 const lucid = await Lucid.new(
   new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
-  "Preview",
+  "Preview"
 );
 
 // Assumes you are in a browser environment
 const api = await window.cardano.nami.enable();
 lucid.selectWallet(api);
 
-const tx = await lucid.newTx()
-  .payToAddress("addr...", { lovelace: 5000000n })
-  .complete();
-
-const signedTx = await tx.sign().complete();
+const tx = lucid.newTx().payToAddress("addr...", { lovelace: 5000000n });
+const completeTx = await tx.complete();
+const signedTx = await completeTx.sign();
 
 const txHash = await signedTx.submit();
+Freeables.free(tx, completeTx, signedTx);
 
 console.log(txHash);
 ```
@@ -114,7 +113,7 @@ deno task test:core
 
 ### Docs
 
-[View docs](https://doc.deno.land/https://deno.land/x/lucid/mod.ts) 📖
+[View docs](https://doc.deno.land/https://deno.land/x/jucid/mod.ts) 📖
 
 You can generate documentation with:
 
@@ -143,15 +142,3 @@ project's `package.json`. Otherwise you will get import issues.
 
 Contributions and PRs are welcome!\
 The [contribution instructions](./CONTRIBUTING.md).
-
-Join us on [Discord](https://discord.gg/82MWs63Tdm)!
-
-### Use Lucid with React
-
-[use-cardano](https://use-cardano.alangaming.com/) a React context, hook and set
-of components built on top of Lucid.
-
-### Use Lucid with Next.js
-
-[Cardano Starter Kit](https://cardano-starter-kit.alangaming.com/) a Next.js
-starter kit for building Cardano dApps.
