@@ -752,6 +752,7 @@ export function utxoToCore(utxo: UTxO): C.TransactionUnspentOutput {
   const bucket: FreeableBucket = [];
   const address: C.Address = (() => {
     try {
+      console.log("success");
       return C.Address.from_bech32(utxo.address);
     } catch (_e) {
       const byronAddress = C.ByronAddress.from_base58(utxo.address);
@@ -761,7 +762,7 @@ export function utxoToCore(utxo: UTxO): C.TransactionUnspentOutput {
   })();
   bucket.push(address);
   const value = assetsToValue(utxo.assets);
-  bucket.push(address);
+  bucket.push(value);
   const output = C.TransactionOutput.new(address, value);
   bucket.push(output);
   if (utxo.datumHash) {
@@ -986,17 +987,23 @@ export function applyParamsToScript<T extends unknown[] = Data[]>(
   type?: T
 ): string {
   const p = (type ? Data.castTo<T>(params, type) : params) as Data[];
+  // cPlutusScript ownership is passed to rust, so don't free
   const cPlutusScript = C.PlutusScript.from_bytes(
     fromHex(applyDoubleCborEncoding(plutusScript))
   );
   const cParams = C.PlutusList.from_bytes(fromHex(Data.to<Data[]>(p)));
   const cScript = C.apply_params_to_plutus_script(cParams, cPlutusScript);
   const script = toHex(cScript.to_bytes());
-  Freeables.free(cPlutusScript, cParams, cScript);
+  Freeables.free(cParams, cScript);
 
   return script;
 }
 
+// return toHex(
+//   C.apply_params_to_plutus_script(
+//     C.PlutusList.from_bytes(fromHex(Data.to<Data[]>(p))),
+//     C.PlutusScript.from_bytes(fromHex(applyDoubleCborEncoding(plutusScript)))
+//   ).to_bytes()
 /** Returns double cbor encoded script. If script is already double cbor encoded it's returned as it is. */
 export function applyDoubleCborEncoding(script: string): string {
   try {
