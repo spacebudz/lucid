@@ -224,25 +224,41 @@ export class Utils {
   }
 
   validatorToScriptHash(validator: Validator): ScriptHash {
-    switch (validator.type) {
-      case "Native":
-        return C.NativeScript.from_bytes(fromHex(validator.script))
-          .hash(C.ScriptHashNamespace.NativeScript)
-          .to_hex();
-      case "PlutusV1":
-        return C.PlutusScript.from_bytes(
-          fromHex(applyDoubleCborEncoding(validator.script))
-        )
-          .hash(C.ScriptHashNamespace.PlutusV1)
-          .to_hex();
-      case "PlutusV2":
-        return C.PlutusScript.from_bytes(
-          fromHex(applyDoubleCborEncoding(validator.script))
-        )
-          .hash(C.ScriptHashNamespace.PlutusV2)
-          .to_hex();
-      default:
-        throw new Error("No variant matched");
+    const bucket: FreeableBucket = [];
+    try {
+      switch (validator.type) {
+        case "Native": {
+          const nativeScript = C.NativeScript.from_bytes(
+            fromHex(validator.script)
+          );
+          bucket.push(nativeScript);
+          const hash = nativeScript.hash(C.ScriptHashNamespace.NativeScript);
+          bucket.push(hash);
+          return hash.to_hex();
+        }
+        case "PlutusV1": {
+          const plutusScript = C.PlutusScript.from_bytes(
+            fromHex(applyDoubleCborEncoding(validator.script))
+          );
+          bucket.push(plutusScript);
+          const hash = plutusScript.hash(C.ScriptHashNamespace.PlutusV1);
+          bucket.push(hash);
+          return hash.to_hex();
+        }
+        case "PlutusV2": {
+          const plutusScript = C.PlutusScript.from_bytes(
+            fromHex(applyDoubleCborEncoding(validator.script))
+          );
+          bucket.push(plutusScript);
+          const hash = plutusScript.hash(C.ScriptHashNamespace.PlutusV2);
+          bucket.push(hash);
+          return hash.to_hex();
+        }
+        default:
+          throw new Error("No variant matched");
+      }
+    } finally {
+      Freeables.free(...bucket);
     }
   }
 
