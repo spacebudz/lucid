@@ -40,7 +40,7 @@ import {
   unixTimeToEnclosingSlot,
 } from "../plutus/time.ts";
 import { Data } from "../plutus/data.ts";
-import { FreeableBucket, Freeables } from "./freeable.ts";
+import { Freeable, FreeableBucket, Freeables } from "./freeable.ts";
 
 export class Utils {
   private lucid: Lucid;
@@ -673,25 +673,41 @@ export function assetsToValue(assets: Assets): C.Value {
 }
 
 export function fromScriptRef(scriptRef: C.ScriptRef): Script {
-  const kind = scriptRef.get().kind();
-  switch (kind) {
-    case 0:
-      return {
-        type: "Native",
-        script: toHex(scriptRef.get().as_native()!.to_bytes()),
-      };
-    case 1:
-      return {
-        type: "PlutusV1",
-        script: toHex(scriptRef.get().as_plutus_v1()!.to_bytes()),
-      };
-    case 2:
-      return {
-        type: "PlutusV2",
-        script: toHex(scriptRef.get().as_plutus_v2()!.to_bytes()),
-      };
-    default:
-      throw new Error("No variant matched.");
+  const bucket: FreeableBucket = [];
+  try {
+    const script = scriptRef.get();
+    bucket.push(script);
+    const kind = script.kind();
+    switch (kind) {
+      case 0: {
+        const native = script.as_native()!;
+        bucket.push(native);
+        return {
+          type: "Native",
+          script: toHex(native.to_bytes()),
+        };
+      }
+      case 1: {
+        const plutusV1 = script.as_plutus_v1()!;
+        bucket.push(plutusV1);
+        return {
+          type: "PlutusV1",
+          script: toHex(plutusV1.to_bytes()),
+        };
+      }
+      case 2: {
+        const plutusV2 = script.as_plutus_v2()!;
+        bucket.push(plutusV2);
+        return {
+          type: "PlutusV2",
+          script: toHex(plutusV2.to_bytes()),
+        };
+      }
+      default:
+        throw new Error("No variant matched.");
+    }
+  } finally {
+    Freeables.free(...bucket);
   }
 }
 
