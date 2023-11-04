@@ -156,6 +156,10 @@ export class TxComplete {
 
   /** Return the transaction hash. */
   toHash(): TxHash {
-    return C.hash_transaction(this.txComplete.body()).to_hex();
+    const body = this.txComplete.body();
+    const hash = C.hash_transaction(body);
+    const txHash = hash.to_hex();
+    Freeables.free(body, hash);
+    return txHash;
   }
 }
