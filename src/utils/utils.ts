@@ -592,7 +592,10 @@ export function stakeCredentialOf(rewardAddress: RewardAddress): Credential {
 }
 
 export function generatePrivateKey(): PrivateKey {
-  return C.PrivateKey.generate_ed25519().to_bech32();
+  const ed25519 = C.PrivateKey.generate_ed25519();
+  const bech32 = ed25519.to_bech32();
+  ed25519.free();
+  return bech32;
 }
 
 export function generateSeedPhrase(): string {
