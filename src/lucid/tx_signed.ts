@@ -13,7 +13,7 @@ export class TxSigned {
 
   async submit(): Promise<TxHash> {
     return await (this.lucid.wallet || this.lucid.provider).submitTx(
-      toHex(this.txSigned.to_bytes()),
+      toHex(this.txSigned.to_bytes())
     );
   }
 
@@ -24,6 +24,14 @@ export class TxSigned {
 
   /** Return the transaction hash. */
   toHash(): TxHash {
-    return C.hash_transaction(this.txSigned.body()).to_hex();
+    const hash = C.hash_transaction(this.txSigned.body());
+    const txHash = hash.to_hex();
+    hash.free();
+    return txHash;
+  }
+
+  /** Since this object has WASM parameters, we must use the free method to free the parameters */
+  free() {
+    this.txSigned.free();
   }
 }
