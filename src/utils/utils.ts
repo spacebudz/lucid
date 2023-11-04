@@ -635,7 +635,9 @@ export function valueToAssets(value: C.Value): Assets {
 }
 
 export function assetsToValue(assets: Assets): C.Value {
+  const bucket: FreeableBucket = [];
   const multiAsset = C.MultiAsset.new();
+  bucket.push(multiAsset);
   const lovelace = assets["lovelace"];
   const units = Object.keys(assets);
   const policies = Array.from(
@@ -649,17 +651,24 @@ export function assetsToValue(assets: Assets): C.Value {
     const policyUnits = units.filter((unit) => unit.slice(0, 56) === policy);
     const assetsValue = C.Assets.new();
     policyUnits.forEach((unit) => {
-      assetsValue.insert(
-        C.AssetName.new(fromHex(unit.slice(56))),
-        C.BigNum.from_str(assets[unit].toString())
-      );
+      const assetName = C.AssetName.new(fromHex(unit.slice(56)));
+      bucket.push(assetName);
+      const quantity = C.BigNum.from_str(assets[unit].toString());
+      bucket.push(quantity);
+
+      assetsValue.insert(assetName, quantity);
     });
-    multiAsset.insert(C.ScriptHash.from_bytes(fromHex(policy)), assetsValue);
+    const policyId = C.ScriptHash.from_bytes(fromHex(policy));
+    bucket.push(policyId);
+    multiAsset.insert(policyId, assetsValue);
   });
-  const value = C.Value.new(
-    C.BigNum.from_str(lovelace ? lovelace.toString() : "0")
-  );
+  const coin = C.BigNum.from_str(lovelace ? lovelace.toString() : "0");
+  bucket.push(coin);
+
+  const value = C.Value.new(coin);
   if (units.length > 1 || !lovelace) value.set_multiasset(multiAsset);
+
+  Freeables.free(...bucket);
   return value;
 }
 
