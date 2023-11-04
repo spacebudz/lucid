@@ -197,18 +197,30 @@ export class Utils {
   }
 
   credentialToRewardAddress(stakeCredential: Credential): RewardAddress {
-    return C.RewardAddress.new(
+    const bucket: FreeableBucket = [];
+    let stakePart: C.StakeCredential;
+    if (stakeCredential.type === "Key") {
+      const keyHash = C.Ed25519KeyHash.from_hex(stakeCredential.hash);
+      bucket.push(keyHash);
+      stakePart = C.StakeCredential.from_keyhash(keyHash);
+    } else {
+      const scriptHash = C.ScriptHash.from_hex(stakeCredential.hash);
+      bucket.push(scriptHash);
+      stakePart = C.StakeCredential.from_scripthash(scriptHash);
+    }
+    bucket.push(stakePart);
+
+    const rewardAddress = C.RewardAddress.new(
       networkToId(this.lucid.network),
-      stakeCredential.type === "Key"
-        ? C.StakeCredential.from_keyhash(
-            C.Ed25519KeyHash.from_hex(stakeCredential.hash)
-          )
-        : C.StakeCredential.from_scripthash(
-            C.ScriptHash.from_hex(stakeCredential.hash)
-          )
-    )
-      .to_address()
-      .to_bech32(undefined);
+      stakePart
+    );
+    bucket.push(rewardAddress);
+    const address = rewardAddress.to_address();
+    bucket.push(address);
+    const bech32 = address.to_bech32(undefined);
+    Freeables.free(...bucket);
+
+    return bech32;
   }
 
   validatorToScriptHash(validator: Validator): ScriptHash {
