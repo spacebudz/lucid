@@ -1,8 +1,15 @@
 import { Address, Credential, Datum, DatumHash, Delegation, OutRef, ProtocolParameters, Provider, RewardAddress, Transaction, TxHash, Unit, UTxO } from "../types/mod.js";
+export declare type MaestroSupportedNetworks = "Mainnet" | "Preprod" | "Preview";
+export interface MaestroConfig {
+    network: MaestroSupportedNetworks;
+    apiKey: string;
+    turboSubmit?: boolean;
+}
 export declare class Maestro implements Provider {
     url: string;
     apiKey: string;
-    constructor(url: string, apiKey?: string);
+    turboSubmit: boolean;
+    constructor({ network, apiKey, turboSubmit }: MaestroConfig);
     getProtocolParameters(): Promise<ProtocolParameters>;
     getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]>;
     getUtxosWithUnit(addressOrCredential: Address | Credential, unit: Unit): Promise<UTxO[]>;

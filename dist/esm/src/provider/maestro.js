@@ -2,7 +2,7 @@ import { C } from "../core/mod.js";
 import { applyDoubleCborEncoding, fromHex } from "../utils/mod.js";
 import packageJson from "../../package.js";
 export class Maestro {
-    constructor(url, apiKey = "") {
+    constructor({ network, apiKey, turboSubmit = false }) {
         Object.defineProperty(this, "url", {
             enumerable: true,
             configurable: true,
@@ -15,16 +15,21 @@ export class Maestro {
             writable: true,
             value: void 0
         });
-        // Return the given `url` without the last '/' if it exists.
-        this.url =
-            // Safe even if `url` is an empty string.
-            url.slice(-1) === "/" ? url.slice(0, -1) : url;
+        Object.defineProperty(this, "turboSubmit", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.url = `https://${network}.gomaestro-api.org/v1`;
         this.apiKey = apiKey;
+        this.turboSubmit = turboSubmit;
     }
     async getProtocolParameters() {
-        const result = await fetch(`${this.url}/protocol-params`, {
+        const timestampedResult = await fetch(`${this.url}/protocol-params`, {
             headers: this.commonHeaders(),
         }).then((res) => res.json());
+        const result = timestampedResult.data;
         // Decimal numbers in Maestro are given as ratio of two numbers represented by string of format "firstNumber/secondNumber".
         const decimalFromRationalString = (str) => {
             const forwardSlashIndex = str.indexOf("/");
@@ -33,7 +38,7 @@ export class Maestro {
         // To rename keys in an object by the given key-map.
         // deno-lint-ignore no-explicit-any
         const renameKeysAndSort = (obj, newKeys) => {
-            const entries = Object.keys(obj).map((key) => {
+            const entries = Object.keys(obj).sort().map((key) => {
                 const newKey = newKeys[key] || key;
                 return {
                     [newKey]: Object.fromEntries(Object.entries(obj[key]).sort(([k, _v], [k2, _v2]) => k.localeCompare(k2))),
@@ -64,24 +69,26 @@ export class Maestro {
     async getUtxos(addressOrCredential) {
         const queryPredicate = (() => {
             if (typeof addressOrCredential === "string")
-                return addressOrCredential;
-            const credentialBech32 = addressOrCredential.type === "Key"
+                return "/addresses/" + addressOrCredential;
+            let credentialBech32Query = "/addresses/cred/";
+            credentialBech32Query += addressOrCredential.type === "Key"
                 ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32("addr_vkh")
-                : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32("script");
-            return credentialBech32;
+                : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32("addr_shared_vkh");
+            return credentialBech32Query;
         })();
         let result = [];
-        let page = 1;
+        let nextCursor = null;
         while (true) {
-            const response = await fetch(`${this.url}/addresses/${queryPredicate}/utxos?page=${page}`, { headers: this.commonHeaders() });
+            const appendCursorString = nextCursor === null ? "" : `&cursor=${nextCursor}`;
+            const response = await fetch(`${this.url}${queryPredicate}/utxos?count=100${appendCursorString}`, { headers: this.commonHeaders() });
             const pageResult = await response.json();
             if (!response.ok) {
-                throw new Error("Could not fetch UTxOs from Maestro. Try again.");
+                throw new Error("Could not fetch UTxOs from Maestro. Received status code: " + response.status);
             }
-            result = result.concat(pageResult);
-            if (pageResult.length <= 0)
+            nextCursor = pageResult.next_cursor;
+            result = result.concat(pageResult.data);
+            if (nextCursor == null)
                 break;
-            page++;
         }
         return result.map(this.maestroUtxoToUtxo);
     }
@@ -90,14 +97,21 @@ export class Maestro {
         return utxos.filter((utxo) => utxo.assets[unit]);
     }
     async getUtxoByUnit(unit) {
-        const addresses = await fetch(`${this.url}/assets/${unit}/addresses?count=2`, { headers: this.commonHeaders() }).then((res) => res.json());
-        if (addresses.length === 0) { // In case of invalid parameters also we get an empty list.
+        const timestampedAddressesResponse = await fetch(`${this.url}/assets/${unit}/addresses?count=2`, { headers: this.commonHeaders() });
+        const timestampedAddresses = await timestampedAddressesResponse.json();
+        if (!timestampedAddressesResponse.ok) {
+            if (timestampedAddresses.message)
+                throw new Error(timestampedAddresses.message);
+            throw new Error("Couldn't perform query. Received status code: " + timestampedAddressesResponse.status);
+        }
+        const addressesWithAmount = timestampedAddresses.data;
+        if (addressesWithAmount.length === 0) {
             throw new Error("Unit not found.");
         }
-        if (addresses.length > 1) {
+        if (addressesWithAmount.length > 1) {
             throw new Error("Unit needs to be an NFT or only held by one address.");
         }
-        const address = addresses[0];
+        const address = addressesWithAmount[0].address;
         const utxos = await this.getUtxosWithUnit(address, unit);
         if (utxos.length > 1) {
             throw new Error("Unit needs to be an NFT or only held by one address.");
@@ -105,42 +119,52 @@ export class Maestro {
         return utxos[0];
     }
     async getUtxosByOutRef(outRefs) {
-        const utxos = await Promise.all(outRefs.map(async (outRef) => {
-            const result = await fetch(`${this.url}/transactions/${outRef.txHash}/outputs/${outRef.outputIndex}/utxo`, { headers: this.commonHeaders() }).then((res) => res.json());
-            if (!result || result.message) {
-                return [];
-            }
-            return [this.maestroUtxoToUtxo(result)];
-        }));
-        return utxos.reduce((acc, utxo) => acc.concat(utxo), []);
+        const response = await fetch(`${this.url}/transactions/outputs`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                ...this.commonHeaders()
+            },
+            body: JSON.stringify(outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`)),
+        });
+        if (!response.ok)
+            return [];
+        const utxos = (await response.json()).data;
+        return utxos.map(this.maestroUtxoToUtxo);
     }
     async getDelegation(rewardAddress) {
-        const result = await fetch(`${this.url}/accounts/${rewardAddress}`, { headers: this.commonHeaders() }).then((res) => res.json());
-        if (!result || result.message) {
+        const timestampedResultResponse = await fetch(`${this.url}/accounts/${rewardAddress}`, { headers: this.commonHeaders() });
+        if (!timestampedResultResponse.ok) {
             return { poolId: null, rewards: 0n };
         }
+        const timestampedResult = await timestampedResultResponse.json();
+        const result = timestampedResult.data;
         return {
             poolId: result.delegated_pool || null,
             rewards: BigInt(result.rewards_available),
         };
     }
     async getDatum(datumHash) {
-        const result = await fetch(`${this.url}/datum/${datumHash}`, {
+        const timestampedResultResponse = await fetch(`${this.url}/datum/${datumHash}`, {
             headers: this.commonHeaders(),
-        })
-            .then((res) => res.json());
-        if (!result || result.message) {
-            throw new Error(`No datum found for datum hash: ${datumHash}`);
+        });
+        if (!timestampedResultResponse.ok) {
+            if (timestampedResultResponse.status === 404)
+                throw new Error(`No datum found for datum hash: ${datumHash}`);
+            else
+                throw new Error("Couldn't successfully perform query. Received status code: " + timestampedResultResponse.status);
         }
-        return result.bytes;
+        const timestampedResult = await timestampedResultResponse.json();
+        return timestampedResult.data.bytes;
     }
     awaitTx(txHash, checkInterval = 3000) {
         return new Promise((res) => {
             const confirmation = setInterval(async () => {
-                const isConfirmed = await fetch(`${this.url}/transactions/${txHash}/cbor`, {
+                const isConfirmedResponse = await fetch(`${this.url}/transactions/${txHash}/cbor`, {
                     headers: this.commonHeaders(),
-                }).then((res) => res.json());
-                if (isConfirmed && !isConfirmed.message) {
+                });
+                if (isConfirmedResponse.ok) {
+                    await isConfirmedResponse.json();
                     clearInterval(confirmation);
                     await new Promise((res) => setTimeout(() => res(1), 1000));
                     return res(true);
@@ -149,10 +173,13 @@ export class Maestro {
         });
     }
     async submitTx(tx) {
-        const response = await fetch(`${this.url}/txmanager`, {
+        let queryUrl = `${this.url}/txmanager`;
+        queryUrl += this.turboSubmit ? '/turbosubmit' : '';
+        const response = await fetch(queryUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/cbor",
+                "Accept": "text/plain",
                 ...this.commonHeaders(),
             },
             body: fromHex(tx),
@@ -162,7 +189,7 @@ export class Maestro {
             if (response.status === 400)
                 throw new Error(result);
             else
-                throw new Error("Could not submit transaction.");
+                throw new Error("Could not submit transaction. Received status code: " + response.status);
         }
         return result;
     }
@@ -176,7 +203,7 @@ export class Maestro {
             assets: (() => {
                 const a = {};
                 result.assets.forEach((am) => {
-                    a[am.unit.replace("#", "")] = BigInt(am.quantity);
+                    a[am.unit] = BigInt(am.amount);
                 });
                 return a;
             })(),
