@@ -19,22 +19,21 @@ import {
 } from "../types/mod.ts";
 import packageJson from "../../package.json" assert { type: "json" };
 
-export type MaestroSupportedNetworks = "Mainnet" | "Preprod" | "Preview"
+export type MaestroSupportedNetworks = "Mainnet" | "Preprod" | "Preview";
 
 export interface MaestroConfig {
-  network: MaestroSupportedNetworks,
-  apiKey: string,
-  turboSubmit?: boolean  // Read about paid turbo transaction submission feature at https://docs-v1.gomaestro.org/docs/Dapp%20Platform/Turbo%20Transaction.
+  network: MaestroSupportedNetworks;
+  apiKey: string;
+  turboSubmit?: boolean; // Read about paid turbo transaction submission feature at https://docs-v1.gomaestro.org/docs/Dapp%20Platform/Turbo%20Transaction.
 }
 
 export class Maestro implements Provider {
-
   url: string;
   apiKey: string;
   turboSubmit: boolean;
 
   constructor({ network, apiKey, turboSubmit = false }: MaestroConfig) {
-    this.url = `https://${network}.gomaestro-api.org/v1`
+    this.url = `https://${network}.gomaestro-api.org/v1`;
     this.apiKey = apiKey;
     this.turboSubmit = turboSubmit;
   }
@@ -47,8 +46,9 @@ export class Maestro implements Provider {
     // Decimal numbers in Maestro are given as ratio of two numbers represented by string of format "firstNumber/secondNumber".
     const decimalFromRationalString = (str: string): number => {
       const forwardSlashIndex = str.indexOf("/");
-      return parseInt(str.slice(0, forwardSlashIndex)) / parseInt(str.slice(forwardSlashIndex + 1));
-    }
+      return parseInt(str.slice(0, forwardSlashIndex)) /
+        parseInt(str.slice(forwardSlashIndex + 1));
+    };
     // To rename keys in an object by the given key-map.
     // deno-lint-ignore no-explicit-any
     const renameKeysAndSort = (obj: any, newKeys: any) => {
@@ -85,10 +85,15 @@ export class Maestro implements Provider {
     };
   }
 
-  async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
+  private async getUtxosInternal(
+    addressOrCredential: Address | Credential,
+    unit?: Unit,
+  ): Promise<UTxO[]> {
     const queryPredicate = (() => {
-      if (typeof addressOrCredential === "string") return "/addresses/" + addressOrCredential;
-      let credentialBech32Query = "/addresses/cred/"
+      if (typeof addressOrCredential === "string") {
+        return "/addresses/" + addressOrCredential;
+      }
+      let credentialBech32Query = "/addresses/cred/";
       credentialBech32Query += addressOrCredential.type === "Key"
         ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
           "addr_vkh",
@@ -98,31 +103,29 @@ export class Maestro implements Provider {
         );
       return credentialBech32Query;
     })();
-    let result: MaestroUtxos = [];
-    let nextCursor = null;
-    while (true) {
-      const appendCursorString = nextCursor === null ? "" : `&cursor=${nextCursor}`
-      const response = await fetch(
-        `${this.url}${queryPredicate}/utxos?count=100${appendCursorString}`,
-        { headers: this.commonHeaders() },
-      );
-      const pageResult = await response.json();
-      if (!response.ok) {
-        throw new Error("Could not fetch UTxOs from Maestro. Received status code: " + response.status);
-      }
-      nextCursor = pageResult.next_cursor;
-      result = result.concat(pageResult.data as MaestroUtxos);
-      if (nextCursor == null) break;
-    }
+    const qparams = new URLSearchParams({
+      count: "100",
+      ...(unit && { asset: unit }),
+    });
+    const result: MaestroUtxos = await this.getAllPagesData(
+      async (qry: string) =>
+        await fetch(qry, { headers: this.commonHeaders() }),
+      `${this.url}${queryPredicate}/utxos`,
+      qparams,
+      "Location: getUtxosInternal. Error: Could not fetch UTxOs from Maestro",
+    );
     return result.map(this.maestroUtxoToUtxo);
   }
 
-  async getUtxosWithUnit(
+  getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
+    return this.getUtxosInternal(addressOrCredential);
+  }
+
+  getUtxosWithUnit(
     addressOrCredential: Address | Credential,
     unit: Unit,
   ): Promise<UTxO[]> {
-    const utxos = await this.getUtxos(addressOrCredential);
-    return utxos.filter((utxo) => utxo.assets[unit]);
+    return this.getUtxosInternal(addressOrCredential, unit);
   }
 
   async getUtxoByUnit(unit: Unit): Promise<UTxO> {
@@ -130,17 +133,24 @@ export class Maestro implements Provider {
       `${this.url}/assets/${unit}/addresses?count=2`,
       { headers: this.commonHeaders() },
     );
-    const timestampedAddresses = await timestampedAddressesResponse.json()
+    const timestampedAddresses = await timestampedAddressesResponse.json();
     if (!timestampedAddressesResponse.ok) {
-      if (timestampedAddresses.message) throw new Error(timestampedAddresses.message)
-      throw new Error("Couldn't perform query. Received status code: " + timestampedAddressesResponse.status)
+      if (timestampedAddresses.message) {
+        throw new Error(timestampedAddresses.message);
+      }
+      throw new Error(
+        "Location: getUtxoByUnit. Error: Couldn't perform query. Received status code: " +
+          timestampedAddressesResponse.status,
+      );
     }
     const addressesWithAmount = timestampedAddresses.data;
     if (addressesWithAmount.length === 0) {
-      throw new Error("Unit not found.");
+      throw new Error("Location: getUtxoByUnit. Error: Unit not found.");
     }
     if (addressesWithAmount.length > 1) {
-      throw new Error("Unit needs to be an NFT or only held by one address.");
+      throw new Error(
+        "Location: getUtxoByUnit. Error: Unit needs to be an NFT or only held by one address.",
+      );
     }
 
     const address = addressesWithAmount[0].address;
@@ -148,24 +158,34 @@ export class Maestro implements Provider {
     const utxos = await this.getUtxosWithUnit(address, unit);
 
     if (utxos.length > 1) {
-      throw new Error("Unit needs to be an NFT or only held by one address.");
+      throw new Error(
+        "Location: getUtxoByUnit. Error: Unit needs to be an NFT or only held by one address.",
+      );
     }
 
     return utxos[0];
   }
 
   async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
-    const response = await fetch(`${this.url}/transactions/outputs`, {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-        ...this.commonHeaders()
-      },
-      body: JSON.stringify(outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`)),
-    });
-    if (!response.ok) return [];
-    const utxos = (await response.json()).data;
-    return utxos.map(this.maestroUtxoToUtxo)
+    const qry = `${this.url}/transactions/outputs`;
+    const body = JSON.stringify(
+      outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`),
+    );
+    const utxos = await this.getAllPagesData<MaestroUtxo>(
+      async (qry: string) =>
+        await fetch(qry, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...this.commonHeaders(),
+          },
+          body: body,
+        }),
+      qry,
+      new URLSearchParams({}),
+      "Location: getUtxosByOutRef. Error: Could not fetch UTxOs by references from Maestro",
+    );
+    return utxos.map(this.maestroUtxoToUtxo);
   }
 
   async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
@@ -192,10 +212,14 @@ export class Maestro implements Provider {
       },
     );
     if (!timestampedResultResponse.ok) {
-      if (timestampedResultResponse.status === 404)
+      if (timestampedResultResponse.status === 404) {
         throw new Error(`No datum found for datum hash: ${datumHash}`);
-      else
-        throw new Error("Couldn't successfully perform query. Received status code: " + timestampedResultResponse.status);
+      } else {
+        throw new Error(
+          "Location: getDatum. Error: Couldn't successfully perform query. Received status code: " +
+            timestampedResultResponse.status,
+        );
+      }
     }
     const timestampedResult = await timestampedResultResponse.json();
     return timestampedResult.data.bytes;
@@ -211,7 +235,7 @@ export class Maestro implements Provider {
           },
         );
         if (isConfirmedResponse.ok) {
-          await isConfirmedResponse.json()
+          await isConfirmedResponse.json();
           clearInterval(confirmation);
           await new Promise((res) => setTimeout(() => res(1), 1000));
           return res(true);
@@ -222,7 +246,7 @@ export class Maestro implements Provider {
 
   async submitTx(tx: Transaction): Promise<TxHash> {
     let queryUrl = `${this.url}/txmanager`;
-    queryUrl += this.turboSubmit ? '/turbosubmit' : ''
+    queryUrl += this.turboSubmit ? "/turbosubmit" : "";
     const response = await fetch(queryUrl, {
       method: "POST",
       headers: {
@@ -235,7 +259,10 @@ export class Maestro implements Provider {
     const result = await response.text();
     if (!response.ok) {
       if (response.status === 400) throw new Error(result);
-      else throw new Error("Could not submit transaction. Received status code: " + response.status);
+      else {throw new Error(
+          "Could not submit transaction. Received status code: " +
+            response.status,
+        );}
     }
     return result;
   }
@@ -269,6 +296,31 @@ export class Maestro implements Provider {
         }
         : undefined,
     };
+  }
+  private async getAllPagesData<T>(
+    getResponse: (qry: string) => Promise<Response>,
+    qry: string,
+    paramsGiven: URLSearchParams,
+    errorMsg: string,
+  ): Promise<Array<T>> {
+    let nextCursor = null;
+    let result: Array<T> = [];
+    while (true) {
+      if (nextCursor !== null) {
+        paramsGiven.set("cursor", nextCursor);
+      }
+      const response = await getResponse(`${qry}?` + paramsGiven);
+      const pageResult = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          `${errorMsg}. Received status code: ${response.status}`,
+        );
+      }
+      nextCursor = pageResult.next_cursor;
+      result = result.concat(pageResult.data as Array<T>);
+      if (nextCursor == null) break;
+    }
+    return result;
   }
 }
 
