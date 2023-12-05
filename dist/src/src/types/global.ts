@@ -23,7 +23,7 @@ export type WalletApi = {
   // deno-lint-ignore no-explicit-any
   experimental: any;
   cip103?: {
-    signTxs?: (txs: string[]) => Promise<string[]>;
+    signTxs: (txs: string[]) => Promise<string[]>;
   };
 };
 

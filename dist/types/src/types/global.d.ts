@@ -21,7 +21,7 @@ export declare type WalletApi = {
     submitTx: (_cbor: string) => Promise<string>;
     experimental: any;
     cip103?: {
-        signTxs?: (txs: string[]) => Promise<string[]>;
+        signTxs: (txs: string[]) => Promise<string[]>;
     };
 };
 export declare type Cardano = Omit<WalletApi, "experimental"> & {
