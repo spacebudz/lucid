@@ -11,6 +11,7 @@ export declare class Maestro implements Provider {
     turboSubmit: boolean;
     constructor({ network, apiKey, turboSubmit }: MaestroConfig);
     getProtocolParameters(): Promise<ProtocolParameters>;
+    private getUtxosInternal;
     getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]>;
     getUtxosWithUnit(addressOrCredential: Address | Credential, unit: Unit): Promise<UTxO[]>;
     getUtxoByUnit(unit: Unit): Promise<UTxO>;
@@ -21,4 +22,5 @@ export declare class Maestro implements Provider {
     submitTx(tx: Transaction): Promise<TxHash>;
     private commonHeaders;
     private maestroUtxoToUtxo;
+    private getAllPagesData;
 }

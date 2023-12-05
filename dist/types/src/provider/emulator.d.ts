@@ -1,4 +1,4 @@
-import { Address, Assets, Credential, Datum, DatumHash, Delegation, Lovelace, OutRef, ProtocolParameters, Provider, RewardAddress, Transaction, TxHash, Unit, UnixTime, UTxO } from "../types/types.js";
+import { Address, Assets, Credential, Datum, DatumHash, Delegation, Lovelace, OutputData, OutRef, ProtocolParameters, Provider, RewardAddress, Transaction, TxHash, Unit, UnixTime, UTxO } from "../types/types.js";
 /** Concatentation of txHash + outputIndex */
 declare type FlatOutRef = string;
 export declare class Emulator implements Provider {
@@ -26,6 +26,7 @@ export declare class Emulator implements Provider {
     constructor(accounts: {
         address: Address;
         assets: Assets;
+        outputData?: OutputData;
     }[], protocolParameters?: ProtocolParameters);
     now(): UnixTime;
     awaitSlot(length?: number): void;

@@ -33,7 +33,8 @@ export class Maestro {
         // Decimal numbers in Maestro are given as ratio of two numbers represented by string of format "firstNumber/secondNumber".
         const decimalFromRationalString = (str) => {
             const forwardSlashIndex = str.indexOf("/");
-            return parseInt(str.slice(0, forwardSlashIndex)) / parseInt(str.slice(forwardSlashIndex + 1));
+            return parseInt(str.slice(0, forwardSlashIndex)) /
+                parseInt(str.slice(forwardSlashIndex + 1));
         };
         // To rename keys in an object by the given key-map.
         // deno-lint-ignore no-explicit-any
@@ -66,70 +67,65 @@ export class Maestro {
             }),
         };
     }
-    async getUtxos(addressOrCredential) {
+    async getUtxosInternal(addressOrCredential, unit) {
         const queryPredicate = (() => {
-            if (typeof addressOrCredential === "string")
+            if (typeof addressOrCredential === "string") {
                 return "/addresses/" + addressOrCredential;
+            }
             let credentialBech32Query = "/addresses/cred/";
             credentialBech32Query += addressOrCredential.type === "Key"
                 ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32("addr_vkh")
                 : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32("addr_shared_vkh");
             return credentialBech32Query;
         })();
-        let result = [];
-        let nextCursor = null;
-        while (true) {
-            const appendCursorString = nextCursor === null ? "" : `&cursor=${nextCursor}`;
-            const response = await fetch(`${this.url}${queryPredicate}/utxos?count=100${appendCursorString}`, { headers: this.commonHeaders() });
-            const pageResult = await response.json();
-            if (!response.ok) {
-                throw new Error("Could not fetch UTxOs from Maestro. Received status code: " + response.status);
-            }
-            nextCursor = pageResult.next_cursor;
-            result = result.concat(pageResult.data);
-            if (nextCursor == null)
-                break;
-        }
+        const qparams = new URLSearchParams({
+            count: "100",
+            ...(unit && { asset: unit }),
+        });
+        const result = await this.getAllPagesData(async (qry) => await fetch(qry, { headers: this.commonHeaders() }), `${this.url}${queryPredicate}/utxos`, qparams, "Location: getUtxosInternal. Error: Could not fetch UTxOs from Maestro");
         return result.map(this.maestroUtxoToUtxo);
     }
-    async getUtxosWithUnit(addressOrCredential, unit) {
-        const utxos = await this.getUtxos(addressOrCredential);
-        return utxos.filter((utxo) => utxo.assets[unit]);
+    getUtxos(addressOrCredential) {
+        return this.getUtxosInternal(addressOrCredential);
+    }
+    getUtxosWithUnit(addressOrCredential, unit) {
+        return this.getUtxosInternal(addressOrCredential, unit);
     }
     async getUtxoByUnit(unit) {
         const timestampedAddressesResponse = await fetch(`${this.url}/assets/${unit}/addresses?count=2`, { headers: this.commonHeaders() });
         const timestampedAddresses = await timestampedAddressesResponse.json();
         if (!timestampedAddressesResponse.ok) {
-            if (timestampedAddresses.message)
+            if (timestampedAddresses.message) {
                 throw new Error(timestampedAddresses.message);
-            throw new Error("Couldn't perform query. Received status code: " + timestampedAddressesResponse.status);
+            }
+            throw new Error("Location: getUtxoByUnit. Error: Couldn't perform query. Received status code: " +
+                timestampedAddressesResponse.status);
         }
         const addressesWithAmount = timestampedAddresses.data;
         if (addressesWithAmount.length === 0) {
-            throw new Error("Unit not found.");
+            throw new Error("Location: getUtxoByUnit. Error: Unit not found.");
         }
         if (addressesWithAmount.length > 1) {
-            throw new Error("Unit needs to be an NFT or only held by one address.");
+            throw new Error("Location: getUtxoByUnit. Error: Unit needs to be an NFT or only held by one address.");
         }
         const address = addressesWithAmount[0].address;
         const utxos = await this.getUtxosWithUnit(address, unit);
         if (utxos.length > 1) {
-            throw new Error("Unit needs to be an NFT or only held by one address.");
+            throw new Error("Location: getUtxoByUnit. Error: Unit needs to be an NFT or only held by one address.");
         }
         return utxos[0];
     }
     async getUtxosByOutRef(outRefs) {
-        const response = await fetch(`${this.url}/transactions/outputs`, {
+        const qry = `${this.url}/transactions/outputs`;
+        const body = JSON.stringify(outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`));
+        const utxos = await this.getAllPagesData(async (qry) => await fetch(qry, {
             method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                ...this.commonHeaders()
+                "Content-Type": "application/json",
+                ...this.commonHeaders(),
             },
-            body: JSON.stringify(outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`)),
-        });
-        if (!response.ok)
-            return [];
-        const utxos = (await response.json()).data;
+            body: body,
+        }), qry, new URLSearchParams({}), "Location: getUtxosByOutRef. Error: Could not fetch UTxOs by references from Maestro");
         return utxos.map(this.maestroUtxoToUtxo);
     }
     async getDelegation(rewardAddress) {
@@ -149,10 +145,13 @@ export class Maestro {
             headers: this.commonHeaders(),
         });
         if (!timestampedResultResponse.ok) {
-            if (timestampedResultResponse.status === 404)
+            if (timestampedResultResponse.status === 404) {
                 throw new Error(`No datum found for datum hash: ${datumHash}`);
-            else
-                throw new Error("Couldn't successfully perform query. Received status code: " + timestampedResultResponse.status);
+            }
+            else {
+                throw new Error("Location: getDatum. Error: Couldn't successfully perform query. Received status code: " +
+                    timestampedResultResponse.status);
+            }
         }
         const timestampedResult = await timestampedResultResponse.json();
         return timestampedResult.data.bytes;
@@ -174,7 +173,7 @@ export class Maestro {
     }
     async submitTx(tx) {
         let queryUrl = `${this.url}/txmanager`;
-        queryUrl += this.turboSubmit ? '/turbosubmit' : '';
+        queryUrl += this.turboSubmit ? "/turbosubmit" : "";
         const response = await fetch(queryUrl, {
             method: "POST",
             headers: {
@@ -188,8 +187,10 @@ export class Maestro {
         if (!response.ok) {
             if (response.status === 400)
                 throw new Error(result);
-            else
-                throw new Error("Could not submit transaction. Received status code: " + response.status);
+            else {
+                throw new Error("Could not submit transaction. Received status code: " +
+                    response.status);
+            }
         }
         return result;
     }
@@ -221,6 +222,25 @@ export class Maestro {
                 }
                 : undefined,
         };
+    }
+    async getAllPagesData(getResponse, qry, paramsGiven, errorMsg) {
+        let nextCursor = null;
+        let result = [];
+        while (true) {
+            if (nextCursor !== null) {
+                paramsGiven.set("cursor", nextCursor);
+            }
+            const response = await getResponse(`${qry}?` + paramsGiven);
+            const pageResult = await response.json();
+            if (!response.ok) {
+                throw new Error(`${errorMsg}. Received status code: ${response.status}`);
+            }
+            nextCursor = pageResult.next_cursor;
+            result = result.concat(pageResult.data);
+            if (nextCursor == null)
+                break;
+        }
+        return result;
     }
 }
 const lucid = packageJson.version; // Lucid version

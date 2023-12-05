@@ -60,13 +60,26 @@ export class Emulator {
         this.slot = 0;
         this.time = Date.now();
         this.ledger = {};
-        accounts.forEach(({ address, assets }, index) => {
+        accounts.forEach(({ address, assets, outputData }, index) => {
+            if ([
+                outputData?.hash,
+                outputData?.asHash,
+                outputData?.inline,
+            ].filter((b) => b)
+                .length > 1) {
+                throw new Error("Not allowed to set hash, asHash and inline at the same time.");
+            }
             this.ledger[GENESIS_HASH + index] = {
                 utxo: {
                     txHash: GENESIS_HASH,
                     outputIndex: index,
                     address,
                     assets,
+                    datumHash: outputData?.asHash
+                        ? C.hash_plutus_data(C.PlutusData.from_bytes(fromHex(outputData.asHash))).to_hex()
+                        : outputData?.hash,
+                    datum: outputData?.inline,
+                    scriptRef: outputData?.scriptRef,
                 },
                 spent: false,
             };

@@ -20,6 +20,9 @@ export declare type WalletApi = {
     signTxs?: (txs: string[]) => Promise<string[]>;
     submitTx: (_cbor: string) => Promise<string>;
     experimental: any;
+    cip103?: {
+        signTxs?: (txs: string[]) => Promise<string[]>;
+    };
 };
 export declare type Cardano = Omit<WalletApi, "experimental"> & {
     onAccountChange?: (cb: (newAddresses?: string[]) => void) => void;
