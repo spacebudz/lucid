@@ -3,7 +3,7 @@
   "main": "./esm/mod.js",
   "types": "./dist/types/mod.d.ts",
   "name": "@jpg-store/lucid-cardano",
-  "version": "0.10.12",
+  "version": "0.11.1",
   "license": "MIT",
   "description": "This is a fork of the original Lucid repo compiled into CommonJS. For more information check https://github.com/spacebudz/lucid",
   "repository": "https://github.com/jpg-store/lucid",
