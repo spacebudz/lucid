@@ -1,23 +1,13 @@
 import { C } from "../core/mod.js";
 import { fromHex, fromUnit, toHex } from "../utils/mod.js";
 export class Kupmios {
+    kupoUrl;
+    ogmiosUrl;
     /**
      * @param kupoUrl: http(s)://localhost:1442
      * @param ogmiosUrl: ws(s)://localhost:1337
      */
     constructor(kupoUrl, ogmiosUrl) {
-        Object.defineProperty(this, "kupoUrl", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "ogmiosUrl", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
         this.kupoUrl = kupoUrl;
         this.ogmiosUrl = ogmiosUrl;
     }

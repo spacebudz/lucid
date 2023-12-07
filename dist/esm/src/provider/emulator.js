@@ -2,59 +2,19 @@ import { C } from "../core/core.js";
 import { PROTOCOL_PARAMETERS_DEFAULT } from "../utils/mod.js";
 import { coreToUtxo, fromHex, getAddressDetails, toHex, } from "../utils/utils.js";
 export class Emulator {
+    ledger;
+    mempool = {};
+    /**
+     * Only stake key registrations/delegations and rewards are tracked.
+     * Other certificates are not tracked.
+     */
+    chain = {};
+    blockHeight;
+    slot;
+    time;
+    protocolParameters;
+    datumTable = {};
     constructor(accounts, protocolParameters = PROTOCOL_PARAMETERS_DEFAULT) {
-        Object.defineProperty(this, "ledger", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "mempool", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: {}
-        });
-        /**
-         * Only stake key registrations/delegations and rewards are tracked.
-         * Other certificates are not tracked.
-         */
-        Object.defineProperty(this, "chain", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: {}
-        });
-        Object.defineProperty(this, "blockHeight", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "slot", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "time", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "protocolParameters", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "datumTable", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: {}
-        });
         const GENESIS_HASH = "00".repeat(32);
         this.blockHeight = 0;
         this.slot = 0;

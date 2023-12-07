@@ -1,17 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _Sha256_block, _Sha256_blocks, _Sha256_bytes, _Sha256_finalized, _Sha256_first, _Sha256_h0, _Sha256_h1, _Sha256_h2, _Sha256_h3, _Sha256_h4, _Sha256_h5, _Sha256_h6, _Sha256_h7, _Sha256_hashed, _Sha256_hBytes, _Sha256_is224, _Sha256_lastByteIndex, _Sha256_start, _HmacSha256_inner, _HmacSha256_is224, _HmacSha256_oKeyPad, _HmacSha256_sharedMemory;
 const HEX_CHARS = "0123456789abcdef".split("");
 const EXTRA = [-2147483648, 8388608, 32768, 128];
 const SHIFT = [24, 16, 8, 0];
@@ -83,25 +71,25 @@ const K = [
 ];
 const blocks = [];
 export class Sha256 {
+    #block;
+    #blocks;
+    #bytes;
+    #finalized;
+    #first;
+    #h0;
+    #h1;
+    #h2;
+    #h3;
+    #h4;
+    #h5;
+    #h6;
+    #h7;
+    #hashed;
+    #hBytes;
+    #is224;
+    #lastByteIndex = 0;
+    #start;
     constructor(is224 = false, sharedMemory = false) {
-        _Sha256_block.set(this, void 0);
-        _Sha256_blocks.set(this, void 0);
-        _Sha256_bytes.set(this, void 0);
-        _Sha256_finalized.set(this, void 0);
-        _Sha256_first.set(this, void 0);
-        _Sha256_h0.set(this, void 0);
-        _Sha256_h1.set(this, void 0);
-        _Sha256_h2.set(this, void 0);
-        _Sha256_h3.set(this, void 0);
-        _Sha256_h4.set(this, void 0);
-        _Sha256_h5.set(this, void 0);
-        _Sha256_h6.set(this, void 0);
-        _Sha256_h7.set(this, void 0);
-        _Sha256_hashed.set(this, void 0);
-        _Sha256_hBytes.set(this, void 0);
-        _Sha256_is224.set(this, void 0);
-        _Sha256_lastByteIndex.set(this, 0);
-        _Sha256_start.set(this, void 0);
         this.init(is224, sharedMemory);
     }
     init(is224, sharedMemory) {
@@ -124,43 +112,47 @@ export class Sha256 {
                                                                         blocks[14] =
                                                                             blocks[15] =
                                                                                 0;
-            __classPrivateFieldSet(this, _Sha256_blocks, blocks, "f");
+            this.#blocks = blocks;
         }
         else {
-            __classPrivateFieldSet(this, _Sha256_blocks, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "f");
+            this.#blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         }
         if (is224) {
-            __classPrivateFieldSet(this, _Sha256_h0, 0xc1059ed8, "f");
-            __classPrivateFieldSet(this, _Sha256_h1, 0x367cd507, "f");
-            __classPrivateFieldSet(this, _Sha256_h2, 0x3070dd17, "f");
-            __classPrivateFieldSet(this, _Sha256_h3, 0xf70e5939, "f");
-            __classPrivateFieldSet(this, _Sha256_h4, 0xffc00b31, "f");
-            __classPrivateFieldSet(this, _Sha256_h5, 0x68581511, "f");
-            __classPrivateFieldSet(this, _Sha256_h6, 0x64f98fa7, "f");
-            __classPrivateFieldSet(this, _Sha256_h7, 0xbefa4fa4, "f");
+            this.#h0 = 0xc1059ed8;
+            this.#h1 = 0x367cd507;
+            this.#h2 = 0x3070dd17;
+            this.#h3 = 0xf70e5939;
+            this.#h4 = 0xffc00b31;
+            this.#h5 = 0x68581511;
+            this.#h6 = 0x64f98fa7;
+            this.#h7 = 0xbefa4fa4;
         }
         else {
             // 256
-            __classPrivateFieldSet(this, _Sha256_h0, 0x6a09e667, "f");
-            __classPrivateFieldSet(this, _Sha256_h1, 0xbb67ae85, "f");
-            __classPrivateFieldSet(this, _Sha256_h2, 0x3c6ef372, "f");
-            __classPrivateFieldSet(this, _Sha256_h3, 0xa54ff53a, "f");
-            __classPrivateFieldSet(this, _Sha256_h4, 0x510e527f, "f");
-            __classPrivateFieldSet(this, _Sha256_h5, 0x9b05688c, "f");
-            __classPrivateFieldSet(this, _Sha256_h6, 0x1f83d9ab, "f");
-            __classPrivateFieldSet(this, _Sha256_h7, 0x5be0cd19, "f");
+            this.#h0 = 0x6a09e667;
+            this.#h1 = 0xbb67ae85;
+            this.#h2 = 0x3c6ef372;
+            this.#h3 = 0xa54ff53a;
+            this.#h4 = 0x510e527f;
+            this.#h5 = 0x9b05688c;
+            this.#h6 = 0x1f83d9ab;
+            this.#h7 = 0x5be0cd19;
         }
-        __classPrivateFieldSet(this, _Sha256_block, __classPrivateFieldSet(this, _Sha256_start, __classPrivateFieldSet(this, _Sha256_bytes, __classPrivateFieldSet(this, _Sha256_hBytes, 0, "f"), "f"), "f"), "f");
-        __classPrivateFieldSet(this, _Sha256_finalized, __classPrivateFieldSet(this, _Sha256_hashed, false, "f"), "f");
-        __classPrivateFieldSet(this, _Sha256_first, true, "f");
-        __classPrivateFieldSet(this, _Sha256_is224, is224, "f");
+        this.#block =
+            this.#start =
+                this.#bytes =
+                    this.#hBytes =
+                        0;
+        this.#finalized = this.#hashed = false;
+        this.#first = true;
+        this.#is224 = is224;
     }
     /** Update hash
      *
      * @param message The message you want to hash.
      */
     update(message) {
-        if (__classPrivateFieldGet(this, _Sha256_finalized, "f")) {
+        if (this.#finalized) {
             return this;
         }
         let msg;
@@ -172,12 +164,12 @@ export class Sha256 {
         }
         let index = 0;
         const length = msg.length;
-        const blocks = __classPrivateFieldGet(this, _Sha256_blocks, "f");
+        const blocks = this.#blocks;
         while (index < length) {
             let i;
-            if (__classPrivateFieldGet(this, _Sha256_hashed, "f")) {
-                __classPrivateFieldSet(this, _Sha256_hashed, false, "f");
-                blocks[0] = __classPrivateFieldGet(this, _Sha256_block, "f");
+            if (this.#hashed) {
+                this.#hashed = false;
+                blocks[0] = this.#block;
                 blocks[16] =
                     blocks[1] =
                         blocks[2] =
@@ -197,12 +189,12 @@ export class Sha256 {
                                                                                 0;
             }
             if (typeof msg !== "string") {
-                for (i = __classPrivateFieldGet(this, _Sha256_start, "f"); index < length && i < 64; ++index) {
+                for (i = this.#start; index < length && i < 64; ++index) {
                     blocks[i >> 2] |= msg[index] << SHIFT[i++ & 3];
                 }
             }
             else {
-                for (i = __classPrivateFieldGet(this, _Sha256_start, "f"); index < length && i < 64; ++index) {
+                for (i = this.#start; index < length && i < 64; ++index) {
                     let code = msg.charCodeAt(index);
                     if (code < 0x80) {
                         blocks[i >> 2] |= code << SHIFT[i++ & 3];
@@ -226,39 +218,39 @@ export class Sha256 {
                     }
                 }
             }
-            __classPrivateFieldSet(this, _Sha256_lastByteIndex, i, "f");
-            __classPrivateFieldSet(this, _Sha256_bytes, __classPrivateFieldGet(this, _Sha256_bytes, "f") + (i - __classPrivateFieldGet(this, _Sha256_start, "f")), "f");
+            this.#lastByteIndex = i;
+            this.#bytes += i - this.#start;
             if (i >= 64) {
-                __classPrivateFieldSet(this, _Sha256_block, blocks[16], "f");
-                __classPrivateFieldSet(this, _Sha256_start, i - 64, "f");
+                this.#block = blocks[16];
+                this.#start = i - 64;
                 this.hash();
-                __classPrivateFieldSet(this, _Sha256_hashed, true, "f");
+                this.#hashed = true;
             }
             else {
-                __classPrivateFieldSet(this, _Sha256_start, i, "f");
+                this.#start = i;
             }
         }
-        if (__classPrivateFieldGet(this, _Sha256_bytes, "f") > 4294967295) {
-            __classPrivateFieldSet(this, _Sha256_hBytes, __classPrivateFieldGet(this, _Sha256_hBytes, "f") + ((__classPrivateFieldGet(this, _Sha256_bytes, "f") / 4294967296) << 0), "f");
-            __classPrivateFieldSet(this, _Sha256_bytes, __classPrivateFieldGet(this, _Sha256_bytes, "f") % 4294967296, "f");
+        if (this.#bytes > 4294967295) {
+            this.#hBytes += (this.#bytes / 4294967296) << 0;
+            this.#bytes = this.#bytes % 4294967296;
         }
         return this;
     }
     finalize() {
-        if (__classPrivateFieldGet(this, _Sha256_finalized, "f")) {
+        if (this.#finalized) {
             return;
         }
-        __classPrivateFieldSet(this, _Sha256_finalized, true, "f");
-        const blocks = __classPrivateFieldGet(this, _Sha256_blocks, "f");
-        const i = __classPrivateFieldGet(this, _Sha256_lastByteIndex, "f");
-        blocks[16] = __classPrivateFieldGet(this, _Sha256_block, "f");
+        this.#finalized = true;
+        const blocks = this.#blocks;
+        const i = this.#lastByteIndex;
+        blocks[16] = this.#block;
         blocks[i >> 2] |= EXTRA[i & 3];
-        __classPrivateFieldSet(this, _Sha256_block, blocks[16], "f");
+        this.#block = blocks[16];
         if (i >= 56) {
-            if (!__classPrivateFieldGet(this, _Sha256_hashed, "f")) {
+            if (!this.#hashed) {
                 this.hash();
             }
-            blocks[0] = __classPrivateFieldGet(this, _Sha256_block, "f");
+            blocks[0] = this.#block;
             blocks[16] =
                 blocks[1] =
                     blocks[2] =
@@ -277,20 +269,20 @@ export class Sha256 {
                                                                         blocks[15] =
                                                                             0;
         }
-        blocks[14] = (__classPrivateFieldGet(this, _Sha256_hBytes, "f") << 3) | (__classPrivateFieldGet(this, _Sha256_bytes, "f") >>> 29);
-        blocks[15] = __classPrivateFieldGet(this, _Sha256_bytes, "f") << 3;
+        blocks[14] = (this.#hBytes << 3) | (this.#bytes >>> 29);
+        blocks[15] = this.#bytes << 3;
         this.hash();
     }
     hash() {
-        let a = __classPrivateFieldGet(this, _Sha256_h0, "f");
-        let b = __classPrivateFieldGet(this, _Sha256_h1, "f");
-        let c = __classPrivateFieldGet(this, _Sha256_h2, "f");
-        let d = __classPrivateFieldGet(this, _Sha256_h3, "f");
-        let e = __classPrivateFieldGet(this, _Sha256_h4, "f");
-        let f = __classPrivateFieldGet(this, _Sha256_h5, "f");
-        let g = __classPrivateFieldGet(this, _Sha256_h6, "f");
-        let h = __classPrivateFieldGet(this, _Sha256_h7, "f");
-        const blocks = __classPrivateFieldGet(this, _Sha256_blocks, "f");
+        let a = this.#h0;
+        let b = this.#h1;
+        let c = this.#h2;
+        let d = this.#h3;
+        let e = this.#h4;
+        let f = this.#h5;
+        let g = this.#h6;
+        let h = this.#h7;
+        const blocks = this.#blocks;
         let s0;
         let s1;
         let maj;
@@ -312,8 +304,8 @@ export class Sha256 {
         }
         bc = b & c;
         for (let j = 0; j < 64; j += 4) {
-            if (__classPrivateFieldGet(this, _Sha256_first, "f")) {
-                if (__classPrivateFieldGet(this, _Sha256_is224, "f")) {
+            if (this.#first) {
+                if (this.#is224) {
                     ab = 300032;
                     t1 = blocks[0] - 1413257819;
                     h = (t1 - 150054599) << 0;
@@ -325,7 +317,7 @@ export class Sha256 {
                     h = (t1 - 1521486534) << 0;
                     d = (t1 + 143694565) << 0;
                 }
-                __classPrivateFieldSet(this, _Sha256_first, false, "f");
+                this.#first = false;
             }
             else {
                 s0 = ((a >>> 2) | (a << 30)) ^
@@ -382,26 +374,26 @@ export class Sha256 {
             e = (a + t1) << 0;
             a = (t1 + t2) << 0;
         }
-        __classPrivateFieldSet(this, _Sha256_h0, (__classPrivateFieldGet(this, _Sha256_h0, "f") + a) << 0, "f");
-        __classPrivateFieldSet(this, _Sha256_h1, (__classPrivateFieldGet(this, _Sha256_h1, "f") + b) << 0, "f");
-        __classPrivateFieldSet(this, _Sha256_h2, (__classPrivateFieldGet(this, _Sha256_h2, "f") + c) << 0, "f");
-        __classPrivateFieldSet(this, _Sha256_h3, (__classPrivateFieldGet(this, _Sha256_h3, "f") + d) << 0, "f");
-        __classPrivateFieldSet(this, _Sha256_h4, (__classPrivateFieldGet(this, _Sha256_h4, "f") + e) << 0, "f");
-        __classPrivateFieldSet(this, _Sha256_h5, (__classPrivateFieldGet(this, _Sha256_h5, "f") + f) << 0, "f");
-        __classPrivateFieldSet(this, _Sha256_h6, (__classPrivateFieldGet(this, _Sha256_h6, "f") + g) << 0, "f");
-        __classPrivateFieldSet(this, _Sha256_h7, (__classPrivateFieldGet(this, _Sha256_h7, "f") + h) << 0, "f");
+        this.#h0 = (this.#h0 + a) << 0;
+        this.#h1 = (this.#h1 + b) << 0;
+        this.#h2 = (this.#h2 + c) << 0;
+        this.#h3 = (this.#h3 + d) << 0;
+        this.#h4 = (this.#h4 + e) << 0;
+        this.#h5 = (this.#h5 + f) << 0;
+        this.#h6 = (this.#h6 + g) << 0;
+        this.#h7 = (this.#h7 + h) << 0;
     }
     /** Return hash in hex string. */
     hex() {
         this.finalize();
-        const h0 = __classPrivateFieldGet(this, _Sha256_h0, "f");
-        const h1 = __classPrivateFieldGet(this, _Sha256_h1, "f");
-        const h2 = __classPrivateFieldGet(this, _Sha256_h2, "f");
-        const h3 = __classPrivateFieldGet(this, _Sha256_h3, "f");
-        const h4 = __classPrivateFieldGet(this, _Sha256_h4, "f");
-        const h5 = __classPrivateFieldGet(this, _Sha256_h5, "f");
-        const h6 = __classPrivateFieldGet(this, _Sha256_h6, "f");
-        const h7 = __classPrivateFieldGet(this, _Sha256_h7, "f");
+        const h0 = this.#h0;
+        const h1 = this.#h1;
+        const h2 = this.#h2;
+        const h3 = this.#h3;
+        const h4 = this.#h4;
+        const h5 = this.#h5;
+        const h6 = this.#h6;
+        const h7 = this.#h7;
         let hex = HEX_CHARS[(h0 >> 28) & 0x0f] +
             HEX_CHARS[(h0 >> 24) & 0x0f] +
             HEX_CHARS[(h0 >> 20) & 0x0f] +
@@ -458,7 +450,7 @@ export class Sha256 {
             HEX_CHARS[(h6 >> 8) & 0x0f] +
             HEX_CHARS[(h6 >> 4) & 0x0f] +
             HEX_CHARS[h6 & 0x0f];
-        if (!__classPrivateFieldGet(this, _Sha256_is224, "f")) {
+        if (!this.#is224) {
             hex += HEX_CHARS[(h7 >> 28) & 0x0f] +
                 HEX_CHARS[(h7 >> 24) & 0x0f] +
                 HEX_CHARS[(h7 >> 20) & 0x0f] +
@@ -477,14 +469,14 @@ export class Sha256 {
     /** Return hash in integer array. */
     digest() {
         this.finalize();
-        const h0 = __classPrivateFieldGet(this, _Sha256_h0, "f");
-        const h1 = __classPrivateFieldGet(this, _Sha256_h1, "f");
-        const h2 = __classPrivateFieldGet(this, _Sha256_h2, "f");
-        const h3 = __classPrivateFieldGet(this, _Sha256_h3, "f");
-        const h4 = __classPrivateFieldGet(this, _Sha256_h4, "f");
-        const h5 = __classPrivateFieldGet(this, _Sha256_h5, "f");
-        const h6 = __classPrivateFieldGet(this, _Sha256_h6, "f");
-        const h7 = __classPrivateFieldGet(this, _Sha256_h7, "f");
+        const h0 = this.#h0;
+        const h1 = this.#h1;
+        const h2 = this.#h2;
+        const h3 = this.#h3;
+        const h4 = this.#h4;
+        const h5 = this.#h5;
+        const h6 = this.#h6;
+        const h7 = this.#h7;
         const arr = [
             (h0 >> 24) & 0xff,
             (h0 >> 16) & 0xff,
@@ -515,7 +507,7 @@ export class Sha256 {
             (h6 >> 8) & 0xff,
             h6 & 0xff,
         ];
-        if (!__classPrivateFieldGet(this, _Sha256_is224, "f")) {
+        if (!this.#is224) {
             arr.push((h7 >> 24) & 0xff, (h7 >> 16) & 0xff, (h7 >> 8) & 0xff, h7 & 0xff);
         }
         return arr;
@@ -527,29 +519,28 @@ export class Sha256 {
     /** Return hash in ArrayBuffer. */
     arrayBuffer() {
         this.finalize();
-        const buffer = new ArrayBuffer(__classPrivateFieldGet(this, _Sha256_is224, "f") ? 28 : 32);
+        const buffer = new ArrayBuffer(this.#is224 ? 28 : 32);
         const dataView = new DataView(buffer);
-        dataView.setUint32(0, __classPrivateFieldGet(this, _Sha256_h0, "f"));
-        dataView.setUint32(4, __classPrivateFieldGet(this, _Sha256_h1, "f"));
-        dataView.setUint32(8, __classPrivateFieldGet(this, _Sha256_h2, "f"));
-        dataView.setUint32(12, __classPrivateFieldGet(this, _Sha256_h3, "f"));
-        dataView.setUint32(16, __classPrivateFieldGet(this, _Sha256_h4, "f"));
-        dataView.setUint32(20, __classPrivateFieldGet(this, _Sha256_h5, "f"));
-        dataView.setUint32(24, __classPrivateFieldGet(this, _Sha256_h6, "f"));
-        if (!__classPrivateFieldGet(this, _Sha256_is224, "f")) {
-            dataView.setUint32(28, __classPrivateFieldGet(this, _Sha256_h7, "f"));
+        dataView.setUint32(0, this.#h0);
+        dataView.setUint32(4, this.#h1);
+        dataView.setUint32(8, this.#h2);
+        dataView.setUint32(12, this.#h3);
+        dataView.setUint32(16, this.#h4);
+        dataView.setUint32(20, this.#h5);
+        dataView.setUint32(24, this.#h6);
+        if (!this.#is224) {
+            dataView.setUint32(28, this.#h7);
         }
         return buffer;
     }
 }
-_Sha256_block = new WeakMap(), _Sha256_blocks = new WeakMap(), _Sha256_bytes = new WeakMap(), _Sha256_finalized = new WeakMap(), _Sha256_first = new WeakMap(), _Sha256_h0 = new WeakMap(), _Sha256_h1 = new WeakMap(), _Sha256_h2 = new WeakMap(), _Sha256_h3 = new WeakMap(), _Sha256_h4 = new WeakMap(), _Sha256_h5 = new WeakMap(), _Sha256_h6 = new WeakMap(), _Sha256_h7 = new WeakMap(), _Sha256_hashed = new WeakMap(), _Sha256_hBytes = new WeakMap(), _Sha256_is224 = new WeakMap(), _Sha256_lastByteIndex = new WeakMap(), _Sha256_start = new WeakMap();
 export class HmacSha256 extends Sha256 {
+    #inner;
+    #is224;
+    #oKeyPad;
+    #sharedMemory;
     constructor(secretKey, is224 = false, sharedMemory = false) {
         super(is224, sharedMemory);
-        _HmacSha256_inner.set(this, void 0);
-        _HmacSha256_is224.set(this, void 0);
-        _HmacSha256_oKeyPad.set(this, void 0);
-        _HmacSha256_sharedMemory.set(this, void 0);
         let key;
         if (typeof secretKey === "string") {
             const bytes = [];
@@ -599,21 +590,20 @@ export class HmacSha256 extends Sha256 {
             iKeyPad[i] = 0x36 ^ b;
         }
         this.update(iKeyPad);
-        __classPrivateFieldSet(this, _HmacSha256_oKeyPad, oKeyPad, "f");
-        __classPrivateFieldSet(this, _HmacSha256_inner, true, "f");
-        __classPrivateFieldSet(this, _HmacSha256_is224, is224, "f");
-        __classPrivateFieldSet(this, _HmacSha256_sharedMemory, sharedMemory, "f");
+        this.#oKeyPad = oKeyPad;
+        this.#inner = true;
+        this.#is224 = is224;
+        this.#sharedMemory = sharedMemory;
     }
     finalize() {
         super.finalize();
-        if (__classPrivateFieldGet(this, _HmacSha256_inner, "f")) {
-            __classPrivateFieldSet(this, _HmacSha256_inner, false, "f");
+        if (this.#inner) {
+            this.#inner = false;
             const innerHash = this.array();
-            super.init(__classPrivateFieldGet(this, _HmacSha256_is224, "f"), __classPrivateFieldGet(this, _HmacSha256_sharedMemory, "f"));
-            this.update(__classPrivateFieldGet(this, _HmacSha256_oKeyPad, "f"));
+            super.init(this.#is224, this.#sharedMemory);
+            this.update(this.#oKeyPad);
             this.update(innerHash);
             super.finalize();
         }
     }
 }
-_HmacSha256_inner = new WeakMap(), _HmacSha256_is224 = new WeakMap(), _HmacSha256_oKeyPad = new WeakMap(), _HmacSha256_sharedMemory = new WeakMap();

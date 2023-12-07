@@ -2,25 +2,10 @@ import { C } from "../core/mod.js";
 import { applyDoubleCborEncoding, fromHex } from "../utils/mod.js";
 import packageJson from "../../package.js";
 export class Maestro {
+    url;
+    apiKey;
+    turboSubmit;
     constructor({ network, apiKey, turboSubmit = false }) {
-        Object.defineProperty(this, "url", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "apiKey", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "turboSubmit", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
         this.url = `https://${network}.gomaestro-api.org/v1`;
         this.apiKey = apiKey;
         this.turboSubmit = turboSubmit;

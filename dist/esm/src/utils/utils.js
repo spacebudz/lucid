@@ -5,13 +5,8 @@ import { crc8 } from "../misc/crc8.js";
 import { SLOT_CONFIG_NETWORK, slotToBeginUnixTime, unixTimeToEnclosingSlot, } from "../plutus/time.js";
 import { Data } from "../plutus/data.js";
 export class Utils {
+    lucid;
     constructor(lucid) {
-        Object.defineProperty(this, "lucid", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
         this.lucid = lucid;
     }
     validatorToAddress(validator, stakeCredential) {

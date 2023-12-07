@@ -220,7 +220,7 @@ function makeMutClosure(arg0, arg1, dtor, f) {
   return real;
 }
 function __wbg_adapter_30(arg0, arg1, arg2) {
-  wasm.wasm_bindgen__convert__closures__invoke1_mut__hee80fd123b909250(
+  wasm.wasm_bindgen__convert__closures__invoke1_mut__h61c3494c59f05391(
     arg0,
     arg1,
     addHeapObject(arg2),
@@ -849,7 +849,7 @@ function handleError(f, args) {
   }
 }
 function __wbg_adapter_1680(arg0, arg1, arg2, arg3) {
-  wasm.wasm_bindgen__convert__closures__invoke2_mut__h5b4d9f16616fac4b(
+  wasm.wasm_bindgen__convert__closures__invoke2_mut__h88e883484ae7425c(
     arg0,
     arg1,
     addHeapObject(arg2),
@@ -28253,7 +28253,7 @@ module.exports.__wbg_transaction_new = function (arg0) {
 
 module.exports.__wbindgen_string_get = function (arg0, arg1) {
   const obj = getObject(arg1);
-  const ret = typeof (obj) === "string" ? obj : undefined;
+  const ret = typeof obj === "string" ? obj : undefined;
   var ptr0 = isLikeNone(ret)
     ? 0
     : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
@@ -28329,7 +28329,7 @@ module.exports.__wbg_process_5615a087a47ba544 = function (arg0) {
 
 module.exports.__wbindgen_is_object = function (arg0) {
   const val = getObject(arg0);
-  const ret = typeof (val) === "object" && val !== null;
+  const ret = typeof val === "object" && val !== null;
   return ret;
 };
 
@@ -28576,7 +28576,7 @@ module.exports.__wbindgen_memory = function () {
   return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper7018 = function (arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper7016 = function (arg0, arg1, arg2) {
   const ret = makeMutClosure(arg0, arg1, 186, __wbg_adapter_30);
   return addHeapObject(ret);
 };

@@ -3,14 +3,9 @@ import { concat, equals } from "../../deps/deno.land/std@0.148.0/bytes/mod.js";
 import { Sha256 } from "../../deps/deno.land/std@0.153.0/hash/sha256.js";
 import { toHex } from "./utils.js";
 export class MerkleTree {
+    root;
     /** Construct Merkle tree from data, which get hashed with sha256 */
     constructor(data) {
-        Object.defineProperty(this, "root", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
         this.root = MerkleTree.buildRecursively(data.map((d) => sha256(d)));
     }
     /** Construct Merkle tree from sha256 hashes */

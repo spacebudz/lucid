@@ -1,8 +1,6 @@
-src/
 tests
 logo
 docs
 .vscode
 .github
 build.ts
-

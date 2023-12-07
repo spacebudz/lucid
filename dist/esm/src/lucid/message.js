@@ -1,25 +1,10 @@
 import { signData } from "../misc/sign_data.js";
 import { C } from "../mod.js";
 export class Message {
+    lucid;
+    address;
+    payload;
     constructor(lucid, address, payload) {
-        Object.defineProperty(this, "lucid", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "address", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "payload", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
         this.lucid = lucid;
         this.address = address;
         this.payload = payload;

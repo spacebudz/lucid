@@ -28,13 +28,13 @@ import {
 import * as fc from "https://esm.sh/fast-check@3.1.1";
 const initLucid = async () => {
   const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
-  const lucid = await Lucid.new();
+  const lucid = await Lucid.new({ provider: undefined });
   lucid.selectWalletFromPrivateKey(privateKey);
   return lucid;
 };
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
-const lucid = await Lucid.new(undefined, "Preprod");
+const lucid = await Lucid.new({ provider: undefined, network: "Preprod" });
 
 // Preprod testing parameters
 

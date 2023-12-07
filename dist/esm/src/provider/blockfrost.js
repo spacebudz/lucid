@@ -2,19 +2,9 @@ import { C } from "../core/mod.js";
 import { applyDoubleCborEncoding, fromHex, toHex } from "../utils/mod.js";
 import packageJson from "../../package.js";
 export class Blockfrost {
+    url;
+    projectId;
     constructor(url, projectId) {
-        Object.defineProperty(this, "url", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "projectId", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
         this.url = url;
         this.projectId = projectId || "";
     }

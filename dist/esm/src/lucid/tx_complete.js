@@ -2,43 +2,13 @@ import { C } from "../core/mod.js";
 import { TxSigned } from "./tx_signed.js";
 import { fromHex, toHex } from "../utils/mod.js";
 export class TxComplete {
+    txComplete;
+    witnessSetBuilder;
+    tasks;
+    lucid;
+    fee;
+    exUnits = null;
     constructor(lucid, tx) {
-        Object.defineProperty(this, "txComplete", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "witnessSetBuilder", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "tasks", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "lucid", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "fee", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "exUnits", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: null
-        });
         this.lucid = lucid;
         this.txComplete = tx;
         this.witnessSetBuilder = C.TransactionWitnessSetBuilder.new();

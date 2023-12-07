@@ -9,44 +9,12 @@ import { SLOT_CONFIG_NETWORK } from "../plutus/time.js";
 import { Data } from "../plutus/data.js";
 import { Emulator } from "../provider/emulator.js";
 export class Lucid {
-    constructor() {
-        Object.defineProperty(this, "protocolParameters", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "txBuilderConfig", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "wallet", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "provider", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "network", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: "Mainnet"
-        });
-        Object.defineProperty(this, "utils", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-    }
+    protocolParameters;
+    txBuilderConfig;
+    wallet;
+    provider;
+    network = "Mainnet";
+    utils;
     static async new({ provider, network, protocolParameters, }) {
         const lucid = new this();
         if (network)
@@ -100,11 +68,11 @@ export class Lucid {
      * Switch provider and/or network.
      * If provider or network unset, no overwriting happens. Provider or network from current instance are taken then.
      */
-    async switchProvider(provider, network) {
+    async switchProvider(provider = undefined, network) {
         if (this.network === "Custom") {
             throw new Error("Cannot switch when on custom network.");
         }
-        const lucid = await Lucid.new(provider, network);
+        const lucid = await Lucid.new({ provider, network });
         this.txBuilderConfig = lucid.txBuilderConfig;
         this.provider = provider || this.provider;
         this.network = network || this.network;

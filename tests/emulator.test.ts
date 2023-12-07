@@ -19,7 +19,7 @@ async function generateAccount(assets: Assets) {
   const seedPhrase = generateSeedPhrase();
   return {
     seedPhrase,
-    address: await (await Lucid.new(undefined, "Custom"))
+    address: await (await Lucid.new({ provider: undefined, network: "Custom" }))
       .selectWalletFromSeed(seedPhrase).wallet.address(),
     assets,
   };
@@ -30,7 +30,7 @@ const ACCOUNT_1 = await generateAccount({ lovelace: 100000000n });
 
 const emulator = new Emulator([ACCOUNT_0, ACCOUNT_1]);
 
-const lucid = await Lucid.new(emulator);
+const lucid = await Lucid.new({ provider: emulator });
 
 lucid.selectWalletFromSeed(ACCOUNT_0.seedPhrase);
 

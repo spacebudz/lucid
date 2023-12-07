@@ -5,32 +5,12 @@ import { applyDoubleCborEncoding } from "../utils/utils.js";
 import { defaultConfig } from "./tx_config.js";
 import { TxComplete } from "./tx_complete.js";
 export class Tx {
+    txBuilder;
+    /** Stores the tx instructions, which get executed after calling .complete() */
+    tasks;
+    lucid;
+    configuration = defaultConfig;
     constructor(lucid) {
-        Object.defineProperty(this, "txBuilder", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        /** Stores the tx instructions, which get executed after calling .complete() */
-        Object.defineProperty(this, "tasks", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "lucid", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "configuration", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: defaultConfig
-        });
         this.lucid = lucid;
         this.txBuilder = C.TransactionBuilder.new(this.lucid.txBuilderConfig);
         this.tasks = [];

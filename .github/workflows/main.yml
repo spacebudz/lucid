@@ -7,11 +7,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest]
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Use Deno
         uses: denoland/setup-deno@v1
@@ -20,7 +20,7 @@ jobs:
         run: deno task build
 
       - name: Lint
-        run: deno lint
+        run: deno check mod.ts --all --reload
 
       - name: Test
         run: deno task test

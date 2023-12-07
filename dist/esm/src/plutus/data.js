@@ -2,19 +2,9 @@ import { Type, } from "../../deps/deno.land/x/typebox@0.25.13/src/typebox.js";
 import { C } from "../core/mod.js";
 import { fromHex, fromText, toHex } from "../utils/utils.js";
 export class Constr {
+    index;
+    fields;
     constructor(index, fields) {
-        Object.defineProperty(this, "index", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "fields", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
         this.index = index;
         this.fields = fields;
     }

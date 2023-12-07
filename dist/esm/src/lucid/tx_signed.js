@@ -1,19 +1,9 @@
 import { C } from "../core/mod.js";
 import { toHex } from "../utils/mod.js";
 export class TxSigned {
+    txSigned;
+    lucid;
     constructor(lucid, tx) {
-        Object.defineProperty(this, "txSigned", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "lucid", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
         this.lucid = lucid;
         this.txSigned = tx;
     }
