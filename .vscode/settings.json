@@ -1,4 +1,13 @@
 {
   "deno.enable": true,
-  "deno.lint": true
+  "deno.lint": true,
+  "deno.disablePaths": [
+    "./dist",
+    "./node_modules",
+    "./docs",
+    "./logo",
+    "./.github/",
+    "./workers/",
+    "./.vscode"
+  ]
 }

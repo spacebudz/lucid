@@ -3,6 +3,23 @@
 // deno-fmt-ignore-file
 // source-hash: ab17726f2df5571be15d036e67423022ed8f63e4
 let wasm;
+const heap = new Array(128).fill(undefined);
+heap.push(undefined, null, true, false);
+function getObject(idx) {
+    return heap[idx];
+}
+let heap_next = heap.length;
+function dropObject(idx) {
+    if (idx < 132)
+        return;
+    heap[idx] = heap_next;
+    heap_next = idx;
+}
+function takeObject(idx) {
+    const ret = getObject(idx);
+    dropObject(idx);
+    return ret;
+}
 const cachedTextDecoder = new TextDecoder("utf-8", {
     ignoreBOM: true,
     fatal: true,
@@ -18,9 +35,6 @@ function getUint8Memory0() {
 function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
-const heap = new Array(128).fill(undefined);
-heap.push(undefined, null, true, false);
-let heap_next = heap.length;
 function addHeapObject(obj) {
     if (heap_next === heap.length)
         heap.push(heap.length + 1);
@@ -28,20 +42,6 @@ function addHeapObject(obj) {
     heap_next = heap[idx];
     heap[idx] = obj;
     return idx;
-}
-function getObject(idx) {
-    return heap[idx];
-}
-function dropObject(idx) {
-    if (idx < 132)
-        return;
-    heap[idx] = heap_next;
-    heap_next = idx;
-}
-function takeObject(idx) {
-    const ret = getObject(idx);
-    dropObject(idx);
-    return ret;
 }
 let WASM_VECTOR_LEN = 0;
 const cachedTextEncoder = new TextEncoder("utf-8");
@@ -186,8 +186,7 @@ function makeMutClosure(arg0, arg1, dtor, f) {
     return real;
 }
 function __wbg_adapter_30(arg0, arg1, arg2) {
-    wasm
-        ._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h9de9452916ac8cca(arg0, arg1, addHeapObject(arg2));
+    wasm.wasm_bindgen__convert__closures__invoke1_mut__h61c3494c59f05391(arg0, arg1, addHeapObject(arg2));
 }
 function _assertClass(instance, klass) {
     if (!(instance instanceof klass)) {
@@ -710,7 +709,7 @@ function handleError(f, args) {
     }
 }
 function __wbg_adapter_1680(arg0, arg1, arg2, arg3) {
-    wasm.wasm_bindgen__convert__closures__invoke2_mut__h36afefe016e25d40(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
+    wasm.wasm_bindgen__convert__closures__invoke2_mut__h88e883484ae7425c(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 /** */
 export const StakeCredKind = Object.freeze({
@@ -7534,7 +7533,7 @@ export class GovernanceActionId {
      * @returns {BigNum}
      */
     governance_action_index() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.governanceactionid_governance_action_index(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -7975,7 +7974,7 @@ export class HeaderBody {
      * @returns {BigNum}
      */
     slot() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.headerbody_slot(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -8216,7 +8215,7 @@ export class Int {
     as_i32_or_nothing() {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.int_as_i32(retptr, this.ptr);
+            wasm.int_as_i32_or_nothing(retptr, this.ptr);
             var r0 = getInt32Memory0()[retptr / 4 + 0];
             var r1 = getInt32Memory0()[retptr / 4 + 1];
             return r0 === 0 ? undefined : r1;
@@ -9057,14 +9056,14 @@ export class LinearFee {
      * @returns {BigNum}
      */
     constant() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.linearfee_constant(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
      * @returns {BigNum}
      */
     coefficient() {
-        const ret = wasm.exunits_steps(this.ptr);
+        const ret = wasm.linearfee_coefficient(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -11259,7 +11258,7 @@ export class NewConstitution {
      * @returns {DataHash}
      */
     hash() {
-        const ret = wasm.newconstitution_hash(this.ptr);
+        const ret = wasm.genesiskeydelegation_vrf_keyhash(this.ptr);
         return DataHash.__wrap(ret);
     }
     /**
@@ -11515,7 +11514,7 @@ export class OperationalCert {
      * @returns {number}
      */
     sequence_number() {
-        const ret = wasm.networkinfo_protocol_magic(this.ptr);
+        const ret = wasm.operationalcert_sequence_number(this.ptr);
         return ret >>> 0;
     }
     /**
@@ -12863,28 +12862,28 @@ export class PoolParams {
      * @returns {VRFKeyHash}
      */
     vrf_keyhash() {
-        const ret = wasm.poolparams_vrf_keyhash(this.ptr);
+        const ret = wasm.governanceactionid_transaction_id(this.ptr);
         return VRFKeyHash.__wrap(ret);
     }
     /**
      * @returns {BigNum}
      */
     pledge() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.governanceactionid_governance_action_index(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
      * @returns {BigNum}
      */
     cost() {
-        const ret = wasm.exunits_steps(this.ptr);
+        const ret = wasm.poolparams_cost(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
      * @returns {UnitInterval}
      */
     margin() {
-        const ret = wasm.drepvotingthresholds_committee_normal(this.ptr);
+        const ret = wasm.drepvotingthresholds_update_constitution(this.ptr);
         return UnitInterval.__wrap(ret);
     }
     /**
@@ -13227,7 +13226,7 @@ export class PoolRetirement {
      * @returns {number}
      */
     epoch() {
-        const ret = wasm.networkinfo_protocol_magic(this.ptr);
+        const ret = wasm.poolretirement_epoch(this.ptr);
         return ret >>> 0;
     }
     /**
@@ -13758,7 +13757,7 @@ export class ProposalProcedure {
      * @returns {BigNum}
      */
     deposit() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.proposalprocedure_deposit(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -14837,7 +14836,7 @@ export class ProtocolVersion {
      * @returns {number}
      */
     minor() {
-        const ret = wasm.operationalcert_kes_period(this.ptr);
+        const ret = wasm.protocolversion_minor(this.ptr);
         return ret >>> 0;
     }
     /**
@@ -15089,14 +15088,14 @@ export class Redeemer {
      * @returns {BigNum}
      */
     index() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.poolparams_cost(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
      * @returns {PlutusData}
      */
     data() {
-        const ret = wasm.redeemer_data(this.ptr);
+        const ret = wasm.data_get(this.ptr);
         return PlutusData.__wrap(ret);
     }
     /**
@@ -15634,14 +15633,14 @@ export class RegCommitteeHotKeyCert {
      * @returns {Ed25519KeyHash}
      */
     committee_cold_keyhash() {
-        const ret = wasm.genesiskeydelegation_genesishash(this.ptr);
+        const ret = wasm.regcommitteehotkeycert_committee_cold_keyhash(this.ptr);
         return Ed25519KeyHash.__wrap(ret);
     }
     /**
      * @returns {Ed25519KeyHash}
      */
     committee_hot_keyhash() {
-        const ret = wasm.genesiskeydelegation_genesis_delegate_hash(this.ptr);
+        const ret = wasm.regcommitteehotkeycert_committee_hot_keyhash(this.ptr);
         return Ed25519KeyHash.__wrap(ret);
     }
     /**
@@ -16171,7 +16170,7 @@ export class RequiredWitnessSet {
      */
     add_vkey_key(vkey) {
         _assertClass(vkey, Vkey);
-        wasm.requiredwitnessset_add_vkey(this.ptr, vkey.ptr);
+        wasm.requiredwitnessset_add_vkey_key(this.ptr, vkey.ptr);
     }
     /**
      * @param {Ed25519KeyHash} hash
@@ -17540,14 +17539,14 @@ export class ScriptNOfK {
      * @returns {number}
      */
     n() {
-        const ret = wasm.networkinfo_protocol_magic(this.ptr);
+        const ret = wasm.scriptnofk_n(this.ptr);
         return ret >>> 0;
     }
     /**
      * @returns {NativeScripts}
      */
     native_scripts() {
-        const ret = wasm.scriptnofk_native_scripts(this.ptr);
+        const ret = wasm.scriptall_native_scripts(this.ptr);
         return NativeScripts.__wrap(ret);
     }
     /**
@@ -17689,7 +17688,7 @@ export class ScriptPubkey {
      * @returns {Ed25519KeyHash}
      */
     addr_keyhash() {
-        const ret = wasm.genesiskeydelegation_genesishash(this.ptr);
+        const ret = wasm.regcommitteehotkeycert_committee_cold_keyhash(this.ptr);
         return Ed25519KeyHash.__wrap(ret);
     }
     /**
@@ -18269,7 +18268,7 @@ export class SingleHostName {
      * @returns {DNSRecordAorAAAA}
      */
     dns_name() {
-        const ret = wasm.anchor_anchor_url(this.ptr);
+        const ret = wasm.singlehostname_dns_name(this.ptr);
         return DNSRecordAorAAAA.__wrap(ret);
     }
     /**
@@ -18729,7 +18728,7 @@ export class StakeDelegation {
      * @returns {StakeCredential}
      */
     stake_credential() {
-        const ret = wasm.stakedelegation_stake_credential(this.ptr);
+        const ret = wasm.baseaddress_payment_cred(this.ptr);
         return StakeCredential.__wrap(ret);
     }
     /**
@@ -18879,7 +18878,7 @@ export class StakeDeregistration {
      * @returns {StakeCredential}
      */
     stake_credential() {
-        const ret = wasm.stakedelegation_stake_credential(this.ptr);
+        const ret = wasm.baseaddress_payment_cred(this.ptr);
         return StakeCredential.__wrap(ret);
     }
     /**
@@ -19020,7 +19019,7 @@ export class StakeRegDelegCert {
      * @returns {StakeCredential}
      */
     stake_credential() {
-        const ret = wasm.regcert_stake_credential(this.ptr);
+        const ret = wasm.stakeregdelegcert_stake_credential(this.ptr);
         return StakeCredential.__wrap(ret);
     }
     /**
@@ -19179,7 +19178,7 @@ export class StakeRegistration {
      * @returns {StakeCredential}
      */
     stake_credential() {
-        const ret = wasm.stakedelegation_stake_credential(this.ptr);
+        const ret = wasm.baseaddress_payment_cred(this.ptr);
         return StakeCredential.__wrap(ret);
     }
     /**
@@ -19320,14 +19319,14 @@ export class StakeVoteDelegCert {
      * @returns {StakeCredential}
      */
     stake_credential() {
-        const ret = wasm.stakedelegation_stake_credential(this.ptr);
+        const ret = wasm.baseaddress_payment_cred(this.ptr);
         return StakeCredential.__wrap(ret);
     }
     /**
      * @returns {Ed25519KeyHash}
      */
     pool_keyhash() {
-        const ret = wasm.stakedelegation_pool_keyhash(this.ptr);
+        const ret = wasm.stakevotedelegcert_pool_keyhash(this.ptr);
         return Ed25519KeyHash.__wrap(ret);
     }
     /**
@@ -19479,7 +19478,7 @@ export class StakeVoteRegDelegCert {
      * @returns {StakeCredential}
      */
     stake_credential() {
-        const ret = wasm.regcert_stake_credential(this.ptr);
+        const ret = wasm.stakevoteregdelegcert_stake_credential(this.ptr);
         return StakeCredential.__wrap(ret);
     }
     /**
@@ -19706,7 +19705,7 @@ export class TimelockExpiry {
      * @returns {BigNum}
      */
     slot() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.linearfee_constant(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -19847,7 +19846,7 @@ export class TimelockStart {
      * @returns {BigNum}
      */
     slot() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.linearfee_constant(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -20332,7 +20331,7 @@ export class TransactionBody {
      * @returns {BigNum}
      */
     fee() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.transactionbody_fee(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -20417,13 +20416,13 @@ export class TransactionBody {
      */
     set_validity_start_interval(validity_start_interval) {
         _assertClass(validity_start_interval, BigNum);
-        wasm.transactionbody_set_validity_start_interval(this.ptr, validity_start_interval.ptr);
+        wasm.protocolparamupdate_set_minfee_b(this.ptr, validity_start_interval.ptr);
     }
     /**
      * @returns {BigNum | undefined}
      */
     validity_start_interval() {
-        const ret = wasm.transactionbody_validity_start_interval(this.ptr);
+        const ret = wasm.protocolparamupdate_minfee_b(this.ptr);
         return ret === 0 ? undefined : BigNum.__wrap(ret);
     }
     /**
@@ -20515,13 +20514,13 @@ export class TransactionBody {
      */
     set_total_collateral(total_collateral) {
         _assertClass(total_collateral, BigNum);
-        wasm.transactionbody_set_total_collateral(this.ptr, total_collateral.ptr);
+        wasm.protocolparamupdate_set_key_deposit(this.ptr, total_collateral.ptr);
     }
     /**
      * @returns {BigNum | undefined}
      */
     total_collateral() {
-        const ret = wasm.transactionbody_total_collateral(this.ptr);
+        const ret = wasm.protocolparamupdate_key_deposit(this.ptr);
         return ret === 0 ? undefined : BigNum.__wrap(ret);
     }
     /**
@@ -20779,7 +20778,7 @@ export class TransactionBuilder {
      */
     set_ttl(ttl) {
         _assertClass(ttl, BigNum);
-        wasm.transactionbuilder_set_ttl(this.ptr, ttl.ptr);
+        wasm.protocolparamupdate_set_minfee_b(this.ptr, ttl.ptr);
     }
     /**
      * @param {BigNum} validity_start_interval
@@ -21136,7 +21135,7 @@ export class TransactionBuilder {
      * @returns {BigNum | undefined}
      */
     get_fee_if_set() {
-        const ret = wasm.transactionbuilder_get_fee_if_set(this.ptr);
+        const ret = wasm.protocolparamupdate_minfee_a(this.ptr);
         return ret === 0 ? undefined : BigNum.__wrap(ret);
     }
     /**
@@ -21862,7 +21861,7 @@ export class TransactionInput {
      * @returns {BigNum}
      */
     index() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.governanceactionid_governance_action_index(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -24286,7 +24285,7 @@ export class UnregCommitteeHotKeyCert {
      * @returns {Ed25519KeyHash}
      */
     committee_cold_keyhash() {
-        const ret = wasm.genesiskeydelegation_genesishash(this.ptr);
+        const ret = wasm.regcommitteehotkeycert_committee_cold_keyhash(this.ptr);
         return Ed25519KeyHash.__wrap(ret);
     }
     /**
@@ -25269,7 +25268,7 @@ export class Value {
      * @returns {BigNum}
      */
     coin() {
-        const ret = wasm.constrplutusdata_alternative(this.ptr);
+        const ret = wasm.value_coin(this.ptr);
         return BigNum.__wrap(ret);
     }
     /**
@@ -25618,7 +25617,7 @@ export class Vkeywitness {
      * @returns {Vkey}
      */
     vkey() {
-        const ret = wasm.vkey_new(this.ptr);
+        const ret = wasm.vkeywitness_vkey(this.ptr);
         return Vkey.__wrap(ret);
     }
     /**
@@ -25959,14 +25958,14 @@ export class VoteDelegCert {
      * @returns {StakeCredential}
      */
     stake_credential() {
-        const ret = wasm.stakedelegation_stake_credential(this.ptr);
+        const ret = wasm.baseaddress_payment_cred(this.ptr);
         return StakeCredential.__wrap(ret);
     }
     /**
      * @returns {Drep}
      */
     drep() {
-        const ret = wasm.votedelegcert_drep(this.ptr);
+        const ret = wasm.stakevotedelegcert_drep(this.ptr);
         return Drep.__wrap(ret);
     }
     /**
@@ -26480,7 +26479,7 @@ export class VotingProcedure {
      * @returns {GovernanceActionId}
      */
     governance_action_id() {
-        const ret = wasm.transactionunspentoutput_input(this.ptr);
+        const ret = wasm.votingprocedure_governance_action_id(this.ptr);
         return GovernanceActionId.__wrap(ret);
     }
     /**
@@ -26776,10 +26775,6 @@ export class Withdrawals {
 }
 const imports = {
     __wbindgen_placeholder__: {
-        __wbindgen_string_new: function (arg0, arg1) {
-            const ret = getStringFromWasm0(arg0, arg1);
-            return addHeapObject(ret);
-        },
         __wbindgen_object_drop_ref: function (arg0) {
             takeObject(arg0);
         },
@@ -26795,17 +26790,21 @@ const imports = {
             getInt32Memory0()[arg0 / 4 + 1] = len0;
             getInt32Memory0()[arg0 / 4 + 0] = ptr0;
         },
-        __wbg_transaction_new: function (arg0) {
-            const ret = Transaction.__wrap(arg0);
+        __wbindgen_string_new: function (arg0, arg1) {
+            const ret = getStringFromWasm0(arg0, arg1);
             return addHeapObject(ret);
         },
         __wbg_fetch_16f5dddfc5a913a4: function (arg0, arg1) {
             const ret = getObject(arg0).fetch(getObject(arg1));
             return addHeapObject(ret);
         },
+        __wbg_transaction_new: function (arg0) {
+            const ret = Transaction.__wrap(arg0);
+            return addHeapObject(ret);
+        },
         __wbindgen_string_get: function (arg0, arg1) {
             const obj = getObject(arg1);
-            const ret = typeof (obj) === "string" ? obj : undefined;
+            const ret = typeof obj === "string" ? obj : undefined;
             var ptr0 = isLikeNone(ret)
                 ? 0
                 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
@@ -26858,15 +26857,9 @@ const imports = {
             const ret = false;
             return ret;
         },
-        __wbg_randomFillSync_2f6909f8132a175d: function () {
-            return handleError(function (arg0, arg1, arg2) {
-                getObject(arg0).randomFillSync(getArrayU8FromWasm0(arg1, arg2));
-            }, arguments);
-        },
-        __wbg_getRandomValues_11a236fbf9914290: function () {
-            return handleError(function (arg0, arg1) {
-                getObject(arg0).getRandomValues(getObject(arg1));
-            }, arguments);
+        __wbg_static_accessor_NODE_MODULE_06b864c18e8ae506: function () {
+            const ret = module;
+            return addHeapObject(ret);
         },
         __wbg_process_5615a087a47ba544: function (arg0) {
             const ret = getObject(arg0).process;
@@ -26874,7 +26867,7 @@ const imports = {
         },
         __wbindgen_is_object: function (arg0) {
             const val = getObject(arg0);
-            const ret = typeof (val) === "object" && val !== null;
+            const ret = typeof val === "object" && val !== null;
             return ret;
         },
         __wbg_versions_8404a8b21b9337ae: function (arg0) {
@@ -26903,9 +26896,15 @@ const imports = {
             const ret = getObject(arg0).msCrypto;
             return addHeapObject(ret);
         },
-        __wbg_static_accessor_NODE_MODULE_06b864c18e8ae506: function () {
-            const ret = module;
-            return addHeapObject(ret);
+        __wbg_randomFillSync_2f6909f8132a175d: function () {
+            return handleError(function (arg0, arg1, arg2) {
+                getObject(arg0).randomFillSync(getArrayU8FromWasm0(arg1, arg2));
+            }, arguments);
+        },
+        __wbg_getRandomValues_11a236fbf9914290: function () {
+            return handleError(function (arg0, arg1) {
+                getObject(arg0).getRandomValues(getObject(arg1));
+            }, arguments);
         },
         __wbg_self_e7c1f827057f6584: function () {
             return handleError(function () {
@@ -27032,16 +27031,16 @@ const imports = {
             const ret = getObject(arg0).self;
             return addHeapObject(ret);
         },
+        __wbg_require_0993fe224bf8e202: function (arg0, arg1) {
+            const ret = require(getStringFromWasm0(arg0, arg1));
+            return addHeapObject(ret);
+        },
         __wbg_crypto_e95a6e54c5c2e37f: function (arg0) {
             const ret = getObject(arg0).crypto;
             return addHeapObject(ret);
         },
         __wbg_getRandomValues_dc67302a7bd1aec5: function (arg0) {
             const ret = getObject(arg0).getRandomValues;
-            return addHeapObject(ret);
-        },
-        __wbg_require_0993fe224bf8e202: function (arg0, arg1) {
-            const ret = require(getStringFromWasm0(arg0, arg1));
             return addHeapObject(ret);
         },
         __wbg_randomFillSync_dd2297de5917c74e: function (arg0, arg1, arg2) {
@@ -27064,8 +27063,8 @@ const imports = {
             const ret = wasm.memory;
             return addHeapObject(ret);
         },
-        __wbindgen_closure_wrapper7018: function (arg0, arg1, arg2) {
-            const ret = makeMutClosure(arg0, arg1, 216, __wbg_adapter_30);
+        __wbindgen_closure_wrapper7016: function (arg0, arg1, arg2) {
+            const ret = makeMutClosure(arg0, arg1, 186, __wbg_adapter_30);
             return addHeapObject(ret);
         },
     },
