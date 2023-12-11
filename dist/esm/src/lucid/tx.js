@@ -1,3 +1,4 @@
+import * as dntShim from "../../_dnt.shims.js";
 import { C } from "../core/mod.js";
 import { Data } from "../mod.js";
 import { assetsToValue, fromHex, networkToId, toHex, toScriptRef, utxoToCore, valueToAssets, chunk, } from "../utils/mod.js";
@@ -475,7 +476,7 @@ async function createPoolRegistration(poolParams, lucid) {
             throw new Error("Only key hashes allowed for pool owners.");
     });
     const metadata = poolParams.metadataUrl
-        ? await fetch(poolParams.metadataUrl).then((res) => res.arrayBuffer())
+        ? await dntShim.fetch(poolParams.metadataUrl).then((res) => res.arrayBuffer())
         : null;
     const metadataHash = metadata
         ? C.PoolMetadataHash.from_bytes(C.hash_blake2b256(new Uint8Array(metadata)))

@@ -1,22 +1,3 @@
-
-const C = await (async () => {
-  try {
-    return await import(
-      /* webpackIgnore: true */ "./libs/cardano_multiplatform_lib/nodejs/cardano_multiplatform_lib.generated.js"
-    );
-  } catch (_e) {
-    // This only ever happens during SSR rendering
-    return null;
-  }
-})();
-const M = await (async () => {
-  try {
-    return await import(
-      /* webpackIgnore: true */ "./libs/cardano_message_signing/nodejs/cardano_message_signing.generated.js"
-    );
-  } catch (_e) {
-    // This only ever happens during SSR rendering
-    return null;
-  }
-})();
+import * as C from "./libs/cardano_multiplatform_lib/pkg/cardano_multiplatform_lib.js";
+import * as M from "./libs/cardano_message_signing/pkg/cardano_message_signing.js";
 export { C, M };

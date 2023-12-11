@@ -7,13 +7,19 @@ declare namespace _default {
     let module: string;
     let main: string;
     let types: string;
+    namespace scripts {
+        let pack: string;
+    }
     namespace engines {
         let node: string;
     }
     let dependencies: {
-        "node-fetch": string;
-        "@peculiar/webcrypto": string;
+        undici: string;
+        "@deno/shim-crypto": string;
         ws: string;
+    };
+    let devDependencies: {
+        "wasm-pack": string;
     };
     let type: string;
     let exports: {

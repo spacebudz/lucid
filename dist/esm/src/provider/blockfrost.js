@@ -1,3 +1,4 @@
+import * as dntShim from "../../_dnt.shims.js";
 import { C } from "../core/mod.js";
 import { applyDoubleCborEncoding, fromHex, toHex } from "../utils/mod.js";
 import packageJson from "../../package.js";
@@ -9,7 +10,7 @@ export class Blockfrost {
         this.projectId = projectId || "";
     }
     async getProtocolParameters() {
-        const result = await fetch(`${this.url}/epochs/latest/parameters`, {
+        const result = await dntShim.fetch(`${this.url}/epochs/latest/parameters`, {
             headers: { project_id: this.projectId, lucid },
         }).then((res) => res.json());
         return {
@@ -41,7 +42,7 @@ export class Blockfrost {
         let result = [];
         let page = 1;
         while (true) {
-            const pageResult = await fetch(`${this.url}/addresses/${queryPredicate}/utxos?page=${page}`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
+            const pageResult = await dntShim.fetch(`${this.url}/addresses/${queryPredicate}/utxos?page=${page}`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
             if (pageResult.error) {
                 if (pageResult.status_code === 404) {
                     return [];
@@ -69,7 +70,7 @@ export class Blockfrost {
         let result = [];
         let page = 1;
         while (true) {
-            const pageResult = await fetch(`${this.url}/addresses/${queryPredicate}/utxos/${unit}?page=${page}`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
+            const pageResult = await dntShim.fetch(`${this.url}/addresses/${queryPredicate}/utxos/${unit}?page=${page}`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
             if (pageResult.error) {
                 if (pageResult.status_code === 404) {
                     return [];
@@ -86,7 +87,7 @@ export class Blockfrost {
         return this.blockfrostUtxosToUtxos(result);
     }
     async getUtxoByUnit(unit) {
-        const addresses = await fetch(`${this.url}/assets/${unit}/addresses?count=2`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
+        const addresses = await dntShim.fetch(`${this.url}/assets/${unit}/addresses?count=2`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
         if (!addresses || addresses.error) {
             throw new Error("Unit not found.");
         }
@@ -104,7 +105,7 @@ export class Blockfrost {
         // TODO: Make sure old already spent UTxOs are not retrievable.
         const queryHashes = [...new Set(outRefs.map((outRef) => outRef.txHash))];
         const utxos = await Promise.all(queryHashes.map(async (txHash) => {
-            const result = await fetch(`${this.url}/txs/${txHash}/utxos`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
+            const result = await dntShim.fetch(`${this.url}/txs/${txHash}/utxos`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
             if (!result || result.error) {
                 return [];
             }
@@ -119,7 +120,7 @@ export class Blockfrost {
         return utxos.reduce((acc, utxos) => acc.concat(utxos), []).filter((utxo) => outRefs.some((outRef) => utxo.txHash === outRef.txHash && utxo.outputIndex === outRef.outputIndex));
     }
     async getDelegation(rewardAddress) {
-        const result = await fetch(`${this.url}/accounts/${rewardAddress}`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
+        const result = await dntShim.fetch(`${this.url}/accounts/${rewardAddress}`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
         if (!result || result.error) {
             return { poolId: null, rewards: 0n };
         }
@@ -129,7 +130,7 @@ export class Blockfrost {
         };
     }
     async getDatum(datumHash) {
-        const datum = await fetch(`${this.url}/scripts/datum/${datumHash}/cbor`, {
+        const datum = await dntShim.fetch(`${this.url}/scripts/datum/${datumHash}/cbor`, {
             headers: { project_id: this.projectId, lucid },
         })
             .then((res) => res.json())
@@ -142,7 +143,7 @@ export class Blockfrost {
     awaitTx(txHash, checkInterval = 3000) {
         return new Promise((res) => {
             const confirmation = setInterval(async () => {
-                const isConfirmed = await fetch(`${this.url}/txs/${txHash}`, {
+                const isConfirmed = await dntShim.fetch(`${this.url}/txs/${txHash}`, {
                     headers: { project_id: this.projectId, lucid },
                 }).then((res) => res.json());
                 if (isConfirmed && !isConfirmed.error) {
@@ -154,7 +155,7 @@ export class Blockfrost {
         });
     }
     async submitTx(tx) {
-        const result = await fetch(`${this.url}/tx/submit`, {
+        const result = await dntShim.fetch(`${this.url}/tx/submit`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/cbor",
@@ -181,14 +182,14 @@ export class Blockfrost {
             datum: r.inline_datum || undefined,
             scriptRef: r.reference_script_hash
                 ? (await (async () => {
-                    const { type, } = await fetch(`${this.url}/scripts/${r.reference_script_hash}`, {
+                    const { type, } = await dntShim.fetch(`${this.url}/scripts/${r.reference_script_hash}`, {
                         headers: { project_id: this.projectId, lucid },
                     }).then((res) => res.json());
                     // TODO: support native scripts
                     if (type === "Native" || type === "native") {
                         throw new Error("Native script ref not implemented!");
                     }
-                    const { cbor: script } = await fetch(`${this.url}/scripts/${r.reference_script_hash}/cbor`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
+                    const { cbor: script } = await dntShim.fetch(`${this.url}/scripts/${r.reference_script_hash}/cbor`, { headers: { project_id: this.projectId, lucid } }).then((res) => res.json());
                     return {
                         type: type === "plutusV1" ? "PlutusV1" : "PlutusV2",
                         script: applyDoubleCborEncoding(script),
