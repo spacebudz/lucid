@@ -22,7 +22,7 @@ await dnt.build({
   skipSourceOutput: true,
   shims: {
     webSocket: true,
-    undici: true,
+    undici: false,
     crypto: true,
   },
   package: {

@@ -1,17 +1,9 @@
 import { crypto } from "@deno/shim-crypto";
 export { crypto } from "@deno/shim-crypto";
-import { fetch, File, FormData, Headers, Request, Response } from "undici";
-export { fetch, File, FormData, Headers, Request, Response } from "undici";
 import { default as WebSocket } from "ws";
 export { default as WebSocket } from "ws";
 const dntGlobals = {
     crypto,
-    fetch,
-    File,
-    FormData,
-    Headers,
-    Request,
-    Response,
     WebSocket,
 };
 export const dntGlobalThis = createMergeProxy(globalThis, dntGlobals);

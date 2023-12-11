@@ -1,4 +1,4 @@
-import * as dntShim from "../../../../../_dnt.shims.js";
+"use strict";
 let imports = {};
 imports['__wbindgen_placeholder__'] = module.exports;
 let wasm;
@@ -26466,14 +26466,14 @@ module.exports.__wbg_headers_ab5251d2727ac41e = function (arg0) {
 };
 module.exports.__wbg_newwithstrandinit_c45f0dc6da26fd03 = function () {
     return handleError(function (arg0, arg1, arg2) {
-        const ret = new dntShim.Request(getStringFromWasm0(arg0, arg1), getObject(arg2));
+        const ret = new Request(getStringFromWasm0(arg0, arg1), getObject(arg2));
         return addHeapObject(ret);
     }, arguments);
 };
 module.exports.__wbg_instanceof_Response_fb3a4df648c1859b = function (arg0) {
     let result;
     try {
-        result = getObject(arg0) instanceof dntShim.Response;
+        result = getObject(arg0) instanceof Response;
     }
     catch {
         result = false;
