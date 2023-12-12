@@ -2,15 +2,46 @@
 /* eslint-disable */
 /**
 */
-export enum AlgorithmId {
+export enum SignedMessageKind {
+  COSESIGN = 0,
+  COSESIGN1 = 1,
+}
 /**
-*r" EdDSA (Pure EdDSA, not HashedEdDSA) - the algorithm used for Cardano addresses
 */
-  EdDSA = 0,
+export enum ECKey {
+  CRV = 0,
+  X = 1,
+  Y = 2,
+  D = 3,
+}
 /**
-*r" ChaCha20/Poly1305 w/ 256-bit key, 128-bit tag
 */
-  ChaCha20Poly1305 = 1,
+export enum CBORSpecialType {
+  Bool = 0,
+  Float = 1,
+  Unassigned = 2,
+  Break = 3,
+  Undefined = 4,
+  Null = 5,
+}
+/**
+*/
+export enum KeyOperation {
+  Sign = 0,
+  Verify = 1,
+  Encrypt = 2,
+  Decrypt = 3,
+  WrapKey = 4,
+  UnwrapKey = 5,
+  DeriveKey = 6,
+  DeriveBits = 7,
+}
+/**
+*/
+export enum SigContext {
+  Signature = 0,
+  Signature1 = 1,
+  CounterSignature = 2,
 }
 /**
 */
@@ -27,11 +58,9 @@ export enum KeyType {
 }
 /**
 */
-export enum ECKey {
-  CRV = 0,
-  X = 1,
-  Y = 2,
-  D = 3,
+export enum LabelKind {
+  Int = 0,
+  Text = 1,
 }
 /**
 */
@@ -46,28 +75,6 @@ export enum CurveType {
 }
 /**
 */
-export enum KeyOperation {
-  Sign = 0,
-  Verify = 1,
-  Encrypt = 2,
-  Decrypt = 3,
-  WrapKey = 4,
-  UnwrapKey = 5,
-  DeriveKey = 6,
-  DeriveBits = 7,
-}
-/**
-*/
-export enum CBORSpecialType {
-  Bool = 0,
-  Float = 1,
-  Unassigned = 2,
-  Break = 3,
-  Undefined = 4,
-  Null = 5,
-}
-/**
-*/
 export enum CBORValueKind {
   Int = 0,
   Bytes = 1,
@@ -79,22 +86,15 @@ export enum CBORValueKind {
 }
 /**
 */
-export enum LabelKind {
-  Int = 0,
-  Text = 1,
-}
+export enum AlgorithmId {
 /**
+*r" EdDSA (Pure EdDSA, not HashedEdDSA) - the algorithm used for Cardano addresses
 */
-export enum SignedMessageKind {
-  COSESIGN = 0,
-  COSESIGN1 = 1,
-}
+  EdDSA = 0,
 /**
+*r" ChaCha20/Poly1305 w/ 256-bit key, 128-bit tag
 */
-export enum SigContext {
-  Signature = 0,
-  Signature1 = 1,
-  CounterSignature = 2,
+  ChaCha20Poly1305 = 1,
 }
 /**
 */
@@ -254,9 +254,9 @@ export class CBORSpecial {
 */
   static new_undefined(): CBORSpecial;
 /**
-* @returns {number}
+* @returns {CBORSpecialType}
 */
-  kind(): number;
+  kind(): CBORSpecialType;
 /**
 * @returns {boolean | undefined}
 */
@@ -324,9 +324,9 @@ export class CBORValue {
 */
   static from_label(label: Label): CBORValue;
 /**
-* @returns {number}
+* @returns {CBORValueKind}
 */
-  kind(): number;
+  kind(): CBORValueKind;
 /**
 * @returns {Int | undefined}
 */
@@ -412,7 +412,7 @@ export class COSEEncrypt0 {
   ciphertext(): Uint8Array | undefined;
 /**
 * @param {Headers} headers
-* @param {Uint8Array | undefined} ciphertext
+* @param {Uint8Array | undefined} [ciphertext]
 * @returns {COSEEncrypt0}
 */
   static new(headers: Headers, ciphertext?: Uint8Array): COSEEncrypt0;
@@ -509,7 +509,7 @@ export class COSERecipient {
   ciphertext(): Uint8Array | undefined;
 /**
 * @param {Headers} headers
-* @param {Uint8Array | undefined} ciphertext
+* @param {Uint8Array | undefined} [ciphertext]
 * @returns {COSERecipient}
 */
   static new(headers: Headers, ciphertext?: Uint8Array): COSERecipient;
@@ -607,8 +607,8 @@ export class COSESign1 {
 * For verifying, we will want to reverse-construct this SigStructure to check the signature against
 * # Arguments
 * * `external_aad` - External application data - see RFC 8152 section 4.3. Set to None if not using this.
-* @param {Uint8Array | undefined} external_aad
-* @param {Uint8Array | undefined} external_payload
+* @param {Uint8Array | undefined} [external_aad]
+* @param {Uint8Array | undefined} [external_payload]
 * @returns {SigStructure}
 */
   signed_data(external_aad?: Uint8Array, external_payload?: Uint8Array): SigStructure;
@@ -963,9 +963,9 @@ export class Label {
 */
   static new_text(text: string): Label;
 /**
-* @returns {number}
+* @returns {LabelKind}
 */
-  kind(): number;
+  kind(): LabelKind;
 /**
 * @returns {Int | undefined}
 */
@@ -975,30 +975,30 @@ export class Label {
 */
   as_text(): string | undefined;
 /**
-* @param {number} id
+* @param {AlgorithmId} id
 * @returns {Label}
 */
-  static from_algorithm_id(id: number): Label;
+  static from_algorithm_id(id: AlgorithmId): Label;
 /**
-* @param {number} key_type
+* @param {KeyType} key_type
 * @returns {Label}
 */
-  static from_key_type(key_type: number): Label;
+  static from_key_type(key_type: KeyType): Label;
 /**
-* @param {number} ec_key
+* @param {ECKey} ec_key
 * @returns {Label}
 */
-  static from_ec_key(ec_key: number): Label;
+  static from_ec_key(ec_key: ECKey): Label;
 /**
-* @param {number} curve_type
+* @param {CurveType} curve_type
 * @returns {Label}
 */
-  static from_curve_type(curve_type: number): Label;
+  static from_curve_type(curve_type: CurveType): Label;
 /**
-* @param {number} key_op
+* @param {KeyOperation} key_op
 * @returns {Label}
 */
-  static from_key_operation(key_op: number): Label;
+  static from_key_operation(key_op: KeyOperation): Label;
 }
 /**
 */
@@ -1110,9 +1110,9 @@ export class SigStructure {
 */
   static from_bytes(bytes: Uint8Array): SigStructure;
 /**
-* @returns {number}
+* @returns {SigContext}
 */
-  context(): number;
+  context(): SigContext;
 /**
 * @returns {ProtectedHeaderMap}
 */
@@ -1134,13 +1134,13 @@ export class SigStructure {
 */
   set_sign_protected(sign_protected: ProtectedHeaderMap): void;
 /**
-* @param {number} context
+* @param {SigContext} context
 * @param {ProtectedHeaderMap} body_protected
 * @param {Uint8Array} external_aad
 * @param {Uint8Array} payload
 * @returns {SigStructure}
 */
-  static new(context: number, body_protected: ProtectedHeaderMap, external_aad: Uint8Array, payload: Uint8Array): SigStructure;
+  static new(context: SigContext, body_protected: ProtectedHeaderMap, external_aad: Uint8Array, payload: Uint8Array): SigStructure;
 }
 /**
 */
@@ -1175,9 +1175,9 @@ export class SignedMessage {
 */
   to_user_facing_encoding(): string;
 /**
-* @returns {number}
+* @returns {SignedMessageKind}
 */
-  kind(): number;
+  kind(): SignedMessageKind;
 /**
 * @returns {COSESign | undefined}
 */
