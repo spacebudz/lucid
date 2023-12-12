@@ -14,7 +14,6 @@ declare namespace _default {
         let node: string;
     }
     let dependencies: {
-        undici: string;
         "@deno/shim-crypto": string;
         ws: string;
     };

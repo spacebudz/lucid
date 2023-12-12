@@ -14,7 +14,6 @@ export default {
         "node": ">=20"
     },
     "dependencies": {
-        "undici": "^6.0.1",
         "@deno/shim-crypto": "^0.3.1",
         "ws": "^8.14.2"
     },

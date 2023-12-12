@@ -23,8 +23,7 @@
   "packageManager": "npm@10.2.4+sha256.36b548120f75f26408d04ff163cd4a699916f1c4b72ebeeab0bbaf054009eb5b",
   "dependencies": {
     "@deno/shim-crypto": "^0.3.1",
-    "ws": "^8.14.2",
-    "undici": "^6.0.1"
+    "ws": "^8.14.2"
   },
   "devDependencies": {
     "wasm-pack": "^0.12.1"

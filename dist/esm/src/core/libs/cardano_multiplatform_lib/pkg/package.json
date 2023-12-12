@@ -13,7 +13,9 @@
   "files": [
     "cardano_multiplatform_lib_bg.wasm",
     "cardano_multiplatform_lib.js",
-    "cardano_multiplatform_lib.d.ts"
+    "cardano_multiplatform_lib.d.ts",
+    "LICENSE-EMURGO",
+    "LICENSE-IOHK"
   ],
   "main": "cardano_multiplatform_lib.js",
   "types": "cardano_multiplatform_lib.d.ts",
