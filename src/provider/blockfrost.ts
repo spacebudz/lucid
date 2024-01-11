@@ -17,11 +17,12 @@ import {
 } from "../types/mod.ts";
 import packageJson from "../../package.json" assert { type: "json" };
 
-export class Blockfrost implements Provider {
+export class Blockfrost extends Provider {
   url: string;
   projectId: string;
 
   constructor(url: string, projectId?: string) {
+    super();
     this.url = url;
     this.projectId = projectId || "";
   }

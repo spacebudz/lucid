@@ -31,7 +31,7 @@ import {
 /** Concatentation of txHash + outputIndex */
 type FlatOutRef = string;
 
-export class Emulator implements Provider {
+export class Emulator extends Provider {
   ledger: Record<FlatOutRef, { utxo: UTxO; spent: boolean }>;
   mempool: Record<FlatOutRef, { utxo: UTxO; spent: boolean }> = {};
   /**
@@ -56,6 +56,7 @@ export class Emulator implements Provider {
     }[],
     protocolParameters: ProtocolParameters = PROTOCOL_PARAMETERS_DEFAULT,
   ) {
+    super();
     const GENESIS_HASH = "00".repeat(32);
     this.blockHeight = 0;
     this.slot = 0;

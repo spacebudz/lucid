@@ -27,12 +27,13 @@ export interface MaestroConfig {
   turboSubmit?: boolean; // Read about paid turbo transaction submission feature at https://docs-v1.gomaestro.org/docs/Dapp%20Platform/Turbo%20Transaction.
 }
 
-export class Maestro implements Provider {
+export class Maestro extends Provider {
   url: string;
   apiKey: string;
   turboSubmit: boolean;
 
   constructor({ network, apiKey, turboSubmit = false }: MaestroConfig) {
+    super();
     this.url = `https://${network}.gomaestro-api.org/v1`;
     this.apiKey = apiKey;
     this.turboSubmit = turboSubmit;
@@ -167,25 +168,14 @@ export class Maestro implements Provider {
   }
 
   async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
-    const qry = `${this.url}/transactions/outputs`;
-    const body = JSON.stringify(
-      outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`),
+    return await this.parametrizedUtxosByOutRef(outRefs, new URLSearchParams());
+  }
+
+  async getUtxosByOutRefWithDatum(outRefs: OutRef[]): Promise<UTxO[]> {
+    return await this.parametrizedUtxosByOutRef(
+      outRefs,
+      new URLSearchParams({ resolve_datums: "true" }),
     );
-    const utxos = await this.getAllPagesData<MaestroUtxo>(
-      async (qry: string) =>
-        await fetch(qry, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...this.commonHeaders(),
-          },
-          body: body,
-        }),
-      qry,
-      new URLSearchParams({}),
-      "Location: getUtxosByOutRef. Error: Could not fetch UTxOs by references from Maestro",
-    );
-    return utxos.map(this.maestroUtxoToUtxo);
   }
 
   async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
@@ -265,6 +255,28 @@ export class Maestro implements Provider {
         );}
     }
     return result;
+  }
+
+  private async parametrizedUtxosByOutRef(outRefs: OutRef[], param: URLSearchParams): Promise<UTxO[]> {
+    const qry = `${this.url}/transactions/outputs`;
+    const body = JSON.stringify(
+      outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`),
+    );
+    const utxos = await this.getAllPagesData<MaestroUtxo>(
+      async (qry: string) =>
+        await fetch(qry, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...this.commonHeaders(),
+          },
+          body: body,
+        }),
+      qry,
+      new URLSearchParams(param),
+      "Location: getUtxosByOutRef. Error: Could not fetch UTxOs by references from Maestro",
+    );
+    return utxos.map(this.maestroUtxoToUtxo);
   }
 
   private commonHeaders() {

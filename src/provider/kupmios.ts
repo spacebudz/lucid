@@ -17,7 +17,7 @@ import {
 import { C } from "../core/mod.ts";
 import { fromHex, fromUnit, toHex } from "../utils/mod.ts";
 
-export class Kupmios implements Provider {
+export class Kupmios extends Provider {
   kupoUrl: string;
   ogmiosUrl: string;
 
@@ -26,6 +26,7 @@ export class Kupmios implements Provider {
    * @param ogmiosUrl: ws(s)://localhost:1337
    */
   constructor(kupoUrl: string, ogmiosUrl: string) {
+    super();
     this.kupoUrl = kupoUrl;
     this.ogmiosUrl = ogmiosUrl;
   }
