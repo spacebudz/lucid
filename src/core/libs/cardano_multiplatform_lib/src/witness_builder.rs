@@ -326,7 +326,7 @@ impl TransactionWitnessSetBuilder {
         };
     }
 
-    pub fn build(&self) -> Result<TransactionWitnessSet, JsError> {
+    pub fn build(&self, encoding: Option<bool>) -> Result<TransactionWitnessSet, JsError> {
         let mut result = TransactionWitnessSet::new();
         let mut remaining_wits = self.required_wits.clone();
 
@@ -371,7 +371,7 @@ impl TransactionWitnessSetBuilder {
         if self.plutus_data.len() > 0 {
             result.set_plutus_data(&PlutusList {
                 elems: self.plutus_data.values().cloned().collect(),
-                definite_encoding: None,
+                definite_encoding: encoding,
             });
             self.plutus_data.keys().for_each(|hash| {
                 remaining_wits.plutus_data.remove(hash);
