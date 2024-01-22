@@ -259,18 +259,18 @@ export class Maestro extends Provider {
   }
 
   async getUtxosByPolicyId(policyId: PolicyId): Promise<UTxO[]> {
-    let outRefsResponse = await fetch(
+    let maestroOutRefsResponse = await fetch(
       `${this.url}/policy/${policyId}/utxos`,
       { headers: this.commonHeaders() }
     );
-    if (!outRefsResponse.ok) {
+    if (!maestroOutRefsResponse.ok) {
       throw new Error(
         "Location: getDatum. Error: Couldn't successfully perform query. Received status code: " +
-        outRefsResponse.status,
+        maestroOutRefsResponse.status,
       );
     }
-    const outRefsJson = await outRefsResponse.json();
-    const outRefs = outRefsJson.data.map(
+    const maestroOutRefs = await maestroOutRefsResponse.json();
+    const outRefs = maestroOutRefs.data.map(
       outRef => ({
         txHash: outRef.tx_hash,
         outputIndex: outRef.index
