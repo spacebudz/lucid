@@ -9,6 +9,7 @@ import {
   Delegation,
   Json,
   OutRef,
+  PolicyId,
   ProtocolParameters,
   Provider,
   RewardAddress,
@@ -257,6 +258,28 @@ export class Maestro extends Provider {
     return result;
   }
 
+  async getUtxosByPolicyId(policyId: PolicyId): Promise<UTxO[]> {
+    let outRefsResponse = await fetch(
+      `${this.url}/policy/${policyId}/utxos`,
+      { headers: this.commonHeaders() }
+    );
+    if (!outRefsResponse.ok) {
+      throw new Error(
+        "Location: getDatum. Error: Couldn't successfully perform query. Received status code: " +
+        outRefsResponse.status,
+      );
+    }
+    const outRefsJson = await outRefsResponse.json();
+    const outRefs = outRefsJson.data.map(
+      outRef => ({
+        txHash: outRef.tx_hash,
+        outputIndex: outRef.index
+      })
+    );
+    const utxos = await this.getUtxosByOutRef(outRefs)
+    return utxos
+  };
+
   private async parametrizedUtxosByOutRef(outRefs: OutRef[], param: URLSearchParams): Promise<UTxO[]> {
     const qry = `${this.url}/transactions/outputs`;
     const body = JSON.stringify(
@@ -309,6 +332,7 @@ export class Maestro extends Provider {
         : undefined,
     };
   }
+  
   private async getAllPagesData<T>(
     getResponse: (qry: string) => Promise<Response>,
     qry: string,
