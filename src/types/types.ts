@@ -40,6 +40,7 @@ export abstract class Provider {
   abstract getDatum(datumHash: DatumHash): Promise<Datum>;
   abstract awaitTx(txHash: TxHash, checkInterval?: number): Promise<boolean>;
   abstract submitTx(tx: Transaction): Promise<TxHash>;
+  abstract getUtxosByPolicyId(policyId: PolicyId): Promise<UTxO[]>;
 
   async getUtxosByOutRefWithDatum(outRefs: OutRef[]): Promise<UTxO[]> {
     const utxos = await this.getUtxosByOutRef(outRefs);
