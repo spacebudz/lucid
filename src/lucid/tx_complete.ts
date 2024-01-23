@@ -89,7 +89,7 @@ export class TxComplete {
   }
 
   /** Complete the transaction with the possibility of use definite or indefinite encoding */
-  async complete(definite_encoding?: boolean): Promise<TxSigned> {
+  async complete(config?: {definite_encoding: boolean}): Promise<TxSigned> {
     for (const task of this.tasks) {
       await task();
     }
@@ -97,7 +97,7 @@ export class TxComplete {
     this.witnessSetBuilder.add_existing(this.txComplete.witness_set());
     const signedTx = C.Transaction.new(
       this.txComplete.body(),
-      this.witnessSetBuilder.build(definite_encoding),
+      this.witnessSetBuilder.build(config?.definite_encoding),
       this.txComplete.auxiliary_data(),
     );
     return new TxSigned(this.lucid, signedTx);

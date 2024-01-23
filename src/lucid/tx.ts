@@ -10,6 +10,7 @@ import {
   Lovelace,
   MintingPolicy,
   OutputData,
+  OutRef,
   PaymentKeyHash,
   PoolId,
   PoolParams,
@@ -29,7 +30,7 @@ import {
   toScriptRef,
   utxoToCore,
 } from "../utils/mod.ts";
-import { applyDoubleCborEncoding } from "../utils/utils.ts";
+import { applyDoubleCborEncoding, valueToAssets } from "../utils/utils.ts";
 import { Lucid } from "./lucid.ts";
 import { TxComplete } from "./tx_complete.ts";
 
@@ -39,11 +40,118 @@ export class Tx {
   private tasks: ((that: Tx) => unknown)[];
   private lucid: Lucid;
 
-  constructor(lucid: Lucid) {
+  constructor(lucid: Lucid, tx?: C.Transaction){
     this.lucid = lucid;
     this.txBuilder = C.TransactionBuilder.new(this.lucid.txBuilderConfig);
     this.tasks = [];
+    if (tx){
+      const txBody = tx.body()
+      const redeemers = tx.witness_set().redeemers();
+      const inputs = txBody.inputs().to_js_value().map((input: any) => {inputOutRef(input)});
+      console.log(`inputs: ${inputs}`)
+      this.setValidityRange(txBody);
+      console.log("validity range set")
+      this.addSigners(txBody);
+      console.log("signers added")
+      this.addOutputs(tx);
+      console.log("outputs added")
+    }
   }
+
+  private setValidityRange(txBody: C.TransactionBody){
+    const slotFrom = txBody.validity_start_interval();
+    const slotUntil = txBody.ttl();
+
+    if (slotFrom){
+      const from: number = this.lucid.utils.slotToUnixTime(Number(slotFrom!.to_str()));
+      this.validFrom(from);
+    }
+
+    if (slotUntil){
+      const until: number = this.lucid.utils.slotToUnixTime(Number(slotUntil!.to_str()));
+      this.validTo(until);
+    }
+
+    return this;
+  }
+
+  private addSigners(txBody: C.TransactionBody){
+    const requiredSigners = txBody.required_signers();
+
+    if (requiredSigners) {
+        for (let i = 0; i < requiredSigners?.len(); i++) {
+            const reqSigner = requiredSigners?.get(i);
+            const key = reqSigner.to_hex();
+            this.addSignerKey(key);
+        }
+    }
+    return this;
+  }
+
+  private getOutputData(tx: C.Transaction, output: C.TransactionOutput): OutputData | undefined {
+    const datumHash = output.datum()?.as_data_hash()?.to_hex();
+    const inlineDatum = output.datum()?.as_data()?.to_js_value().original_bytes;
+    const scriptRef = output.script_ref()?.to_js_value();
+    let outputData = {};
+    if (scriptRef){
+      if(scriptRef.PlutusScriptV2){
+        outputData = {scriptRef: {
+          type: "PlutusV2",
+          script: scriptRef.PlutusScriptV2
+        }};
+      }
+      if(scriptRef.PlutusScriptV1){
+        outputData = {scriptRef: {
+          type: "PlutusV1",
+          script: scriptRef.PlutusScriptV1
+        }};
+      }
+    }
+    if (datumHash){
+      const datum = findDatumFromHash(datumHash, tx);
+      if (datum){
+        const datumCBOR = toHex(datum.to_bytes());
+        return { ...outputData, asHash: datumCBOR };
+      }
+      return { ...outputData, hash: datumHash }; //o datumCBOR?
+    }
+
+    if(inlineDatum){
+      return {...outputData, inline: toHex(inlineDatum)}
+    }
+  }
+
+  private addOutputs(tx: C.Transaction){
+    const outputs = tx.body().outputs();
+    if (outputs) {
+      console.log(`outputs: ${outputs.len()}`)
+        for (let i = 0; i < outputs.len(); i++) {
+            const output = outputs.get(i);
+            const address = output.address().to_bech32(undefined);
+            const assets = valueToAssets(output.amount());
+            const outputData = this.getOutputData(tx, output);
+            
+
+            if (outputData){
+              this.payToAddressWithData(address, outputData, assets);
+            }else{
+              this.payToAddress(address, assets);
+            }
+        }
+    }
+    return this;
+  }
+
+  // fromCBOR(tx: C.Transaction): Tx {
+  //   const txBody = tx.body()
+  //   const redeemers = tx.witness_set().redeemers();
+  //   const inputs = txBody.inputs().to_js_value().map((input: any) => {inputOutRef(input)});
+  //   console.log(`inputs: ${inputs}`)
+  //   this.setValidityRange(txBody, this);
+  //   this.addSigners(txBody, this);
+  //   this.addOutputs(tx, this);
+  //   return this;
+  // }
 
   /** Read data from utxos. These utxos are only referenced and not spent. */
   readFrom(utxos: UTxO[]): Tx {
@@ -751,4 +859,35 @@ function addressFromWithNetworkCheck(
   return type === "Byron"
     ? C.ByronAddress.from_base58(address).to_address()
     : C.Address.from_bech32(address);
+}
+
+function inputOutRef(input: {transaction_id: string, index: number}): OutRef {
+  // input.index
+  // const txId = input.transaction_id().to_hex();
+  // const idx = Number(input.index().to_str());
+  const ref: OutRef = { txHash: input.transaction_id, outputIndex: input.index };
+  return ref;
+}
+
+/**
+ * Finds a datum inside a transaction that corresponds with the given hash
+ * @param hash hash to look for
+ * @param transaction transaction where to look for the datum
+ * @returns The Datum whose hash is the same as the given hash
+ * @throws NoDatumsInTx
+ * @throws NoDatumMatchesHash
+ */
+function findDatumFromHash(
+  hash: string,
+  transaction: C.Transaction
+): C.PlutusData | undefined {
+  const allDatums = transaction.witness_set().plutus_data();
+  if (allDatums){
+    for (let i = 0; i < allDatums.len(); i++) {
+        const datum = allDatums.get(i);
+        if (C.hash_plutus_data(datum).to_hex() === hash) {
+            return datum;
+        }
+    }
+  }
 }
