@@ -55,6 +55,8 @@ export class Tx {
       console.log("signers added")
       this.addOutputs(tx);
       console.log("outputs added")
+      this.addMetadata(tx);
+      console.log("metadata added")
     }
   }
 
@@ -130,7 +132,6 @@ export class Tx {
             const address = output.address().to_bech32(undefined);
             const assets = valueToAssets(output.amount());
             const outputData = this.getOutputData(tx, output);
-            
 
             if (outputData){
               this.payToAddressWithData(address, outputData, assets);
@@ -142,16 +143,24 @@ export class Tx {
     return this;
   }
 
-  // fromCBOR(tx: C.Transaction): Tx {
-  //   const txBody = tx.body()
-  //   const redeemers = tx.witness_set().redeemers();
-  //   const inputs = txBody.inputs().to_js_value().map((input: any) => {inputOutRef(input)});
-  //   console.log(`inputs: ${inputs}`)
-  //   this.setValidityRange(txBody, this);
-  //   this.addSigners(txBody, this);
-  //   this.addOutputs(tx, this);
-  //   return this;
-  // }
+  private addMetadata(tx): Tx{
+    const metadata = tx.auxiliary_data()?.metadata()
+
+    if (metadata){
+      for (let i = 0; i < metadata.keys().len()!; i++) {
+        const key = metadata.keys().get(i)
+        if (key){
+          this.tasks.push((that) => {
+            that.txBuilder.add_metadatum(
+              key,
+              metadata.get(key)!,
+            );
+          });
+        }
+      }
+    }
+    return this;
+  }
 
   /** Read data from utxos. These utxos are only referenced and not spent. */
   readFrom(utxos: UTxO[]): Tx {
