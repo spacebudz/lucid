@@ -46,7 +46,6 @@ export class Tx {
     this.tasks = [];
     if (tx){
       const txBody = tx.body()
-      const redeemers = tx.witness_set().redeemers();
       const inputs = txBody.inputs().to_js_value().map((input: any) => {inputOutRef(input)});
       console.log(`inputs: ${inputs}`)
       this.setValidityRange(txBody);
@@ -57,6 +56,10 @@ export class Tx {
       console.log("outputs added")
       this.addMetadata(tx);
       console.log("metadata added")
+      this.addMint(tx)
+      console.log("mint added")
+      this.addScripts(tx)
+      console.log("scripts added")
     }
   }
 
@@ -160,6 +163,61 @@ export class Tx {
       }
     }
     return this;
+  }
+
+  private addMint(tx: C.Transaction): Tx{
+    const redeemers = tx.witness_set().redeemers();
+    const mintField = tx.body().mint()
+    if (redeemers && mintField){
+      for (let i = 0; i < redeemers?.len()!; i++) {
+        const redeemer = redeemers?.get(i)
+        const index = Number(redeemer.index().to_str())
+        const policy = mintField.keys().get(index)
+        const assets = mintField.get(policy)
+        if (assets){
+          this.tasks.push((that) => {
+            that.txBuilder.add_mint(policy, assets, C.ScriptWitness.new_plutus_witness(
+              C.PlutusWitness.new(
+                redeemer.data(),
+                undefined,
+                undefined,
+              ),
+            ))
+          })
+        }
+      }
+      // console.log(JSON.stringify(tx.body().mint()?.to_js_value()))
+    }
+    return this;
+  }
+
+  private addScripts(tx: C.Transaction): Tx{
+    const witness = tx.witness_set()
+    const native_scripts = witness.native_scripts()
+    const plutus_scripts = witness.plutus_scripts()
+    const plutus_v2_scripts = witness.plutus_v2_scripts()
+    if (native_scripts){
+      for (let i = 0; i < native_scripts.len(); i++) {
+        this.tasks.push((that) => {
+          that.txBuilder.add_native_script(native_scripts.get(i))
+        })
+      }
+    }
+    if (plutus_scripts){
+      for (let i = 0; i < plutus_scripts.len(); i++) {
+        this.tasks.push((that) => {
+          that.txBuilder.add_plutus_script(plutus_scripts.get(i))
+        })
+      }
+    }
+    if (plutus_v2_scripts){
+      for (let i = 0; i < plutus_v2_scripts.len(); i++) {
+        this.tasks.push((that) => {
+          that.txBuilder.add_plutus_v2_script(plutus_v2_scripts.get(i))
+        })
+      }
+    }
+    return this
   }
 
   /** Read data from utxos. These utxos are only referenced and not spent. */
