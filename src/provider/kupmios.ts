@@ -6,6 +6,7 @@ import {
   DatumHash,
   Delegation,
   OutRef,
+  PolicyId,
   ProtocolParameters,
   Provider,
   RewardAddress,
@@ -219,6 +220,20 @@ export class Kupmios extends Provider {
       }, { once: true });
     });
   }
+
+  async getUtxosByPolicyId(policyId: PolicyId): Promise<UTxO[]> {
+    const kupmiosUtxosResponse = await fetch(
+      `${this.kupoUrl}/matches/${policyId}.*?unspent`,
+    );
+    if (!kupmiosUtxosResponse.ok) {
+      throw new Error(
+        "Location: getUtxosByPolicyId. Error: Couldn't successfully perform query. Received status code: " +
+        kupmiosUtxosResponse.status,
+      );
+    }
+    const kupmiosUtxos = await kupmiosUtxosResponse.json();
+    return this.kupmiosUtxosToUtxos(kupmiosUtxos)
+  };
 
   private kupmiosUtxosToUtxos(utxos: unknown): Promise<UTxO[]> {
     // deno-lint-ignore no-explicit-any
