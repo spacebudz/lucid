@@ -45,9 +45,9 @@ export class Tx {
     this.txBuilder = C.TransactionBuilder.new(this.lucid.txBuilderConfig);
     this.tasks = [];
     if (tx){
-      const txBody = tx.body()
-      const inputs = txBody.inputs().to_js_value().map((input: any) => {inputOutRef(input)});
-      console.log(`inputs: ${inputs}`)
+      const txBody = tx.body();
+      this.addPlutusData(tx);
+      console.log("plutus data added")
       this.setValidityRange(txBody);
       console.log("validity range set")
       this.addSigners(txBody);
@@ -56,10 +56,12 @@ export class Tx {
       console.log("outputs added")
       this.addMetadata(tx);
       console.log("metadata added")
-      this.addMint(tx)
+      this.addMint(tx);
       console.log("mint added")
-      this.addScripts(tx)
+      this.addScripts(tx);
       console.log("scripts added")
+      this.addInputs(tx);
+      console.log("inputs added")
     }
   }
 
@@ -129,18 +131,11 @@ export class Tx {
   private addOutputs(tx: C.Transaction){
     const outputs = tx.body().outputs();
     if (outputs) {
-      console.log(`outputs: ${outputs.len()}`)
         for (let i = 0; i < outputs.len(); i++) {
             const output = outputs.get(i);
-            const address = output.address().to_bech32(undefined);
-            const assets = valueToAssets(output.amount());
-            const outputData = this.getOutputData(tx, output);
-
-            if (outputData){
-              this.payToAddressWithData(address, outputData, assets);
-            }else{
-              this.payToAddress(address, assets);
-            }
+            this.tasks.push((that) => {
+              that.txBuilder.add_output(output);
+            })
         }
     }
     return this;
@@ -171,22 +166,23 @@ export class Tx {
     if (redeemers && mintField){
       for (let i = 0; i < redeemers?.len()!; i++) {
         const redeemer = redeemers?.get(i)
-        const index = Number(redeemer.index().to_str())
-        const policy = mintField.keys().get(index)
-        const assets = mintField.get(policy)
-        if (assets){
-          this.tasks.push((that) => {
-            that.txBuilder.add_mint(policy, assets, C.ScriptWitness.new_plutus_witness(
-              C.PlutusWitness.new(
-                redeemer.data(),
-                undefined,
-                undefined,
-              ),
-            ))
-          })
+        if (redeemer.tag().kind() == 1){
+          const index = Number(redeemer.index().to_str())
+          const policy = mintField.keys().get(index)
+          const assets = mintField.get(policy)
+          if (assets){
+            this.tasks.push((that) => {
+              that.txBuilder.add_mint(policy, assets, C.ScriptWitness.new_plutus_witness(
+                C.PlutusWitness.new(
+                  redeemer.data(),
+                  undefined,
+                  undefined,
+                ),
+              ))
+            })
+          }
         }
       }
-      // console.log(JSON.stringify(tx.body().mint()?.to_js_value()))
     }
     return this;
   }
@@ -214,6 +210,52 @@ export class Tx {
       for (let i = 0; i < plutus_v2_scripts.len(); i++) {
         this.tasks.push((that) => {
           that.txBuilder.add_plutus_v2_script(plutus_v2_scripts.get(i))
+        })
+      }
+    }
+    return this
+  }
+
+  private addInputs(tx: C.Transaction): Tx{
+    this.tasks.push(async (that) => {
+      const inputs: OutRef[] = tx.body().inputs().to_js_value().map(inputOutRef)
+      const utxos = (await this.lucid.utxosByOutRef(inputs)).sort(outRefCmp)
+      const redeemers = tx.witness_set().redeemers()
+      const redeemersData = {}
+      if (redeemers){
+        for (let j = 0; j < redeemers.len(); j++) {
+          const redeemer = redeemers.get(j)
+          if (redeemer.tag().kind() == 0){
+            const index = Number(redeemer.index().to_str())
+            redeemersData[index] = redeemer.data()
+          }
+        }
+      }
+      utxos.forEach((utxo, index) => {
+        const redeemerData = redeemersData[index]
+        that.txBuilder.add_input(
+          utxoToCore(utxo),
+          redeemerData ?
+          C.ScriptWitness.new_plutus_witness(
+            C.PlutusWitness.new(
+              redeemerData,
+              undefined,
+              undefined,
+            ),
+          ): undefined
+        )
+      })
+    })
+    return this
+  }
+
+  private addPlutusData(tx: C.Transaction): Tx{
+    const plutus_data = tx.witness_set().plutus_data()
+    if(plutus_data){
+      for (let i = 0; i < plutus_data.len(); i++) {
+        const data = plutus_data.get(i)
+        this.tasks.push((that) => {
+          that.txBuilder.add_plutus_data(data)
         })
       }
     }
@@ -928,12 +970,21 @@ function addressFromWithNetworkCheck(
     : C.Address.from_bech32(address);
 }
 
-function inputOutRef(input: {transaction_id: string, index: number}): OutRef {
-  // input.index
-  // const txId = input.transaction_id().to_hex();
-  // const idx = Number(input.index().to_str());
-  const ref: OutRef = { txHash: input.transaction_id, outputIndex: input.index };
+function inputOutRef(input: {transaction_id: string, index: string}): OutRef {
+  const ref: OutRef = { txHash: input.transaction_id, outputIndex: Number(input.index) };
   return ref;
+}
+
+function outRefCmp(a: OutRef, b: OutRef): number {
+  const aTxHash = a.txHash
+  const bTxHash = b.txHash
+  const aIndex = a.outputIndex
+  const bIndex = b.outputIndex
+  if (aTxHash < bTxHash) return -1
+  if (aTxHash > bTxHash) return 1
+  if (aIndex < bIndex) return -1
+  if (aIndex > bIndex) return 1
+  return 0
 }
 
 /**
