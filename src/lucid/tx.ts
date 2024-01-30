@@ -47,21 +47,14 @@ export class Tx {
     if (tx){
       const txBody = tx.body();
       this.addPlutusData(tx);
-      console.log("plutus data added")
       this.setValidityRange(txBody);
-      console.log("validity range set")
       this.addSigners(txBody);
-      console.log("signers added")
       this.addOutputs(tx);
-      console.log("outputs added")
       this.addMetadata(tx);
-      console.log("metadata added")
       this.addMint(tx);
-      console.log("mint added")
       this.addScripts(tx);
-      console.log("scripts added")
       this.addInputs(tx);
-      console.log("inputs added")
+      this.addReferenceInputs(tx);
     }
   }
 
@@ -245,6 +238,19 @@ export class Tx {
           ): undefined
         )
       })
+    })
+    return this
+  }
+
+  private addReferenceInputs(tx: C.Transaction): Tx{
+    this.tasks.push(async (that) => {
+      const reference_inputs = tx.body().reference_inputs()?.to_js_value()?.map(inputOutRef)
+      const utxos = reference_inputs ? (await this.lucid.utxosByOutRef(reference_inputs)) : undefined
+      if (utxos){
+        for (let i = 0; i < utxos.length; i++) {
+            that.txBuilder.add_reference_input(utxoToCore(utxos[i]))
+          }
+        }
     })
     return this
   }
