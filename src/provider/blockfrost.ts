@@ -7,6 +7,7 @@ import {
   DatumHash,
   Delegation,
   OutRef,
+  PolicyId,
   ProtocolParameters,
   Provider,
   RewardAddress,
@@ -234,6 +235,79 @@ export class Blockfrost extends Provider {
       else throw new Error("Could not submit transaction.");
     }
     return result;
+  }
+
+  async getUtxosByPolicyId(policyId: PolicyId): Promise<UTxO[]> {
+    const assets = await this.getAssetsByPolicyId(policyId);
+    const assetsAddresses = await Promise.all(assets.map(
+      async asset => ({
+        asset: asset,
+        addresses: await this.getAssetAddresses(asset)
+      })
+    ));
+    return await Promise.all(assetsAddresses.map(
+      async assetAddresses => await Promise.all(assetAddresses.addresses.map(
+        async address => await this.getAssetAddressUTxOs(assetAddresses.asset, address)
+      ))
+    )).then((res: UTxO[][][]) => res.flat(2));
+  };
+
+  private async getAssetsByPolicyId(policyId: PolicyId): Promise<Unit[]> {
+    let blockfrostAssetsResponse = await fetch(
+      `${this.url}/assets/policy/${policyId}`,
+      { headers: { project_id: this.projectId, lucid } }
+    );
+    if (!blockfrostAssetsResponse.ok) {
+      throw new Error(
+        "Location: getAssetsByPolicyId." +
+        " Error: Couldn't successfully perform query. Received status code: " +
+        blockfrostAssetsResponse.status,
+      );
+    }
+    const blockfrostAssets = await blockfrostAssetsResponse.json();
+    return blockfrostAssets.map(
+      (basset: {
+        "asset": string,
+        "quantity": string
+      }) => basset.asset
+    );
+  };
+
+  private async getAssetAddresses(asset: Unit): Promise<Address[]> {
+    let blockfrostAddressesResponse = await fetch(
+      `${this.url}/assets/${asset}/addresses`,
+      { headers: { project_id: this.projectId, lucid } }
+    );
+    if (!blockfrostAddressesResponse.ok) {
+      throw new Error(
+        "Location: getAssetAddresses." +
+        " Error: Couldn't successfully perform query. Received status code: " +
+        blockfrostAddressesResponse.status,
+      );
+    }
+    const blockfrostAddresses = await blockfrostAddressesResponse.json();
+    return blockfrostAddresses.map(
+      (baddress: {
+        "address": string,
+        "quantity": string
+      }) => baddress.address
+    );
+  }
+
+  private async getAssetAddressUTxOs(asset: Unit, address: Address): Promise<UTxO[]> {
+    let blockfrostUTxOsResponse = await fetch(
+      `${this.url}/addresses/${address}/utxos/${asset}`,
+      { headers: { project_id: this.projectId, lucid } }
+    );
+    if (!blockfrostUTxOsResponse.ok) {
+      throw new Error(
+        "Location: getAssetAddressUTxOs." +
+        " Error: Couldn't successfully perform query. Received status code: " +
+        blockfrostUTxOsResponse.status,
+      );
+    }
+    const blockfrostUTxOs = await blockfrostUTxOsResponse.json();
+    return this.blockfrostUtxosToUtxos(blockfrostUTxOs);
   }
 
   private async blockfrostUtxosToUtxos(
