@@ -259,26 +259,21 @@ export class Maestro extends Provider {
   }
 
   async getUtxosByPolicyId(policyId: PolicyId): Promise<UTxO[]> {
-    let maestroOutRefsResponse = await fetch(
+    const maestroOutRefs: MaestroOutRef[] = await this.getAllPagesData(
+      async (qry: string) =>
+        await fetch(qry, { headers: this.commonHeaders() }),
       `${this.url}/policy/${policyId}/utxos`,
-      { headers: this.commonHeaders() }
+      new URLSearchParams(),
+      "Location: getUtxosByPolicyId. Error: Could not fetch UTxOs from Maestro.",
     );
-    if (!maestroOutRefsResponse.ok) {
-      throw new Error(
-        "Location: getDatum. Error: Couldn't successfully perform query. Received status code: " +
-        maestroOutRefsResponse.status,
-      );
-    }
-    const maestroOutRefs = await maestroOutRefsResponse.json();
-    const outRefs = maestroOutRefs.data.map(
-      outRef => ({
+    const outRefs = maestroOutRefs.map(
+      (outRef: MaestroOutRef) => ({
         txHash: outRef.tx_hash,
         outputIndex: outRef.index
       })
     );
-    const utxos = await this.getUtxosByOutRef(outRefs)
-    return utxos
-  };
+    return await this.getUtxosByOutRef(outRefs);
+  };  
 
   private async parametrizedUtxosByOutRef(outRefs: OutRef[], param: URLSearchParams): Promise<UTxO[]> {
     const qry = `${this.url}/transactions/outputs`;
@@ -381,6 +376,14 @@ type MaestroScript = {
 type MaestroAsset = {
   unit: string;
   amount: number;
+};
+
+type MaestroOutRef = {
+  address: Address;
+  assets: Array<{name: string, amount: number}>;
+  index: number;
+  slot: number;
+  tx_hash: TxHash;
 };
 
 type MaestroUtxo = {
