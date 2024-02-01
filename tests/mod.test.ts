@@ -29,6 +29,7 @@ import {
   assertNotEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import * as fc from "https://esm.sh/fast-check@3.1.1";
+import { config } from "https://deno.land/x/dotenv/mod.ts";
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
 const lucid = await Lucid.new(undefined, "Preprod");
@@ -490,7 +491,7 @@ Deno.test("Preserve task/transaction order", async () => {
 
 async function lucidInstance() {
   const lucid_blockfrost = await Lucid.new(
-    new Blockfrost("https://cardano-preprod.blockfrost.io/api/v0", "preprod3tK4wbRdI89pecZ2y2Qza6oEUSd2bEtK"),
+    new Blockfrost("https://cardano-preprod.blockfrost.io/api/v0", config()["BLOCKFROST_API_KEY"]),
     "Preprod"
   )
   lucid_blockfrost.selectWalletFromPrivateKey(privateKey);
