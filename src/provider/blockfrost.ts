@@ -245,27 +245,39 @@ export class Blockfrost extends Provider {
         addresses: await this.getAssetAddresses(asset)
       })
     ));
-    return await Promise.all(assetsAddresses.map(
+    const utxos = await Promise.all(assetsAddresses.map(
       async assetAddresses => await Promise.all(assetAddresses.addresses.map(
         async address => await this.getAssetAddressUTxOs(assetAddresses.asset, address)
       ))
     )).then((res: UTxO[][][]) => res.flat(2));
+    return utxos.filter((value, index, self) =>
+      index === self.findIndex((t) => (
+        t.txHash === value.txHash && t.outputIndex === value.outputIndex
+      ))
+    )
   };
 
-  private async getAssetsByPolicyId(policyId: PolicyId): Promise<Unit[]> {
-    let blockfrostAssetsResponse = await fetch(
-      `${this.url}/assets/policy/${policyId}`,
-      { headers: { project_id: this.projectId, lucid } }
-    );
-    if (!blockfrostAssetsResponse.ok) {
-      throw new Error(
-        "Location: getAssetsByPolicyId." +
-        " Error: Couldn't successfully perform query. Received status code: " +
-        blockfrostAssetsResponse.status,
-      );
+  async getAssetsByPolicyId(policyId: PolicyId): Promise<Unit[]> {
+    let result = []
+    let page = 1
+    while (true) {
+      const pageResult =
+        await fetch(
+          `${this.url}/assets/policy/${policyId}?page=${page}`,
+          { headers: { project_id: this.projectId, lucid } },
+        ).then((res) => res.json());
+      if (pageResult.error) {
+        if (pageResult.status_code === 404) {
+          return [];
+        } else {
+          throw new Error("Could not fetch assets from Blockfrost. Try again.");
+        }
+      }
+      result = result.concat(pageResult);
+      if (pageResult.length <= 0) break;
+      page++;
     }
-    const blockfrostAssets = await blockfrostAssetsResponse.json();
-    return blockfrostAssets.map(
+    return result.map(
       (basset: {
         "asset": string,
         "quantity": string
@@ -274,19 +286,26 @@ export class Blockfrost extends Provider {
   };
 
   private async getAssetAddresses(asset: Unit): Promise<Address[]> {
-    let blockfrostAddressesResponse = await fetch(
-      `${this.url}/assets/${asset}/addresses`,
-      { headers: { project_id: this.projectId, lucid } }
-    );
-    if (!blockfrostAddressesResponse.ok) {
-      throw new Error(
-        "Location: getAssetAddresses." +
-        " Error: Couldn't successfully perform query. Received status code: " +
-        blockfrostAddressesResponse.status,
-      );
+    let result = []
+    let page = 1
+    while (true) {
+      const pageResult =
+        await fetch(
+          `${this.url}/assets/${asset}/addresses?page=${page}`,
+          { headers: { project_id: this.projectId, lucid } },
+        ).then((res) => res.json());
+      if (pageResult.error) {
+        if (pageResult.status_code === 404) {
+          return [];
+        } else {
+          throw new Error("Could not fetch addresses from Blockfrost. Try again.");
+        }
+      }
+      result = result.concat(pageResult);
+      if (pageResult.length <= 0) break;
+      page++;
     }
-    const blockfrostAddresses = await blockfrostAddressesResponse.json();
-    return blockfrostAddresses.map(
+    return result.map(
       (baddress: {
         "address": string,
         "quantity": string
@@ -295,19 +314,26 @@ export class Blockfrost extends Provider {
   }
 
   private async getAssetAddressUTxOs(asset: Unit, address: Address): Promise<UTxO[]> {
-    let blockfrostUTxOsResponse = await fetch(
-      `${this.url}/addresses/${address}/utxos/${asset}`,
-      { headers: { project_id: this.projectId, lucid } }
-    );
-    if (!blockfrostUTxOsResponse.ok) {
-      throw new Error(
-        "Location: getAssetAddressUTxOs." +
-        " Error: Couldn't successfully perform query. Received status code: " +
-        blockfrostUTxOsResponse.status,
-      );
+    let result = []
+    let page = 1
+    while (true) {
+      const pageResult =
+        await fetch(
+          `${this.url}/addresses/${address}/utxos/${asset}?page=${page}`,
+          { headers: { project_id: this.projectId, lucid } },
+        ).then((res) => res.json());
+      if (pageResult.error) {
+        if (pageResult.status_code === 404) {
+          return [];
+        } else {
+          throw new Error("Could not fetch UTxOs from Blockfrost. Try again.");
+        }
+      }
+      result = result.concat(pageResult);
+      if (pageResult.length <= 0) break;
+      page++;
     }
-    const blockfrostUTxOs = await blockfrostUTxOsResponse.json();
-    return this.blockfrostUtxosToUtxos(blockfrostUTxOs);
+    return this.blockfrostUtxosToUtxos(result);
   }
 
   private async blockfrostUtxosToUtxos(
