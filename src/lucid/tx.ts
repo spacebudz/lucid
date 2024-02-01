@@ -145,7 +145,7 @@ export class Tx {
     return this;
   }
 
-  private addMetadata(tx): Tx {
+  private addMetadata(tx: C.Transaction): Tx {
     const metadata = tx.auxiliary_data()?.metadata();
 
     if (metadata) {
@@ -226,7 +226,7 @@ export class Tx {
         .map(inputOutRef);
       const utxos = (await this.lucid.utxosByOutRef(inputs)).sort(outRefCmp);
       const redeemers = tx.witness_set().redeemers();
-      const redeemersData = {};
+      const redeemersData : {[id: number]: C.PlutusData} = {};
       if (redeemers) {
         for (let j = 0; j < redeemers.len(); j++) {
           const redeemer = redeemers.get(j);
@@ -237,7 +237,7 @@ export class Tx {
         }
       }
       utxos.forEach((utxo, index) => {
-        const redeemerData = redeemersData[index];
+        const redeemerData: undefined | C.PlutusData = redeemersData[index];
         that.txBuilder.add_input(
           utxoToCore(utxo),
           redeemerData

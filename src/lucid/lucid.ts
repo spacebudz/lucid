@@ -272,7 +272,7 @@ export class Lucid {
         );
         const txWitnessSetBuilder = C.TransactionWitnessSetBuilder.new();
         txWitnessSetBuilder.add_vkey(witness);
-        return txWitnessSetBuilder.build();
+        return txWitnessSetBuilder.build(undefined);
       },
       // deno-lint-ignore require-await
       signMessage: async (
@@ -516,7 +516,7 @@ export class Lucid {
           );
           txWitnessSetBuilder.add_vkey(witness);
         });
-        return txWitnessSetBuilder.build();
+        return txWitnessSetBuilder.build(undefined);
       },
       // deno-lint-ignore require-await
       signMessage: async (

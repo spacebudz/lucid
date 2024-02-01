@@ -74,7 +74,7 @@ export class TxComplete {
     this.witnessSetBuilder.add_vkey(witness);
     const witnesses = C.TransactionWitnessSetBuilder.new();
     witnesses.add_vkey(witness);
-    return toHex(witnesses.build().to_bytes());
+    return toHex(witnesses.build(undefined).to_bytes());
   }
 
   /** Sign the transaction with the given witnesses. */
