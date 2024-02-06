@@ -491,7 +491,7 @@ Deno.test("Preserve task/transaction order", async () => {
 
 async function lucidInstance() {
   const lucid_blockfrost = await Lucid.new(
-    new Blockfrost("https://cardano-preprod.blockfrost.io/api/v0", config()["BLOCKFROST_API_KEY"]),
+    new Blockfrost("https://cardano-preprod.blockfrost.io/api/v0", config()["BLOCKFROST_API_KEY_FOR_TESTING"]),
     "Preprod"
   )
   lucid_blockfrost.selectWalletFromPrivateKey(privateKey);

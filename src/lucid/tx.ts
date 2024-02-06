@@ -45,10 +45,9 @@ export class Tx {
     this.txBuilder = C.TransactionBuilder.new(this.lucid.txBuilderConfig);
     this.tasks = [];
     if (tx) {
-      const txBody = tx.body();
       this.addPlutusData(tx);
-      this.setValidityRange(txBody);
-      this.addSigners(txBody);
+      this.setValidityRange(tx);
+      this.addSigners(tx);
       this.addOutputs(tx);
       this.addMetadata(tx);
       this.addMint(tx);
@@ -58,7 +57,8 @@ export class Tx {
     }
   }
 
-  private setValidityRange(txBody: C.TransactionBody) {
+  private setValidityRange(tx: C.Transaction) {
+    const txBody = tx.body();
     const slotFrom = txBody.validity_start_interval();
     const slotUntil = txBody.ttl();
 
@@ -79,7 +79,8 @@ export class Tx {
     return this;
   }
 
-  private addSigners(txBody: C.TransactionBody) {
+  private addSigners(tx: C.Transaction) {
+    const txBody = tx.body();
     const requiredSigners = txBody.required_signers();
 
     if (requiredSigners) {
