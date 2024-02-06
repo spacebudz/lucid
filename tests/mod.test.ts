@@ -19,6 +19,9 @@ import {
   toUnit,
   utxoToCore,
   valueToAssets,
+  TxComplete,
+  Tx,
+  Blockfrost
 } from "../src/mod.ts";
 import {
   assert,
@@ -26,10 +29,10 @@ import {
   assertNotEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import * as fc from "https://esm.sh/fast-check@3.1.1";
+import { config } from "https://deno.land/x/dotenv/mod.ts";
 
 const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
 const lucid = await Lucid.new(undefined, "Preprod");
-
 // Preprod testing parameters
 
 const slotConfig = SLOT_CONFIG_NETWORK[lucid.network];
@@ -484,3 +487,103 @@ Deno.test("Preserve task/transaction order", async () => {
     assertEquals(num, outputNum);
   });
 });
+
+
+async function lucidInstance() {
+  const lucid_blockfrost = await Lucid.new(
+    new Blockfrost("https://cardano-preprod.blockfrost.io/api/v0", config()["BLOCKFROST_API_KEY_FOR_TESTING"]),
+    "Preprod"
+  )
+  lucid_blockfrost.selectWalletFromPrivateKey(privateKey);
+  return lucid_blockfrost;
+}
+
+Deno.test("Constructed tx mint and scripts", async () => {
+  const cbor = "84aa00828258200d1d7da5a0a02d72404b434ff9a35ae2e8b39f1f981c02413cc525ec6c24565001825820c825672180b8bc7e788d47f60b58b289f294d03025260aad3058afff1dddfffc00018382581d60b80600589f0850ec775409e5cb98e276175ce814202f3350c4df97d51a000f424082581d601e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a07821a00126a10a2581c702f812474ef1c8b20843a20aea442667357a76f56705daa3a2e2e4ca14362656e1a000f4240581cb3b8b6f7b579ae08148a6d61cd9c688ec18d4926eebc488034b6d7daa14462656e321a000f424082581d601e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a071a3ba4a80c021a0002f35f031a030c2fe0081a030c2f7c09a2581c702f812474ef1c8b20843a20aea442667357a76f56705daa3a2e2e4ca14362656e1a000f4240581cb3b8b6f7b579ae08148a6d61cd9c688ec18d4926eebc488034b6d7daa14462656e321a000f42400b5820b2d0448f519b4884dd2ce21d1300e6a93211256265343927bc7d491c54000b320d818258200d1d7da5a0a02d72404b434ff9a35ae2e8b39f1f981c02413cc525ec6c245650011082581d601e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a071a3b7b4a14111a00046d0fa20582840100d8799f4672656465656dff821924951a00350446840101d8799f4672656465656dff82192edf1a00488b0f0682584d584b010000323232323232223253330044a229309b2b19299980219b87480000044c8c94ccc024c02c0085261637326eb8c024004c018dd50018b18021baa0025734aae7555cf2ab9f5742ae89585f585d010000323232323232322232533300532324a26e64dd7180500098020018a4c26cac64a66600a66e1d200000113232533300a300c002149858dcc9bae300a00130040031630053754004460086ea80055cd2ab9d5573caae7d5d0aba21f5f6"
+  const lucidInst = await lucidInstance();
+  const txObj = C.Transaction.from_bytes(fromHex(cbor));
+  const constructedTx = new Tx(lucidInst, txObj);
+  const completedTx = await constructedTx.complete();
+  const constructedMint = completedTx.txComplete.body().mint()?.to_bytes();
+  const constructedScripts = completedTx.txComplete.witness_set().plutus_v2_scripts()?.to_bytes();
+  const constructedRedeemers = completedTx.txComplete.witness_set().redeemers()?.to_bytes();
+
+  const mint = txObj.body().mint()?.to_bytes();
+  const scripts = txObj.witness_set().plutus_v2_scripts()?.to_bytes();
+  const redeemers = txObj.witness_set().redeemers()?.to_bytes();
+
+  assertEquals(mint, constructedMint);
+  assertEquals(scripts, constructedScripts);
+  assertEquals(redeemers, constructedRedeemers);
+})
+
+Deno.test("Constructed tx outputs and signers", async () => {
+  const cborTxWithInlineDatum = "84a60081825820c825672180b8bc7e788d47f60b58b289f294d03025260aad3058afff1dddfffc000182a400581d601e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a07011a0010b454028201d81849d8799f44486f6c61ff03d81858238202581f581d01000022232632498cd5ce24810b6974206275726e732121210012001182581d601e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a071a00364413021a00029831031a030c350c081a030c34a80e81581c1e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a07a0f5f6"
+  const lucidInst = await lucidInstance();
+  const txObj = C.Transaction.from_bytes(fromHex(cborTxWithInlineDatum));
+  const constructedTx = new Tx(lucidInst, txObj);
+  const completedTx = await constructedTx.complete();
+  const constructedOutputs = completedTx.txComplete.body().outputs().to_bytes();
+  const constructedSigners = completedTx.txComplete.body().required_signers()?.to_bytes();
+  const outputs = txObj.body().outputs().to_bytes();
+  const signers = txObj.body().required_signers()?.to_bytes();
+  assertEquals(outputs, constructedOutputs);
+  assertEquals(signers, constructedSigners);
+
+  const cborTxWithDatumHash = "84a700818258200d1d7da5a0a02d72404b434ff9a35ae2e8b39f1f981c02413cc525ec6c245650000182a400581d601e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a07011a001226b8028200582061746e30a0dd86ad10ab14ef54327828346fa3986edbb59ea132f35fb1b97e8803d81858238202581f581d01000022232632498cd5ce24810b6974206275726e732121210012001182581d601e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a071a004cde01021a0002a40d031a030c350d081a030c34a90b58203aad7c392e1ea949e140d7831290549545c874021b548e90e59d9d23cd0768de0e81581c1e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a07a1049fd8799f44486f6c61fffff5f6"
+  const txObj2 = C.Transaction.from_bytes(fromHex(cborTxWithDatumHash));
+  const constructedTx2 = new Tx(lucidInst, txObj2);
+  const completedTx2 = await constructedTx2.complete();
+  const constructedOutputs2 = completedTx2.txComplete.body().outputs().to_bytes();
+  const constructedSigners2 = completedTx2.txComplete.body().required_signers()?.to_bytes();
+  const constructedPlutusData = completedTx2.txComplete.witness_set().plutus_data()?.to_bytes();
+
+  const plutusData = txObj2.witness_set().plutus_data()?.to_bytes();
+  const outputs2 = txObj2.body().outputs().to_bytes();
+  const signers2 = txObj2.body().required_signers()?.to_bytes();
+
+  assertEquals(outputs2, constructedOutputs2);
+  assertEquals(signers2, constructedSigners2);
+  assertEquals(plutusData, constructedPlutusData);
+})
+
+Deno.test("Constructed Inputs", async () => {
+  const cbor = "84a700828258200b84cbfeb736f706df6075683ad613448c794005890594c5d8aacb523e0a6e70008258200d1d7da5a0a02d72404b434ff9a35ae2e8b39f1f981c02413cc525ec6c24565000018182581d601e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a071a006e368e021a0002b4780b58206a4861ec419eaa7e9e5d7934f004a45ef821edf4db334467d2ec38fe8de3da570d818258200d1d7da5a0a02d72404b434ff9a35ae2e8b39f1f981c02413cc525ec6c245650011082581d601e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a071a3b7ba86f111a00040eb4a3049fd8799f4d7363726970742072656465656dffff0581840000d8799f4d7363726970742072656465656dff821925c31a003648c20681584e584c0100003232323232322223253330054a229309b2b19299980299b87480000044c8c94ccc028c0300085261637326eb8c028004c01cdd50018b18029baa0025734aae7555cf2ab9f5742ae881f5f6"
+  const lucidInst = await lucidInstance();
+  const txObj = C.Transaction.from_bytes(fromHex(cbor));
+  const constructedTx = new Tx(lucidInst, txObj);
+  const completedTx = await constructedTx.complete({coinSelection: false});
+  const constructedInputs = completedTx.txComplete.body().inputs().to_bytes();
+  const constructedRedeemers = completedTx.txComplete.witness_set().redeemers()?.to_bytes();
+  const constructedPlutusData = completedTx.txComplete.witness_set().plutus_data()?.to_bytes();
+
+  const inputs = txObj.body().inputs().to_bytes();
+  const redeemers = txObj.witness_set().redeemers()?.to_bytes();
+  const plutusData = txObj.witness_set().plutus_data()?.to_bytes();
+
+  assertEquals(plutusData, constructedPlutusData);
+  assertEquals(inputs, constructedInputs);
+  assertEquals(redeemers, constructedRedeemers);
+})
+
+Deno.test("Constructed ReferenceInputs, Metadata and Validity range", async () => {
+  const cbor = "84a800818258200d1d7da5a0a02d72404b434ff9a35ae2e8b39f1f981c02413cc525ec6c24565001018182581d601e4c812dee8c1a181a0ac9a9923c9354983b2efe12bc9da623ee8a071a3b7d1552021a0002a1d1031a030c3c1007582000b29c76ab104df8ab480a27703112eb4aa6937874c2a6dc6c1a0c4f03e204c9081a030c3bac0b58208f9061c9b684f5ba4bc77ddab151e48999d885af2e4176a92251740f7032e5dc12828258204216ffac1a78511d811dc23ded0a2000941661e4d1f06f71f5d9c240917fe105008258200b84cbfeb736f706df6075683ad613448c794005890594c5d8aacb523e0a6e7000a1049fd8799f4d7363726970742072656465656dfffff5a11902a2a1636d7367686d65746164617461"
+  const lucid = await lucidInstance();
+  const txObj = C.Transaction.from_bytes(fromHex(cbor));
+  const constructedTx = new Tx(lucid, txObj);
+  const completedTx = await constructedTx.complete();
+  const constructedMetadata = completedTx.txComplete.auxiliary_data()?.metadata()?.to_bytes();
+  const constructedValidityEnd = completedTx.txComplete.body().ttl()?.to_bytes();
+  const constructedValidityStart = completedTx.txComplete.body().validity_start_interval()?.to_bytes();
+  const constructedReferenceInputs = completedTx.txComplete.body().reference_inputs()?.to_bytes();
+
+  const metadata = txObj.auxiliary_data()?.metadata()?.to_bytes();
+  const validityEnd = txObj.body().ttl()?.to_bytes();
+  const validityStart = txObj.body().validity_start_interval()?.to_bytes();
+  const referenceInputs = txObj.body().reference_inputs()?.to_bytes();
+
+  assertEquals(metadata, constructedMetadata);
+  assertEquals(validityEnd, constructedValidityEnd);
+  assertEquals(validityStart, constructedValidityStart);
+  assertEquals(referenceInputs, constructedReferenceInputs);
+})
