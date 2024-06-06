@@ -1,7 +1,7 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: 84d2259c1449f4e0ad2c0e435a8c65892b3618f2
+// source-hash: 685720c03db56450addc296b1d5c2e8c8f0471e7
 
 let imports = {};
 imports["__wbindgen_placeholder__"] = module.exports;
@@ -220,7 +220,7 @@ function makeMutClosure(arg0, arg1, dtor, f) {
   return real;
 }
 function __wbg_adapter_30(arg0, arg1, arg2) {
-  wasm.wasm_bindgen__convert__closures__invoke1_mut__hc5b0feae8f1c8c19(
+  wasm.wasm_bindgen__convert__closures__invoke1_mut__he7379e07487097df(
     arg0,
     arg1,
     addHeapObject(arg2),
@@ -849,7 +849,7 @@ function handleError(f, args) {
   }
 }
 function __wbg_adapter_1680(arg0, arg1, arg2, arg3) {
-  wasm.wasm_bindgen__convert__closures__invoke2_mut__h36bfe1ab67ca5429(
+  wasm.wasm_bindgen__convert__closures__invoke2_mut__h39a958339c6657ca(
     arg0,
     arg1,
     addHeapObject(arg2),
@@ -6454,7 +6454,7 @@ class Ed25519Signature {
   to_bytes() {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.bip32publickey_as_bytes(retptr, this.ptr);
+      wasm.ed25519signature_to_bytes(retptr, this.ptr);
       var r0 = getInt32Memory0()[retptr / 4 + 0];
       var r1 = getInt32Memory0()[retptr / 4 + 1];
       var v0 = getArrayU8FromWasm0(r0, r1).slice();
@@ -8736,7 +8736,7 @@ class Int {
   as_i32_or_nothing() {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.int_as_i32_or_nothing(retptr, this.ptr);
+      wasm.int_as_i32(retptr, this.ptr);
       var r0 = getInt32Memory0()[retptr / 4 + 0];
       var r1 = getInt32Memory0()[retptr / 4 + 1];
       return r0 === 0 ? undefined : r1;
@@ -9562,7 +9562,7 @@ class LegacyDaedalusPrivateKey {
   as_bytes() {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.bip32privatekey_as_bytes(retptr, this.ptr);
+      wasm.legacydaedalusprivatekey_as_bytes(retptr, this.ptr);
       var r0 = getInt32Memory0()[retptr / 4 + 0];
       var r1 = getInt32Memory0()[retptr / 4 + 1];
       var v0 = getArrayU8FromWasm0(r0, r1).slice();
@@ -9578,7 +9578,7 @@ class LegacyDaedalusPrivateKey {
   chaincode() {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.bip32privatekey_chaincode(retptr, this.ptr);
+      wasm.legacydaedalusprivatekey_chaincode(retptr, this.ptr);
       var r0 = getInt32Memory0()[retptr / 4 + 0];
       var r1 = getInt32Memory0()[retptr / 4 + 1];
       var v0 = getArrayU8FromWasm0(r0, r1).slice();
@@ -9618,14 +9618,14 @@ class LinearFee {
    * @returns {BigNum}
    */
   constant() {
-    const ret = wasm.linearfee_constant(this.ptr);
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
     return BigNum.__wrap(ret);
   }
   /**
    * @returns {BigNum}
    */
   coefficient() {
-    const ret = wasm.linearfee_coefficient(this.ptr);
+    const ret = wasm.exunits_steps(this.ptr);
     return BigNum.__wrap(ret);
   }
   /**
@@ -20771,7 +20771,7 @@ class TimelockExpiry {
    * @returns {BigNum}
    */
   slot() {
-    const ret = wasm.linearfee_constant(this.ptr);
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
     return BigNum.__wrap(ret);
   }
   /**
@@ -20917,7 +20917,7 @@ class TimelockStart {
    * @returns {BigNum}
    */
   slot() {
-    const ret = wasm.linearfee_constant(this.ptr);
+    const ret = wasm.constrplutusdata_alternative(this.ptr);
     return BigNum.__wrap(ret);
   }
   /**
@@ -21424,7 +21424,7 @@ class TransactionBody {
    * @returns {BigNum | undefined}
    */
   ttl() {
-    const ret = wasm.transactionbody_ttl(this.ptr);
+    const ret = wasm.protocolparamupdate_minfee_a(this.ptr);
     return ret === 0 ? undefined : BigNum.__wrap(ret);
   }
   /**
@@ -26650,7 +26650,7 @@ class Value {
    * @returns {BigNum}
    */
   coin() {
-    const ret = wasm.value_coin(this.ptr);
+    const ret = wasm.pointer_cert_index(this.ptr);
     return BigNum.__wrap(ret);
   }
   /**
@@ -28258,7 +28258,7 @@ module.exports.__wbg_transaction_new = function (arg0) {
 
 module.exports.__wbindgen_string_get = function (arg0, arg1) {
   const obj = getObject(arg1);
-  const ret = typeof obj === "string" ? obj : undefined;
+  const ret = typeof (obj) === "string" ? obj : undefined;
   var ptr0 = isLikeNone(ret)
     ? 0
     : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
@@ -28328,7 +28328,7 @@ module.exports.__wbg_process_5615a087a47ba544 = function (arg0) {
 
 module.exports.__wbindgen_is_object = function (arg0) {
   const val = getObject(arg0);
-  const ret = typeof val === "object" && val !== null;
+  const ret = typeof (val) === "object" && val !== null;
   return ret;
 };
 
@@ -28529,11 +28529,6 @@ module.exports.__wbg_self_e0b3266d2d9eba1a = function (arg0) {
   return addHeapObject(ret);
 };
 
-module.exports.__wbg_require_0993fe224bf8e202 = function (arg0, arg1) {
-  const ret = require(getStringFromWasm0(arg0, arg1));
-  return addHeapObject(ret);
-};
-
 module.exports.__wbg_crypto_e95a6e54c5c2e37f = function (arg0) {
   const ret = getObject(arg0).crypto;
   return addHeapObject(ret);
@@ -28541,6 +28536,11 @@ module.exports.__wbg_crypto_e95a6e54c5c2e37f = function (arg0) {
 
 module.exports.__wbg_getRandomValues_dc67302a7bd1aec5 = function (arg0) {
   const ret = getObject(arg0).getRandomValues;
+  return addHeapObject(ret);
+};
+
+module.exports.__wbg_require_0993fe224bf8e202 = function (arg0, arg1) {
+  const ret = require(getStringFromWasm0(arg0, arg1));
   return addHeapObject(ret);
 };
 
@@ -28581,8 +28581,8 @@ module.exports.__wbindgen_memory = function () {
   return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper7024 = function (arg0, arg1, arg2) {
-  const ret = makeMutClosure(arg0, arg1, 200, __wbg_adapter_30);
+module.exports.__wbindgen_closure_wrapper7030 = function (arg0, arg1, arg2) {
+  const ret = makeMutClosure(arg0, arg1, 186, __wbg_adapter_30);
   return addHeapObject(ret);
 };
 
