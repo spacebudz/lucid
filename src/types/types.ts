@@ -19,6 +19,7 @@ export type ProtocolParameters = {
   collateralPercentage: number;
   maxCollateralInputs: number;
   costModels: CostModels;
+  minfeeRefscriptCostPerByte: number;
 };
 
 export type Slot = number;
