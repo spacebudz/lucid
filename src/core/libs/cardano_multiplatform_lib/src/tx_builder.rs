@@ -252,12 +252,33 @@ fn min_fee(tx_builder: &mut TransactionBuilder) -> Result<Coin, JsError> {
     // }
     let build = tx_builder.build()?;
     let full_tx = fake_full_tx(tx_builder, build)?;
+
+    let mut ref_script_outputs = TransactionOutputs::new();
+
+    let mut ref_script_outputs_1: Vec<TransactionOutput> = tx_builder
+        .inputs
+        .iter()
+        .map(|input| input.utxo.output.clone())
+        .collect();
+
+    let mut ref_script_outputs_2: Vec<TransactionOutput> = tx_builder
+        .reference_inputs
+        .clone()
+        .unwrap_or(TransactionUnspentOutputs::new())
+        .0
+        .iter()
+        .map(|input| input.output.clone())
+        .collect();
+
+    ref_script_outputs.0.append(&mut ref_script_outputs_1);
+    ref_script_outputs.0.append(&mut ref_script_outputs_2);
+
     fees::min_fee(
         &full_tx,
         &tx_builder.config.fee_algo,
         &tx_builder.config.ex_unit_prices,
         &tx_builder.config.minfee_refscript_cost_per_byte,
-        tx_builder.reference_inputs.clone(),
+        &ref_script_outputs,
     )
 }
 

@@ -33,7 +33,7 @@ pub fn min_fee(
     linear_fee: &LinearFee,
     ex_unit_prices: &ExUnitPrices,
     minfee_refscript_cost_per_byte: &Rational,
-    reference_inputs: Option<TransactionUnspentOutputs>,
+    ref_script_outputs: &TransactionOutputs,
 ) -> Result<Coin, JsError> {
     let mut fee = to_bignum(tx.to_bytes().len() as u64)
         .checked_mul(&linear_fee.coefficient())?
@@ -59,7 +59,7 @@ pub fn min_fee(
         );
         fee = fee.checked_add(&script_fee)?;
     }
-    if let Some(inputs) = reference_inputs {
+    if ref_script_outputs.len() > 0 {
         let refscript_fee = to_bignum(
             (Fraction::new(
                 from_bignum(&minfee_refscript_cost_per_byte.numerator),
@@ -67,8 +67,8 @@ pub fn min_fee(
             )
             .to_f64()
             .unwrap()
-                * inputs.0.iter().fold(0_u64, |acc, curr| {
-                    acc + match &curr.output.script_ref {
+                * ref_script_outputs.0.iter().fold(0_u64, |acc, output| {
+                    acc + match &output.script_ref {
                         Some(script) => script.to_bytes().len() as u64,
                         None => 0,
                     }
@@ -149,7 +149,7 @@ mod tests {
                 &linear_fee,
                 &ExUnitPrices::from_float(0.0, 0.0),
                 &Rational::from_float(0.0),
-                None
+                &TransactionOutputs::new()
             )
             .unwrap()
             .to_str(),
@@ -211,7 +211,7 @@ mod tests {
                 &linear_fee,
                 &ExUnitPrices::from_float(0.0, 0.0),
                 &Rational::from_float(0.0),
-                None
+                &TransactionOutputs::new()
             )
             .unwrap()
             .to_str(),
@@ -306,7 +306,7 @@ mod tests {
                 &linear_fee,
                 &ExUnitPrices::from_float(0.0, 0.0),
                 &Rational::from_float(0.0),
-                None
+                &TransactionOutputs::new()
             )
             .unwrap()
             .to_str(),
@@ -435,7 +435,7 @@ mod tests {
                 &linear_fee,
                 &ExUnitPrices::from_float(0.0, 0.0),
                 &Rational::from_float(0.0),
-                None
+                &TransactionOutputs::new()
             )
             .unwrap()
             .to_str(),
@@ -656,7 +656,7 @@ mod tests {
                 &linear_fee,
                 &ExUnitPrices::from_float(0.0, 0.0),
                 &Rational::from_float(0.0),
-                None
+                &TransactionOutputs::new()
             )
             .unwrap()
             .to_str(),

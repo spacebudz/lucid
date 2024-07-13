@@ -1,7 +1,7 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: 386e21a42be2b82833142fbdd8ee3b4520861f2e
+// source-hash: 30d13c685c697cedd19ad373b2742dc4e7cc2787
 
 let imports = {};
 imports["__wbindgen_placeholder__"] = module.exports;
@@ -351,7 +351,7 @@ module.exports.decrypt_with_password = function (password, data) {
  * @param {LinearFee} linear_fee
  * @param {ExUnitPrices} ex_unit_prices
  * @param {UnitInterval} minfee_refscript_cost_per_byte
- * @param {TransactionUnspentOutputs | undefined} reference_inputs
+ * @param {TransactionOutputs} ref_script_outputs
  * @returns {BigNum}
  */
 module.exports.min_fee = function (
@@ -359,7 +359,7 @@ module.exports.min_fee = function (
   linear_fee,
   ex_unit_prices,
   minfee_refscript_cost_per_byte,
-  reference_inputs,
+  ref_script_outputs,
 ) {
   try {
     const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -367,18 +367,14 @@ module.exports.min_fee = function (
     _assertClass(linear_fee, LinearFee);
     _assertClass(ex_unit_prices, ExUnitPrices);
     _assertClass(minfee_refscript_cost_per_byte, UnitInterval);
-    let ptr0 = 0;
-    if (!isLikeNone(reference_inputs)) {
-      _assertClass(reference_inputs, TransactionUnspentOutputs);
-      ptr0 = reference_inputs.__destroy_into_raw();
-    }
+    _assertClass(ref_script_outputs, TransactionOutputs);
     wasm.min_fee(
       retptr,
       tx.ptr,
       linear_fee.ptr,
       ex_unit_prices.ptr,
       minfee_refscript_cost_per_byte.ptr,
-      ptr0,
+      ref_script_outputs.ptr,
     );
     var r0 = getInt32Memory0()[retptr / 4 + 0];
     var r1 = getInt32Memory0()[retptr / 4 + 1];
@@ -28627,7 +28623,7 @@ module.exports.__wbindgen_memory = function () {
   return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper7037 = function (arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper7044 = function (arg0, arg1, arg2) {
   const ret = makeMutClosure(arg0, arg1, 200, __wbg_adapter_30);
   return addHeapObject(ret);
 };
