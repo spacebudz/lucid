@@ -1,5 +1,7 @@
 use fraction::ToPrimitive;
+use fraction::Decimal;
 use itertools::Itertools;
+use web_sys::console::log_1;
 
 use super::fees;
 use super::utils;
@@ -252,11 +254,56 @@ fn min_fee(tx_builder: &mut TransactionBuilder) -> Result<Coin, JsError> {
     // }
     let build = tx_builder.build()?;
     let full_tx = fake_full_tx(tx_builder, build)?;
-    fees::min_fee(
+    let base_fee = fees::min_fee(
         &full_tx,
         &tx_builder.config.fee_algo,
         &tx_builder.config.ex_unit_prices,
-    )
+    ).unwrap();
+
+    let mut reference_scripts_tier_price = BigNum::from(0);
+    if let Some(reference_inputs) = &tx_builder.reference_inputs.clone() {
+        // See https://github.com/CardanoSolutions/ogmios/releases/tag/v6.5.0
+        // FIXME: these values should be retrieved from the protocol parameters
+        let range: u64 = 25600;
+        let multiplier = Decimal::from("1.2");
+        let base = Decimal::from(44);
+
+        let reference_scripts: Vec<&TransactionUnspentOutput> = reference_inputs
+            .0
+            .iter()
+            .filter(|ref_input| ref_input.output.script_ref.is_some())
+            .collect();
+
+        let size_of_reference_scripts: u64 = reference_scripts
+            .iter()
+            .map(|ref_input| ref_input.to_bytes().len() as u64)
+            .sum();
+
+        let power = size_of_reference_scripts.checked_div(range).unwrap();
+        let mut cost_per_byte = base;
+        for _ in 1..power {
+            cost_per_byte *= multiplier;
+        }
+        reference_scripts_tier_price = (Decimal::from(size_of_reference_scripts) * cost_per_byte)
+            .ceil()
+            .to_u64()
+            .unwrap()
+            .into();
+
+        log_1( // FIXME: remove this
+            &format!(
+                "base_fee={}, num_scripts={}, size={}, power={}, cost_per_byte={}, script_fee={}",
+                base_fee.to_str(),
+                reference_scripts.len(),
+                size_of_reference_scripts,
+                power,
+                cost_per_byte,
+                reference_scripts_tier_price.to_str()
+            ).into()
+        );
+    }
+
+    base_fee.checked_add(&reference_scripts_tier_price)
 }
 
 // We need to know how many of each type of witness will be in the transaction so we can calculate the tx fee
