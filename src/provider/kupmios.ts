@@ -17,6 +17,8 @@ import {
 import { C } from "../core/mod.ts";
 import { fromHex, fromUnit, toHex } from "../utils/mod.ts";
 
+// TODO: Ogmios related endpoints need to be udpated due to new Cardano node and breaking Ogmios v6
+
 export class Kupmios implements Provider {
   kupoUrl: string;
   ogmiosUrl: string;

@@ -82,7 +82,7 @@ export class Maestro implements Provider {
         "plutus:v1": "PlutusV1",
         "plutus:v2": "PlutusV2",
       }),
-      minfeeRefscriptCostPerByte: 0, // TODO
+      minfeeRefscriptCostPerByte: 15, // TODO
     };
   }
 

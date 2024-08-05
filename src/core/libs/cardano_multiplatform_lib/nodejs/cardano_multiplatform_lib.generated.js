@@ -1,7 +1,7 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: 30d13c685c697cedd19ad373b2742dc4e7cc2787
+// source-hash: ab608f4f1fde621fb8372ad53feed3765d41d179
 
 let imports = {};
 imports["__wbindgen_placeholder__"] = module.exports;
@@ -865,7 +865,7 @@ function handleError(f, args) {
     wasm.__wbindgen_exn_store(addHeapObject(e));
   }
 }
-function __wbg_adapter_1683(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_1684(arg0, arg1, arg2, arg3) {
   wasm.wasm_bindgen__convert__closures__invoke2_mut__he7061673dd7691f9(
     arg0,
     arg1,
@@ -985,8 +985,10 @@ module.exports.RedeemerTagKind = Object.freeze({
   "2": "Cert",
   Reward: 3,
   "3": "Reward",
-  Drep: 4,
-  "4": "Drep",
+  Voting: 4,
+  "4": "Voting",
+  Proposing: 5,
+  "5": "Proposing",
 });
 /**
  * JSON <-> PlutusData conversion schemas.
@@ -16102,8 +16104,15 @@ class RedeemerTag {
   /**
    * @returns {RedeemerTag}
    */
-  static new_drep() {
-    const ret = wasm.redeemertag_new_drep();
+  static new_voting() {
+    const ret = wasm.redeemertag_new_voting();
+    return RedeemerTag.__wrap(ret);
+  }
+  /**
+   * @returns {RedeemerTag}
+   */
+  static new_proposing() {
+    const ret = wasm.redeemertag_new_proposing();
     return RedeemerTag.__wrap(ret);
   }
   /**
@@ -28500,7 +28509,7 @@ module.exports.__wbg_new_9d3a9ce4282a18a8 = function (arg0, arg1) {
       const a = state0.a;
       state0.a = 0;
       try {
-        return __wbg_adapter_1683(a, state0.b, arg0, arg1);
+        return __wbg_adapter_1684(a, state0.b, arg0, arg1);
       } finally {
         state0.a = a;
       }
@@ -28623,7 +28632,7 @@ module.exports.__wbindgen_memory = function () {
   return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper7044 = function (arg0, arg1, arg2) {
+module.exports.__wbindgen_closure_wrapper7045 = function (arg0, arg1, arg2) {
   const ret = makeMutClosure(arg0, arg1, 200, __wbg_adapter_30);
   return addHeapObject(ret);
 };
