@@ -2049,6 +2049,8 @@ impl Deserialize for PlutusList {
     }
 }
 
+/// TODO: Redeemer serialization and deserialization should be updated soon,
+/// instead of array use a map according to specs. Array still valid tho in Conway
 impl cbor_event::se::Serialize for Redeemer {
     fn serialize<'se, W: Write>(
         &self,
