@@ -17,7 +17,7 @@ import {
   Unit,
   UTxO,
 } from "../types/mod.ts";
-import packageJson from "../../package.json" assert { type: "json" };
+import packageJson from "../../package.json" with { type: "json" };
 
 export type MaestroSupportedNetworks = "Mainnet" | "Preprod" | "Preview";
 

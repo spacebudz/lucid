@@ -7,9 +7,7 @@
     "test:core": "cd src/core/libs/cardano_multiplatform_lib && cargo test; cd ../cardano_message_signing && cargo test"
   },
   "lint": {
-    "files": {
-      "include": ["src/"],
-      "exclude": ["src/core/"]
-    }
+    "include": ["src/"],
+    "exclude": ["src/core/"]
   }
 }

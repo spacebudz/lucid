@@ -1,4 +1,4 @@
-import packageJson from "./package.json" assert { type: "json" };
+import packageJson from "./package.json" with { type: "json" };
 import { parse } from "https://deno.land/std@0.185.0/flags/mod.ts";
 
 const flags = parse(Deno.args, {
