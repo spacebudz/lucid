@@ -1,4 +1,4 @@
-import * as dnt from "https://deno.land/x/dnt@0.30.0/mod.ts";
+import * as dnt from "https://deno.land/x/dnt@0.40.0/mod.ts";
 import * as esbuild from "https://deno.land/x/esbuild@v0.17.11/mod.js";
 import packageInfo from "./package.json" with { type: "json" };
 
