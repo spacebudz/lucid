@@ -68,6 +68,9 @@ lucid.txBuilderConfig = C.TransactionBuilderConfigBuilder.new()
       protocolParameters.priceStep,
     ),
   )
+  .minfee_refscript_cost_per_byte(
+    C.UnitInterval.from_float(protocolParameters.minfeeRefscriptCostPerByte),
+  )
   .slot_config(
     C.BigNum.from_str(slotConfig.zeroTime.toString()),
     C.BigNum.from_str(slotConfig.zeroSlot.toString()),
