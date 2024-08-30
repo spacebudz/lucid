@@ -2792,6 +2792,7 @@ mod tests {
             .ex_unit_prices(&ExUnitPrices::from_float(0.0, 0.0))
             .collateral_percentage(150)
             .max_collateral_inputs(3)
+            .minfee_refscript_cost_per_byte(&UnitInterval::from_float(0.0))
             .build()
             .unwrap();
         TransactionBuilder::new(&cfg)
@@ -2844,6 +2845,7 @@ mod tests {
                 .ex_unit_prices(&ExUnitPrices::from_float(0.0, 0.0))
                 .collateral_percentage(150)
                 .max_collateral_inputs(3)
+                .minfee_refscript_cost_per_byte(&UnitInterval::from_float(0.0))
                 .build()
                 .unwrap(),
         )
@@ -5218,6 +5220,7 @@ mod tests {
             .ex_unit_prices(&ExUnitPrices::from_float(0.0, 0.0))
             .collateral_percentage(150)
             .max_collateral_inputs(3)
+            .minfee_refscript_cost_per_byte(&UnitInterval::from_float(0.0))
             .build()
             .unwrap();
         let mut tx_builder = TransactionBuilder::new(&cfg);
@@ -5642,6 +5645,7 @@ mod tests {
                 .ex_unit_prices(&ExUnitPrices::from_float(0.0, 0.0))
                 .collateral_percentage(150)
                 .max_collateral_inputs(3)
+                .minfee_refscript_cost_per_byte(&UnitInterval::from_float(0.0))
                 .build()
                 .unwrap(),
         );
