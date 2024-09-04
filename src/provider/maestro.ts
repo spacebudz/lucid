@@ -39,7 +39,7 @@ export class Maestro implements Provider {
   }
 
   async getProtocolParameters(): Promise<ProtocolParameters> {
-    const timestampedResult = await fetch(`${this.url}/protocol-params`, {
+    const timestampedResult = await fetch(`${this.url}/protocol-parameters`, {
       headers: this.commonHeaders(),
     }).then((res) => res.json());
     const result = timestampedResult.data;
@@ -66,23 +66,24 @@ export class Maestro implements Provider {
     };
     return {
       minFeeA: parseInt(result.min_fee_coefficient),
-      minFeeB: parseInt(result.min_fee_constant),
-      maxTxSize: parseInt(result.max_tx_size),
-      maxValSize: parseInt(result.max_value_size),
-      keyDeposit: BigInt(result.stake_key_deposit),
-      poolDeposit: BigInt(result.pool_deposit),
-      priceMem: decimalFromRationalString(result.prices.memory),
-      priceStep: decimalFromRationalString(result.prices.steps),
+      minFeeB: parseInt(result.min_fee_constant.ada.lovelace),
+      maxTxSize: parseInt(result.max_transaction_size.bytes),
+      maxValSize: parseInt(result.max_value_size.bytes),
+      keyDeposit: BigInt(result.stake_credential_deposit.ada.lovelace),
+      poolDeposit: BigInt(result.stake_pool_deposit.ada.lovelace),
+      priceMem: decimalFromRationalString(result.script_execution_prices.memory),
+      priceStep: decimalFromRationalString(result.script_execution_prices.cpu),
       maxTxExMem: BigInt(result.max_execution_units_per_transaction.memory),
-      maxTxExSteps: BigInt(result.max_execution_units_per_transaction.steps),
-      coinsPerUtxoByte: BigInt(result.coins_per_utxo_byte),
+      maxTxExSteps: BigInt(result.max_execution_units_per_transaction.cpu),
+      coinsPerUtxoByte: BigInt(result.min_utxo_deposit_coefficient),
       collateralPercentage: parseInt(result.collateral_percentage),
       maxCollateralInputs: parseInt(result.max_collateral_inputs),
-      costModels: renameKeysAndSort(result.cost_models, {
-        "plutus:v1": "PlutusV1",
-        "plutus:v2": "PlutusV2",
+      costModels: renameKeysAndSort(result.plutus_cost_models, {
+        "plutus_v1": "PlutusV1",
+        "plutus_v2": "PlutusV2",
+        "plutus_v3": "PlutusV3",
       }),
-      minfeeRefscriptCostPerByte: 15, // TODO
+      minfeeRefscriptCostPerByte: parseFloat(result.min_fee_reference_scripts.base),
     };
   }
 
