@@ -99,49 +99,25 @@ if (isNode) {
     if (!globalThis.fs) globalThis.fs = fs; 
 }
 
-const C = await (async () => {
-  try {
-    if (isNode) {
-      return await import(
-        /* webpackIgnore: true */ "./libs/cardano_multiplatform_lib/nodejs/cardano_multiplatform_lib.generated.js"
-      );
-    }
-    return await import(
-      "./libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js"
-    );
-  } catch (_e) {
-    // This only ever happens during SSR rendering
-    return null;
-  }
-})();
-const M = await (async () => {
-  try {
-    if (isNode) {
-      return await import(
-        /* webpackIgnore: true */ "./libs/cardano_message_signing/nodejs/cardano_message_signing.generated.js"
-      );
-    }
-    return await import(
-      "./libs/cardano_message_signing/cardano_message_signing.generated.js"
-    );
-  } catch (_e) {
-    // This only ever happens during SSR rendering
-    return null;
-  }
-})();
-if (!isNode) {
-  async function unsafeInstantiate(module) {
+import * as C from "./libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js";
+import * as M from "./libs/cardano_message_signing/cardano_message_signing.generated.js";
+import packageJson from "../../package.js";
+async function unsafeInstantiate(module, url) {
     try {
-      await module.instantiate();
-    } catch (_e) {
-      // This only ever happens during SSR rendering
+        await module.instantiate({
+            // Exception for Deno fresh framework
+            url: new URL(url, \`https://deno.land/x/lucid@\${packageJson.version.slice(0, packageJson.version.indexOf('-'))}/src/core/libs/\`),
+        });
     }
-  }
-  await Promise.all([
-    unsafeInstantiate(C),
-    unsafeInstantiate(M),
-  ]);
+    catch (_e) {
+        // This only ever happens during SSR rendering
+        console.error(_e);
+    }
 }
+await Promise.all([
+    unsafeInstantiate(C, 'cardano_multiplatform_lib/cardano_multiplatform_lib_bg.wasm'),
+    unsafeInstantiate(M, 'cardano_message_signing/cardano_message_signing_bg.wasm'),
+]);
 export { C, M };
 `;
 Deno.writeTextFileSync("dist/esm/src/core/core.js", coreFile);
