@@ -36,6 +36,7 @@ export const PROTOCOL_PARAMETERS_DEFAULT: ProtocolParameters = {
   coinsPerUtxoByte: 4310n,
   collateralPercentage: 150,
   maxCollateralInputs: 3,
+  minfeeRefscriptCostPerByte: 15,
   costModels: {
     PlutusV1: {
       "addInteger-cpu-arguments-intercept": 205665,
