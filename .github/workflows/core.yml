@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Use Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
 
       - name: Build Core
         run: deno task build:core

@@ -3818,7 +3818,8 @@ async function instantiateModule(opts) {
   const isFile = wasmUrl.protocol === "file:";
 
   // make file urls work in Node via dnt
-  const isNode = globalThis.process?.versions?.node != null;
+  const isNode = globalThis.process?.versions?.node != null &&
+    typeof Deno === "undefined";
   if (isNode && isFile) {
     // requires fs to be set externally on globalThis
     const wasmCode = fs.readFileSync(wasmUrl);
