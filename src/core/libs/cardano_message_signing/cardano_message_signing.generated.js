@@ -2,6 +2,9 @@
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
 // source-hash: ccea9a27c8aee355bc2051725d859ee0a31dcb77
+
+import Module from "node:module";
+const module = new Module();
 let wasm;
 
 const heap = new Array(128).fill(undefined);

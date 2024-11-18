@@ -26,6 +26,9 @@ await dnt.build({
     main: "./esm/mod.js",
     type: "module",
   },
+  mappings: {
+    "node:module": "data:text/javascript,export default class Module {}",
+  },
 });
 
 Deno.copyFileSync("LICENSE", "dist/LICENSE");

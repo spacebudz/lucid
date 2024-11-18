@@ -367,7 +367,7 @@ Deno.test("Apply params to script", () => {
     };
     assert(mintingPolicy);
   } catch (e) {
-    assert(false, e);
+    assert(false, e as string);
   }
   try {
     const mintingPolicy = {
@@ -380,7 +380,7 @@ Deno.test("Apply params to script", () => {
     };
     assert(!mintingPolicy);
   } catch (e) {
-    assert(true, e);
+    assert(true, e as string);
   }
   try {
     const mintingPolicy = {
@@ -392,6 +392,6 @@ Deno.test("Apply params to script", () => {
     };
     assert(mintingPolicy);
   } catch (e) {
-    assert(false, e);
+    assert(false, e as string);
   }
 });
