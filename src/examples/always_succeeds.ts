@@ -25,7 +25,7 @@ const lucid = await Lucid.new(
   "Preview",
 );
 
-const api = await window.cardano.nami.enable();
+const api = await globalThis.cardano.nami.enable();
 // Assumes you are in a browser environment
 lucid.selectWallet(api);
 

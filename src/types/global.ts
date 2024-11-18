@@ -32,7 +32,6 @@ export type Cardano = {
 };
 
 declare global {
-  interface Window {
-    cardano: Cardano;
-  }
+  // deno-lint-ignore no-var
+  var cardano: Cardano;
 }
