@@ -2516,7 +2516,7 @@ export class HeaderMap {
    * @returns {Label | undefined}
    */
   content_type() {
-    const ret = wasm.headermap_content_type(this.ptr);
+    const ret = wasm.cosekey_algorithm_id(this.ptr);
     return ret === 0 ? undefined : Label.__wrap(ret);
   }
   /**

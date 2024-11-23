@@ -117,7 +117,7 @@ pub fn get_ex_units(
     let result = eval_phase_two_raw(
         &tx_bytes,
         &utxos_bytes,
-        &cost_mdls_bytes,
+        Some(&cost_mdls_bytes),
         initial_budget,
         sc,
         false,
