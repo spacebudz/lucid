@@ -38,7 +38,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_derive = "^1.0.59"
 fraction = "0.10.0"
 num-integer = "0.1.45"
-uplc = { git = "https://github.com/aiken-lang/aiken.git", rev = "cdff149b5e9084f5249992c0dcb9e4ca3a972d05", default-features = false, features = ["native-secp256k1"]}
+uplc = { git = "https://github.com/aiken-lang/aiken.git", rev = "3d77b5c378ce404cddd9a1f111906d72fd46fc83", default-features = false }
 
 # non-wasm
 [target.'cfg(not(all(target_arch = "wasm32", not(target_os = "emscripten"))))'.dependencies]
