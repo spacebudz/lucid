@@ -90,6 +90,22 @@ const txHash = await signedTx.submit();
 console.log(txHash);
 ```
 
+### Tx Chaining
+
+```js
+const tx1 = await lucid.newTx()
+  .payToAddress("addr...", { lovelace: 5000000n })
+  .complete();
+
+const tx2 = tx1
+  // select tx1 outputs that shall become inputs for tx2
+  .chain((outputs) => outputs.filter(output => output.address === 'addr...'))
+  .payToAddress("addr...", { lovelace: 2500000n })
+  .complete();
+
+// sign tx1 & tx2, submit them
+```
+
 ### Test
 
 ```
