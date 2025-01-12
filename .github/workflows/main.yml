@@ -2,7 +2,7 @@ name: CI
 on: [push, pull_request]
 jobs:
   build:
-    name: Build, lint, and test on Deno and ${{ matrix.os }}
+    name: Lint, and test on Deno and ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -15,9 +15,6 @@ jobs:
 
       - name: Use Deno
         uses: denoland/setup-deno@v2
-
-      - name: Build
-        run: deno task build
 
       - name: Lint
         run: deno lint
