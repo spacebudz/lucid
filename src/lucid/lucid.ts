@@ -129,6 +129,7 @@ export class Lucid {
 
   async fromInstructions(
     instructions: Array<Instruction | PartialInstruction>,
+    forceUtxoResolution?: boolean,
   ): Promise<TxComplete> {
     if (!this.wallet || !this.provider) {
       throw new Error("Wallet or provider not set");
@@ -142,7 +143,7 @@ export class Lucid {
     const resolvedInstructions: Instruction[] = await resolveInstructions(
       this,
       instructions,
-      true,
+      forceUtxoResolution,
     );
 
     const instructionSigner = new InstructionBuilder(
