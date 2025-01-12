@@ -1,4 +1,5 @@
 import {
+  Addresses,
   Assets,
   AuxMetadata,
   Change,
@@ -9,6 +10,7 @@ import {
   InstructionBuilder,
   Lucid,
   OutputData,
+  PartialInstruction,
   PoolRegistration,
   Script,
   toHex,
@@ -17,7 +19,14 @@ import {
 } from "../mod.ts";
 
 export class Tx {
-  private tasks: ((that: Tx) => Promise<Instruction> | Instruction)[];
+  private tasks: Array<
+    (
+      that: Tx,
+    ) =>
+      | Promise<Instruction | PartialInstruction>
+      | Instruction
+      | PartialInstruction
+  >;
   private lucid: Lucid;
 
   constructor(lucid: Lucid) {
@@ -65,14 +74,14 @@ export class Tx {
   }
 
   /** Pay to a public key or native script address. */
-  payTo(address: string, assets: Assets): Tx {
+  payTo(address: string | "{{own}}", assets: Assets): Tx {
     this.tasks.push(() => ({ type: "PayTo", address, assets }));
     return this;
   }
 
   /** Pay to a public key or native script address with datum or scriptRef. */
   payToWithData(
-    address: string,
+    address: string | "{{own}}",
     outputData: string | OutputData,
     assets: Assets,
   ): Tx {
@@ -116,7 +125,7 @@ export class Tx {
 
   /** Delegate to a stake pool. */
   delegateTo(
-    rewardAddress: string,
+    rewardAddress: string | "{{own}}",
     poolId: string,
     redeemer?: string,
   ): Tx {
@@ -132,13 +141,13 @@ export class Tx {
   }
 
   /** Register a reward address in order to delegate to a pool and receive rewards. */
-  registerStake(rewardAddress: string): Tx {
+  registerStake(rewardAddress: string | "{{own}}"): Tx {
     this.tasks.push(() => ({ type: "RegisterStake", rewardAddress }));
     return this;
   }
 
   /** Deregister a reward address. */
-  deregisterStake(rewardAddress: string, redeemer?: string): Tx {
+  deregisterStake(rewardAddress: string | "{{own}}", redeemer?: string): Tx {
     this.tasks.push(() => ({
       type: "DeregisterStake",
       rewardAddress,
@@ -196,20 +205,25 @@ export class Tx {
   }
 
   withdraw(
-    rewardAddress: string,
-    amount: bigint,
+    rewardAddress: string | "{{own}}",
+    amount?: bigint,
     redeemer?: string,
   ): Tx {
-    this.tasks.push(() => ({
-      type: "Withdraw",
-      withdrawal: { rewardAddress, amount: Number(amount) },
-      redeemer,
-    }));
+    this.tasks.push(() => {
+      const rewards = typeof amount !== "undefined"
+        ? Number(amount)
+        : undefined;
+      return {
+        type: "Withdraw",
+        withdrawal: { rewardAddress, amount: rewards },
+        redeemer,
+      };
+    });
     return this;
   }
 
   /** Add a payment or stake key hash as a required signer of the transaction. */
-  addSigner(keyHash: string): Tx {
+  addSigner(keyHash: string | "{{own.payment}}" | "{{own.stake}}"): Tx {
     this.tasks.push(() => ({ type: "AddSigner", keyHash }));
     return this;
   }
@@ -252,7 +266,7 @@ export class Tx {
     return this;
   }
 
-  withChangeTo(change: Change): Tx {
+  withChangeTo(change: Change | Change & { address: "{{own}}" }): Tx {
     this.tasks.push(() => ({
       type: "WithChangeTo",
       address: change.address,
@@ -293,11 +307,130 @@ export class Tx {
     );
   }
 
-  async toInstructions(): Promise<Instruction[]> {
+  async toPartialInstructions(): Promise<PartialInstruction[]> {
     const instructions = await Promise.all(
-      this.tasks.map((task) => task(this)),
+      this.tasks.map(async (task) => {
+        const instruction = await task(this);
+        if (instruction.type === "CollectFrom") {
+          instruction.utxos = instruction.utxos.map((
+            { txHash, outputIndex },
+          ) => ({
+            txHash,
+            outputIndex,
+          }));
+        }
+        if (instruction.type === "ReadFrom") {
+          instruction.utxos = instruction.utxos.map((
+            { txHash, outputIndex },
+          ) => ({
+            txHash,
+            outputIndex,
+          }));
+        }
+        return instruction;
+      }),
     );
 
     return instructions;
   }
+
+  async toInstructions(): Promise<Instruction[]> {
+    const instructions = await Promise.all(
+      this.tasks.map((task) => task(this)),
+    ).then((instructions) =>
+      resolveInstructions(this.lucid, instructions, false)
+    );
+
+    return instructions;
+  }
+}
+
+export function resolveInstructions(
+  lucid: Lucid,
+  instructions: Array<Instruction | PartialInstruction>,
+  forceUtxoResolution?: boolean,
+): Promise<Instruction[]> {
+  return Promise.all(instructions.map(async (instruction) => {
+    switch (instruction.type) {
+      case "CollectFrom":
+      case "ReadFrom": {
+        if (forceUtxoResolution) {
+          const utxos = await lucid.utxosByOutRef(instruction.utxos);
+          instruction.utxos = utxos;
+        } else {
+          const outRefs = instruction.utxos.filter((utxo) =>
+            !("address" in utxo)
+          );
+          const utxos = [
+            ...instruction.utxos.filter((utxo) => "address" in utxo) as Utxo[],
+            ...await lucid.utxosByOutRef(outRefs),
+          ];
+          instruction.utxos = utxos;
+        }
+        return instruction as Instruction;
+      }
+      case "PayTo":
+      case "WithChangeTo": {
+        if (instruction.address === "{{own}}") {
+          instruction.address = await lucid.wallet.address();
+        }
+        return instruction;
+      }
+      case "RegisterStake":
+      case "DeregisterStake": {
+        if (instruction.rewardAddress === "{{own}}") {
+          const rewardAddress = await lucid.wallet.rewardAddress();
+          if (!rewardAddress) {
+            throw new Error("Wallet does not have a reward address");
+          }
+          instruction.rewardAddress = rewardAddress;
+        }
+        return instruction as Instruction;
+      }
+      case "DelegateTo": {
+        if (instruction.delegation.rewardAddress === "{{own}}") {
+          const rewardAddress = await lucid.wallet.rewardAddress();
+          if (!rewardAddress) {
+            throw new Error("Wallet does not have a reward address");
+          }
+          instruction.delegation.rewardAddress = rewardAddress;
+        }
+        return instruction as Instruction;
+      }
+      case "Withdraw": {
+        if (instruction.withdrawal.rewardAddress === "{{own}}") {
+          const rewardAddress = await lucid.wallet.rewardAddress();
+          if (!rewardAddress) {
+            throw new Error("Wallet does not have a reward address");
+          }
+          instruction.withdrawal.rewardAddress = rewardAddress;
+        }
+        if (!instruction.withdrawal.amount) {
+          instruction.withdrawal.amount = Number(
+            (await lucid.delegationAt(instruction.withdrawal.rewardAddress))
+              .rewards,
+          );
+        }
+        return instruction as Instruction;
+      }
+      case "AddSigner": {
+        const { payment, delegation } = Addresses.inspect(
+          await lucid.wallet.address(),
+        );
+        if (instruction.keyHash === "{{own.payment}}") {
+          instruction.keyHash = payment!.hash;
+        }
+        if (instruction.keyHash === "{{own.stake}}") {
+          if (!delegation?.hash) {
+            throw new Error("Wallet does not have a reward address");
+          }
+          instruction.keyHash = delegation.hash;
+        }
+        return instruction as Instruction;
+      }
+      default: {
+        return instruction as Instruction;
+      }
+    }
+  }));
 }

@@ -1,12 +1,35 @@
 import type {
   Credential,
   DatumVariant,
+  Instruction,
   InstructionSigner,
   Network,
   RelevantProtocolParameters,
   Script,
   Utxo,
 } from "./libs/lucid_core/pkg/lucid_core.d.ts";
+
+type OmitInstruction<T extends Instruction, K extends T["type"]> = T extends
+  { type: K } ? never : T;
+
+export type PartialInstruction =
+  | {
+    type: "CollectFrom";
+    utxos: OutRef[];
+    redeemer?: string;
+  }
+  | {
+    type: "ReadFrom";
+    utxos: OutRef[];
+  }
+  | {
+    type: "Withdraw";
+    withdrawal: { rewardAddress: string; amount?: number };
+    redeemer?: string;
+  }
+  | OmitInstruction<Instruction, "CollectFrom">
+    & OmitInstruction<Instruction, "ReadFrom">
+    & OmitInstruction<Instruction, "Withdraw">;
 
 export type ActiveDelegation = {
   poolId: string | null;
@@ -16,16 +39,12 @@ export type ActiveDelegation = {
 export interface Provider {
   network?: Network;
   getProtocolParameters(): Promise<RelevantProtocolParameters>;
-  /** Query utxos by address or payment credential. */
   getUtxos(addressOrCredential: string | Credential): Promise<Utxo[]>;
-  /** Query utxos by address or payment credential filtered by a specific unit. */
   getUtxosWithUnit(
     addressOrCredential: string | Credential,
     unit: string,
   ): Promise<Utxo[]>;
-  /** Query a utxo by a unit. It needs to be an NFT (or optionally the entire supply in one utxo). */
   getUtxoByUnit(unit: string): Promise<Utxo>;
-  /** Query utxos by the output reference (tx hash and index). */
   getUtxosByOutRef(outRefs: Array<OutRef>): Promise<Utxo[]>;
   getDelegation(rewardAddress: string): Promise<ActiveDelegation>;
   getDatum(datumHash: string): Promise<string>;
@@ -34,7 +53,7 @@ export interface Provider {
 }
 
 /**
- * **Hash** adds the datum hash to the output.
+ * **Hash** adds only the datum hash to the output.
  *
  * **AsHash** hashes the datum and adds the datum hash to the output and the datum to the witness set.
  *

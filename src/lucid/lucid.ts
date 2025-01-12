@@ -16,6 +16,7 @@ import {
   NativeScript,
   Network,
   OutRef,
+  PartialInstruction,
   Provider,
   ReadOnlyWallet,
   Script,
@@ -29,6 +30,7 @@ import {
   WalletApi,
 } from "../mod.ts";
 import { signMessage, verifyMessage } from "../misc/sign_message.ts";
+import { resolveInstructions } from "./mod.ts";
 
 export class Lucid {
   wallet!: Wallet;
@@ -125,7 +127,9 @@ export class Lucid {
     return new TxComplete(this, InstructionSigner.fromTx(tx, utxos));
   }
 
-  async fromInstructions(instructions: Instruction[]): Promise<TxComplete> {
+  async fromInstructions(
+    instructions: Array<Instruction | PartialInstruction>,
+  ): Promise<TxComplete> {
     if (!this.wallet || !this.provider) {
       throw new Error("Wallet or provider not set");
     }
@@ -135,12 +139,18 @@ export class Lucid {
       .getProtocolParameters();
     const address = await this.wallet.address();
 
+    const resolvedInstructions: Instruction[] = await resolveInstructions(
+      this,
+      instructions,
+      true,
+    );
+
     const instructionSigner = new InstructionBuilder(
       this.network,
       protocolParameters,
       utxos,
       { address },
-    ).commit(instructions);
+    ).commit(resolvedInstructions);
 
     return new TxComplete(
       this,

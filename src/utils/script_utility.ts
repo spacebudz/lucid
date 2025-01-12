@@ -32,7 +32,10 @@ export class ScriptUtility<T extends unknown[] = Data[]> {
         );
         this.script = { type: script.type, script: scriptWithParams };
       } else {
-        this.script = script;
+        this.script = {
+          type: script.type,
+          script: Utils.applyDoubleCborEncoding(script.script),
+        };
       }
     } else {
       this.script = {
@@ -40,9 +43,6 @@ export class ScriptUtility<T extends unknown[] = Data[]> {
         script: Codec.encodeNativeScript(script),
       };
     }
-
-    // Precautiously
-    this.script.script = Utils.applyDoubleCborEncoding(this.script.script);
   }
 
   toHash(): string {
