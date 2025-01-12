@@ -1,26 +1,26 @@
-import { Blockfrost, Data, fromText, Lucid, TxHash } from "../mod.ts";
+import { Blockfrost, Data, fromText, Lucid } from "../mod.ts";
 
-const lucid = await Lucid.new(
-  new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
-  "Preview",
-);
+const lucid = new Lucid({
+  provider: new Blockfrost(
+    "https://cardano-preview.blockfrost.io/api/v0",
+    "<projectId>",
+  ),
+});
 
 const api = await globalThis.cardano.nami.enable();
 // Assumes you are in a browser environment
-lucid.selectWallet(api);
+lucid.selectWalletFromApi(api);
 
 // Type definition could be auto generated from on-chain script
-const MyDatumSchema = Data.Object({
+const MyDatum = Data.Object({
   name: Data.Bytes(),
   age: Data.Integer(),
   colors: Data.Array(Data.Bytes()),
   description: Data.Nullable(Data.Bytes()),
 });
-type MyDatum = Data.Static<typeof MyDatumSchema>;
-const MyDatum = MyDatumSchema as unknown as MyDatum;
 
-export async function send(): Promise<TxHash> {
-  const datum: MyDatum = {
+export async function send(): Promise<string> {
+  const datum: typeof MyDatum = {
     name: fromText("Lucid"),
     age: 0n,
     colors: [fromText("Blue"), fromText("Purple")],
@@ -29,12 +29,12 @@ export async function send(): Promise<TxHash> {
 
   const tx = await lucid
     .newTx()
-    .payToAddressWithData("addr_test...", Data.to(datum, MyDatum), {
+    .payToWithData("addr_test...", Data.to(datum, MyDatum), {
       lovelace: 10000000n,
     })
-    .complete();
+    .commit();
 
-  const signedTx = await tx.sign().complete();
+  const signedTx = await tx.sign().commit();
 
   const txHash = await signedTx.submit();
 

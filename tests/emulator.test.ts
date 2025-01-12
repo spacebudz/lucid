@@ -1,26 +1,24 @@
 import {
-  Assets,
-  Data,
-  Emulator,
-  fromText,
-  generateSeedPhrase,
-  getAddressDetails,
-  Lucid,
-  SpendingValidator,
-  toUnit,
-  TxHash,
-} from "../src/mod.ts";
+  Addresses,
+  Codec,
+  Crypto,
+  Hasher,
+  paymentCredentialOf,
+  Script,
+} from "../mod.ts";
+import { Assets, Data, Emulator, fromText, Lucid, toUnit } from "../src/mod.ts";
 import {
   assert,
   assertEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 
 async function generateAccount(assets: Assets) {
-  const seedPhrase = generateSeedPhrase();
+  const seedPhrase = Crypto.generateSeed();
+  const { credential } = Crypto.seedToDetails(seedPhrase, 0, "Payment");
+  const address = Addresses.credentialToAddress({ Emulator: 0 }, credential);
   return {
     seedPhrase,
-    address: await (await Lucid.new(undefined, "Custom"))
-      .selectWalletFromSeed(seedPhrase).wallet.address(),
+    address,
     assets,
   };
 }
@@ -30,7 +28,7 @@ const ACCOUNT_1 = await generateAccount({ lovelace: 100000000n });
 
 const emulator = new Emulator([ACCOUNT_0, ACCOUNT_1]);
 
-const lucid = await Lucid.new(emulator);
+const lucid = new Lucid({ provider: emulator });
 
 lucid.selectWalletFromSeed(ACCOUNT_0.seedPhrase);
 
@@ -50,12 +48,13 @@ Deno.test("Paid to address", async () => {
   const datum = Data.to(123n);
   const lovelace = 3000000n;
 
-  const tx = await lucid.newTx().payToAddressWithData(recipient, {
-    inline: datum,
-  }, { lovelace }).complete();
+  const tx = await lucid.newTx()
+    .payToWithData(recipient, { Inline: datum }, { lovelace })
+    .commit();
 
-  const signedTx = await tx.sign().complete();
+  const signedTx = await tx.sign().commit();
   const txHash = await signedTx.submit();
+
   await lucid.awaitTx(txHash);
 
   const utxos = await lucid.utxosAt(
@@ -74,10 +73,11 @@ Deno.test("Missing vkey witness", async () => {
 
   const lovelace = 3000000n;
 
-  const tx = await lucid.newTx().payToAddress(recipient, { lovelace })
-    .complete();
+  const tx = await lucid.newTx()
+    .payTo(recipient, { lovelace })
+    .commit();
 
-  const notSignedTx = await tx.complete();
+  const notSignedTx = await tx.commit();
   try {
     const txHash = await notSignedTx.submit();
     await lucid.awaitTx(txHash);
@@ -88,39 +88,41 @@ Deno.test("Missing vkey witness", async () => {
 });
 
 Deno.test("Mint asset in slot range", async () => {
-  const { paymentCredential } = getAddressDetails(ACCOUNT_0.address);
-  const { paymentCredential: paymentCredential2 } = getAddressDetails(
+  const { payment } = Addresses.inspect(ACCOUNT_0.address);
+  const { payment: payment2 } = Addresses.inspect(
     ACCOUNT_1.address,
   );
 
-  const mintingPolicy = lucid.utils.nativeScriptFromJson({
-    type: "all",
-    scripts: [
-      {
-        type: "before",
-        slot: lucid.utils.unixTimeToSlot(emulator.now() + 60000),
-      },
-      { type: "sig", keyHash: paymentCredential?.hash! },
-      { type: "sig", keyHash: paymentCredential2?.hash! },
-    ],
-  });
+  const mintingPolicy: Script = {
+    type: "Native",
+    script: Codec.encodeNativeScript({
+      type: "All",
+      scripts: [
+        {
+          type: "Before",
+          slot: lucid.utils.unixTimeToSlots(emulator.now() + 60000),
+        },
+        { type: "Sig", keyHash: payment?.hash! },
+        { type: "Sig", keyHash: payment2?.hash! },
+      ],
+    }),
+  };
 
-  const policyId = lucid.utils.mintingPolicyToId(mintingPolicy);
+  const policyId = Hasher.hashScript(mintingPolicy);
 
-  async function mint(): Promise<TxHash> {
+  async function mint(): Promise<string> {
     const tx = await lucid.newTx()
-      .mintAssets({
+      .mint({
         [toUnit(policyId, fromText("Wow"))]: 123n,
       })
       .validTo(emulator.now() + 30000)
-      .attachMintingPolicy(mintingPolicy)
-      .complete();
+      .attachScript(mintingPolicy)
+      .commit();
 
-    await tx.partialSign();
-    lucid.selectWalletFromSeed(ACCOUNT_1.seedPhrase);
-    await tx.partialSign();
-    lucid.selectWalletFromSeed(ACCOUNT_0.seedPhrase);
-    const signedTx = await tx.complete();
+    const signedTx = await tx
+      .signWithSeed(ACCOUNT_0.seedPhrase)
+      .signWithSeed(ACCOUNT_1.seedPhrase)
+      .commit();
 
     return signedTx.submit();
   }
@@ -155,8 +157,8 @@ Deno.test("Reward withdrawal", async () => {
   });
   // Registration
   await lucid.awaitTx(
-    await (await (await lucid.newTx().registerStake(rewardAddress!).complete())
-      .sign().complete()).submit(),
+    await (await (await lucid.newTx().registerStake(rewardAddress!).commit())
+      .sign().commit()).submit(),
   );
   emulator.distributeRewards(REWARD_AMOUNT);
   assertEquals(await lucid.wallet.getDelegation(), {
@@ -166,8 +168,8 @@ Deno.test("Reward withdrawal", async () => {
   // Delegation
   await lucid.awaitTx(
     await (await (await lucid.newTx().delegateTo(rewardAddress!, poolId)
-      .complete())
-      .sign().complete()).submit(),
+      .commit())
+      .sign().commit()).submit(),
   );
   emulator.distributeRewards(REWARD_AMOUNT);
   assertEquals(await lucid.wallet.getDelegation(), {
@@ -177,8 +179,8 @@ Deno.test("Reward withdrawal", async () => {
   // Deregistration
   await lucid.awaitTx(
     await (await (await lucid.newTx().deregisterStake(rewardAddress!)
-      .complete())
-      .sign().complete()).submit(),
+      .commit())
+      .sign().commit()).submit(),
   );
   assertEquals(await lucid.wallet.getDelegation(), {
     poolId: null,
@@ -187,8 +189,8 @@ Deno.test("Reward withdrawal", async () => {
   // Withdrawal
   await lucid.awaitTx(
     await (await (await lucid.newTx().withdraw(rewardAddress!, REWARD_AMOUNT)
-      .complete())
-      .sign().complete()).submit(),
+      .commit())
+      .sign().commit()).submit(),
   );
   assertEquals(await lucid.wallet.getDelegation(), {
     poolId: null,
@@ -197,18 +199,18 @@ Deno.test("Reward withdrawal", async () => {
 });
 
 Deno.test("Evaluate a contract", async () => {
-  const alwaysSucceedScript: SpendingValidator = {
+  const alwaysSucceedScript: Script = {
     type: "PlutusV2",
     script: "49480100002221200101",
   };
 
-  const scriptAddress = lucid.utils.validatorToAddress(alwaysSucceedScript);
+  const scriptAddress = lucid.utils.scriptToAddress(alwaysSucceedScript);
 
   const tx = await lucid.newTx().payToContract(scriptAddress, {
-    inline: Data.void(),
+    Inline: Data.void(),
   }, { lovelace: 50000000n })
-    .complete();
-  const signedTx = await tx.sign().complete();
+    .commit();
+  const signedTx = await tx.sign().commit();
   const txHash = await signedTx.submit();
   await lucid.awaitTx(txHash);
 
@@ -218,20 +220,22 @@ Deno.test("Evaluate a contract", async () => {
 
   const _txHash =
     await (await (await lucid.newTx().collectFrom(scriptUtxos, Data.void())
-      .attachSpendingValidator(alwaysSucceedScript)
-      .complete()).sign().complete()).submit();
+      .attachScript(alwaysSucceedScript)
+      .commit()).sign().commit()).submit();
 
   emulator.awaitSlot(100);
 });
 
 Deno.test("Check required signer", async () => {
-  const tx = await lucid.newTx().addSigner(ACCOUNT_1.address).payToAddress(
+  const tx = await lucid.newTx().addSigner(
+    paymentCredentialOf(ACCOUNT_1.address).hash,
+  ).payTo(
     ACCOUNT_1.address,
     { lovelace: 5000000n },
   )
-    .complete();
+    .commit();
   await tx.partialSign();
   lucid.selectWalletFromSeed(ACCOUNT_1.seedPhrase);
   await tx.partialSign();
-  await lucid.awaitTx(await tx.complete().then((tx) => tx.submit()));
+  await lucid.awaitTx(await tx.commit().then((tx) => tx.submit()));
 });

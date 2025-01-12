@@ -1,7 +1,7 @@
 {
   "tasks": {
     "build": "deno run --allow-env --allow-write --allow-read --allow-net --allow-run build.ts",
-    "build:core": "cd src/core/libs/cardano_multiplatform_lib && deno run -A https://raw.githubusercontent.com/spacebudz/wasmbuild/542aa1afdbf640b4bad2c740f32e42633bc99654/main.ts --out ./; cd ../cardano_message_signing && deno run -A https://raw.githubusercontent.com/spacebudz/wasmbuild/542aa1afdbf640b4bad2c740f32e42633bc99654/main.ts --out ./",
+    "build:core": "cd src/core/libs/lucid_core && wasm-pack build . --no-pack --weak-refs --release && rm ./pkg/.gitignore; cd ../message_signing && wasm-pack build . --no-pack --weak-refs --release && rm ./pkg/.gitignore",
     "publish": "deno task build && deno task test && npm publish dist",
     "test": "deno test --allow-env --allow-read --allow-net tests",
     "test:core": "cd src/core/libs/cardano_multiplatform_lib && cargo test; cd ../cardano_message_signing && cargo test"

@@ -1,32 +1,30 @@
-import { C } from "../core/mod.ts";
-import { applyDoubleCborEncoding, fromHex, toHex } from "../utils/mod.ts";
 import {
-  Address,
+  ActiveDelegation,
   Credential,
-  Datum,
-  DatumHash,
-  Delegation,
+  fromHex,
+  Network,
   OutRef,
-  ProtocolParameters,
   Provider,
-  RewardAddress,
-  Transaction,
-  TxHash,
-  Unit,
-  UTxO,
-} from "../types/mod.ts";
+  RelevantProtocolParameters,
+  Utils,
+  Utxo,
+} from "../mod.ts";
 import packageJson from "../../package.json" with { type: "json" };
 
 export class Blockfrost implements Provider {
   url: string;
   projectId: string;
+  network?: Network;
 
   constructor(url: string, projectId?: string) {
     this.url = url;
     this.projectId = projectId || "";
+    if (url.includes("mainnet")) this.network = "Mainnet";
+    else if (url.includes("preprod")) this.network = "Preprod";
+    else if (url.includes("preview")) this.network = "Preview";
   }
 
-  async getProtocolParameters(): Promise<ProtocolParameters> {
+  async getProtocolParameters(): Promise<RelevantProtocolParameters> {
     const result = await fetch(`${this.url}/epochs/latest/parameters`, {
       headers: { project_id: this.projectId, lucid },
     }).then((res) => res.json());
@@ -36,32 +34,32 @@ export class Blockfrost implements Provider {
       minFeeB: parseInt(result.min_fee_b),
       maxTxSize: parseInt(result.max_tx_size),
       maxValSize: parseInt(result.max_val_size),
-      keyDeposit: BigInt(result.key_deposit),
-      poolDeposit: BigInt(result.pool_deposit),
+      keyDeposit: parseInt(result.key_deposit),
+      poolDeposit: parseInt(result.pool_deposit),
       priceMem: parseFloat(result.price_mem),
       priceStep: parseFloat(result.price_step),
-      maxTxExMem: BigInt(result.max_tx_ex_mem),
-      maxTxExSteps: BigInt(result.max_tx_ex_steps),
-      coinsPerUtxoByte: BigInt(result.coins_per_utxo_size),
+      maxTxExMem: parseInt(result.max_tx_ex_mem),
+      maxTxExSteps: parseInt(result.max_tx_ex_steps),
+      coinsPerUtxoByte: parseInt(result.coins_per_utxo_size),
       collateralPercentage: parseInt(result.collateral_percent),
       maxCollateralInputs: parseInt(result.max_collateral_inputs),
-      costModels: result.cost_models,
+      costModels: Object.fromEntries(
+        Object.entries(result.cost_models).map((
+          [plutus, costModel],
+        ) => [plutus, Object.values(costModel as Record<string, number>)]),
+      ),
       minfeeRefscriptCostPerByte: parseInt(
         result.min_fee_ref_script_cost_per_byte,
       ),
     };
   }
 
-  async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
+  async getUtxos(addressOrCredential: string | Credential): Promise<Utxo[]> {
     const queryPredicate = (() => {
       if (typeof addressOrCredential === "string") return addressOrCredential;
       const credentialBech32 = addressOrCredential.type === "Key"
-        ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_vkh",
-        )
-        : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_vkh",
-        ); // should be 'script' (CIP-0005)
+        ? Utils.encodeBech32("addr_vkh", addressOrCredential.hash)
+        : Utils.encodeBech32("addr_vkh", addressOrCredential.hash); // should be 'script' (CIP-0005)
       return credentialBech32;
     })();
     let result: BlockfrostUtxoResult = [];
@@ -88,18 +86,14 @@ export class Blockfrost implements Provider {
   }
 
   async getUtxosWithUnit(
-    addressOrCredential: Address | Credential,
-    unit: Unit,
-  ): Promise<UTxO[]> {
+    addressOrCredential: string | Credential,
+    unit: string,
+  ): Promise<Utxo[]> {
     const queryPredicate = (() => {
       if (typeof addressOrCredential === "string") return addressOrCredential;
       const credentialBech32 = addressOrCredential.type === "Key"
-        ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_vkh",
-        )
-        : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_vkh",
-        ); // should be 'script' (CIP-0005)
+        ? Utils.encodeBech32("addr_vkh", addressOrCredential.hash)
+        : Utils.encodeBech32("addr_vkh", addressOrCredential.hash); // should be 'script' (CIP-0005)
       return credentialBech32;
     })();
     let result: BlockfrostUtxoResult = [];
@@ -125,7 +119,7 @@ export class Blockfrost implements Provider {
     return this.blockfrostUtxosToUtxos(result);
   }
 
-  async getUtxoByUnit(unit: Unit): Promise<UTxO> {
+  async getUtxoByUnit(unit: string): Promise<Utxo> {
     const addresses = await fetch(
       `${this.url}/assets/${unit}/addresses?count=2`,
       { headers: { project_id: this.projectId, lucid } },
@@ -149,7 +143,7 @@ export class Blockfrost implements Provider {
     return utxos[0];
   }
 
-  async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
+  async getUtxosByOutRef(outRefs: OutRef[]): Promise<Utxo[]> {
     // TODO: Make sure old already spent UTxOs are not retrievable.
     const queryHashes = [...new Set(outRefs.map((outRef) => outRef.txHash))];
     const utxos = await Promise.all(queryHashes.map(async (txHash) => {
@@ -177,7 +171,7 @@ export class Blockfrost implements Provider {
     );
   }
 
-  async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
+  async getDelegation(rewardAddress: string): Promise<ActiveDelegation> {
     const result = await fetch(
       `${this.url}/accounts/${rewardAddress}`,
       { headers: { project_id: this.projectId, lucid } },
@@ -191,7 +185,7 @@ export class Blockfrost implements Provider {
     };
   }
 
-  async getDatum(datumHash: DatumHash): Promise<Datum> {
+  async getDatum(datumHash: string): Promise<string> {
     const datum = await fetch(
       `${this.url}/scripts/datum/${datumHash}/cbor`,
       {
@@ -206,7 +200,7 @@ export class Blockfrost implements Provider {
     return datum;
   }
 
-  awaitTx(txHash: TxHash, checkInterval = 3000): Promise<boolean> {
+  awaitTx(txHash: string, checkInterval = 3000): Promise<boolean> {
     return new Promise((res) => {
       const confirmation = setInterval(async () => {
         const isConfirmed = await fetch(`${this.url}/txs/${txHash}`, {
@@ -221,7 +215,7 @@ export class Blockfrost implements Provider {
     });
   }
 
-  async submitTx(tx: Transaction): Promise<TxHash> {
+  async submit(tx: string): Promise<string> {
     const result = await fetch(`${this.url}/tx/submit`, {
       method: "POST",
       headers: {
@@ -240,7 +234,7 @@ export class Blockfrost implements Provider {
 
   private async blockfrostUtxosToUtxos(
     result: BlockfrostUtxoResult,
-  ): Promise<UTxO[]> {
+  ): Promise<Utxo[]> {
     return (await Promise.all(
       result.map(async (r) => ({
         txHash: r.tx_hash,
@@ -265,74 +259,26 @@ export class Blockfrost implements Provider {
             if (type === "Native" || type === "native") {
               throw new Error("Native script ref not implemented!");
             }
+
             const { cbor: script } = await fetch(
               `${this.url}/scripts/${r.reference_script_hash}/cbor`,
               { headers: { project_id: this.projectId, lucid } },
             ).then((res) => res.json());
             return {
-              type: type === "plutusV1" ? "PlutusV1" : "PlutusV2",
-              script: applyDoubleCborEncoding(script),
+              type: type[0].toUpperCase() + type.slice(1),
+              script: Utils.applyDoubleCborEncoding(script),
             };
           })())
           : undefined,
       })),
-    )) as UTxO[];
+    )) as Utxo[];
   }
 }
-
-/**
- * This function is temporarily needed only, until Blockfrost returns the datum natively in Cbor.
- * The conversion is ambigious, that's why it's better to get the datum directly in Cbor.
- */
-export function datumJsonToCbor(json: DatumJson): Datum {
-  const convert = (json: DatumJson): C.PlutusData => {
-    if (!isNaN(json.int!)) {
-      return C.PlutusData.new_integer(C.BigInt.from_str(json.int!.toString()));
-    } else if (json.bytes || !isNaN(Number(json.bytes))) {
-      return C.PlutusData.new_bytes(fromHex(json.bytes!));
-    } else if (json.map) {
-      const m = C.PlutusMap.new();
-      json.map.forEach(({ k, v }: { k: unknown; v: unknown }) => {
-        m.insert(convert(k as DatumJson), convert(v as DatumJson));
-      });
-      return C.PlutusData.new_map(m);
-    } else if (json.list) {
-      const l = C.PlutusList.new();
-      json.list.forEach((v: DatumJson) => {
-        l.add(convert(v));
-      });
-      return C.PlutusData.new_list(l);
-    } else if (!isNaN(json.constructor! as unknown as number)) {
-      const l = C.PlutusList.new();
-      json.fields!.forEach((v: DatumJson) => {
-        l.add(convert(v));
-      });
-      return C.PlutusData.new_constr_plutus_data(
-        C.ConstrPlutusData.new(
-          C.BigNum.from_str(json.constructor!.toString()),
-          l,
-        ),
-      );
-    }
-    throw new Error("Unsupported type");
-  };
-
-  return toHex(convert(json).to_bytes());
-}
-
-type DatumJson = {
-  int?: number;
-  bytes?: string;
-  list?: Array<DatumJson>;
-  map?: Array<{ k: unknown; v: unknown }>;
-  fields?: Array<DatumJson>;
-  [constructor: string]: unknown; // number; constructor needs to be simulated like this as optional argument
-};
 
 type BlockfrostUtxoResult = Array<{
   tx_hash: string;
   output_index: number;
-  address: Address;
+  address: string;
   amount: Array<{ unit: string; quantity: string }>;
   data_hash?: string;
   inline_datum?: string;

@@ -1,0 +1,38 @@
+[package]
+name = "lucid_core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+
+[dependencies]
+pallas-primitives = "0.31.0"
+pallas-addresses = "0.31.0"
+pallas-crypto = "0.31.0"
+pallas-codec = "0.31.0"
+pallas-traverse = "0.31.0"
+pallas-wallet = "0.31.0"
+wasm-bindgen = "0.2.99"
+serde-wasm-bindgen = "0.6.5"
+serde = { git = "https://github.com/serde-rs/serde.git", rev = "8d5f1d103f80726c9b865a724e4cf58cb5a6885b", features = ["derive"] }
+tsify = { git = "https://github.com/alessandrokonrad/tsify.git", rev = "614ceca4174d355679926543e009b9ca55556fa3", features = ["js", "map_as_record"]}
+hex = "0.4.3"
+uplc = "1.1.9"
+getrandom = { version = "0.2.8", features = ["js"] }
+bech32 = "0.11.0"
+fraction = "0.15.3"
+rand = "0.8.4"
+num-integer = "0.1.46"
+thiserror = "2.0.4"
+
+[patch.crates-io]
+serde = { git = "https://github.com/serde-rs/serde.git", rev = "8d5f1d103f80726c9b865a724e4cf58cb5a6885b"}
+
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+incremental = true
+lto = true

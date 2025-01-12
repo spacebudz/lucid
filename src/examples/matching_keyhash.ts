@@ -1,13 +1,6 @@
-import {
-  Blockfrost,
-  Constr,
-  Data,
-  Lovelace,
-  Lucid,
-  SpendingValidator,
-  TxHash,
-} from "../../mod.ts";
+import { Blockfrost, Constr, Data, Lucid } from "../../mod.ts";
 import * as helios from "https://raw.githubusercontent.com/Hyperion-BT/Helios/v0.4.0/helios.js";
+import { Addresses, Hasher, Script } from "../mod.ts";
 
 /*
   MatchingPubKeyHash Example
@@ -16,19 +9,18 @@ import * as helios from "https://raw.githubusercontent.com/Hyperion-BT/Helios/v0
   Showcasing Helios; Link: https://github.com/Hyperion-BT/Helios
  */
 
-const lucid = await Lucid.new(
-  new Blockfrost(
+const lucid = new Lucid({
+  provider: new Blockfrost(
     "https://cardano-preview.blockfrost.io/api/v0",
     "<project_id>",
   ),
-  "Preview",
-);
+});
 
 const privateKey = "<private_key>";
 
 lucid.selectWalletFromPrivateKey(privateKey);
 
-const script: SpendingValidator = {
+const script: Script = {
   type: "PlutusV1",
   script: JSON.parse(
     helios.Program.new(`
@@ -47,39 +39,39 @@ const script: SpendingValidator = {
   ).cborHex,
 };
 
-const scriptAddress = lucid.utils.validatorToAddress(script);
+const scriptAddress = lucid.utils.scriptToAddress(script);
 
-export async function lockUtxo(lovelace: Lovelace): Promise<TxHash> {
-  const { paymentCredential } = lucid.utils.getAddressDetails(
+export async function lockUtxo(lovelace: bigint): Promise<string> {
+  const { payment } = Addresses.inspect(
     await lucid.wallet.address(),
   );
 
   // This represents the Datum struct from the Helios on-chain code
   const datum = Data.to(
-    new Constr(0, [new Constr(0, [paymentCredential?.hash!])]),
+    new Constr(0, [new Constr(0, [payment?.hash!])]),
   );
 
   const tx = await lucid.newTx().payToContract(scriptAddress, datum, {
     lovelace,
   })
-    .complete();
+    .commit();
 
-  const signedTx = await tx.sign().complete();
+  const signedTx = await tx.sign().commit();
 
   return signedTx.submit();
 }
 
-export async function redeemUtxo(): Promise<TxHash> {
-  const { paymentCredential } = lucid.utils.getAddressDetails(
+export async function redeemUtxo(): Promise<string> {
+  const { payment } = Addresses.inspect(
     await lucid.wallet.address(),
   );
 
   // This represents the Redeemer struct from the Helios on-chain code
   const redeemer = Data.to(
-    new Constr(0, [new Constr(0, [paymentCredential?.hash!])]),
+    new Constr(0, [new Constr(0, [payment?.hash!])]),
   );
 
-  const datumHash = lucid.utils.datumToHash(redeemer);
+  const datumHash = Hasher.hashData(redeemer);
 
   const utxos = await lucid.utxosAt(scriptAddress);
 
@@ -88,10 +80,10 @@ export async function redeemUtxo(): Promise<TxHash> {
   if (!utxo) throw new Error("UTxO not found.");
 
   const tx = await lucid.newTx().collectFrom([utxo], redeemer)
-    .attachSpendingValidator(script)
-    .complete();
+    .attachScript(script)
+    .commit();
 
-  const signedTx = await tx.sign().complete();
+  const signedTx = await tx.sign().commit();
 
   return signedTx.submit();
 }

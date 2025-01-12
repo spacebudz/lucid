@@ -1,12 +1,4 @@
-import {
-  Address,
-  Blockfrost,
-  Data,
-  Lovelace,
-  Lucid,
-  SpendingValidator,
-  TxHash,
-} from "../../mod.ts";
+import { Blockfrost, Data, Lucid } from "../../mod.ts";
 
 /*
   AlwaysSucceeds Example
@@ -20,47 +12,47 @@ import {
   validate _ _ _ = True
  */
 
-const lucid = await Lucid.new(
-  new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
-  "Preview",
-);
+const lucid = new Lucid({
+  provider: new Blockfrost(
+    "https://cardano-preview.blockfrost.io/api/v0",
+    "<projectId>",
+  ),
+});
 
 const api = await globalThis.cardano.nami.enable();
 // Assumes you are in a browser environment
-lucid.selectWallet(api);
+lucid.selectWalletFromApi(api);
 
-const alwaysSucceedScript: SpendingValidator = {
+const alwaysSucceed = lucid.newScript({
   type: "PlutusV2",
   script: "49480100002221200101",
-};
+});
 
-const alwaysSucceedAddress: Address = lucid.utils.validatorToAddress(
-  alwaysSucceedScript,
-);
+const alwaysSucceedAddress = alwaysSucceed.toAddress();
 
 const Datum = () => Data.void();
 const Redeemer = () => Data.void();
 
 export async function lockUtxo(
-  lovelace: Lovelace,
-): Promise<TxHash> {
+  lovelace: bigint,
+): Promise<string> {
   const tx = await lucid
     .newTx()
-    .payToContract(alwaysSucceedAddress, { inline: Datum() }, { lovelace })
+    .payToContract(alwaysSucceedAddress, { Inline: Datum() }, { lovelace })
     .payToContract(alwaysSucceedAddress, {
-      asHash: Datum(),
-      scriptRef: alwaysSucceedScript, // adding plutusV2 script to output
+      AsHash: Datum(),
+      scriptRef: alwaysSucceed.script, // adding plutusV2 script to output
     }, {})
-    .complete();
+    .commit();
 
-  const signedTx = await tx.sign().complete();
+  const signedTx = await tx.sign().commit();
 
   const txHash = await signedTx.submit();
 
   return txHash;
 }
 
-export async function redeemUtxo(): Promise<TxHash> {
+export async function redeemUtxo(): Promise<string> {
   const referenceScriptUtxo = (await lucid.utxosAt(alwaysSucceedAddress)).find(
     (utxo) => Boolean(utxo.scriptRef),
   );
@@ -75,9 +67,9 @@ export async function redeemUtxo(): Promise<TxHash> {
     .newTx()
     .readFrom([referenceScriptUtxo]) // spending utxo by reading plutusV2 from reference utxo
     .collectFrom([utxo], Redeemer())
-    .complete();
+    .commit();
 
-  const signedTx = await tx.sign().complete();
+  const signedTx = await tx.sign().commit();
 
   const txHash = await signedTx.submit();
 

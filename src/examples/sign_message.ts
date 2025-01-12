@@ -2,9 +2,7 @@ import { fromText, Lucid } from "../../mod.ts";
 
 // Sign a message and verify it.
 
-const lucid = await Lucid.new();
-
-lucid.selectWalletFromSeed("car rare ...");
+const lucid = new Lucid().selectWalletFromSeed("car rare ...");
 
 const address = await lucid.wallet.address();
 const payload = fromText("Hello from Lucid!");

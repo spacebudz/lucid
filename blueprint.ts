@@ -1,9 +1,4 @@
-import packageJson from "./package.json" with { type: "json" };
-import { parse } from "https://deno.land/std@0.185.0/flags/mod.ts";
-
-const flags = parse(Deno.args, {
-  boolean: ["npm"],
-});
+import { version } from "./package.json" with { type: "json" };
 
 type Blueprint = {
   preamble: {
@@ -54,11 +49,7 @@ const plutusVersion = "Plutus" +
 const definitions = plutusJson.definitions;
 
 const imports = `// deno-lint-ignore-file
-import { applyParamsToScript, Data, Validator } from "${
-  flags.npm
-    ? "lucid-cardano"
-    : `https://deno.land/x/lucid@${packageJson.version}/mod.ts`
-}"`;
+import { applyParamsToScript, Data, Script } from "https://deno.land/x/lucid@${version}/mod.ts"`;
 
 const validators = plutusJson.validators.map((validator) => {
   const title = validator.title;
@@ -87,7 +78,7 @@ const validators = plutusJson.validators.map((validator) => {
   const script = validator.compiledCode;
 
   return `export interface ${name} {
-    new (${paramsArgs.map((param) => param.join(":")).join(",")}): Validator;${
+    new (${paramsArgs.map((param) => param.join(":")).join(",")}): Script;${
     datum ? `\n${datumTitle}: ${schemaToType(datumSchema)};` : ""
   }
     ${redeemerTitle}: ${schemaToType(redeemerSchema)};
@@ -96,9 +87,9 @@ const validators = plutusJson.validators.map((validator) => {
   export const ${name} = Object.assign(
     function (${paramsArgs.map((param) => param.join(":")).join(",")}) {${
     paramsArgs.length > 0
-      ? `return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${
+      ? `return { type: "${plutusVersion}", script: applyParamsToScript([${
         paramsArgs.map((param) => param[0]).join(",")
-      }], ${JSON.stringify(paramsSchema)} as any) };`
+      }], "${script}", ${JSON.stringify(paramsSchema)} as any) };`
       : `return {type: "${plutusVersion}", script: "${script}"};`
   }},
     ${datum ? `{${datumTitle}: ${JSON.stringify(datumSchema)}},` : ""}

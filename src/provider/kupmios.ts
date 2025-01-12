@@ -1,36 +1,38 @@
 import {
-  Address,
+  ActiveDelegation,
   Assets,
   Credential,
-  Datum,
-  DatumHash,
-  Delegation,
+  fromUnit,
+  Network,
   OutRef,
-  ProtocolParameters,
   Provider,
-  RewardAddress,
-  Transaction,
-  TxHash,
-  Unit,
-  UTxO,
-} from "../types/mod.ts";
-import { C } from "../core/mod.ts";
-import { fromHex, fromUnit, toHex } from "../utils/mod.ts";
+  RelevantProtocolParameters,
+  Utils,
+  Utxo,
+} from "../mod.ts";
 
 export class Kupmios implements Provider {
   kupoUrl: string;
   ogmiosUrl: string;
+  network?: Network;
 
   /**
    * @param kupoUrl: http(s)://localhost:1442
    * @param ogmiosUrl: ws(s)://localhost:1337
    */
-  constructor(kupoUrl: string, ogmiosUrl: string) {
+  constructor(
+    { kupoUrl, ogmiosUrl, network }: {
+      kupoUrl: string;
+      ogmiosUrl: string;
+      network: Network;
+    },
+  ) {
     this.kupoUrl = kupoUrl;
     this.ogmiosUrl = ogmiosUrl;
+    this.network = network;
   }
 
-  async getProtocolParameters(): Promise<ProtocolParameters> {
+  async getProtocolParameters(): Promise<RelevantProtocolParameters> {
     const client = await this.rpc("queryLedgerState/protocolParameters");
 
     return new Promise((res, rej) => {
@@ -43,7 +45,9 @@ export class Kupmios implements Provider {
           Object.keys(result.plutusCostModels).forEach((v) => {
             const version = v.split(":")[1].toUpperCase();
             const plutusVersion = "Plutus" + version;
-            costModels[plutusVersion] = result.plutusCostModels[v];
+            costModels[plutusVersion] = Object.values(
+              result.plutusCostModels[v],
+            );
           });
           const [memNum, memDenom] = result.scriptExecutionPrices.memory.split(
             "/",
@@ -58,15 +62,17 @@ export class Kupmios implements Provider {
               minFeeB: parseInt(result.minFeeConstant.ada.lovelace),
               maxTxSize: parseInt(result.maxTransactionSize.bytes),
               maxValSize: parseInt(result.maxValueSize.bytes),
-              keyDeposit: BigInt(result.stakeCredentialDeposit.ada.lovelace),
-              poolDeposit: BigInt(result.stakePoolDeposit.ada.lovelace),
+              keyDeposit: parseInt(result.stakeCredentialDeposit.ada.lovelace),
+              poolDeposit: parseInt(result.stakePoolDeposit.ada.lovelace),
               priceMem: parseInt(memNum) / parseInt(memDenom),
               priceStep: parseInt(stepsNum) / parseInt(stepsDenom),
-              maxTxExMem: BigInt(result.maxExecutionUnitsPerTransaction.memory),
-              maxTxExSteps: BigInt(
+              maxTxExMem: parseInt(
+                result.maxExecutionUnitsPerTransaction.memory,
+              ),
+              maxTxExSteps: parseInt(
                 result.maxExecutionUnitsPerTransaction.cpu,
               ),
-              coinsPerUtxoByte: BigInt(result.minUtxoDepositCoefficient),
+              coinsPerUtxoByte: parseInt(result.minUtxoDepositCoefficient),
               collateralPercentage: parseInt(result.collateralPercentage),
               maxCollateralInputs: parseInt(result.maxCollateralInputs),
               costModels,
@@ -83,7 +89,7 @@ export class Kupmios implements Provider {
     });
   }
 
-  async getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
+  async getUtxos(addressOrCredential: string | Credential): Promise<Utxo[]> {
     const isAddress = typeof addressOrCredential === "string";
     const queryPredicate = isAddress
       ? addressOrCredential
@@ -98,9 +104,9 @@ export class Kupmios implements Provider {
   }
 
   async getUtxosWithUnit(
-    addressOrCredential: Address | Credential,
-    unit: Unit,
-  ): Promise<UTxO[]> {
+    addressOrCredential: string | Credential,
+    unit: string,
+  ): Promise<Utxo[]> {
     const isAddress = typeof addressOrCredential === "string";
     const queryPredicate = isAddress
       ? addressOrCredential
@@ -117,7 +123,7 @@ export class Kupmios implements Provider {
     return this.kupmiosUtxosToUtxos(result);
   }
 
-  async getUtxoByUnit(unit: Unit): Promise<UTxO> {
+  async getUtxoByUnit(unit: string): Promise<Utxo> {
     const { policyId, assetName } = fromUnit(unit);
     const result = await fetch(
       `${this.kupoUrl}/matches/${policyId}.${
@@ -135,7 +141,7 @@ export class Kupmios implements Provider {
     return utxos[0];
   }
 
-  async getUtxosByOutRef(outRefs: Array<OutRef>): Promise<UTxO[]> {
+  async getUtxosByOutRef(outRefs: Array<OutRef>): Promise<Utxo[]> {
     const queryHashes = [...new Set(outRefs.map((outRef) => outRef.txHash))];
 
     const utxos = await Promise.all(queryHashes.map(async (txHash) => {
@@ -152,7 +158,7 @@ export class Kupmios implements Provider {
     );
   }
 
-  async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
+  async getDelegation(rewardAddress: string): Promise<ActiveDelegation> {
     const client = await this.rpc(
       "queryLedgerState/rewardAccountSummaries",
       { keys: [rewardAddress] }, // TODO: Does this work for reward addresses that are scripts as well?
@@ -180,7 +186,7 @@ export class Kupmios implements Provider {
     });
   }
 
-  async getDatum(datumHash: DatumHash): Promise<Datum> {
+  async getDatum(datumHash: string): Promise<string> {
     const result = await fetch(
       `${this.kupoUrl}/datums/${datumHash}`,
     ).then((res) => res.json());
@@ -190,7 +196,7 @@ export class Kupmios implements Provider {
     return result.datum;
   }
 
-  awaitTx(txHash: TxHash, checkInterval = 3000): Promise<boolean> {
+  awaitTx(txHash: string, checkInterval = 3000): Promise<boolean> {
     return new Promise((res) => {
       const confirmation = setInterval(async () => {
         const isConfirmed = await fetch(
@@ -205,7 +211,7 @@ export class Kupmios implements Provider {
     });
   }
 
-  async submitTx(tx: Transaction): Promise<TxHash> {
+  async submit(tx: string): Promise<string> {
     const client = await this.rpc("submitTransaction", {
       transaction: { cbor: tx },
     });
@@ -225,7 +231,7 @@ export class Kupmios implements Provider {
     });
   }
 
-  private kupmiosUtxosToUtxos(utxos: unknown): Promise<UTxO[]> {
+  private kupmiosUtxosToUtxos(utxos: unknown): Promise<Utxo[]> {
     // deno-lint-ignore no-explicit-any
     return Promise.all((utxos as any).map(async (utxo: any) => {
       return ({
@@ -257,16 +263,21 @@ export class Kupmios implements Provider {
             } else if (language === "plutus:v1") {
               return {
                 type: "PlutusV1",
-                script: toHex(C.PlutusScript.new(fromHex(script)).to_bytes()),
+                script: Utils.applyDoubleCborEncoding(script),
               };
             } else if (language === "plutus:v2") {
               return {
                 type: "PlutusV2",
-                script: toHex(C.PlutusScript.new(fromHex(script)).to_bytes()),
+                script: Utils.applyDoubleCborEncoding(script),
+              };
+            } else if (language === "plutus:v3") {
+              return {
+                type: "PlutusV3",
+                script: Utils.applyDoubleCborEncoding(script),
               };
             }
           })()),
-      }) as UTxO;
+      }) as Utxo;
     }));
   }
 

@@ -1,48 +1,44 @@
-import {
-  Emulator,
-  fromText,
-  generatePrivateKey,
-  getAddressDetails,
-  Lucid,
-  toUnit,
-  TxHash,
-} from "../../mod.ts";
+import { Emulator, fromText, Lucid, toUnit } from "../../mod.ts";
+import { Addresses, Crypto } from "../mod.ts";
 
-const privateKey = generatePrivateKey();
+const privateKey = Crypto.generatePrivateKey();
 
-const address = await (await Lucid.new(undefined, "Custom"))
-  .selectWalletFromPrivateKey(privateKey).wallet.address();
+const address = Addresses.credentialToAddress(
+  { Emulator: 0 },
+  Crypto.privateKeyToDetails(privateKey).credential,
+);
 
-const { paymentCredential } = getAddressDetails(address);
+const { payment } = Addresses.inspect(address);
 
 const emulator = new Emulator([{ address, assets: { lovelace: 3000000000n } }]);
 
-const lucid = await Lucid.new(emulator);
+const lucid = new Lucid({ provider: emulator })
+  .selectWalletFromPrivateKey(
+    privateKey,
+  );
 
-lucid.selectWalletFromPrivateKey(privateKey);
-
-const mintingPolicy = lucid.utils.nativeScriptFromJson({
-  type: "all",
+const mintingPolicy = lucid.newScript({
+  type: "All",
   scripts: [
     {
-      type: "before",
-      slot: lucid.utils.unixTimeToSlot(emulator.now() + 60000),
+      type: "Before",
+      slot: lucid.utils.unixTimeToSlots(emulator.now() + 60000),
     },
-    { type: "sig", keyHash: paymentCredential?.hash! },
+    { type: "Sig", keyHash: payment!.hash },
   ],
 });
 
-const policyId = lucid.utils.mintingPolicyToId(mintingPolicy);
+const policyId = mintingPolicy.toHash();
 
-async function mint(): Promise<TxHash> {
+async function mint(): Promise<string> {
   const tx = await lucid.newTx()
-    .mintAssets({
+    .mint({
       [toUnit(policyId, fromText("Wow"))]: 123n,
     })
     .validTo(emulator.now() + 30000)
-    .attachMintingPolicy(mintingPolicy)
-    .complete();
-  const signedTx = await tx.sign().complete();
+    .attachScript(mintingPolicy.script)
+    .commit();
+  const signedTx = await tx.sign().commit();
 
   return signedTx.submit();
 }

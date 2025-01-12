@@ -1,0 +1,140 @@
+import type {
+  Credential,
+  DatumVariant,
+  InstructionSigner,
+  Network,
+  RelevantProtocolParameters,
+  Script,
+  Utxo,
+} from "./libs/lucid_core/pkg/lucid_core.d.ts";
+
+export type ActiveDelegation = {
+  poolId: string | null;
+  rewards: bigint;
+};
+
+export interface Provider {
+  network?: Network;
+  getProtocolParameters(): Promise<RelevantProtocolParameters>;
+  /** Query utxos by address or payment credential. */
+  getUtxos(addressOrCredential: string | Credential): Promise<Utxo[]>;
+  /** Query utxos by address or payment credential filtered by a specific unit. */
+  getUtxosWithUnit(
+    addressOrCredential: string | Credential,
+    unit: string,
+  ): Promise<Utxo[]>;
+  /** Query a utxo by a unit. It needs to be an NFT (or optionally the entire supply in one utxo). */
+  getUtxoByUnit(unit: string): Promise<Utxo>;
+  /** Query utxos by the output reference (tx hash and index). */
+  getUtxosByOutRef(outRefs: Array<OutRef>): Promise<Utxo[]>;
+  getDelegation(rewardAddress: string): Promise<ActiveDelegation>;
+  getDatum(datumHash: string): Promise<string>;
+  awaitTx(txHash: string, checkInterval?: number): Promise<boolean>;
+  submit(tx: string): Promise<string>;
+}
+
+/**
+ * **Hash** adds the datum hash to the output.
+ *
+ * **AsHash** hashes the datum and adds the datum hash to the output and the datum to the witness set.
+ *
+ * **Inline** adds the datum to the output.
+ *
+ * **scriptRef** will add any script to the output.
+ */
+export type OutputData =
+  | DatumVariant & {
+    scriptRef?: Script;
+  }
+  | { scriptRef: Script };
+
+export type OutRef = { txHash: string; outputIndex: number };
+
+export interface ReadOnlyWallet {
+  address: string;
+  rewardAddress?: string;
+  utxos?: Utxo[];
+}
+
+export type SignedMessage = { signature: string; key: string };
+
+export interface Wallet {
+  address(): Promise<string>;
+  rewardAddress(): Promise<string | null>;
+  getUtxos(): Promise<Utxo[]>;
+  getDelegation(): Promise<ActiveDelegation>;
+  sign(instructionSigner: InstructionSigner): Promise<string>;
+  signMessage(
+    address: string,
+    payload: string,
+  ): Promise<SignedMessage>;
+  submit(tx: string): Promise<string>;
+}
+
+// deno-lint-ignore no-explicit-any
+export type Json = any;
+
+export type Exact<T> = T extends infer U ? U : never;
+
+export type Metadata = {
+  222: {
+    name: string;
+    image: string;
+    mediaType?: string;
+    description?: string;
+    files?: {
+      name?: string;
+      mediaType: string;
+      src: string;
+    }[];
+    [key: string]: Json;
+  };
+  333: {
+    name: string;
+    description: string;
+    ticker?: string;
+    url?: string;
+    logo?: string;
+    decimals?: number;
+    [key: string]: Json;
+  };
+  444: Metadata["222"] & { decimals?: number };
+};
+
+// CIP-0030
+export type WalletApi = {
+  getNetworkId(): Promise<number>;
+  getUtxos(): Promise<string[] | undefined>;
+  getBalance(): Promise<string>;
+  getUsedAddresses(): Promise<string[]>;
+  getUnusedAddresses(): Promise<string[]>;
+  getChangeAddress(): Promise<string>;
+  getRewardAddresses(): Promise<string[]>;
+  signTx(tx: string, partialSign: boolean): Promise<string>;
+  signData(
+    address: string,
+    payload: string,
+  ): Promise<{ signature: string; key: string }>;
+  submitTx(tx: string): Promise<string>;
+  getCollateral(): Promise<string[]>;
+  experimental: {
+    getCollateral(): Promise<string[]>;
+    on(eventName: string, callback: (...args: unknown[]) => void): void;
+    off(eventName: string, callback: (...args: unknown[]) => void): void;
+  };
+};
+
+export type Cardano = {
+  [key: string]: {
+    name: string;
+    icon: string;
+    apiVersion: string;
+    enable(): Promise<WalletApi>;
+    isEnabled(): Promise<boolean>;
+  };
+};
+
+declare global {
+  // deno-lint-ignore no-var
+  var cardano: Cardano;
+}
