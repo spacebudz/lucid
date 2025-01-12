@@ -43,3 +43,20 @@ impl Utils {
         Ok(hex::encode(buffer))
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_apply_double_cbor_encoding() {
+        assert_eq!(
+            Utils::apply_double_cbor_encoding("49480100002221200101").unwrap(),
+            "49480100002221200101"
+        );
+        assert_eq!(
+            Utils::apply_double_cbor_encoding("480100002221200101").unwrap(),
+            "49480100002221200101"
+        );
+        assert!(Utils::apply_double_cbor_encoding("0100002221200101").is_err(),);
+    }
+}
