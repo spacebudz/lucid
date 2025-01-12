@@ -2172,7 +2172,7 @@ struct BuilderWithdrawal {
 
 #[cfg(test)]
 mod tests {
-    use pallas_primitives::conway::Redeemers;
+    use pallas_primitives::{conway::Redeemers, Nullable};
     use uplc::{Constr, Fragment, PlutusData};
 
     use super::{
@@ -2180,7 +2180,9 @@ mod tests {
     };
     use crate::{
         addresses::{Addresses, Network},
-        codec::{Assets, ConstrConversion, Delegation, Script, Utxo, Utxos, Withdrawal},
+        codec::{
+            Assets, AuxMetadata, ConstrConversion, Delegation, Script, Utxo, Utxos, Withdrawal,
+        },
         hasher::Hasher,
     };
     use std::collections::HashMap;
@@ -2495,6 +2497,7 @@ mod tests {
         assert!(tx.transaction_body.collateral.is_some());
         assert!(tx.transaction_body.collateral_return.is_some());
         assert!(tx.transaction_body.total_collateral.is_some());
+        assert!(tx.transaction_body.script_data_hash.is_some());
     }
 
     #[test]
@@ -2577,6 +2580,7 @@ mod tests {
         assert!(tx.transaction_body.collateral.is_some());
         assert!(tx.transaction_body.collateral_return.is_some());
         assert!(tx.transaction_body.total_collateral.is_some());
+        assert!(tx.transaction_body.script_data_hash.is_some());
     }
 
     #[test]
@@ -2633,5 +2637,25 @@ mod tests {
         assert!(tx.transaction_body.collateral_return.is_some());
         assert!(tx.transaction_body.total_collateral.is_some());
         assert_eq!(input_lovelace, output_lovelace - key_deposit + fee);
+    }
+
+    #[test]
+    fn tx_with_aux_metadata() {
+        let builder = setup_builder(None);
+
+        let signer = builder
+            .commit(Instructions(vec![Instruction::AttachMetadata {
+                metadata: (123, AuxMetadata::String("Hello".to_string())),
+            }]))
+            .unwrap();
+
+        let tx = signer.get_tx();
+
+        assert!(match tx.auxiliary_data {
+            Nullable::Some(_) => true,
+            _ => false,
+        });
+        assert!(tx.transaction_body.auxiliary_data_hash.is_some());
+        assert!(tx.transaction_body.script_data_hash.is_none());
     }
 }

@@ -224,41 +224,40 @@ export class Lucid {
     const address = this.utils.credentialToAddress(credential);
 
     this.wallet = {
-      // deno-lint-ignore require-await
-      address: async (): Promise<string> => address,
-      // deno-lint-ignore require-await
-      rewardAddress: async (): Promise<string | null> => null,
-      getUtxos: async (): Promise<Utxo[]> => {
+      address: () => address as unknown as Promise<string>,
+      rewardAddress: () => null as unknown as Promise<string | null>,
+      getUtxos: async () => {
         return await this.utxosAt(
           credential,
         );
       },
-      // deno-lint-ignore require-await
-      getDelegation: async (): Promise<ActiveDelegation> => {
-        return { poolId: null, rewards: 0n };
+      getDelegation: () => {
+        return { poolId: null, rewards: 0n } as unknown as Promise<
+          ActiveDelegation
+        >;
       },
-      // deno-lint-ignore require-await
-      sign: async (
+      sign: (
         instructionSigner: InstructionSigner,
-      ): Promise<string> => {
+      ) => {
         return instructionSigner
           .signWithKey(privateKey)
-          .getPartialWitnessSet();
+          .getPartialWitnessSet() as unknown as Promise<string>;
       },
-      // deno-lint-ignore require-await
-      signMessage: async (
+      signMessage: (
         address: string,
         payload: string,
-      ): Promise<SignedMessage> => {
+      ) => {
         const { payment } = Addresses.inspect(address);
 
         if (payment?.hash !== credential.hash) {
           throw new Error(`Cannot sign message for address: ${address}.`);
         }
 
-        return signMessage(address, payload, privateKey);
+        return signMessage(address, payload, privateKey) as unknown as Promise<
+          SignedMessage
+        >;
       },
-      submit: async (tx: string): Promise<string> => {
+      submit: async (tx: string) => {
         return await this.provider.submit(tx);
       },
     };
@@ -275,22 +274,21 @@ export class Lucid {
     };
 
     this.wallet = {
-      address: async (): Promise<string> =>
-        Addresses.inspect(await getAddressRaw()).address,
-      rewardAddress: async (): Promise<string | null> => {
+      address: async () => Addresses.inspect(await getAddressRaw()).address,
+      rewardAddress: async () => {
         const [rewardAddressRaw] = await api.getRewardAddresses();
         const rewardAddress = rewardAddressRaw
           ? Addresses.inspect(rewardAddressRaw).address
           : null;
         return rewardAddress;
       },
-      getUtxos: async (): Promise<Utxo[]> => {
+      getUtxos: async () => {
         const utxos = ((await api.getUtxos()) || []).map((utxo) => {
           return Codec.decodeUtxo(utxo);
         });
         return utxos;
       },
-      getDelegation: async (): Promise<ActiveDelegation> => {
+      getDelegation: async () => {
         const rewardAddress = await this.wallet.rewardAddress();
 
         return rewardAddress
@@ -299,7 +297,7 @@ export class Lucid {
       },
       sign: async (
         instructionSigner: InstructionSigner,
-      ): Promise<string> => {
+      ) => {
         const tx = instructionSigner.commit();
         const witnessSet = await api.signTx(tx, true);
         instructionSigner.signWithWitnessSet(witnessSet);
@@ -308,11 +306,11 @@ export class Lucid {
       signMessage: async (
         address: string,
         payload: string,
-      ): Promise<SignedMessage> => {
+      ) => {
         const { addressRaw } = Addresses.inspect(address);
         return await api.signData(addressRaw, payload);
       },
-      submit: async (tx: string): Promise<string> => {
+      submit: async (tx: string) => {
         const txHash = await api.submitTx(tx);
         return txHash;
       },
@@ -330,35 +328,31 @@ export class Lucid {
   }: ReadOnlyWallet): Lucid {
     const { payment, delegation } = Addresses.inspect(address);
     this.wallet = {
-      // deno-lint-ignore require-await
-      address: async (): Promise<string> => address,
-      // deno-lint-ignore require-await
-      rewardAddress: async (): Promise<string | null> => {
-        return rewardAddress
+      address: () => address as unknown as Promise<string>,
+      rewardAddress: () => {
+        return (rewardAddress
           ? rewardAddress
           : delegation
           ? this.utils.credentialToRewardAddress(delegation)
-          : null;
+          : null) as unknown as Promise<string | null>;
       },
-      getUtxos: async (): Promise<Utxo[]> => {
+      getUtxos: async () => {
         return utxos ? utxos : await this.utxosAt(payment!);
       },
-      getDelegation: async (): Promise<ActiveDelegation> => {
+      getDelegation: async () => {
         const rewardAddress = await this.wallet.rewardAddress();
 
         return rewardAddress
           ? await this.delegationAt(rewardAddress)
           : { poolId: null, rewards: 0n };
       },
-      // deno-lint-ignore require-await
-      sign: async (): Promise<string> => {
+      sign: () => {
         throw new Error("Wallet is read only");
       },
-      // deno-lint-ignore require-await
-      signMessage: async (): Promise<SignedMessage> => {
+      signMessage: () => {
         throw new Error("Wallet is read only");
       },
-      submit: async (tx: string): Promise<string> => {
+      submit: async (tx: string) => {
         return await this.provider.submit(tx);
       },
     };
@@ -399,33 +393,27 @@ export class Lucid {
     };
 
     this.wallet = {
-      // deno-lint-ignore require-await
-      address: async (): Promise<string> => address,
-      // deno-lint-ignore require-await
-      rewardAddress: async (): Promise<string | null> => rewardAddress,
-      // deno-lint-ignore require-await
-      getUtxos: async (): Promise<Utxo[]> =>
-        this.utxosAt(paymentDetails.credential),
-      getDelegation: async (): Promise<ActiveDelegation> => {
+      address: () => address as unknown as Promise<string>,
+      rewardAddress: () => rewardAddress as unknown as Promise<string | null>,
+      getUtxos: () =>
+        this.utxosAt(paymentDetails.credential) as unknown as Promise<Utxo[]>,
+      getDelegation: async () => {
         const rewardAddress = await this.wallet.rewardAddress();
-
         return rewardAddress
           ? await this.delegationAt(rewardAddress)
           : { poolId: null, rewards: 0n };
       },
-      // deno-lint-ignore require-await
-      sign: async (
+      sign: (
         instructionSigner: InstructionSigner,
-      ): Promise<string> => {
+      ) => {
         return instructionSigner
           .signWithSeed(seed, index)
-          .getPartialWitnessSet();
+          .getPartialWitnessSet() as unknown as Promise<string>;
       },
-      // deno-lint-ignore require-await
-      signMessage: async (
+      signMessage: (
         address: string,
         payload: string,
-      ): Promise<SignedMessage> => {
+      ) => {
         const {
           payment,
           delegation,
@@ -439,9 +427,11 @@ export class Lucid {
           throw new Error(`Cannot sign message for address: ${address}.`);
         }
 
-        return signMessage(address, payload, privateKey);
+        return signMessage(address, payload, privateKey) as unknown as Promise<
+          SignedMessage
+        >;
       },
-      submit: async (tx: string): Promise<string> => {
+      submit: async (tx: string) => {
         return await this.provider.submit(tx);
       },
     };
