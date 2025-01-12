@@ -1,4 +1,4 @@
-import { Blockfrost, Data, Lucid } from "../../mod.ts";
+import { Blockfrost, Data, Lucid } from "../mod.ts";
 
 /*
   AlwaysSucceeds Example

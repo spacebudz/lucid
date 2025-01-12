@@ -1,4 +1,4 @@
-import { fromText, Lucid } from "../../mod.ts";
+import { fromText, Lucid } from "../mod.ts";
 
 // Sign a message and verify it.
 

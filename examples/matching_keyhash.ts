@@ -1,4 +1,4 @@
-import { Blockfrost, Constr, Data, Lucid } from "../../mod.ts";
+import { Blockfrost, Constr, Data, Lucid } from "../mod.ts";
 import * as helios from "https://raw.githubusercontent.com/Hyperion-BT/Helios/v0.4.0/helios.js";
 import { Addresses, Hasher, Script } from "../mod.ts";
 
