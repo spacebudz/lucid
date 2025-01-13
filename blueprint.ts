@@ -1,5 +1,3 @@
-import { version } from "./package.json" with { type: "json" };
-
 type Blueprint = {
   preamble: {
     title: string;
@@ -49,7 +47,9 @@ const plutusVersion = "Plutus" +
 const definitions = plutusJson.definitions;
 
 const imports = `// deno-lint-ignore-file
-import { applyParamsToScript, Data, Script } from "https://deno.land/x/lucid@${version}/mod.ts"`;
+import { applyParamsToScript, Data, Script } from "${
+  import.meta.url.replace("/blueprint.ts", "/mod.ts")
+}"`;
 
 const validators = plutusJson.validators.map((validator) => {
   const title = validator.title;
