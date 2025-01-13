@@ -51,7 +51,9 @@ import { applyParamsToScript, Data, Script } from "${
   import.meta.url.replace("/blueprint.ts", "/mod.ts")
 }"`;
 
-const validators = plutusJson.validators.map((validator) => {
+const validators = plutusJson.validators.filter((validator) =>
+  !validator.title.includes(".else")
+).map((validator) => {
   const title = validator.title;
   const name = (() => {
     const [a, b] = title.split(".");
