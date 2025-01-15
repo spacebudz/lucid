@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "build": "deno run --allow-env --allow-write --allow-read --allow-net --allow-run build.ts",
+    "build": "deno run -A build.ts",
     "build:core": "cd src/core/libs/lucid_core && wasm-pack build . --no-pack --weak-refs --release && rm ./pkg/.gitignore; cd ../message_signing && wasm-pack build . --no-pack --weak-refs --release && rm ./pkg/.gitignore",
     "publish": "deno task build && deno task test && npm publish dist",
     "test": "deno test --allow-env --allow-read --allow-net tests",

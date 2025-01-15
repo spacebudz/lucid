@@ -27,12 +27,19 @@ export type Data =
 
 export const Data = {
   Bytes: (
-    options?: { minLength?: number; maxLength?: number; enum?: string[] },
+    options?:
+      | { minLength?: number; maxLength?: number; enum?: string[] }
+      | number,
   ) => {
     const bytes: Record<string, unknown> = { dataType: "bytes" };
-    if (options) {
+    if (typeof options === "number") {
+      bytes.minLength = options * 2;
+      bytes.maxLength = options * 2;
+    } else if (options) {
       Object.entries(options).forEach(([key, value]) => {
-        bytes[key] = value;
+        bytes[key] = (key === "minLength" || key === "maxLength")
+          ? value as number * 2
+          : value;
       });
     }
     return bytes as unknown as string;
@@ -57,10 +64,15 @@ export const Data = {
   Any: () => ({ description: "Any Data." } as unknown as Data),
   Array: <T>(
     items: T,
-    options?: { minItems?: number; maxItems?: number; uniqueItems?: boolean },
+    options?:
+      | { minItems?: number; maxItems?: number; uniqueItems?: boolean }
+      | number,
   ) => {
     const array: Record<string, unknown> = { dataType: "list", items };
-    if (options) {
+    if (typeof options === "number") {
+      array.minItems = options;
+      array.maxItems = options;
+    } else if (options) {
       Object.entries(options).forEach(([key, value]) => {
         array[key] = value;
       });
@@ -70,14 +82,17 @@ export const Data = {
   Map: <K, V>(
     keys: K,
     values: V,
-    options?: { minItems?: number; maxItems?: number },
+    options?: { minItems?: number; maxItems?: number } | number,
   ) => {
     const map: Record<string, unknown> = {
       dataType: "map",
       keys,
       values,
     };
-    if (options) {
+    if (typeof options === "number") {
+      map.minItems = options;
+      map.maxItems = options;
+    } else if (options) {
       Object.entries(options).forEach(([key, value]) => {
         map[key] = value;
       });

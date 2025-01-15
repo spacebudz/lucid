@@ -1,4 +1,3 @@
-import { OutRef } from "../core/types.ts";
 import {
   ActiveDelegation,
   Assets,
@@ -7,6 +6,7 @@ import {
   Hasher,
   Network,
   OutputData,
+  OutRef,
   paymentCredentialOf,
   Provider,
   RelevantProtocolParameters,

@@ -5,6 +5,12 @@ import {
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import { applyParamsToScript } from "../src/mod.ts";
 
+Deno.test("Exact bytes length", () => {
+  const MyDatum = Data.Bytes(28);
+  const datum: typeof MyDatum = "00".repeat(56);
+  assert(Data.to(datum, MyDatum));
+});
+
 Deno.test("Roundtrip data bigint", () => {
   /*
     - TypeScript:
