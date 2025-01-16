@@ -31,6 +31,14 @@ export class TxComplete {
     return this;
   }
 
+  /** vkey witness */
+  signWithWitness(witness: string): TxComplete {
+    this.tasks.push(() => {
+      this.instructionSigner.signWithWitness(witness);
+    });
+    return this;
+  }
+
   async partialSign(): Promise<string> {
     const witnessSet = await this.lucid.wallet.sign(this.instructionSigner);
     return witnessSet;
