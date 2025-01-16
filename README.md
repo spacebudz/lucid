@@ -30,6 +30,8 @@
 npm install lucid-cardano
 ```
 
+`--experimental-wasm-modules` flag needs to be set in Node.js
+
 #### Deno 🦕
 
 For JavaScript and TypeScript
@@ -77,13 +79,13 @@ const lucid = await Lucid.new(
 
 // Assumes you are in a browser environment
 const api = await window.cardano.nami.enable();
-lucid.selectWallet(api);
+lucid.selectWalletFromApi(api);
 
 const tx = await lucid.newTx()
-  .payToAddress("addr...", { lovelace: 5000000n })
-  .complete();
+  .payTo("addr...", { lovelace: 5000000n })
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 

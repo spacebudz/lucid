@@ -354,380 +354,433 @@ function toMetadata(plutusData: Data): Json {
 }
 
 function castFrom<T = Data>(data: Data, type: T): T {
-  const shape = type as Json;
-  if (!shape) throw new Error("Could not type cast data.");
-  const shapeType = (shape.anyOf ? "enum" : "") || shape.dataType;
+  const schema = type as Json;
+  if (!schema) throw new Error("Could not type cast data.");
+  const { shape, definitions } = schema.definitions
+    ? schema
+    : { shape: schema, definitions: {} };
 
-  switch (shapeType) {
-    case "integer": {
-      if (typeof data !== "bigint") {
-        throw new Error("Could not type cast to integer.");
+  function castFromHelper<T = Data>(data: Data, type: T): T {
+    const shape = type as Json;
+    if (!shape) throw new Error("Could not type cast data.");
+    const shapeType = (shape.anyOf ? "enum" : shape["$ref"] ? "$ref" : "") ||
+      shape.dataType;
+
+    switch (shapeType) {
+      case "$ref": {
+        const definition =
+          definitions[shape["$ref"].split("#/definitions/")[1]];
+        return castFromHelper(data, definition);
       }
-      integerConstraints(data, shape);
-      return data as T;
-    }
-    case "bytes": {
-      if (typeof data !== "string") {
-        throw new Error("Could not type cast to bytes.");
-      }
-      bytesConstraints(data, shape);
-      return data as T;
-    }
-    case "constructor": {
-      if (isVoid(shape)) {
-        if (
-          !(data instanceof Constr) || data.index !== 0 ||
-          data.fields.length !== 0
-        ) {
-          throw new Error("Could not type cast to void.");
+      case "integer": {
+        if (typeof data !== "bigint") {
+          throw new Error("Could not type cast to integer.");
         }
-        return undefined as T;
-      } else if (
-        data instanceof Constr && data.index === shape.index &&
-        (shape.hasConstr || shape.hasConstr === undefined)
-      ) {
-        const fields: Record<string, T> = {};
-        if (shape.fields.length !== data.fields.length) {
-          throw new Error(
-            "Could not type cast to object. Fields do not match.",
+        integerConstraints(data, shape);
+        return data as T;
+      }
+      case "bytes": {
+        if (typeof data !== "string") {
+          throw new Error("Could not type cast to bytes.");
+        }
+        bytesConstraints(data, shape);
+        return data as T;
+      }
+      case "constructor": {
+        if (isVoid(shape)) {
+          if (
+            !(data instanceof Constr) || data.index !== 0 ||
+            data.fields.length !== 0
+          ) {
+            throw new Error("Could not type cast to void.");
+          }
+          return undefined as T;
+        } else if (
+          data instanceof Constr && data.index === shape.index &&
+          (shape.hasConstr || shape.hasConstr === undefined)
+        ) {
+          const fields: Record<string, T> = {};
+          if (shape.fields.length !== data.fields.length) {
+            throw new Error(
+              "Could not type cast to object. Fields do not match.",
+            );
+          }
+          shape.fields.forEach(
+            (field: Json, fieldIndex: number) => {
+              const title = field.title || "wrapper";
+              if ((/[A-Z]/.test(title[0]))) {
+                throw new Error(
+                  "Could not type cast to object. Object properties need to start with a lowercase letter.",
+                );
+              }
+              fields[title] = castFromHelper<T>(
+                data.fields[fieldIndex],
+                field,
+              );
+            },
+          );
+          return fields as T;
+        } else if (
+          data instanceof Array && !shape.hasConstr &&
+          shape.hasConstr !== undefined
+        ) {
+          const fields: Record<string, T> = {};
+          if (shape.fields.length !== data.length) {
+            throw new Error(
+              "Could not ype cast to object. Fields do not match.",
+            );
+          }
+          shape.fields.forEach(
+            (field: Json, fieldIndex: number) => {
+              const title = field.title || "wrapper";
+              if ((/[A-Z]/.test(title[0]))) {
+                throw new Error(
+                  "Could not type cast to object. Object properties need to start with a lowercase letter.",
+                );
+              }
+              fields[title] = castFromHelper<T>(
+                data[fieldIndex],
+                field,
+              );
+            },
+          );
+          return fields as T;
+        }
+        throw new Error("Could not type cast to object.");
+      }
+      case "enum": {
+        // When enum has only one entry it's a single constructor/record object
+        if (shape.anyOf.length === 1) {
+          return castFromHelper<T>(data, shape.anyOf[0]);
+        }
+
+        if (!(data instanceof Constr)) {
+          throw new Error("Could not type cast to enum.");
+        }
+
+        const enumShape = shape.anyOf.find((entry: Json) =>
+          entry.index === data.index
+        );
+        if (!enumShape || enumShape.fields.length !== data.fields.length) {
+          throw new Error("Could not type cast to enum.");
+        }
+        if (isBoolean(shape)) {
+          if (data.fields.length !== 0) {
+            throw new Error("Could not type cast to boolean.");
+          }
+          switch (data.index) {
+            case 0:
+              return false as T;
+            case 1:
+              return true as T;
+          }
+          throw new Error("Could not type cast to boolean.");
+        } else if (isNullable(shape)) {
+          switch (data.index) {
+            case 0: {
+              if (
+                data.fields.length !== 1
+              ) {
+                throw new Error("Could not type cast to nullable object.");
+              }
+              return castFromHelper<T>(
+                data.fields[0],
+                shape.anyOf[0].fields[0],
+              );
+            }
+            case 1: {
+              if (
+                data.fields.length !== 0
+              ) {
+                throw new Error("Could not type cast to nullable object.");
+              }
+              return null as T;
+            }
+          }
+          throw new Error("Could not type cast to nullable object.");
+        }
+        switch (enumShape.dataType) {
+          case "constructor": {
+            if (enumShape.fields.length === 0) {
+              if (
+                /[A-Z]/.test(enumShape.title[0])
+              ) {
+                return enumShape.title as T;
+              }
+              throw new Error("Could not type cast to enum.");
+            } else {
+              if (!(/[A-Z]/.test(enumShape.title))) {
+                throw new Error(
+                  "Could not type cast to enum. Enums need to start with an uppercase letter.",
+                );
+              }
+
+              if (enumShape.fields.length !== data.fields.length) {
+                throw new Error("Could not type cast to enum.");
+              }
+
+              // check if named args
+              const args = enumShape.fields[0].title
+                ? Object.fromEntries(enumShape.fields.map((
+                  field: Json,
+                  index: number,
+                ) => [
+                  field.title,
+                  castFromHelper<T>(data.fields[index], field),
+                ]))
+                : enumShape.fields.map((
+                  field: Json,
+                  index: number,
+                ) => castFromHelper<T>(data.fields[index], field));
+
+              return {
+                [enumShape.title]: args,
+              } as T;
+            }
+          }
+        }
+        throw new Error("Could not type cast to enum.");
+      }
+      case "list": {
+        if (shape.items instanceof Array) {
+          // tuple
+          if (
+            data instanceof Constr &&
+            data.index === 0 &&
+            shape.hasConstr
+          ) {
+            return data.fields.map((field, index) =>
+              castFromHelper<T>(field, shape.items[index])
+            ) as T;
+          } else if (data instanceof Array && !shape.hasConstr) {
+            return data.map((field, index) =>
+              castFromHelper<T>(field, shape.items[index])
+            ) as T;
+          }
+
+          throw new Error("Could not type cast to tuple.");
+        } else {
+          // array
+          if (!(data instanceof Array)) {
+            throw new Error("Could not type cast to array.");
+          }
+          listConstraints(data, shape);
+
+          return data.map((field) =>
+            castFromHelper<T>(field, shape.items)
+          ) as T;
+        }
+      }
+      case "map": {
+        if (!(data instanceof Map)) {
+          throw new Error("Could not type cast to map.");
+        }
+        mapConstraints(data, shape);
+        const map = new Map();
+        for (
+          const [key, value] of data
+            .entries()
+        ) {
+          map.set(
+            castFromHelper<T>(key, shape.keys),
+            castFromHelper<T>(value, shape.values),
           );
         }
-        shape.fields.forEach(
-          (field: Json, fieldIndex: number) => {
-            const title = field.title || "wrapper";
-            if ((/[A-Z]/.test(title[0]))) {
-              throw new Error(
-                "Could not type cast to object. Object properties need to start with a lowercase letter.",
-              );
-            }
-            fields[title] = castFrom<T>(
-              data.fields[fieldIndex],
-              field,
-            );
-          },
-        );
-        return fields as T;
-      } else if (
-        data instanceof Array && !shape.hasConstr &&
-        shape.hasConstr !== undefined
-      ) {
-        const fields: Record<string, T> = {};
-        if (shape.fields.length !== data.length) {
-          throw new Error("Could not ype cast to object. Fields do not match.");
-        }
-        shape.fields.forEach(
-          (field: Json, fieldIndex: number) => {
-            const title = field.title || "wrapper";
-            if ((/[A-Z]/.test(title[0]))) {
-              throw new Error(
-                "Could not type cast to object. Object properties need to start with a lowercase letter.",
-              );
-            }
-            fields[title] = castFrom<T>(
-              data[fieldIndex],
-              field,
-            );
-          },
-        );
-        return fields as T;
+        return map as T;
       }
-      throw new Error("Could not type cast to object.");
-    }
-    case "enum": {
-      // When enum has only one entry it's a single constructor/record object
-      if (shape.anyOf.length === 1) {
-        return castFrom<T>(data, shape.anyOf[0]);
-      }
-
-      if (!(data instanceof Constr)) {
-        throw new Error("Could not type cast to enum.");
-      }
-
-      const enumShape = shape.anyOf.find((entry: Json) =>
-        entry.index === data.index
-      );
-      if (!enumShape || enumShape.fields.length !== data.fields.length) {
-        throw new Error("Could not type cast to enum.");
-      }
-      if (isBoolean(shape)) {
-        if (data.fields.length !== 0) {
-          throw new Error("Could not type cast to boolean.");
-        }
-        switch (data.index) {
-          case 0:
-            return false as T;
-          case 1:
-            return true as T;
-        }
-        throw new Error("Could not type cast to boolean.");
-      } else if (isNullable(shape)) {
-        switch (data.index) {
-          case 0: {
-            if (
-              data.fields.length !== 1
-            ) {
-              throw new Error("Could not type cast to nullable object.");
-            }
-            return castFrom<T>(data.fields[0], shape.anyOf[0].fields[0]);
-          }
-          case 1: {
-            if (
-              data.fields.length !== 0
-            ) {
-              throw new Error("Could not type cast to nullable object.");
-            }
-            return null as T;
-          }
-        }
-        throw new Error("Could not type cast to nullable object.");
-      }
-      switch (enumShape.dataType) {
-        case "constructor": {
-          if (enumShape.fields.length === 0) {
-            if (
-              /[A-Z]/.test(enumShape.title[0])
-            ) {
-              return enumShape.title as T;
-            }
-            throw new Error("Could not type cast to enum.");
-          } else {
-            if (!(/[A-Z]/.test(enumShape.title))) {
-              throw new Error(
-                "Could not type cast to enum. Enums need to start with an uppercase letter.",
-              );
-            }
-
-            if (enumShape.fields.length !== data.fields.length) {
-              throw new Error("Could not type cast to enum.");
-            }
-
-            // check if named args
-            const args = enumShape.fields[0].title
-              ? Object.fromEntries(enumShape.fields.map((
-                field: Json,
-                index: number,
-              ) => [field.title, castFrom<T>(data.fields[index], field)]))
-              : enumShape.fields.map((
-                field: Json,
-                index: number,
-              ) => castFrom<T>(data.fields[index], field));
-
-            return {
-              [enumShape.title]: args,
-            } as T;
-          }
-        }
-      }
-      throw new Error("Could not type cast to enum.");
-    }
-    case "list": {
-      if (shape.items instanceof Array) {
-        // tuple
-        if (
-          data instanceof Constr &&
-          data.index === 0 &&
-          shape.hasConstr
-        ) {
-          return data.fields.map((field, index) =>
-            castFrom<T>(field, shape.items[index])
-          ) as T;
-        } else if (data instanceof Array && !shape.hasConstr) {
-          return data.map((field, index) =>
-            castFrom<T>(field, shape.items[index])
-          ) as T;
-        }
-
-        throw new Error("Could not type cast to tuple.");
-      } else {
-        // array
-        if (!(data instanceof Array)) {
-          throw new Error("Could not type cast to array.");
-        }
-        listConstraints(data, shape);
-
-        return data.map((field) => castFrom<T>(field, shape.items)) as T;
+      case undefined: {
+        return data as T;
       }
     }
-    case "map": {
-      if (!(data instanceof Map)) {
-        throw new Error("Could not type cast to map.");
-      }
-      mapConstraints(data, shape);
-      const map = new Map();
-      for (
-        const [key, value] of data
-          .entries()
-      ) {
-        map.set(castFrom<T>(key, shape.keys), castFrom<T>(value, shape.values));
-      }
-      return map as T;
-    }
-    case undefined: {
-      return data as T;
-    }
+    throw new Error("Could not type cast data.");
   }
-  throw new Error("Could not type cast data.");
+
+  return castFromHelper(data, shape);
 }
 
 function castTo<T>(struct: Exact<T>, type: T): Data {
-  const shape = type as Json;
-  if (!shape) throw new Error("Could not type cast struct.");
-  const shapeType = (shape.anyOf ? "enum" : "") || shape.dataType;
+  const schema = type as Json;
+  if (!schema) throw new Error("Could not type cast data.");
+  const { shape, definitions } = schema.definitions
+    ? schema
+    : { shape: schema, definitions: {} };
 
-  switch (shapeType) {
-    case "integer": {
-      if (typeof struct !== "bigint") {
-        throw new Error("Could not type cast to integer.");
-      }
-      integerConstraints(struct, shape);
-      return struct as bigint;
-    }
-    case "bytes": {
-      if (typeof struct !== "string") {
-        throw new Error("Could not type cast to bytes.");
-      }
-      bytesConstraints(struct, shape);
-      return struct as string;
-    }
-    case "constructor": {
-      if (isVoid(shape)) {
-        if (struct !== undefined) {
-          throw new Error("Could not type cast to void.");
-        }
-        return new Constr(0, []);
-      } else if (
-        typeof struct !== "object" || struct === null ||
-        shape.fields.length !== Object.keys(struct).length
-      ) {
-        throw new Error("Could not type cast to constructor.");
-      }
-      const fields = shape.fields.map((field: Json) =>
-        castTo<T>(
-          (struct as Record<string, Json>)[field.title || "wrapper"],
-          field,
-        )
-      );
-      return (shape.hasConstr || shape.hasConstr === undefined)
-        ? new Constr(shape.index, fields)
-        : fields;
-    }
-    case "enum": {
-      // When enum has only one entry it's a single constructor/record object
-      if (shape.anyOf.length === 1) {
-        return castTo<T>(struct, shape.anyOf[0]);
-      }
+  function castToHelper<T>(struct: Exact<T>, type: T): Data {
+    const shape = type as Json;
+    if (!shape) throw new Error("Could not type cast struct.");
+    const shapeType = (shape.anyOf ? "enum" : shape["$ref"] ? "$ref" : "") ||
+      shape.dataType;
 
-      if (isBoolean(shape)) {
-        if (typeof struct !== "boolean") {
-          throw new Error(
-            "Could not type cast to boolean.",
-          );
+    switch (shapeType) {
+      case "$ref": {
+        const definition =
+          definitions[shape["$ref"].split("#/definitions/")[1]];
+        return castToHelper(struct, definition);
+      }
+      case "integer": {
+        if (typeof struct !== "bigint") {
+          throw new Error("Could not type cast to integer.");
         }
-        return new Constr(struct ? 1 : 0, []);
-      } else if (isNullable(shape)) {
-        if (struct === null) return new Constr(1, []);
-        else {
-          const fields = shape.anyOf[0].fields;
-          if (fields.length !== 1) {
-            throw new Error("Could not type cast to nullable object.");
+        integerConstraints(struct, shape);
+        return struct as bigint;
+      }
+      case "bytes": {
+        if (typeof struct !== "string") {
+          throw new Error("Could not type cast to bytes.");
+        }
+        bytesConstraints(struct, shape);
+        return struct as string;
+      }
+      case "constructor": {
+        if (isVoid(shape)) {
+          if (struct !== undefined) {
+            throw new Error("Could not type cast to void.");
           }
-          return new Constr(0, [
-            castTo<T>(struct, fields[0]),
-          ]);
+          return new Constr(0, []);
+        } else if (
+          typeof struct !== "object" || struct === null ||
+          shape.fields.length !== Object.keys(struct).length
+        ) {
+          throw new Error("Could not type cast to constructor.");
         }
-      }
-      switch (typeof struct) {
-        case "string": {
-          if (!(/[A-Z]/.test(struct[0]))) {
-            throw new Error(
-              "Could not type cast to enum. Enum needs to start with an uppercase letter.",
-            );
-          }
-          const enumIndex = shape.anyOf.findIndex((
-            s: Json,
-          ) =>
-            s.dataType === "constructor" &&
-            s.fields.length === 0 &&
-            s.title === struct
-          );
-          if (enumIndex === -1) throw new Error("Could not type cast to enum.");
-          return new Constr(enumIndex, []);
-        }
-        case "object": {
-          if (struct === null) throw new Error("Could not type cast to enum.");
-          const structTitle = Object.keys(struct)[0];
-
-          if (!(/[A-Z]/.test(structTitle))) {
-            throw new Error(
-              "Could not type cast to enum. Enum needs to start with an uppercase letter.",
-            );
-          }
-          const enumEntry = shape.anyOf.find((s: Json) =>
-            s.dataType === "constructor" &&
-            s.title === structTitle
-          );
-
-          if (!enumEntry) throw new Error("Could not type cast to enum.");
-
-          const args = (struct as Record<string, T[] | Json>)[structTitle];
-
-          return new Constr(
-            enumEntry.index,
-            // check if named args
-            args instanceof Array
-              ? args.map((item, index) =>
-                castTo<T>(item, enumEntry.fields[index])
-              )
-              : enumEntry.fields.map(
-                (entry: Json) => {
-                  const [_, item]: [string, Json] = Object.entries(args).find((
-                    [title],
-                  ) => title === entry.title)!;
-                  return castTo<T>(item, entry);
-                },
-              ),
-          );
-        }
-      }
-      throw new Error("Could not type cast to enum.");
-    }
-    case "list": {
-      if (!(struct instanceof Array)) {
-        throw new Error("Could not type cast to array/tuple.");
-      }
-      if (shape.items instanceof Array) {
-        // tuple
-        const fields = struct.map((item, index) =>
-          castTo<T>(item, shape.items[index])
+        const fields = shape.fields.map((field: Json) =>
+          castToHelper<T>(
+            (struct as Record<string, Json>)[field.title || "wrapper"],
+            field,
+          )
         );
-        return shape.hasConstr ? new Constr(0, fields) : fields;
-      } else {
-        // array
-        listConstraints(struct, shape);
-        return struct.map((item) => castTo<T>(item, shape.items));
+        return (shape.hasConstr || shape.hasConstr === undefined)
+          ? new Constr(shape.index, fields)
+          : fields;
       }
-    }
-    case "map": {
-      if (!(struct instanceof Map)) {
-        throw new Error("Could not type cast to map.");
-      }
+      case "enum": {
+        // When enum has only one entry it's a single constructor/record object
+        if (shape.anyOf.length === 1) {
+          return castToHelper<T>(struct, shape.anyOf[0]);
+        }
 
-      mapConstraints(struct, shape);
+        if (isBoolean(shape)) {
+          if (typeof struct !== "boolean") {
+            throw new Error(
+              "Could not type cast to boolean.",
+            );
+          }
+          return new Constr(struct ? 1 : 0, []);
+        } else if (isNullable(shape)) {
+          if (struct === null) return new Constr(1, []);
+          else {
+            const fields = shape.anyOf[0].fields;
+            if (fields.length !== 1) {
+              throw new Error("Could not type cast to nullable object.");
+            }
+            return new Constr(0, [
+              castToHelper<T>(struct, fields[0]),
+            ]);
+          }
+        }
+        switch (typeof struct) {
+          case "string": {
+            if (!(/[A-Z]/.test(struct[0]))) {
+              throw new Error(
+                "Could not type cast to enum. Enum needs to start with an uppercase letter.",
+              );
+            }
+            const enumIndex = shape.anyOf.findIndex((
+              s: Json,
+            ) =>
+              s.dataType === "constructor" &&
+              s.fields.length === 0 &&
+              s.title === struct
+            );
+            if (enumIndex === -1) {
+              throw new Error("Could not type cast to enum.");
+            }
+            return new Constr(enumIndex, []);
+          }
+          case "object": {
+            if (struct === null) {
+              throw new Error("Could not type cast to enum.");
+            }
+            const structTitle = Object.keys(struct)[0];
 
-      const map = new Map<Data, Data>();
-      for (
-        const [key, value] of struct
-          .entries()
-      ) {
-        map.set(castTo<T>(key, shape.keys), castTo<T>(value, shape.values));
+            if (!(/[A-Z]/.test(structTitle))) {
+              throw new Error(
+                "Could not type cast to enum. Enum needs to start with an uppercase letter.",
+              );
+            }
+            const enumEntry = shape.anyOf.find((s: Json) =>
+              s.dataType === "constructor" &&
+              s.title === structTitle
+            );
+
+            if (!enumEntry) throw new Error("Could not type cast to enum.");
+
+            const args = (struct as Record<string, T[] | Json>)[structTitle];
+
+            return new Constr(
+              enumEntry.index,
+              // check if named args
+              args instanceof Array
+                ? args.map((item, index) =>
+                  castToHelper<T>(item, enumEntry.fields[index])
+                )
+                : enumEntry.fields.map(
+                  (entry: Json) => {
+                    const [_, item]: [string, Json] = Object.entries(args).find(
+                      (
+                        [title],
+                      ) => title === entry.title,
+                    )!;
+                    return castToHelper<T>(item, entry);
+                  },
+                ),
+            );
+          }
+        }
+        throw new Error("Could not type cast to enum.");
       }
-      return map;
+      case "list": {
+        if (!(struct instanceof Array)) {
+          throw new Error("Could not type cast to array/tuple.");
+        }
+        if (shape.items instanceof Array) {
+          // tuple
+          const fields = struct.map((item, index) =>
+            castToHelper<T>(item, shape.items[index])
+          );
+          return shape.hasConstr ? new Constr(0, fields) : fields;
+        } else {
+          // array
+          listConstraints(struct, shape);
+          return struct.map((item) => castToHelper<T>(item, shape.items));
+        }
+      }
+      case "map": {
+        if (!(struct instanceof Map)) {
+          throw new Error("Could not type cast to map.");
+        }
+
+        mapConstraints(struct, shape);
+
+        const map = new Map<Data, Data>();
+        for (
+          const [key, value] of struct
+            .entries()
+        ) {
+          map.set(
+            castToHelper<T>(key, shape.keys),
+            castToHelper<T>(value, shape.values),
+          );
+        }
+        return map;
+      }
+      case undefined: {
+        return struct as Data;
+      }
     }
-    case undefined: {
-      return struct as Data;
-    }
+    throw new Error("Could not type cast struct.");
   }
-  throw new Error("Could not type cast struct.");
+  return castToHelper(struct, shape);
 }
 
 function integerConstraints(integer: bigint, shape: Json) {

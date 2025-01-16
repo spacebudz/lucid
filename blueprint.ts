@@ -38,7 +38,7 @@ type Blueprint = {
 };
 
 const plutusJson: Blueprint = JSON.parse(
-  await Deno.readTextFile("plutus.json"),
+  Deno.readTextFileSync("plutus.json").replaceAll("~1", "/"),
 );
 
 const plutusVersion = "Plutus" +
@@ -55,35 +55,48 @@ const validators = plutusJson.validators.filter((validator) =>
   !validator.title.includes(".else")
 ).map((validator) => {
   const title = validator.title;
-  const name = (() => {
-    const [a, b] = title.split(".");
-    return upperFirst(snakeToCamel(a)) + upperFirst(snakeToCamel(b));
-  })();
+  const name = title
+    .split(".")
+    .map((w) => upperFirst(snakeToCamel(w)))
+    .join("");
   const datum = validator.datum;
   const datumTitle = datum ? snakeToCamel(datum.title) : null;
-  const datumSchema = datum ? resolveSchema(datum.schema, definitions) : null;
+  const datumSchema = datum
+    ? { shape: resolveSchema(datum.schema), definitions }
+    : null;
 
   const redeemer = validator.redeemer;
   const redeemerTitle = snakeToCamel(redeemer.title);
-  const redeemerSchema = resolveSchema(redeemer.schema, definitions);
+  const redeemerSchema = {
+    shape: resolveSchema(redeemer.schema),
+    definitions,
+  };
 
   const params = validator.parameters || [];
   const paramsSchema = {
-    dataType: "list",
-    items: params.map((param) => resolveSchema(param.schema, definitions)),
+    shape: {
+      dataType: "list",
+      items: params.map((param) => resolveSchema(param.schema)),
+    },
+    definitions,
   };
   const paramsArgs = params.map((
     param,
     index,
-  ) => [snakeToCamel(param.title), schemaToType(paramsSchema.items[index])]);
+  ) => [
+    snakeToCamel(param.title),
+    schemaToType(paramsSchema.shape.items[index]),
+  ]);
 
   const script = validator.compiledCode;
 
-  return `export interface ${name} {
+  return `${definitionsToTypes(definitions)}
+
+  export interface ${name} {
     new (${paramsArgs.map((param) => param.join(":")).join(",")}): Script;${
-    datum ? `\n${datumTitle}: ${schemaToType(datumSchema)};` : ""
+    datum ? `\n${datumTitle}: ${schemaToType(datumSchema?.shape)};` : ""
   }
-    ${redeemerTitle}: ${schemaToType(redeemerSchema)};
+    ${redeemerTitle}: ${schemaToType(redeemerSchema.shape)};
   };
 
   export const ${name} = Object.assign(
@@ -112,19 +125,27 @@ console.log(
   "font-weight: bold",
 );
 
-function resolveSchema(schema: any, definitions: any): any {
+function definitionsToTypes(definitions: any): string {
+  return Object.entries(definitions).map(([name, schema]) =>
+    `export type ${
+      name.split("/")
+        .map((w) => upperFirst(snakeToCamel(w)))
+        .join("")
+    } = ${schemaToType(schema)};`
+  ).join("\n");
+}
+
+function resolveSchema(schema: any): any {
   if (schema.items) {
     if (schema.items instanceof Array) {
       return {
         ...schema,
-        items: schema.items.map((item: any) =>
-          resolveSchema(item, definitions)
-        ),
+        items: schema.items.map((item: any) => resolveSchema(item)),
       };
     } else {
       return {
         ...schema,
-        items: resolveSchema(schema.items, definitions),
+        items: resolveSchema(schema.items),
       };
     }
   } else if (schema.anyOf) {
@@ -133,7 +154,7 @@ function resolveSchema(schema: any, definitions: any): any {
       anyOf: schema.anyOf.map((a: any) => ({
         ...a,
         fields: a.fields.map((field: any) => ({
-          ...resolveSchema(field, definitions),
+          ...resolveSchema(field),
           title: field.title ? snakeToCamel(field.title) : undefined,
         })),
       })),
@@ -141,23 +162,18 @@ function resolveSchema(schema: any, definitions: any): any {
   } else if (schema.keys && schema.values) {
     return {
       ...schema,
-      keys: resolveSchema(schema.keys, definitions),
-      values: resolveSchema(schema.values, definitions),
+      keys: resolveSchema(schema.keys),
+      values: resolveSchema(schema.values),
     };
   } else {
-    if (schema["$ref"]) {
-      const refKey =
-        schema["$ref"].replaceAll("~1", "/").split("#/definitions/")[1];
-      return resolveSchema(definitions[refKey], definitions);
-    } else {
-      return schema;
-    }
+    return schema;
   }
 }
 
 function schemaToType(schema: any): string {
   if (!schema) throw new Error("Could not generate type.");
-  const shapeType = (schema.anyOf ? "enum" : "") || schema.dataType;
+  const shapeType = (schema.anyOf ? "enum" : schema["$ref"] ? "$ref" : "") ||
+    schema.dataType;
 
   switch (shapeType) {
     case "integer": {
@@ -217,6 +233,13 @@ function schemaToType(schema: any): string {
       return `Map<${schemaToType(schema.keys)}, ${
         schemaToType(schema.values)
       }>`;
+    }
+    case "$ref": {
+      const definition: string = schema["$ref"].split("#/definitions/")[1];
+      return definition
+        .split("/")
+        .map((w) => upperFirst(snakeToCamel(w)))
+        .join("");
     }
     case undefined: {
       return "Data";

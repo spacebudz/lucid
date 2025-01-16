@@ -5,10 +5,63 @@ import {
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 import { applyParamsToScript } from "../src/mod.ts";
 
+Deno.test("Roundtrip data recursive $ref", () => {
+  type Cool = { A: { a: bigint } } | { B: { b: Cool } };
+
+  type MyDatum = { myDatum: Cool };
+  const MyDatum = {
+    "shape": {
+      "anyOf": [
+        {
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [{ "$ref": "#/definitions/Cool", "title": "myDatum" }],
+          "hasConstr": true,
+        },
+      ],
+    },
+    "definitions": {
+      "Int": { "dataType": "integer" },
+      "Cool": {
+        "title": "Cool",
+        "anyOf": [{
+          "title": "A",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [{ "title": "a", "$ref": "#/definitions/Int" }],
+        }, {
+          "title": "B",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": [{
+            "title": "b",
+            "$ref": "#/definitions/Cool",
+          }],
+        }],
+      },
+    },
+  } as unknown as MyDatum;
+
+  const datum: MyDatum = {
+    myDatum: { B: { b: { B: { b: { A: { a: 1n } } } } } },
+  };
+  const newDatum = Data.from(Data.to(datum, MyDatum), MyDatum);
+
+  assertEquals(datum, newDatum);
+});
+
 Deno.test("Exact bytes length", () => {
   const MyDatum = Data.Bytes(28);
   const datum: typeof MyDatum = "00".repeat(56);
   assert(Data.to(datum, MyDatum));
+  const wrongDatum: typeof MyDatum = "00".repeat(28);
+  let isError = false;
+  try {
+    Data.to(wrongDatum, MyDatum);
+  } catch (_) {
+    isError = true;
+  }
+  assert(isError);
 });
 
 Deno.test("Roundtrip data bigint", () => {
