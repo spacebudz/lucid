@@ -48,6 +48,7 @@ export class Lucid {
     credentialToRewardAddress: (delegation: Credential) => string;
     scriptToRewardAddress: (script: Script) => string;
     unixTimeToSlots: (unixTime: number) => number;
+    slotsToUnixTime: (slots: number) => number;
   };
 
   constructor(
@@ -58,6 +59,35 @@ export class Lucid {
   ) {
     if (provider) this.provider = provider;
     this.network = provider?.network || network || "Mainnet";
+
+    const slotConfig = (() => {
+      switch (this.network) {
+        case "Mainnet":
+          return {
+            zeroTime: 1596059091000,
+            zeroSlot: 4492800,
+            slotLength: 1000,
+          };
+        case "Preprod":
+          return {
+            zeroTime: 1655769600000,
+            zeroSlot: 86400,
+            slotLength: 1000,
+          };
+        case "Preview":
+          return {
+            zeroTime: 1666656000000,
+            zeroSlot: 0,
+            slotLength: 1000,
+          };
+        default:
+          return {
+            zeroTime: this.network.Emulator,
+            zeroSlot: 0,
+            slotLength: 1000,
+          };
+      }
+    })();
 
     this.utils = {
       scriptToAddress: Addresses.scriptToAddress.bind(null, this.network),
@@ -74,38 +104,13 @@ export class Lucid {
         this.network,
       ),
       unixTimeToSlots: (unixTime) => {
-        const slotConfig = (() => {
-          switch (this.network) {
-            case "Mainnet":
-              return {
-                zeroTime: 1596059091000,
-                zeroSlot: 4492800,
-                slotLength: 1000,
-              };
-            case "Preprod":
-              return {
-                zeroTime: 1655769600000,
-                zeroSlot: 86400,
-                slotLength: 1000,
-              };
-            case "Preview":
-              return {
-                zeroTime: 1666656000000,
-                zeroSlot: 0,
-                slotLength: 1000,
-              };
-            default:
-              return {
-                zeroTime: this.network.Emulator,
-                zeroSlot: 0,
-                slotLength: 1000,
-              };
-          }
-        })();
-
         return Math.floor(
           (unixTime - slotConfig.zeroTime) / slotConfig.slotLength,
         ) + slotConfig.zeroSlot;
+      },
+      slotsToUnixTime: (slots) => {
+        return slotConfig.zeroTime +
+          (slots - slotConfig.zeroSlot) * slotConfig.slotLength;
       },
     };
   }
