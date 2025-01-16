@@ -1,73 +1,79 @@
-import { copySync } from "https://deno.land/std@0.224.0/fs/mod.ts";
-import * as esbuild from "https://deno.land/x/esbuild@v0.24.2/mod.js";
-import { denoPlugins } from "jsr:@luca/esbuild-deno-loader@^0.11.1";
+import { copySync, moveSync } from "https://deno.land/std@0.224.0/fs/mod.ts";
 import partialPackage from "./package.json" with { type: "json" };
+import * as dnt from "jsr:@deno/dnt";
 
-const importWasm: esbuild.Plugin = {
-  name: "import-wasm",
-  setup(build: any) {
-    build.onResolve({
-      filter: /^\.\/libs\/lucid_core\/pkg\/lucid_core.js$/,
-    }, () => {
-      return {
-        path: "./pkg/lucid_core.js",
-        external: true,
-      };
-    });
-    build.onResolve({
-      filter: /^\.\/libs\/message_signing\/pkg\/message_signing.js$/,
-    }, () => {
-      return {
-        path: "./pkg/message_signing.js",
-        external: true,
-      };
-    });
-  },
-};
+await dnt.emptyDir("./dist");
 
-await esbuild.build({
-  bundle: true,
-  format: "esm",
-  entryPoints: ["./mod.ts"],
-  outfile: "./dist/mod.js",
-  plugins: [
-    importWasm,
-    ...denoPlugins(),
-  ],
-});
-esbuild.stop();
-
+try {
+  moveSync("./src/core/core.backup.ts", "./src/core/core.ts", {
+    overwrite: true,
+  });
+} catch (_) {}
+copySync("./src/core/core.ts", "./src/core/core.backup.ts");
+const coreFile = await Deno.readTextFile("./src/core/core.ts");
 Deno.writeTextFileSync(
-  "./dist/package.json",
-  JSON.stringify(
-    {
-      ...partialPackage,
-      dependencies: {
-        "node-fetch": "^3.2.3",
-        "@peculiar/webcrypto": "^1.4.0",
-        "ws": "^8.10.0",
-      },
-      types: "./mod.d.ts",
-      main: "./mod.js",
-      module: "./mod.js",
-      exports: {
-        ".": {
-          import: "./mod.js",
-        },
-      },
-      type: "module",
-      engines: {
-        node: ">=22",
-      },
-    },
-    null,
-    2,
+  "./src/core/core.ts",
+  coreFile.replace(
+    `import * as Core from "./libs/lucid_core/pkg/lucid_core.js";`,
+    "const Core = {};",
+  ).replace(
+    `import * as MessageSigningInstance from "./libs/message_signing/pkg/message_signing.js";`,
+    "const MessageSigningInstance = {};",
   ),
 );
+try {
+  await dnt.build({
+    entryPoints: ["./mod.ts"],
+    skipNpmInstall: true,
+    outDir: "./dist",
+    test: false,
+    scriptModule: false,
+    esModule: true,
+    typeCheck: false,
+    skipSourceOutput: true,
+    shims: {},
+    package: {
+      ...partialPackage,
+      type: "module",
+      main: "./esm/mod.js",
+      engines: {
+        node: ">=20",
+      },
+    },
+    postBuild: async () => {
+      const coreFileEsm = await Deno.readTextFile(
+        "./dist/esm/src/core/core.js",
+      );
+      Deno.writeTextFileSync(
+        "./dist/esm/src/core/core.js",
+        coreFileEsm.replace(
+          "const Core = {};",
+          `import * as Core from "./libs/lucid_core/pkg/lucid_core.js";`,
+        ).replace(
+          "const MessageSigningInstance = {};",
+          `import * as MessageSigningInstance from "./libs/message_signing/pkg/message_signing.js";`,
+        ),
+      );
 
-copySync("./src/core/libs/message_signing/pkg/", "./dist/pkg", {
-  overwrite: true,
-});
-copySync("./src/core/libs/lucid_core/pkg/", "./dist/pkg", {
+      copySync(
+        "./src/core/libs/message_signing/pkg/",
+        "./dist/esm/src/core/libs/message_signing/pkg",
+        {
+          overwrite: true,
+        },
+      );
+      copySync(
+        "./src/core/libs/lucid_core/pkg/",
+        "./dist/esm/src/core/libs/lucid_core/pkg",
+        {
+          overwrite: true,
+        },
+      );
+    },
+  });
+} catch (e) {
+  console.log(e);
+}
+moveSync("./src/core/core.backup.ts", "./src/core/core.ts", {
   overwrite: true,
 });
