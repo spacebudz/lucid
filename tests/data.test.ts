@@ -52,9 +52,9 @@ Deno.test("Roundtrip data recursive $ref", () => {
 
 Deno.test("Exact bytes length", () => {
   const MyDatum = Data.Bytes(28);
-  const datum: typeof MyDatum = "00".repeat(56);
+  const datum: typeof MyDatum = "00".repeat(28);
   assert(Data.to(datum, MyDatum));
-  const wrongDatum: typeof MyDatum = "00".repeat(28);
+  const wrongDatum: typeof MyDatum = "00".repeat(20);
   let isError = false;
   try {
     Data.to(wrongDatum, MyDatum);

@@ -33,13 +33,11 @@ export const Data = {
   ) => {
     const bytes: Record<string, unknown> = { dataType: "bytes" };
     if (typeof options === "number") {
-      bytes.minLength = options * 2;
-      bytes.maxLength = options * 2;
+      bytes.minLength = options;
+      bytes.maxLength = options;
     } else if (options) {
       Object.entries(options).forEach(([key, value]) => {
-        bytes[key] = (key === "minLength" || key === "maxLength")
-          ? value as number * 2
-          : value;
+        bytes[key] = value;
       });
     }
     return bytes as unknown as string;
