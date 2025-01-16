@@ -405,7 +405,7 @@ export function resolveInstructions(
           }
           instruction.withdrawal.rewardAddress = rewardAddress;
         }
-        if (!instruction.withdrawal.amount) {
+        if (typeof instruction.withdrawal.amount === "undefined") {
           instruction.withdrawal.amount = Number(
             (await lucid.delegationAt(instruction.withdrawal.rewardAddress))
               .rewards,
