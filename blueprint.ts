@@ -90,9 +90,7 @@ const validators = plutusJson.validators.filter((validator) =>
 
   const script = validator.compiledCode;
 
-  return `${definitionsToTypes(definitions)}
-
-  export interface ${name} {
+  return `export interface ${name} {
     new (${paramsArgs.map((param) => param.join(":")).join(",")}): Script;${
     datum ? `\n${datumTitle}: ${schemaToType(datumSchema?.shape)};` : ""
   }
@@ -104,34 +102,27 @@ const validators = plutusJson.validators.filter((validator) =>
     paramsArgs.length > 0
       ? `return { type: "${plutusVersion}", script: applyParamsToScript([${
         paramsArgs.map((param) => param[0]).join(",")
-      }], "${script}", ${JSON.stringify(paramsSchema)} as any) };`
+      }], "${script}", { "shape":${
+        JSON.stringify(paramsSchema.shape)
+      }, definitions } as any) };`
       : `return {type: "${plutusVersion}", script: "${script}"};`
   }},
-    ${datum ? `{${datumTitle}: ${JSON.stringify(datumSchema)}},` : ""}
-    {${redeemerTitle}: ${JSON.stringify(redeemerSchema)}},
+    ${
+    datum
+      ? `{${datumTitle}: { "shape": ${
+        JSON.stringify(datumSchema?.shape)
+      }, definitions }},`
+      : ""
+  }
+    {${redeemerTitle}: { "shape": ${
+    JSON.stringify(redeemerSchema.shape)
+  }, definitions }},
   ) as unknown as ${name};`;
 });
 
-const plutus = imports + "\n\n" + validators.join("\n\n");
-
-await Deno.writeTextFile("plutus.ts", plutus);
-await new Deno.Command(Deno.execPath(), {
-  args: ["fmt", "plutus.ts"],
-  stderr: "piped",
-}).output();
-console.log(
-  "%cGenerated %cplutus.ts",
-  "color: green; font-weight: bold",
-  "font-weight: bold",
-);
-
-function definitionsToTypes(definitions: any): string {
+function definitionsToTypes(definitions: Blueprint["definitions"]): string {
   return Object.entries(definitions).map(([name, schema]) =>
-    `export type ${
-      name.split("/")
-        .map((w) => upperFirst(snakeToCamel(w)))
-        .join("")
-    } = ${schemaToType(schema)};`
+    `export type ${upperFirst(snakeToCamel(name))} = ${schemaToType(schema)};`
   ).join("\n");
 }
 
@@ -188,7 +179,7 @@ function schemaToType(schema: any): string {
       } else {
         return `{${
           schema.fields.map((field: any) =>
-            `${field.title || "wrapper"}:${schemaToType(field)}`
+            `${snakeToCamel(field.title || "wrapper")}:${schemaToType(field)}`
           ).join(";")
         }}`;
       }
@@ -206,12 +197,12 @@ function schemaToType(schema: any): string {
       }
       return schema.anyOf.map((entry: any) =>
         entry.fields.length === 0
-          ? `"${entry.title}"`
-          : `{${entry.title}: ${
+          ? `"${snakeToCamel(entry.title)}"`
+          : `{${snakeToCamel(entry.title)}: ${
             entry.fields[0].title
               ? `{${
                 entry.fields.map((field: any) =>
-                  [field.title, schemaToType(field)].join(":")
+                  [snakeToCamel(field.title), schemaToType(field)].join(":")
                 ).join(",")
               }}}`
               : `[${
@@ -236,10 +227,7 @@ function schemaToType(schema: any): string {
     }
     case "$ref": {
       const definition: string = schema["$ref"].split("#/definitions/")[1];
-      return definition
-        .split("/")
-        .map((w) => upperFirst(snakeToCamel(w)))
-        .join("");
+      return upperFirst(snakeToCamel(definition));
     }
     case undefined: {
       return "Data";
@@ -265,13 +253,15 @@ function isNullable(shape: any): boolean {
 function snakeToCamel(s: string): string {
   const withUnderscore = s.charAt(0) === "_" ? s.charAt(0) : "";
   return withUnderscore +
-    (withUnderscore ? s.slice(1) : s).toLowerCase().replace(
-      /([-_][a-z])/g,
+    (withUnderscore ? s.slice(1) : s).replace(
+      /([-_$/][a-zA-Z])/g,
       (group) =>
         group
           .toUpperCase()
           .replace("-", "")
-          .replace("_", ""),
+          .replace("_", "")
+          .replace("$", "")
+          .replace("/", ""),
     );
 }
 
@@ -281,3 +271,22 @@ function upperFirst(s: string): string {
     s.charAt(withUnderscore ? 1 : 0).toUpperCase() +
     s.slice((withUnderscore ? 1 : 0) + 1);
 }
+
+const plutus = imports +
+  "\n\n" +
+  `${definitionsToTypes(definitions)}` +
+  "\n\n" +
+  `const definitions = ${JSON.stringify(definitions)};` +
+  "\n\n" +
+  validators.join("\n\n");
+
+await Deno.writeTextFile("plutus.ts", plutus);
+await new Deno.Command(Deno.execPath(), {
+  args: ["fmt", "plutus.ts"],
+  stderr: "piped",
+}).output();
+console.log(
+  "%cGenerated %cplutus.ts",
+  "color: green; font-weight: bold",
+  "font-weight: bold",
+);
