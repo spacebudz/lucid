@@ -12,7 +12,7 @@ import {
   assertEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
 
-async function generateAccount(assets: Assets) {
+function generateAccount(assets: Assets) {
   const seedPhrase = Crypto.generateSeed();
   const { credential } = Crypto.seedToDetails(seedPhrase, 0, "Payment");
   const address = Addresses.credentialToAddress({ Emulator: 0 }, credential);
@@ -23,8 +23,8 @@ async function generateAccount(assets: Assets) {
   };
 }
 
-const ACCOUNT_0 = await generateAccount({ lovelace: 75000000000n });
-const ACCOUNT_1 = await generateAccount({ lovelace: 100000000n });
+const ACCOUNT_0 = generateAccount({ lovelace: 75000000000n });
+const ACCOUNT_1 = generateAccount({ lovelace: 100000000n });
 
 const emulator = new Emulator([ACCOUNT_0, ACCOUNT_1]);
 

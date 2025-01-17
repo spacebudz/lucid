@@ -161,6 +161,16 @@ function resolveSchema(schema: any): any {
   }
 }
 
+function resolveDefinitions(
+  definitions: Blueprint["definitions"],
+): Blueprint["definitions"] {
+  return Object.fromEntries(
+    Object.entries(definitions).map(([name, schema]) => {
+      return [name, resolveSchema(schema)];
+    }),
+  );
+}
+
 function schemaToType(schema: any): string {
   if (!schema) throw new Error("Could not generate type.");
   const shapeType = (schema.anyOf ? "enum" : schema["$ref"] ? "$ref" : "") ||
@@ -276,7 +286,7 @@ const plutus = imports +
   "\n\n" +
   `${definitionsToTypes(definitions)}` +
   "\n\n" +
-  `const definitions = ${JSON.stringify(definitions)};` +
+  `const definitions = ${JSON.stringify(resolveDefinitions(definitions))};` +
   "\n\n" +
   validators.join("\n\n");
 
