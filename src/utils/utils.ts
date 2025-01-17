@@ -104,7 +104,12 @@ export function applyParamsToScript<T extends unknown[] = Data[]>(
   type?: T,
 ): string {
   const p = Data.to(
-    type ? Data.castTo<T>(params, Data.Tuple(type as Json)) : params as Data[],
+    type
+      ? Data.castTo<T>(
+        params,
+        (type instanceof Array ? Data.Tuple(type) : type) as Json,
+      )
+      : params as Data[],
   );
 
   return Utils.applyParamsToScript(p, plutusScript);
