@@ -165,7 +165,12 @@ export const Data = {
         }
       }),
     };
-    return union as unknown as T[number];
+
+    type DeepRemoveReadonly<T> = T extends object
+      ? { -readonly [K in keyof T]: DeepRemoveReadonly<T[K]> }
+      : T;
+
+    return union as unknown as DeepRemoveReadonly<T[number]>;
   },
   Tuple: <T extends unknown[]>(
     items: [...T],
