@@ -15,6 +15,7 @@ use super::{
     instruction_signer::InstructionSigner,
 };
 use crate::error::CoreError;
+use crate::utils::Utils;
 use num_integer::Roots;
 use pallas_addresses::Address;
 use pallas_primitives::{
@@ -560,6 +561,8 @@ impl InstructionBuilder {
                         .insert(label, Either::Right(value));
                 }
                 Instruction::AttachScript { script } => {
+                    let script = script.try_double_cbor()?;
+
                     self.add_language_or_keys(&script)?;
 
                     let hash: ScriptHash = Hasher::hash_script(script.clone())?.parse().unwrap();
@@ -2176,7 +2179,7 @@ mod tests {
     use uplc::{Constr, Fragment, PlutusData};
 
     use super::{
-        Change, Instruction, InstructionBuilder, Instructions, RelevantProtocolParameters,
+        Change, DatumVariant, Instruction, InstructionBuilder, Instructions, RelevantProtocolParameters
     };
     use crate::{
         addresses::{Addresses, Network},
@@ -2657,5 +2660,41 @@ mod tests {
         });
         assert!(tx.transaction_body.auxiliary_data_hash.is_some());
         assert!(tx.transaction_body.script_data_hash.is_none());
+    }
+
+    #[test]
+    fn test_nebula_create_royalty() {
+        let builder = setup_builder(None);
+
+
+        let redeemer = hex::encode(
+            PlutusData::Constr(Constr::from_index(0, vec![]))
+                .encode_fragment()
+                .unwrap(),
+        );
+
+
+        let signer = builder
+            .commit(Instructions(vec![
+              Instruction::CollectFrom { utxos: vec![
+                Utxo {tx_hash: "3b06c12f0df26630dc5b454a3738bfbf318d3caba5754dc9096e01094d2e2e46".to_string(),
+                output_index: 4, 
+                address: ADDRESS_OTHER.to_string(),
+                 assets: Assets::from([("afcaf4f8dc27c51ada41ace7008ccef79b7d3a71d4a7c995adfd7cd0000de1404275643332".to_string(), 1), 
+                 ("afcaf4f8dc27c51ada41ace7008ccef79b7d3a71d4a7c995adfd7cd0000de14042756430".to_string(), 1),
+                  ("afcaf4f8dc27c51ada41ace7008ccef79b7d3a71d4a7c995adfd7cd0000de1404275643235".to_string(), 1), 
+                  ("lovelace".to_string(), 1314550),
+                  ("afcaf4f8dc27c51ada41ace7008ccef79b7d3a71d4a7c995adfd7cd0000de14042756431313131".to_string(),1)]),
+                  datum: None, 
+                  datum_hash: None, 
+                  script_ref: None}
+              ], redeemer: None },
+              Instruction::Mint { assets: Assets::from_unit("62d864f576a29db34bc681a44d06639f593d71751453c5f2fcb9d663001f4d70526f79616c7479".to_string(), 1), redeemer: Some(redeemer.clone()) },
+              Instruction::PayTo { assets: Assets::from_unit("62d864f576a29db34bc681a44d06639f593d71751453c5f2fcb9d663001f4d70526f79616c7479".to_string(), 1), address: ADDRESS.to_string(), datum_variant: Some(DatumVariant::Inline("d8798383d87984d87982d87981581c1a3d2cd7e9f8a05714ba8c4a0d96f7e1f60d5455956bfe74de7b157fd87a80190271d879811a00061a80d87a80d87984d87982d87981581ca9516d49d80c2deb7a9029ef421ca8b5e5b9e0b28dbd6fc2c6726fa7d87a801909c4d87a80d87a80d87984d87982d87981581cde467543f7cee91138085797279a458e74020c30be0b325ceada11d2d87a801909c4d87a80d879811a0016e36001d87980".to_string())), script_ref: None },
+              Instruction::AttachScript { script: Script::PlutusV2 { script: "5836583458e3010030034c0129d87982d8798158203b06c12f0df26630dc5b454a3738bfbf318d3caba5754dc9096e01094d2e2e46040001".to_string() } }
+            ]))
+            .unwrap();
+
+        // let tx = signer.get_tx();
     }
 }

@@ -1,3 +1,5 @@
+use crate::utils::Utils;
+
 use super::{
     codec::Script,
     error::{CoreError, CoreResult},
@@ -76,6 +78,7 @@ impl Hasher {
 
     #[wasm_bindgen(js_name = hashScript)]
     pub fn hash_script(script: Script) -> CoreResult<String> {
+        let script = script.try_double_cbor()?;
         Ok(match script {
             Script::Native { script } => {
                 NativeScript::decode_fragment(&hex::decode(script).map_err(CoreError::msg)?)

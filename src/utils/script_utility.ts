@@ -8,7 +8,6 @@ import {
   Lucid,
   NativeScript,
   Script,
-  Utils,
 } from "../mod.ts";
 
 export class ScriptUtility<T extends unknown[] = Data[]> {
@@ -32,10 +31,7 @@ export class ScriptUtility<T extends unknown[] = Data[]> {
         );
         this.script = { type: script.type, script: scriptWithParams };
       } else {
-        this.script = {
-          type: script.type,
-          script: Utils.applyDoubleCborEncoding(script.script),
-        };
+        this.script = script;
       }
     } else {
       this.script = {

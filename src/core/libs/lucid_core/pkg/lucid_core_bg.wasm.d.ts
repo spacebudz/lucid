@@ -54,6 +54,7 @@ export const instructionsigner_getPartialWitnessSet: (a: number) => [number, num
 export const instructionsigner_commit: (a: number) => [number, number];
 export const utils_applyParamsToScript: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const utils_encodeBech32: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const utils_applySingleCborEncoding: (a: number, b: number) => [number, number, number, number];
 export const utils_applyDoubleCborEncoding: (a: number, b: number) => [number, number, number, number];
 export const __wbg_codec_free: (a: number, b: number) => void;
 export const __wbg_hasher_free: (a: number, b: number) => void;

@@ -206,5 +206,6 @@ export class Utils {
   free(): void;
   static applyParamsToScript(params: string, script: string): string;
   static encodeBech32(hrp: string, data: string): string;
+  static applySingleCborEncoding(script: string): string;
   static applyDoubleCborEncoding(script: string): string;
 }

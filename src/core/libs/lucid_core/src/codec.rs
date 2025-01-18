@@ -1,3 +1,5 @@
+use crate::utils::Utils;
+
 use super::{
     addresses::{Addresses, Credential},
     error::{CoreErr, CoreError, CoreResult},
@@ -21,7 +23,7 @@ use std::{
     str::FromStr,
 };
 use tsify::Tsify;
-use wasm_bindgen::{prelude::wasm_bindgen, UnwrapThrowExt};
+use wasm_bindgen::prelude::wasm_bindgen;
 
 #[wasm_bindgen]
 pub struct Codec;
@@ -347,6 +349,23 @@ pub enum Script {
     PlutusV3 { script: String },
 }
 
+impl Script {
+    pub fn try_double_cbor(&self) -> CoreResult<Script> {
+        Ok(match self {
+            Self::PlutusV1 { script } => Script::PlutusV1 {
+                script: Utils::apply_double_cbor_encoding(&script)?,
+            },
+            Self::PlutusV2 { script } => Script::PlutusV2 {
+                script: Utils::apply_double_cbor_encoding(&script)?,
+            },
+            Self::PlutusV3 { script } => Script::PlutusV3 {
+                script: Utils::apply_double_cbor_encoding(&script)?,
+            },
+            native => native.clone(),
+        })
+    }
+}
+
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Assets(HashMap<String, i128>);
@@ -614,9 +633,9 @@ impl TryFrom<Assets> for Mint {
                 continue;
             }
             let unit_vec = hex::decode(unit).map_err(CoreError::msg)?;
-            let (policy_id, asset_name) = unit_vec
-                .split_at_checked(28)
-                .expect_throw("Unit needs to be at least 28 bytes (length of policy id)");
+            let (policy_id, asset_name) = unit_vec.split_at_checked(28).ok_or(CoreError::msg(
+                "Unit needs to be at least 28 bytes (length of policy id)",
+            ))?;
             value
                 .entry(policy_id.to_vec())
                 .or_default()
