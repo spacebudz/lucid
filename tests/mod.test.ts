@@ -79,12 +79,12 @@ Deno.test("Construct plutus data", () => {
     new Constr(1, [BigInt(1), "abcd", "deff", new Constr(0, [])]),
   );
 
-  assertEquals(data, "d87a840142abcd42deffd87980");
+  assertEquals(data, "d87a9f0142abcd42deffd87980ff");
   // == 122([1, h'ABCD', h'DEFF', 121([])])
 });
 
 Deno.test("Deserialize plutus data", () => {
-  const data = "d87a840141ab41ded87980";
+  const data = "d87a9f0141ab41ded87980ff";
   const desData = Data.from(data);
   assertEquals(data, Data.to(desData));
 });
@@ -214,7 +214,7 @@ Deno.test("json datum to cbor datum", () => {
     constructor: 0,
   };
   const cborDatum =
-    "d87981d87985581cbdd5402a608267d8d47e021a61e5c1ae6aa62a1f770579aa38b88143a140a1401a02ebae4082d87982581cbdd5402a608267d8d47e021a61e5c1ae6aa62a1f770579aa38b88143a140a1401a02ebae40d87982581c6900ecb87083dbbe74a65b1036186bc9c12df2878842d936902f0b51a140a1401a000b37181b00000180f1db168b581cf4a4a183be0b0da6e7a7548d1b26f2191b1ab7b2d20ac1c7d97b681c";
+    "d8799fd8799f581cbdd5402a608267d8d47e021a61e5c1ae6aa62a1f770579aa38b88143a140a1401a02ebae409fd8799f581cbdd5402a608267d8d47e021a61e5c1ae6aa62a1f770579aa38b88143a140a1401a02ebae40ffd8799f581c6900ecb87083dbbe74a65b1036186bc9c12df2878842d936902f0b51a140a1401a000b3718ffff1b00000180f1db168b581cf4a4a183be0b0da6e7a7548d1b26f2191b1ab7b2d20ac1c7d97b681cffff";
   assertEquals(cborDatum, Codec.encodeData(jsonDatum as DataJson));
 });
 
