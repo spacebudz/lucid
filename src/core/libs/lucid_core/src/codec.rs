@@ -40,11 +40,17 @@ impl Codec {
                 DataJson::Bytes { bytes } => PlutusData::BoundedBytes(BoundedBytes::from(
                     hex::decode(bytes).map_err(CoreError::msg)?,
                 )),
-                DataJson::List { list } => PlutusData::Array(MaybeIndefArray::Def(
-                    list.into_iter()
-                        .map(|entry| encode(entry))
-                        .collect::<CoreResult<_>>()?,
-                )),
+                DataJson::List { list } => {
+                    if list.len() == 0 {
+                        PlutusData::Array(MaybeIndefArray::Def(vec![]))
+                    } else {
+                        PlutusData::Array(MaybeIndefArray::Indef(
+                            list.into_iter()
+                                .map(|entry| encode(entry))
+                                .collect::<CoreResult<_>>()?,
+                        ))
+                    }
+                }
                 DataJson::Map { map } => PlutusData::Map(KeyValuePairs::Def(
                     map.into_iter()
                         .map(|MapEntry { k, v }| Ok((encode(*k)?, encode(*v)?)))
@@ -1089,7 +1095,11 @@ impl<A> ConstrConversion<A> for Constr<A> {
         Constr {
             tag: tag.unwrap_or(102),
             any_constructor: tag.map_or(Some(index), |_| None),
-            fields: MaybeIndefArray::Def(fields),
+            fields: if fields.len() == 0 {
+                MaybeIndefArray::Def(vec![])
+            } else {
+                MaybeIndefArray::Indef(fields)
+            },
         }
     }
     fn get_index(&self) -> u64 {

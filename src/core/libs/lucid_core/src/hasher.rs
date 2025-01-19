@@ -1,5 +1,3 @@
-use crate::utils::Utils;
-
 use super::{
     codec::Script,
     error::{CoreError, CoreResult},

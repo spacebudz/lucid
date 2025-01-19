@@ -15,7 +15,6 @@ use super::{
     instruction_signer::InstructionSigner,
 };
 use crate::error::CoreError;
-use crate::utils::Utils;
 use num_integer::Roots;
 use pallas_addresses::Address;
 use pallas_primitives::{
@@ -2179,7 +2178,7 @@ mod tests {
     use uplc::{Constr, Fragment, PlutusData};
 
     use super::{
-        Change, DatumVariant, Instruction, InstructionBuilder, Instructions, RelevantProtocolParameters
+        Change, Instruction, InstructionBuilder, Instructions, RelevantProtocolParameters,
     };
     use crate::{
         addresses::{Addresses, Network},
@@ -2187,6 +2186,7 @@ mod tests {
             Assets, AuxMetadata, ConstrConversion, Delegation, Script, Utxo, Utxos, Withdrawal,
         },
         hasher::Hasher,
+        utils::Utils,
     };
     use std::collections::HashMap;
 
@@ -2258,6 +2258,35 @@ mod tests {
                             141992, 32, 100788, 420, 1, 1, 81663, 32, 59498, 32, 20142, 32, 24588,
                             32, 20744, 32, 25933, 32, 24623, 32, 43053543, 10, 53384111, 14333, 10,
                             43574283, 26308, 10,
+                        ],
+                    ),
+                    (
+                        "PlutusV3".to_string(),
+                        vec![
+                            100788, 420, 1, 1, 1000, 173, 0, 1, 1000, 59957, 4, 1, 11183, 32,
+                            201305, 8356, 4, 16000, 100, 16000, 100, 16000, 100, 16000, 100, 16000,
+                            100, 16000, 100, 100, 100, 16000, 100, 94375, 32, 132994, 32, 61462, 4,
+                            72010, 178, 0, 1, 22151, 32, 91189, 769, 4, 2, 85848, 123203, 7305,
+                            -900, 1716, 549, 57, 85848, 0, 1, 1, 1000, 42921, 4, 2, 24548, 29498,
+                            38, 1, 898148, 27279, 1, 51775, 558, 1, 39184, 1000, 60594, 1, 141895,
+                            32, 83150, 32, 15299, 32, 76049, 1, 13169, 4, 22100, 10, 28999, 74, 1,
+                            28999, 74, 1, 43285, 552, 1, 44749, 541, 1, 33852, 32, 68246, 32,
+                            72362, 32, 7243, 32, 7391, 32, 11546, 32, 85848, 123203, 7305, -900,
+                            1716, 549, 57, 85848, 0, 1, 90434, 519, 0, 1, 74433, 32, 85848, 123203,
+                            7305, -900, 1716, 549, 57, 85848, 0, 1, 1, 85848, 123203, 7305, -900,
+                            1716, 549, 57, 85848, 0, 1, 955506, 213312, 0, 2, 270652, 22588, 4,
+                            1457325, 64566, 4, 20467, 1, 4, 0, 141992, 32, 100788, 420, 1, 1,
+                            81663, 32, 59498, 32, 20142, 32, 24588, 32, 20744, 32, 25933, 32,
+                            24623, 32, 43053543, 10, 53384111, 14333, 10, 43574283, 26308, 10,
+                            16000, 100, 16000, 100, 962335, 18, 2780678, 6, 442008, 1, 52538055,
+                            3756, 18, 267929, 18, 76433006, 8868, 18, 52948122, 18, 1995836, 36,
+                            3227919, 12, 901022, 1, 166917843, 4307, 36, 284546, 36, 158221314,
+                            26549, 36, 74698472, 36, 333849714, 1, 254006273, 72, 2174038, 72,
+                            2261318, 64571, 4, 207616, 8310, 4, 1293828, 28716, 63, 0, 1, 1006041,
+                            43623, 251, 0, 1, 100181, 726, 719, 0, 1, 100181, 726, 719, 0, 1,
+                            100181, 726, 719, 0, 1, 107878, 680, 0, 1, 95336, 1, 281145, 18848, 0,
+                            1, 180194, 159, 1, 1, 158519, 8942, 0, 1, 159378, 8813, 0, 1, 107490,
+                            3298, 1, 106057, 655, 1, 1964219, 24520, 3,
                         ],
                     ),
                 ]),
@@ -2663,9 +2692,8 @@ mod tests {
     }
 
     #[test]
-    fn test_nebula_create_royalty() {
+    fn test_output_reference_spending() {
         let builder = setup_builder(None);
-
 
         let redeemer = hex::encode(
             PlutusData::Constr(Constr::from_index(0, vec![]))
@@ -2673,28 +2701,39 @@ mod tests {
                 .unwrap(),
         );
 
+        let raw_script =  Utils::apply_params_to_script("9fd8799f5820c9021f3a374a011798535b290c047f601891bba6a127d08ce66b6e801efba09e01ffd8799f4200009f010203ffffff", "59010d01010032323232323232323222253330053232323232533300a3370e900018061baa00113253333330120031533300b3370e900018069baa0031533300f300e37540062a6660166464660020026eb0c008c040dd50031129998090008a501332253330103375e600a60266ea80080385288998020020009809800980a00091808800899baf0084c10cd8799f4200009f010203ffff0014a00140140140140140146eb8c03cc034dd50008b1807180780198068011806001180600098041baa001149854cc01924011856616c696461746f722072657475726e65642066616c73650013656153300249010f5f72656465656d65723a20566f696400165734ae7155ceaab9e5573eae855d12ba41").unwrap();
 
-        let signer = builder
-            .commit(Instructions(vec![
-              Instruction::CollectFrom { utxos: vec![
-                Utxo {tx_hash: "3b06c12f0df26630dc5b454a3738bfbf318d3caba5754dc9096e01094d2e2e46".to_string(),
-                output_index: 4, 
-                address: ADDRESS_OTHER.to_string(),
-                 assets: Assets::from([("afcaf4f8dc27c51ada41ace7008ccef79b7d3a71d4a7c995adfd7cd0000de1404275643332".to_string(), 1), 
-                 ("afcaf4f8dc27c51ada41ace7008ccef79b7d3a71d4a7c995adfd7cd0000de14042756430".to_string(), 1),
-                  ("afcaf4f8dc27c51ada41ace7008ccef79b7d3a71d4a7c995adfd7cd0000de1404275643235".to_string(), 1), 
-                  ("lovelace".to_string(), 1314550),
-                  ("afcaf4f8dc27c51ada41ace7008ccef79b7d3a71d4a7c995adfd7cd0000de14042756431313131".to_string(),1)]),
-                  datum: None, 
-                  datum_hash: None, 
-                  script_ref: None}
-              ], redeemer: None },
-              Instruction::Mint { assets: Assets::from_unit("62d864f576a29db34bc681a44d06639f593d71751453c5f2fcb9d663001f4d70526f79616c7479".to_string(), 1), redeemer: Some(redeemer.clone()) },
-              Instruction::PayTo { assets: Assets::from_unit("62d864f576a29db34bc681a44d06639f593d71751453c5f2fcb9d663001f4d70526f79616c7479".to_string(), 1), address: ADDRESS.to_string(), datum_variant: Some(DatumVariant::Inline("d8798383d87984d87982d87981581c1a3d2cd7e9f8a05714ba8c4a0d96f7e1f60d5455956bfe74de7b157fd87a80190271d879811a00061a80d87a80d87984d87982d87981581ca9516d49d80c2deb7a9029ef421ca8b5e5b9e0b28dbd6fc2c6726fa7d87a801909c4d87a80d87a80d87984d87982d87981581cde467543f7cee91138085797279a458e74020c30be0b325ceada11d2d87a801909c4d87a80d879811a0016e36001d87980".to_string())), script_ref: None },
-              Instruction::AttachScript { script: Script::PlutusV2 { script: "5836583458e3010030034c0129d87982d8798158203b06c12f0df26630dc5b454a3738bfbf318d3caba5754dc9096e01094d2e2e46040001".to_string() } }
-            ]))
-            .unwrap();
+        let script = Script::PlutusV3 { script: raw_script };
 
-        // let tx = signer.get_tx();
+        let policy_id = Hasher::hash_script(script.clone()).unwrap();
+
+        let result = builder.commit(Instructions(vec![
+            Instruction::CollectFrom {
+                utxos: vec![Utxo {
+                    tx_hash: "c9021f3a374a011798535b290c047f601891bba6a127d08ce66b6e801efba09e"
+                        .to_string(),
+                    output_index: 1,
+                    address: ADDRESS_OTHER.to_string(),
+                    assets: Assets::from([("lovelace".to_string(), 10000000)]),
+                    datum: None,
+                    datum_hash: None,
+                    script_ref: None,
+                }],
+                redeemer: None,
+            },
+            Instruction::Mint {
+                assets: Assets::from_unit(policy_id.clone(), 1),
+                redeemer: Some(redeemer.clone()),
+            },
+            Instruction::PayTo {
+                assets: Assets::from_unit(policy_id, 1),
+                address: ADDRESS.to_string(),
+                datum_variant: None,
+                script_ref: None,
+            },
+            Instruction::AttachScript { script },
+        ]));
+
+        assert!(result.is_ok())
     }
 }
