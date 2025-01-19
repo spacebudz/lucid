@@ -94,7 +94,9 @@ export class Tx {
         type: "PayTo",
         address,
         assets,
-        datumVariant: datumVariant as DatumVariant | undefined,
+        datumVariant: Object.keys(datumVariant).length > 0
+          ? datumVariant as DatumVariant
+          : undefined,
         scriptRef,
       };
     });

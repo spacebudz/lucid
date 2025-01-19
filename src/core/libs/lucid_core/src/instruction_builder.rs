@@ -309,8 +309,13 @@ impl InstructionBuilder {
                         _ => (None, None),
                     };
 
-                    let mut utxo =
-                        Utxo::from_output(address, assets, datum_hash, datum, script_ref);
+                    let mut utxo = Utxo::from_output(
+                        address,
+                        assets,
+                        datum_hash,
+                        datum,
+                        script_ref.map(|s| s.try_double_cbor()).transpose()?,
+                    );
                     utxo.required_lovelace_mut(self.protocol_parameters.coins_per_utxo_byte);
 
                     if utxo.size_assets() > self.protocol_parameters.max_val_size {
@@ -350,8 +355,13 @@ impl InstructionBuilder {
                         DatumVariant::Inline(data) => (None, Some(data)),
                     };
 
-                    let mut utxo =
-                        Utxo::from_output(address, assets, datum_hash, datum, script_ref);
+                    let mut utxo = Utxo::from_output(
+                        address,
+                        assets,
+                        datum_hash,
+                        datum,
+                        script_ref.map(|s| s.try_double_cbor()).transpose()?,
+                    );
                     utxo.required_lovelace_mut(self.protocol_parameters.coins_per_utxo_byte);
 
                     if utxo.size_assets() > self.protocol_parameters.max_val_size {

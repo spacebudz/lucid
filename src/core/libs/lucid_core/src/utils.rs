@@ -81,7 +81,7 @@ mod tests {
             Utils::apply_single_cbor_encoding("480100002221200101").unwrap(),
             "480100002221200101"
         );
-        assert!(Utils::apply_single_cbor_encoding("0100002221200101").is_err(),);
+        assert!(Utils::apply_single_cbor_encoding("0100002221200101").is_err());
     }
 
     #[test]
@@ -94,6 +94,6 @@ mod tests {
             Utils::apply_double_cbor_encoding("480100002221200101").unwrap(),
             "49480100002221200101"
         );
-        assert!(Utils::apply_double_cbor_encoding("0100002221200101").is_err(),);
+        assert!(Utils::apply_double_cbor_encoding("0100002221200101").is_err());
     }
 }
