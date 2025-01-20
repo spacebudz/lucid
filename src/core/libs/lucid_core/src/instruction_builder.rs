@@ -236,10 +236,9 @@ impl InstructionBuilder {
                 }
                 Instruction::ReadFrom { utxos } => {
                     for utxo in utxos {
-                        match (&utxo.datum_hash, &utxo.datum) {
-                            (Some(_), Some(data)) => self.add_data(data)?,
-                            _ => (),
-                        };
+                        if let (Some(_), Some(data)) = (&utxo.datum_hash, &utxo.datum) {
+                            self.add_data(data)?;
+                        }
                         match &utxo.script_ref {
                             Some(script) => {
                                 self.add_language_or_keys(script)?;
@@ -596,10 +595,9 @@ impl InstructionBuilder {
     }
 
     fn add_input(&mut self, utxo: Utxo, redeemer: Option<String>) -> CoreResult<()> {
-        match (&utxo.datum_hash, &utxo.datum) {
-            (Some(_), Some(data)) => self.add_data(data)?,
-            _ => (),
-        };
+        if let (Some(_), Some(data)) = (&utxo.datum_hash, &utxo.datum) {
+            self.add_data(data)?;
+        }
         match &utxo.script_ref {
             Some(script) => {
                 self.add_language_or_keys(script)?;
