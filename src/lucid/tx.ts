@@ -36,10 +36,10 @@ export class Tx {
 
   /** Read data from utxos. These utxos are only referenced and not spent. */
   readFrom(utxos: Utxo[]): Tx {
-    this.tasks.push(async (that) => {
+    this.tasks.push(async ({ lucid }) => {
       for (const utxo of utxos) {
-        if (utxo.datumHash) {
-          utxo.datum = Data.to(await that.lucid.datumOf(utxo));
+        if (utxo.datumHash && !utxo.datum) {
+          utxo.datum = Data.to(await lucid.datumOf(utxo));
         }
       }
       return { type: "ReadFrom", utxos };
@@ -52,10 +52,10 @@ export class Tx {
    * With redeemer it's a plutus script input.
    */
   collectFrom(utxos: Utxo[], redeemer?: string): Tx {
-    this.tasks.push(async (that) => {
+    this.tasks.push(async ({ lucid }) => {
       for (const utxo of utxos) {
         if (utxo.datumHash && !utxo.datum) {
-          utxo.datum = Data.to(await that.lucid.datumOf(utxo));
+          utxo.datum = Data.to(await lucid.datumOf(utxo));
         }
       }
       return { type: "CollectFrom", utxos, redeemer };
