@@ -895,9 +895,9 @@ impl InstructionBuilder {
             });
 
             loop {
-                let collateral_count = available_collateral.len() - self.selection.len();
+                let collateral_count = self.collateral.as_ref().map_or(0, |c| c.len()) as u16;
 
-                if collateral_count as u16 >= self.protocol_parameters.max_collateral_inputs {
+                if collateral_count >= self.protocol_parameters.max_collateral_inputs {
                     return Err(CoreError::msg(format!(
                         "Reached maximum collateral inputs, {} allowed",
                         self.protocol_parameters.max_collateral_inputs
@@ -907,6 +907,7 @@ impl InstructionBuilder {
                 let utxo = available_collateral
                     .pop()
                     .ok_or(CoreError::msg("Collateral balance insufficient"))?;
+
                 self.add_collateral(utxo)?;
 
                 if adjust_collateral(self).is_ok() {
