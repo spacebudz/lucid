@@ -122,9 +122,9 @@ export class Addresses {
   static keyHashToCredential(hash: string): Credential;
   static scriptHashToCredential(hash: string): Credential;
   static scriptToCredential(script: Script): Credential;
-  static scriptToAddress(network: Network, script: Script, delegation?: Credential): string;
+  static scriptToAddress(network: Network, script: Script, delegation?: Credential | null): string;
   static scriptToRewardAddress(network: Network, script: Script): string;
-  static credentialToAddress(network: Network, payment: Credential, delegation?: Credential): string;
+  static credentialToAddress(network: Network, payment: Credential, delegation?: Credential | null): string;
   static credentialToRewardAddress(network: Network, delegation: Credential): string;
   static addressToCredential(address: string): Credential;
   static rewardAddressToCredential(address: string): Credential;
@@ -157,7 +157,7 @@ export class Crypto {
 }
 export class EmulatorState {
   free(): void;
-  constructor(time: number, utxos?: Utxos);
+  constructor(time: number, utxos?: Utxos | null);
   validate(tx: string): string;
   getTime(): number;
   getDatum(hash: string): string | undefined;
@@ -168,8 +168,8 @@ export class EmulatorState {
    * Emulates the behaviour of the reward distribution at epoch boundaries.
    */
   distributeRewards(rewards: bigint): void;
-  awaitSlot(slot?: number): void;
-  awaitBlock(height?: number): void;
+  awaitSlot(slot?: number | null): void;
+  awaitBlock(height?: number | null): void;
 }
 export class Hasher {
   private constructor();
@@ -190,7 +190,7 @@ export class InstructionBuilder {
 export class InstructionSigner {
   private constructor();
   free(): void;
-  static fromTx(tx: string, utxos?: Utxos): InstructionSigner;
+  static fromTx(tx: string, utxos?: Utxos | null): InstructionSigner;
   /**
    * ed25519 private key hex or bech32 encoded
    */

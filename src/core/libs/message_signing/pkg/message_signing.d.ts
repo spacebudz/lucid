@@ -157,7 +157,7 @@ export class COSEEncrypt {
   headers(): Headers;
   ciphertext(): Uint8Array | undefined;
   recipients(): COSERecipients;
-  static new(headers: Headers, ciphertext: Uint8Array | undefined, recipients: COSERecipients): COSEEncrypt;
+  static new(headers: Headers, ciphertext: Uint8Array | null | undefined, recipients: COSERecipients): COSEEncrypt;
 }
 export class COSEEncrypt0 {
   private constructor();
@@ -166,7 +166,7 @@ export class COSEEncrypt0 {
   static from_bytes(bytes: Uint8Array): COSEEncrypt0;
   headers(): Headers;
   ciphertext(): Uint8Array | undefined;
-  static new(headers: Headers, ciphertext?: Uint8Array): COSEEncrypt0;
+  static new(headers: Headers, ciphertext?: Uint8Array | null): COSEEncrypt0;
 }
 export class COSEKey {
   private constructor();
@@ -194,7 +194,7 @@ export class COSERecipient {
   static from_bytes(bytes: Uint8Array): COSERecipient;
   headers(): Headers;
   ciphertext(): Uint8Array | undefined;
-  static new(headers: Headers, ciphertext?: Uint8Array): COSERecipient;
+  static new(headers: Headers, ciphertext?: Uint8Array | null): COSERecipient;
 }
 export class COSERecipients {
   private constructor();
@@ -214,7 +214,7 @@ export class COSESign {
   headers(): Headers;
   payload(): Uint8Array | undefined;
   signatures(): COSESignatures;
-  static new(headers: Headers, payload: Uint8Array | undefined, signatures: COSESignatures): COSESign;
+  static new(headers: Headers, payload: Uint8Array | null | undefined, signatures: COSESignatures): COSESign;
 }
 export class COSESign1 {
   private constructor();
@@ -229,8 +229,8 @@ export class COSESign1 {
    * # Arguments
    * * `external_aad` - External application data - see RFC 8152 section 4.3. Set to None if not using this.
    */
-  signed_data(external_aad?: Uint8Array, external_payload?: Uint8Array): SigStructure;
-  static new(headers: Headers, payload: Uint8Array | undefined, signature: Uint8Array): COSESign1;
+  signed_data(external_aad?: Uint8Array | null, external_payload?: Uint8Array | null): SigStructure;
+  static new(headers: Headers, payload: Uint8Array | null | undefined, signature: Uint8Array): COSESign1;
 }
 export class COSESign1Builder {
   private constructor();

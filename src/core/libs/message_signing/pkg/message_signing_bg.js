@@ -1152,7 +1152,7 @@ export class COSEEncrypt {
     }
     /**
      * @param {Headers} headers
-     * @param {Uint8Array | undefined} ciphertext
+     * @param {Uint8Array | null | undefined} ciphertext
      * @param {COSERecipients} recipients
      * @returns {COSEEncrypt}
      */
@@ -1256,7 +1256,7 @@ export class COSEEncrypt0 {
     }
     /**
      * @param {Headers} headers
-     * @param {Uint8Array | undefined} [ciphertext]
+     * @param {Uint8Array | null} [ciphertext]
      * @returns {COSEEncrypt0}
      */
     static new(headers, ciphertext) {
@@ -1555,7 +1555,7 @@ export class COSERecipient {
     }
     /**
      * @param {Headers} headers
-     * @param {Uint8Array | undefined} [ciphertext]
+     * @param {Uint8Array | null} [ciphertext]
      * @returns {COSERecipient}
      */
     static new(headers, ciphertext) {
@@ -1757,7 +1757,7 @@ export class COSESign {
     }
     /**
      * @param {Headers} headers
-     * @param {Uint8Array | undefined} payload
+     * @param {Uint8Array | null | undefined} payload
      * @param {COSESignatures} signatures
      * @returns {COSESign}
      */
@@ -1879,8 +1879,8 @@ export class COSESign1 {
      * For verifying, we will want to reverse-construct this SigStructure to check the signature against
      * # Arguments
      * * `external_aad` - External application data - see RFC 8152 section 4.3. Set to None if not using this.
-     * @param {Uint8Array | undefined} [external_aad]
-     * @param {Uint8Array | undefined} [external_payload]
+     * @param {Uint8Array | null} [external_aad]
+     * @param {Uint8Array | null} [external_payload]
      * @returns {SigStructure}
      */
     signed_data(external_aad, external_payload) {
@@ -1904,7 +1904,7 @@ export class COSESign1 {
     }
     /**
      * @param {Headers} headers
-     * @param {Uint8Array | undefined} payload
+     * @param {Uint8Array | null | undefined} payload
      * @param {Uint8Array} signature
      * @returns {COSESign1}
      */
