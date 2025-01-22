@@ -12,10 +12,10 @@ const { payment } = Addresses.inspect(address);
 
 const emulator = new Emulator([{ address, assets: { lovelace: 3000000000n } }]);
 
-const lucid = new Lucid({ provider: emulator })
-  .selectWalletFromPrivateKey(
-    privateKey,
-  );
+const lucid = new Lucid({
+  provider: emulator,
+  wallet: { PrivateKey: privateKey },
+});
 
 const mintingPolicy = lucid.newScript({
   type: "All",

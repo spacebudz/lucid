@@ -28,6 +28,7 @@ import {
   Utxo,
   Wallet,
   WalletApi,
+  WalletSelection,
 } from "../mod.ts";
 import { signMessage, verifyMessage } from "../misc/sign_message.ts";
 import { resolveInstructions } from "./mod.ts";
@@ -52,9 +53,10 @@ export class Lucid {
   };
 
   constructor(
-    { provider, network }: {
+    { provider, network, wallet }: {
       provider?: Provider;
       network?: Network;
+      wallet?: WalletSelection;
     } = {},
   ) {
     if (provider) this.provider = provider;
@@ -113,6 +115,18 @@ export class Lucid {
           (slots - slotConfig.zeroSlot) * slotConfig.slotLength;
       },
     };
+
+    if (wallet) {
+      if ("PrivateKey" in wallet) {
+        this.selectWalletFromPrivateKey(wallet.PrivateKey);
+      } else if ("Seed" in wallet) {
+        this.selectWalletFromSeed(wallet.Seed.seed, wallet.Seed.options);
+      } else if ("Api" in wallet) {
+        this.selectWalletFromApi(wallet.Api);
+      } else if ("ReadOnly" in wallet) {
+        this.selectReadOnlyWallet(wallet.ReadOnly);
+      }
+    }
   }
 
   newScript<T extends unknown[] = Data[]>(

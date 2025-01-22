@@ -90,6 +90,19 @@ export interface Wallet {
   submit(tx: string): Promise<string>;
 }
 
+export type WalletSelection =
+  | { PrivateKey: string }
+  | { Api: WalletApi }
+  | {
+    Seed: {
+      seed: string;
+      options?: { type?: "Base" | "Enterprise"; index?: number };
+    };
+  }
+  | {
+    ReadOnly: ReadOnlyWallet;
+  };
+
 // deno-lint-ignore no-explicit-any
 export type Json = any;
 
