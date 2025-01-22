@@ -1,6 +1,13 @@
-import { Blockfrost, Constr, Data, Lucid } from "../mod.ts";
+import {
+  Addresses,
+  Blockfrost,
+  Constr,
+  Data,
+  Hasher,
+  Lucid,
+  Script,
+} from "../mod.ts";
 import * as helios from "https://raw.githubusercontent.com/Hyperion-BT/Helios/v0.4.0/helios.js";
-import { Addresses, Hasher, Script } from "../mod.ts";
 
 /*
   MatchingPubKeyHash Example

@@ -19,6 +19,7 @@ import {
   PartialInstruction,
   Provider,
   ReadOnlyWallet,
+  resolveInstructions,
   Script,
   ScriptUtility,
   SignedMessage,
@@ -31,7 +32,6 @@ import {
   WalletSelection,
 } from "../mod.ts";
 import { signMessage, verifyMessage } from "../misc/sign_message.ts";
-import { resolveInstructions } from "./mod.ts";
 
 export class Lucid {
   wallet!: Wallet;

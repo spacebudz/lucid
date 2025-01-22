@@ -1,5 +1,11 @@
-import { Emulator, fromText, Lucid, toUnit } from "../mod.ts";
-import { Addresses, Crypto } from "../mod.ts";
+import {
+  Addresses,
+  Crypto,
+  Emulator,
+  fromText,
+  Lucid,
+  toUnit,
+} from "../mod.ts";
 
 const privateKey = Crypto.generatePrivateKey();
 
