@@ -1,9 +1,8 @@
-import { Constr, Data } from "../mod.ts";
+import { applyParamsToScript, Constr, Data } from "../mod.ts";
 import {
   assert,
   assertEquals,
 } from "https://deno.land/std@0.145.0/testing/asserts.ts";
-import { applyParamsToScript } from "../src/mod.ts";
 
 Deno.test("Roundtrip data recursive $ref", () => {
   type Cool = { A: { a: bigint } } | { B: { b: Cool } };

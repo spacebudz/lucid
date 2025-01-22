@@ -1,12 +1,17 @@
 import {
   Addresses,
+  Assets,
   Codec,
   Crypto,
+  Data,
+  Emulator,
+  fromText,
   Hasher,
+  Lucid,
   paymentCredentialOf,
   Script,
+  toUnit,
 } from "../mod.ts";
-import { Assets, Data, Emulator, fromText, Lucid, toUnit } from "../src/mod.ts";
 import {
   assert,
   assertEquals,
