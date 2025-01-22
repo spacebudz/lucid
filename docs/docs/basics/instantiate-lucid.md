@@ -14,10 +14,12 @@ network.
 ```js
 import { Blockfrost, Lucid } from "https://deno.land/x/lucid/mod.ts";
 
-const lucid = await Lucid.new(
-  new Blockfrost("https://cardano-preprod.blockfrost.io/api/v0", "<projectId>"),
-  "Preprod",
-);
+const lucid = new Lucid({
+  provider: new Blockfrost(
+    "https://cardano-preprod.blockfrost.io/api/v0",
+    "<projectId>",
+  ),
+});
 ```
 
 Lucid allows you to choose different providers. You also have the option to

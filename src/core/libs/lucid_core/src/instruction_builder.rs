@@ -622,7 +622,7 @@ impl InstructionBuilder {
         Ok(())
     }
 
-    fn adjust_fee(&mut self) -> CoreResult<Either<u64, ()>> {
+    fn adjust_fee(&mut self) -> CoreResult<(u64, bool)> {
         let mut old_fee = self.fee;
         let mut new_fee = {
             self.assemble()?;
@@ -630,14 +630,14 @@ impl InstructionBuilder {
         };
 
         if old_fee >= new_fee {
-            return Ok(Either::Left(old_fee));
+            return Ok((old_fee, true));
         }
 
         // we run in a loop to make 100% sure that adding to fee field and subtracting from output does not change bytes length
         // if it does we loop again and adjust accordingly
         while old_fee < new_fee {
             if self.change_outputs.len() <= 0 {
-                return Ok(Either::Right(()));
+                return Ok((0, false));
             }
 
             let index = self.change_outputs.len() - 1;
@@ -653,7 +653,7 @@ impl InstructionBuilder {
                 < change_output.required_lovelace(self.protocol_parameters.coins_per_utxo_byte)
                 && change_output.assets.contains_other()
             {
-                return Ok(Either::Right(()));
+                return Ok((0, false));
             }
             // burn whole output
             if change_output.assets.get_lovelace()
@@ -662,7 +662,7 @@ impl InstructionBuilder {
                 let fee = old_fee + change_output.assets.get_lovelace() + amount_to_subtract;
                 self.fee = fee;
                 self.change_outputs.pop().unwrap();
-                return Ok(Either::Left(fee));
+                return Ok((fee, true));
             }
 
             self.fee = new_fee;
@@ -673,10 +673,10 @@ impl InstructionBuilder {
             };
         }
 
-        Ok(Either::Left(new_fee))
+        Ok((new_fee, true))
     }
 
-    fn evaluate_redeemers(&mut self) -> CoreResult<Either<(), ()>> {
+    fn evaluate_redeemers(&mut self) -> CoreResult<bool> {
         fn to_language_view_encoding(cost_models: &CostModels) -> Vec<u8> {
             let mut language_view = Vec::new();
             let mut encoder = pallas_codec::minicbor::Encoder::new(&mut language_view);
@@ -720,14 +720,14 @@ impl InstructionBuilder {
             language_view
         }
 
-        fn adjust_collateral(builder: &mut InstructionBuilder) -> CoreResult<Either<(), ()>> {
+        fn adjust_collateral(builder: &mut InstructionBuilder) -> CoreResult<bool> {
             let mut old_total_collateral = (builder.fee
                 * builder.protocol_parameters.collateral_percentage as u64)
                 .div_ceil(100);
 
             let adjusted_fee = match builder.adjust_fee()? {
-                Either::Left(fee) => fee,
-                Either::Right(_) => return Ok(Either::Right(())),
+                (fee, true) => fee,
+                (_, false) => return Ok(false),
             };
 
             let mut new_total_collateral = (adjusted_fee
@@ -735,7 +735,7 @@ impl InstructionBuilder {
                 .div_ceil(100);
 
             if old_total_collateral >= new_total_collateral {
-                return Ok(Either::Left(()));
+                return Ok(true);
             }
 
             let collateral = builder.collateral.clone().unwrap_or(BTreeSet::new());
@@ -777,8 +777,8 @@ impl InstructionBuilder {
                 old_total_collateral = new_total_collateral;
 
                 let adjusted_fee = match builder.adjust_fee()? {
-                    Either::Left(fee) => fee,
-                    Either::Right(_) => return Ok(Either::Right(())),
+                    (fee, true) => fee,
+                    (_, false) => return Ok(false),
                 };
 
                 new_total_collateral = (adjusted_fee
@@ -786,134 +786,131 @@ impl InstructionBuilder {
                     .div_ceil(100);
             }
 
-            Ok(Either::Left(()))
+            Ok(true)
         }
 
-        if let Some(_) = &self.redeemers {
-            let encoded_tx = self.tx.encode_fragment().unwrap();
-            let minted_tx = MintedTx::decode_fragment(&encoded_tx).unwrap();
-            let utxos: Vec<ResolvedInput> = self
-                .inputs
-                .union(&self.read_inputs.clone().unwrap_or(BTreeSet::new()))
-                .map(|b| {
-                    Ok(ResolvedInput {
-                        input: b.utxo.clone().try_into()?,
-                        output: b.utxo.clone().try_into()?,
+        match &self.redeemers {
+            Some(_) => {
+                let encoded_tx = self.tx.encode_fragment().unwrap();
+                let minted_tx = MintedTx::decode_fragment(&encoded_tx).unwrap();
+                let utxos: Vec<ResolvedInput> = self
+                    .inputs
+                    .union(&self.read_inputs.clone().unwrap_or(BTreeSet::new()))
+                    .map(|b| {
+                        Ok(ResolvedInput {
+                            input: b.utxo.clone().try_into()?,
+                            output: b.utxo.clone().try_into()?,
+                        })
                     })
-                })
-                .collect::<CoreResult<_>>()?;
+                    .collect::<CoreResult<_>>()?;
 
-            let mut used_languages = Vec::new();
+                let mut used_languages = Vec::new();
 
-            for script_hash in self.used_scripts.iter() {
-                if let Some(language) = self.found_languages.get(&script_hash) {
-                    used_languages.push(language.clone());
+                for script_hash in self.used_scripts.iter() {
+                    if let Some(language) = self.found_languages.get(&script_hash) {
+                        used_languages.push(language.clone());
+                    }
                 }
-            }
 
-            let cost_models = CostModels {
-                plutus_v1: match used_languages.contains(&Language::PlutusV1) {
-                    true => Some(
-                        self.protocol_parameters
-                            .cost_models
-                            .get("PlutusV1")
-                            .unwrap()
-                            .to_vec(),
-                    ),
-                    _ => None,
-                },
-                plutus_v2: match used_languages.contains(&Language::PlutusV2) {
-                    true => Some(
-                        self.protocol_parameters
-                            .cost_models
-                            .get("PlutusV2")
-                            .unwrap()
-                            .to_vec(),
-                    ),
-                    _ => None,
-                },
-                plutus_v3: match used_languages.contains(&Language::PlutusV3) {
-                    true => Some(
-                        self.protocol_parameters
-                            .cost_models
-                            .get("PlutusV3")
-                            .unwrap()
-                            .to_vec(),
-                    ),
-                    _ => None,
-                },
-            };
+                let cost_models = CostModels {
+                    plutus_v1: match used_languages.contains(&Language::PlutusV1) {
+                        true => Some(
+                            self.protocol_parameters
+                                .cost_models
+                                .get("PlutusV1")
+                                .unwrap()
+                                .to_vec(),
+                        ),
+                        _ => None,
+                    },
+                    plutus_v2: match used_languages.contains(&Language::PlutusV2) {
+                        true => Some(
+                            self.protocol_parameters
+                                .cost_models
+                                .get("PlutusV2")
+                                .unwrap()
+                                .to_vec(),
+                        ),
+                        _ => None,
+                    },
+                    plutus_v3: match used_languages.contains(&Language::PlutusV3) {
+                        true => Some(
+                            self.protocol_parameters
+                                .cost_models
+                                .get("PlutusV3")
+                                .unwrap()
+                                .to_vec(),
+                        ),
+                        _ => None,
+                    },
+                };
 
-            let redeemers = eval_phase_two(
-                &minted_tx,
-                &utxos,
-                Some(&cost_models),
-                Some(&ExBudget {
-                    mem: self.protocol_parameters.max_tx_ex_mem as i64,
-                    cpu: self.protocol_parameters.max_tx_ex_steps as i64,
-                }),
-                &self.slot_config,
-                false,
-                |_| (),
-            )
-            .map_err(CoreError::msg)?;
-
-            let builder_redeemers: BTreeSet<BuilderRedeemer> = redeemers
-                .iter()
-                .map(|r| BuilderRedeemer(r.clone()))
-                .collect();
-
-            self.redeemers = Some(builder_redeemers.clone());
-
-            let redeemers = Redeemers::Map(
-                NonEmptyKeyValuePairs::from_vec(
-                    builder_redeemers.into_iter().map(|r| r.into()).collect(),
+                let redeemers = eval_phase_two(
+                    &minted_tx,
+                    &utxos,
+                    Some(&cost_models),
+                    Some(&ExBudget {
+                        mem: self.protocol_parameters.max_tx_ex_mem as i64,
+                        cpu: self.protocol_parameters.max_tx_ex_steps as i64,
+                    }),
+                    &self.slot_config,
+                    false,
+                    |_| (),
                 )
-                .unwrap(),
-            );
+                .map_err(CoreError::msg)?;
 
-            let mut script_data = Vec::new();
-            script_data.extend(redeemers.encode_fragment().unwrap());
-            if let Some(data) = &self.tx.transaction_witness_set.plutus_data {
-                script_data.extend(data.encode_fragment().unwrap());
-            }
-            script_data.extend(to_language_view_encoding(&cost_models));
+                let builder_redeemers: BTreeSet<BuilderRedeemer> = redeemers
+                    .iter()
+                    .map(|r| BuilderRedeemer(r.clone()))
+                    .collect();
 
-            self.script_data_hash = Some(pallas_crypto::hash::Hasher::<256>::hash(
-                script_data.as_slice(),
-            ));
+                self.redeemers = Some(builder_redeemers.clone());
 
-            let mut available_collateral: Vec<Utxo> =
-                self.selection.clone().into_iter().map(|b| b.utxo).collect();
-            available_collateral.sort_by(|a, b| {
-                self.get_pure_lovelace(&a.assets)
-                    .cmp(&self.get_pure_lovelace(&b.assets))
-            });
+                let redeemers = Redeemers::Map(
+                    NonEmptyKeyValuePairs::from_vec(
+                        builder_redeemers.into_iter().map(|r| r.into()).collect(),
+                    )
+                    .unwrap(),
+                );
 
-            loop {
-                let collateral_count = self.collateral.as_ref().map_or(0, |c| c.len()) as u16;
+                let mut script_data = Vec::new();
+                script_data.extend(redeemers.encode_fragment().unwrap());
+                if let Some(data) = &self.tx.transaction_witness_set.plutus_data {
+                    script_data.extend(data.encode_fragment().unwrap());
+                }
+                script_data.extend(to_language_view_encoding(&cost_models));
 
-                if collateral_count >= self.protocol_parameters.max_collateral_inputs {
-                    return Err(CoreError::msg(format!(
-                        "Reached maximum collateral inputs, {} allowed",
-                        self.protocol_parameters.max_collateral_inputs
-                    )));
+                self.script_data_hash = Some(pallas_crypto::hash::Hasher::<256>::hash(
+                    script_data.as_slice(),
+                ));
+
+                let mut available_collateral: Vec<Utxo> =
+                    self.selection.clone().into_iter().map(|b| b.utxo).collect();
+                available_collateral.sort_by(|a, b| {
+                    self.get_pure_lovelace(&a.assets)
+                        .cmp(&self.get_pure_lovelace(&b.assets))
+                });
+
+                for _ in 0..self.protocol_parameters.max_collateral_inputs {
+                    let utxo = available_collateral
+                        .pop()
+                        .ok_or(CoreError::msg("Collateral balance insufficient"))?;
+
+                    self.add_collateral(utxo)?;
+
+                    match adjust_collateral(self) {
+                        Ok(b) => return Ok(b),
+                        Err(_) => continue,
+                    }
                 }
 
-                let utxo = available_collateral
-                    .pop()
-                    .ok_or(CoreError::msg("Collateral balance insufficient"))?;
-
-                self.add_collateral(utxo)?;
-
-                match adjust_collateral(self) {
-                    Ok(Either::Left(_)) => break,
-                    Ok(error) => return Ok(error),
-                    Err(_) => continue,
-                }
+                Err(CoreError::msg(format!(
+                    "Reached maximum collateral inputs, {} allowed",
+                    self.protocol_parameters.max_collateral_inputs
+                )))
             }
+            None => Ok(true),
         }
-        Ok(Either::Left(()))
     }
 
     fn collect_redeemers(&mut self) -> CoreResult<()> {
@@ -1055,7 +1052,7 @@ impl InstructionBuilder {
 
             self.assemble()?;
 
-            if let Either::Right(_) = self.balance()? {
+            if !self.balance()? {
                 continue;
             }
 
@@ -1063,13 +1060,13 @@ impl InstructionBuilder {
 
             self.assemble()?;
 
-            if let Either::Right(_) = self.evaluate_redeemers()? {
+            if !self.evaluate_redeemers()? {
                 continue;
             }
 
             self.assemble()?;
 
-            if let Either::Right(_) = self.adjust_fee()? {
+            if !self.adjust_fee()?.1 {
                 continue;
             }
 
@@ -1149,7 +1146,7 @@ impl InstructionBuilder {
         }
     }
 
-    fn balance(&mut self) -> CoreResult<Either<(), ()>> {
+    fn balance(&mut self) -> CoreResult<bool> {
         let mut fee = self.calculate_fee();
 
         let total_input = self
@@ -1167,9 +1164,9 @@ impl InstructionBuilder {
         match &total_input.partial_cmp(&(total_output.clone() + Assets::from_lovelace(fee))) {
             Some(Ordering::Equal) => {
                 self.fee = (total_input.get_lovelace() - total_output.get_lovelace()) as u64;
-                Ok(Either::Left(()))
+                Ok(true)
             }
-            Some(Ordering::Less) => return Ok(Either::Right(())),
+            Some(Ordering::Less) => return Ok(false),
             Some(Ordering::Greater) => {
                 let mut total_change = total_input - total_output;
 
@@ -1192,7 +1189,7 @@ impl InstructionBuilder {
                         total_change = total_change.clamped_sub(change_output.assets);
 
                         if total_change.len() <= 0 {
-                            return Ok(Either::Right(()));
+                            return Ok(false);
                         }
                         change_output.assets = Assets::from_unit(unit.clone(), *quantity);
                     } else {
@@ -1204,11 +1201,10 @@ impl InstructionBuilder {
                                        total_change: &Assets,
                                        change_output: &Utxo,
                                        fee: u64|
-                 -> CoreResult<Either<(), ()>> {
+                 -> bool {
                     if !total_change.contains_other() {
-                        return Err(CoreError::msg(
-                            "No other assets found, splitting unnecessary, continue with one",
-                        ));
+                        // No other assets found, splitting unnecessary, continue with one
+                        return false;
                     }
                     let mut fee_check = fee;
                     let mut total_change_check = total_change.clone();
@@ -1242,21 +1238,21 @@ impl InstructionBuilder {
                         < change_output_1
                             .required_lovelace(builder.protocol_parameters.coins_per_utxo_byte)
                     {
-                        return Err(CoreError::NotEnoughLovelaceForOutput.to_msg());
+                        return false;
                     };
 
                     builder.change_outputs.push(change_output_0);
                     builder.change_outputs.push(change_output_1);
                     builder.fee = fee_check;
 
-                    Ok(Either::Left(()))
+                    true
                 };
 
                 let try_one_output = |builder: &mut InstructionBuilder,
                                       total_change: &Assets,
                                       change_output: &Utxo,
                                       fee: u64|
-                 -> CoreResult<Either<(), ()>> {
+                 -> bool {
                     let mut fee_check = fee;
                     let total_change_check = total_change.clone();
                     let mut change_output_0 = change_output.clone();
@@ -1273,33 +1269,30 @@ impl InstructionBuilder {
                         < change_output_0
                             .required_lovelace(builder.protocol_parameters.coins_per_utxo_byte)
                     {
-                        return Err(CoreError::NotEnoughLovelaceForOutput.to_msg());
+                        return false;
                     };
 
                     builder.change_outputs.push(change_output_0);
                     builder.fee = fee_check;
 
-                    Ok(Either::Left(()))
+                    true
                 };
 
-                let try_just_fee = |builder: &mut InstructionBuilder,
-                                    total_change: &Assets,
-                                    fee: u64|
-                 -> CoreResult<Either<(), ()>> {
-                    if total_change.contains_other() {
-                        return Ok(Either::Right(()));
-                    }
-                    if total_change.get_lovelace() < fee {
-                        return Ok(Either::Right(()));
-                    }
-                    builder.fee = total_change.get_lovelace();
-                    Ok(Either::Left(()))
-                };
+                let try_just_fee =
+                    |builder: &mut InstructionBuilder, total_change: &Assets, fee: u64| -> bool {
+                        if total_change.contains_other() {
+                            return false;
+                        }
+                        if total_change.get_lovelace() < fee {
+                            return false;
+                        }
+                        builder.fee = total_change.get_lovelace();
+                        true
+                    };
 
-                try_two_outputs(self, &total_change, &change_output, fee).or_else(|_| {
-                    try_one_output(self, &total_change, &change_output, fee)
-                        .or_else(|_| try_just_fee(self, &total_change, fee))
-                })
+                Ok(try_two_outputs(self, &total_change, &change_output, fee)
+                    || try_one_output(self, &total_change, &change_output, fee)
+                    || try_just_fee(self, &total_change, fee))
             }
             _ => return Err(CoreError::msg("Missing input or output for some assets")),
         }
