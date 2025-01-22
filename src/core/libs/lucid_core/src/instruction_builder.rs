@@ -15,7 +15,6 @@ use super::{
     instruction_signer::InstructionSigner,
 };
 use crate::error::CoreError;
-use num_integer::Roots;
 use pallas_addresses::Address;
 use pallas_primitives::{
     alonzo::PostAlonzoAuxiliaryData,
@@ -28,7 +27,6 @@ use pallas_primitives::{
     Nullable, PlutusData, PlutusScript, RewardAccount, ScriptHash,
 };
 use pallas_traverse::ComputeHash;
-use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::{
     cmp::Ordering,
@@ -165,21 +163,7 @@ impl InstructionBuilder {
 
         self.assemble()?;
 
-        self.coin_selection()?;
-
-        self.assemble()?;
-
-        self.balance()?;
-
-        self.collect_redeemers()?;
-
-        self.assemble()?;
-
-        self.evaluate_redeemers()?;
-
-        self.assemble()?;
-
-        self.adjust_fee()?;
+        self.build()?;
 
         let tx = self.tx.encode_fragment().unwrap();
 
@@ -638,7 +622,7 @@ impl InstructionBuilder {
         Ok(())
     }
 
-    fn adjust_fee(&mut self) -> CoreResult<u64> {
+    fn adjust_fee(&mut self) -> CoreResult<Either<u64, ()>> {
         let mut old_fee = self.fee;
         let mut new_fee = {
             self.assemble()?;
@@ -646,14 +630,14 @@ impl InstructionBuilder {
         };
 
         if old_fee >= new_fee {
-            return Ok(old_fee);
+            return Ok(Either::Left(old_fee));
         }
 
         // we run in a loop to make 100% sure that adding to fee field and subtracting from output does not change bytes length
         // if it does we loop again and adjust accordingly
         while old_fee < new_fee {
             if self.change_outputs.len() <= 0 {
-                return Err(CoreError::NotEnoughLovelaceForFee.to_msg());
+                return Ok(Either::Right(()));
             }
 
             let index = self.change_outputs.len() - 1;
@@ -669,7 +653,7 @@ impl InstructionBuilder {
                 < change_output.required_lovelace(self.protocol_parameters.coins_per_utxo_byte)
                 && change_output.assets.contains_other()
             {
-                return Err(CoreError::NotEnoughLovelaceForFee.to_msg());
+                return Ok(Either::Right(()));
             }
             // burn whole output
             if change_output.assets.get_lovelace()
@@ -678,7 +662,7 @@ impl InstructionBuilder {
                 let fee = old_fee + change_output.assets.get_lovelace() + amount_to_subtract;
                 self.fee = fee;
                 self.change_outputs.pop().unwrap();
-                return Ok(fee);
+                return Ok(Either::Left(fee));
             }
 
             self.fee = new_fee;
@@ -689,10 +673,10 @@ impl InstructionBuilder {
             };
         }
 
-        Ok(new_fee)
+        Ok(Either::Left(new_fee))
     }
 
-    fn evaluate_redeemers(&mut self) -> CoreResult<()> {
+    fn evaluate_redeemers(&mut self) -> CoreResult<Either<(), ()>> {
         fn to_language_view_encoding(cost_models: &CostModels) -> Vec<u8> {
             let mut language_view = Vec::new();
             let mut encoder = pallas_codec::minicbor::Encoder::new(&mut language_view);
@@ -736,16 +720,22 @@ impl InstructionBuilder {
             language_view
         }
 
-        fn adjust_collateral(builder: &mut InstructionBuilder) -> CoreResult<()> {
+        fn adjust_collateral(builder: &mut InstructionBuilder) -> CoreResult<Either<(), ()>> {
             let mut old_total_collateral = (builder.fee
                 * builder.protocol_parameters.collateral_percentage as u64)
                 .div_ceil(100);
-            let mut new_total_collateral = (builder.adjust_fee()?
+
+            let adjusted_fee = match builder.adjust_fee()? {
+                Either::Left(fee) => fee,
+                Either::Right(_) => return Ok(Either::Right(())),
+            };
+
+            let mut new_total_collateral = (adjusted_fee
                 * builder.protocol_parameters.collateral_percentage as u64)
                 .div_ceil(100);
 
             if old_total_collateral >= new_total_collateral {
-                return Ok(());
+                return Ok(Either::Left(()));
             }
 
             let collateral = builder.collateral.clone().unwrap_or(BTreeSet::new());
@@ -776,7 +766,7 @@ impl InstructionBuilder {
                         < collateral_return
                             .required_lovelace(builder.protocol_parameters.coins_per_utxo_byte)
                     {
-                        return Err(CoreError::NotEnoughLovelaceForFee.to_msg());
+                        return Err(CoreError::NotEnoughLovelaceForOutput.to_msg());
                     }
 
                     builder.total_collateral = Some(new_total_collateral);
@@ -785,12 +775,18 @@ impl InstructionBuilder {
                 }
 
                 old_total_collateral = new_total_collateral;
-                new_total_collateral = (builder.adjust_fee()?
+
+                let adjusted_fee = match builder.adjust_fee()? {
+                    Either::Left(fee) => fee,
+                    Either::Right(_) => return Ok(Either::Right(())),
+                };
+
+                new_total_collateral = (adjusted_fee
                     * builder.protocol_parameters.collateral_percentage as u64)
                     .div_ceil(100);
             }
 
-            Ok(())
+            Ok(Either::Left(()))
         }
 
         if let Some(_) = &self.redeemers {
@@ -910,12 +906,14 @@ impl InstructionBuilder {
 
                 self.add_collateral(utxo)?;
 
-                if adjust_collateral(self).is_ok() {
-                    break;
-                };
+                match adjust_collateral(self) {
+                    Ok(Either::Left(_)) => break,
+                    Ok(error) => return Ok(error),
+                    Err(_) => continue,
+                }
             }
         }
-        Ok(())
+        Ok(Either::Left(()))
     }
 
     fn collect_redeemers(&mut self) -> CoreResult<()> {
@@ -1029,149 +1027,60 @@ impl InstructionBuilder {
         }
     }
 
-    fn coin_selection(&mut self) -> CoreResult<()> {
-        if self.without_coin_selection {
+    fn build(&mut self) -> CoreResult<()> {
+        let mut available_selection: Vec<_> = self
+            .selection
+            .difference(&self.inputs)
+            .cloned()
+            .map(|b| b.utxo)
+            .collect();
+
+        self.coin_selection(&mut available_selection)?;
+
+        available_selection.sort_by(|a, b| a.assets.get_lovelace().cmp(&b.assets.get_lovelace()));
+
+        for i in 0..10 {
+            if i > 0 {
+                if self.without_coin_selection {
+                    return Err(CoreError::TxBuildFail.to_msg());
+                }
+
+                self.add_input(
+                    available_selection
+                        .pop()
+                        .ok_or(CoreError::ExhaustedInputs("lovelace".to_string()).to_msg())?,
+                    None,
+                )?
+            }
+
+            self.assemble()?;
+
+            if let Either::Right(_) = self.balance()? {
+                continue;
+            }
+
+            self.collect_redeemers()?;
+
+            self.assemble()?;
+
+            if let Either::Right(_) = self.evaluate_redeemers()? {
+                continue;
+            }
+
+            self.assemble()?;
+
+            if let Either::Right(_) = self.adjust_fee()? {
+                continue;
+            }
+
             return Ok(());
         }
 
-        static WEIGHTS: [u32; 6] = [200, 1000, 1500, 800, 800, 5000];
+        Err(CoreError::TxBuildFail.to_msg())
+    }
 
-        fn norm(vector: &Vec<i128>) -> f64 {
-            vector
-                .iter()
-                .fold(0 as u128, |acc, coord| acc + coord.pow(2) as u128)
-                .sqrt() as f64
-        }
-
-        fn sub_vectors(vector1: &Vec<u64>, vector2: &Vec<u64>) -> Vec<i128> {
-            vector1
-                .iter()
-                .zip(vector2.iter())
-                .map(|(x, y)| *x as i128 - *y as i128)
-                .collect()
-        }
-
-        fn get_normalization(vector1: &Vec<u64>, vector2: &Vec<u64>) -> f64 {
-            (vector1
-                .iter()
-                .fold(0 as u128, |acc, x| acc + (*x as u128).pow(2))
-                * vector2
-                    .iter()
-                    .fold(0 as u128, |acc, x| acc + (*x as u128).pow(2)))
-            .sqrt() as f64
-        }
-
-        /*
-            The cost function evalues each move in the improvement phase by penalizing bad actions:
-            1. We try to get to an ideal ada amount (twice the target amount) => The further away the more penalized
-            2. We try to get an ideal amount for all assets. We take the euclidean distance of two normalized vectors,
-                where the dimensions represent the amount of assets and the coordinate the quantity of a specific asset.
-                The closer the distance is to 0 the less penalized.
-            3. We try to avoid assets in inputs if possible by penalizing each extra asset that was added.
-            4. If the quantity for any asset (inculding ada) is less than the target quantity, apply a very big negative weight so that this move is definitely discarded.
-            5. Whenever we interact with a plutus script, we increase the weights on avoiding assets, since assets are costy in plutus scripts.
-
-        */
-        fn cost(
-            builder: &InstructionBuilder,
-            available_selection: &Vec<Utxo>,
-            current_selection: &Vec<Utxo>,
-            target: &Assets,
-            total_input: &Assets,
-            total_output: &Assets,
-        ) -> f64 {
-            // If the target coin is less than 2.5 ADA we try to add more than twice the amount in order to cover the max fees in worst case
-            let ideal = {
-                let target_lovelace = target.get_lovelace();
-                if target_lovelace > 2500000 {
-                    target_lovelace * 2
-                } else {
-                    target_lovelace.max(1000000) * 4
-                }
-            };
-
-            let available_selection_assets = available_selection
-                .iter()
-                .fold(Assets::new(), |acc, curr| acc + curr.assets.clone());
-            let available_selection_others_len = available_selection_assets.get_all_others().len();
-
-            let current_selection_assets = current_selection
-                .iter()
-                .fold(Assets::new(), |acc, curr| acc + curr.assets.clone());
-            let current_selection_others = current_selection_assets.get_all_others();
-
-            let target_others = target.get_all_others();
-
-            let mut current_vector: Vec<u64> = Vec::new();
-            let mut ideal_vector: Vec<u64> = Vec::new();
-
-            for (target_unit, target_quantity) in target_others.iter() {
-                let quantity = current_selection_others.get(target_unit).unwrap_or(&0);
-
-                if quantity < target_quantity {
-                    return 100000.0;
-                }
-                // For performance reasons we only try to get to an ideal amount of assets when it's below a certain threshold
-                if target.len() < 100 {
-                    current_vector.push(*quantity as u64);
-                    ideal_vector.push((target_quantity * 2) as u64);
-                }
-            }
-
-            let temp_total_input_lovelace =
-                current_selection_assets.get_lovelace() + total_input.get_lovelace();
-
-            if temp_total_input_lovelace < total_output.get_lovelace() {
-                return 1000000.0;
-            }
-
-            let current_ideal = ((builder.get_pure_lovelace(&current_selection_others)) as f64
-                - ideal as f64)
-                / ideal as f64;
-
-            let weight_ideal = if current_ideal > 0.0 {
-                current_ideal * 0.0
-            } else if current_selection.len() > 100 {
-                -current_ideal * WEIGHTS[0] as f64
-            } else {
-                -current_ideal * WEIGHTS[1] as f64
-            };
-
-            // Normalize the asset length through the max possible asset length
-            let asset_len = if available_selection_others_len > 0 {
-                current_selection_others.len() as f64 / available_selection_others_len as f64
-            } else {
-                0.0
-            };
-
-            let weight_assets = if builder.redeemers.is_some() {
-                // Assets are expensive for Plutus scripts => penalize harder if more assets are in inputs
-                asset_len * WEIGHTS[2] as f64
-            } else {
-                // Penalize more assets a bit, but try to find the ideal quantity in order to avoid asset fractions over time.
-
-                let distance = norm(&sub_vectors(&current_vector, &ideal_vector));
-                let normalization = get_normalization(&current_vector, &ideal_vector);
-                let norm_distance = distance / normalization;
-
-                asset_len * WEIGHTS[3] as f64 + norm_distance * WEIGHTS[4] as f64
-            };
-
-            // If the UTxO set is getting quite large we start to take the UTxO count into consideration.
-            let weight_utxos = if current_selection.len() > 100 && available_selection.len() > 0 {
-                (current_selection.len() as f64 / available_selection.len() as f64)
-                    * WEIGHTS[5] as f64
-            } else {
-                0.0
-            };
-
-            weight_ideal + weight_assets + weight_utxos
-        }
-
-        let available_selection: BTreeSet<_> =
-            self.selection.difference(&self.inputs).cloned().collect();
-
-        if available_selection.len() <= 0 {
+    fn coin_selection(&mut self, available_selection: &mut Vec<Utxo>) -> CoreResult<()> {
+        if self.without_coin_selection {
             return Ok(());
         }
 
@@ -1189,232 +1098,58 @@ impl InstructionBuilder {
             + Assets::from_lovelace(self.calculate_fee());
 
         let total_change = total_input.clone().clamped_sub(total_output.clone());
+        total_output += Assets::from_lovelace(if total_change.contains_other() {
+            let required_lovelace = self
+                .create_partial_change_output(total_change.clone())
+                .required_lovelace(self.protocol_parameters.coins_per_utxo_byte);
+            required_lovelace.max(total_change.get_lovelace())
+        } else {
+            0
+        });
 
-        if total_change.contains_other() {
-            let mut placeholder_output = self.create_partial_change_output(total_change.clone());
-            placeholder_output.assets.set_lovelace(0);
+        let target = total_output.clone().clamped_sub(total_input.clone());
 
-            let required_lovelace =
-                placeholder_output.required_lovelace(self.protocol_parameters.coins_per_utxo_byte);
+        let mut current = total_input.clone();
 
-            let change_lovelace = total_change.get_lovelace();
-
-            if required_lovelace >= change_lovelace {
-                total_output +=
-                    Assets::from_lovelace(change_lovelace + (required_lovelace - change_lovelace))
-            }
-        }
-
-        let mut target = total_output.clone().clamped_sub(total_input.clone());
-        if self
-            .get_pure_lovelace(&total_input)
-            .saturating_sub(total_output.get_lovelace())
-            < 500000
-            && self.redeemers.is_some()
+        // largest first
+        for (unit, _) in target
+            .get_all_others()
+            .iter()
+            .chain(Assets::from_lovelace(current.get_lovelace()).iter())
         {
-            target.set_lovelace(500000);
-        }
+            if unit == "lovelace" {
+                available_selection.sort_by(|a, b| {
+                    self.get_pure_lovelace(&a.assets)
+                        .cmp(&self.get_pure_lovelace(&b.assets))
+                });
+            } else {
+                available_selection
+                    .sort_by(|a, b| a.assets.get_unit(unit).cmp(&b.assets.get_unit(unit)));
+            }
 
-        let mut current_assets = Assets::new();
-        let mut current_selection: Vec<Utxo> = Vec::new();
-        let mut available_selection: Vec<Utxo> = available_selection
-            .into_iter()
-            .map(|b| b.utxo.clone())
-            .collect();
-
-        // Add enough assets to inputs
-        for (unit, _) in target.get_all_others().iter() {
-            let mut relevant_selection = available_selection
-                .clone()
-                .into_iter()
-                .filter(|utxo| utxo.assets.get(unit).is_some())
-                .collect::<Vec<Utxo>>();
-
-            while current_assets.get_unit(unit) < target.get_unit(unit) {
-                if relevant_selection.len() <= 0 {
-                    return Err(CoreError::msg(format!(
-                        "Exhausted inputs for unit: {}",
-                        unit
-                    )));
+            while current.get_unit(unit) < target.get_unit(unit) {
+                let utxo = available_selection
+                    .pop()
+                    .ok_or(CoreError::ExhaustedInputs(unit.to_string()).to_msg())?;
+                if utxo.assets.get(unit).is_none() {
+                    return Err(CoreError::ExhaustedInputs(unit.to_string()).to_msg());
                 }
-                let index = rand::thread_rng().gen_range(0..relevant_selection.len());
-                let utxo = relevant_selection[index].clone();
-
-                current_assets = current_assets + utxo.assets.clone();
-                current_selection.push(utxo.clone());
-
-                total_output += Assets::from_lovelace(
-                    utxo.get_fee_for_input(self.protocol_parameters.min_fee_a),
-                );
-
-                let index_available = available_selection
-                    .iter()
-                    .position(|u| {
-                        TransactionInput::try_from(u.clone()).unwrap()
-                            == TransactionInput::try_from(utxo.clone()).unwrap()
-                    })
-                    .unwrap();
-                available_selection.swap_remove(index_available);
-                relevant_selection.swap_remove(index);
+                self.add_input(utxo.clone(), None)?;
+                current += utxo.assets;
             }
-        }
-
-        // Add enough lovelace to inputs
-        let mut relevant_selection = available_selection.clone();
-        while self.get_pure_lovelace(&current_assets) < self.get_pure_lovelace(&target)
-            || (total_input.clone() + current_assets.clone()).get_lovelace()
-                < total_output.get_lovelace()
-        {
-            if relevant_selection.len() <= 0 {
-                return Err(CoreError::msg("Exhausted inputs for lovelace"));
-            }
-            let index = rand::thread_rng().gen_range(0..relevant_selection.len());
-            let utxo = relevant_selection[index].clone();
-            current_assets += utxo.assets.clone();
-            current_selection.push(utxo.clone());
-
-            total_output +=
-                Assets::from_lovelace(utxo.get_fee_for_input(self.protocol_parameters.min_fee_a));
-
-            let index_available = available_selection
-                .iter()
-                .position(|u| {
-                    TransactionInput::try_from(u.clone()).unwrap()
-                        == TransactionInput::try_from(utxo.clone()).unwrap()
-                })
-                .unwrap();
-            available_selection.swap_remove(index_available);
-            relevant_selection.swap_remove(index);
-        }
-
-        // Improvement Phase
-        let iterations = current_selection.len().max(100);
-
-        let mut current_cost = cost(
-            self,
-            &available_selection,
-            &current_selection,
-            &target,
-            &total_input,
-            &total_output,
-        );
-
-        for _ in 0..iterations {
-            if relevant_selection.len() <= 0 {
-                break;
-            }
-
-            //  0 = Replace
-            //  1 = Append
-            //  2 = Delete
-            for action in 0..=2 {
-                if action == 0 {
-                    if current_selection.len() <= 0 {
-                        continue;
-                    }
-                    let mut current_selection_check = current_selection.clone();
-                    let index = rand::thread_rng().gen_range(0..relevant_selection.len());
-                    let index2 = rand::thread_rng().gen_range(0..current_selection_check.len());
-
-                    let utxo = relevant_selection[index].clone();
-                    current_selection_check[index2] = utxo.clone();
-
-                    // Checks if replacement utxo is better than current one at this position
-                    let new_cost = cost(
-                        self,
-                        &available_selection,
-                        &current_selection,
-                        &target,
-                        &total_input,
-                        &total_output,
-                    );
-                    if new_cost < current_cost {
-                        let old_utxo = current_selection[index2].clone();
-                        current_assets -= old_utxo.assets.clone();
-                        current_assets += utxo.assets.clone();
-                        current_selection = current_selection_check;
-                        relevant_selection[index] = old_utxo.clone();
-                        current_cost = new_cost;
-
-                        break;
-                    }
-                } else if action == 1 {
-                    let mut current_selection_check = current_selection.clone();
-                    let index = rand::thread_rng().gen_range(0..relevant_selection.len());
-                    let utxo = relevant_selection[index].clone();
-                    current_selection_check.push(utxo.clone());
-
-                    // Checks if appending a utxo improves coin selection
-                    let new_cost = cost(
-                        self,
-                        &available_selection,
-                        &current_selection,
-                        &target,
-                        &total_input,
-                        &total_output,
-                    );
-                    if new_cost < current_cost {
-                        current_assets += utxo.assets.clone();
-                        current_selection = current_selection_check;
-
-                        relevant_selection.swap_remove(index);
-
-                        total_output += Assets::from_lovelace(
-                            utxo.get_fee_for_input(self.protocol_parameters.min_fee_a),
-                        );
-                        current_cost = new_cost;
-
-                        break;
-                    }
-                } else {
-                    if current_selection.len() <= 0 {
-                        continue;
-                    }
-                    let mut current_selection_check = current_selection.clone();
-                    let index = rand::thread_rng().gen_range(0..current_selection_check.len());
-                    let utxo = current_selection_check[index].clone();
-                    current_selection_check.swap_remove(index);
-
-                    // Checks if deleting a utxo is better than current input set
-                    let new_cost = cost(
-                        self,
-                        &available_selection,
-                        &current_selection,
-                        &target,
-                        &total_input,
-                        &total_output,
-                    );
-                    if new_cost < current_cost {
-                        current_assets -= utxo.assets.clone();
-                        current_selection = current_selection_check;
-
-                        total_output -= Assets::from_lovelace(
-                            utxo.get_fee_for_input(self.protocol_parameters.min_fee_a),
-                        );
-                        current_cost = new_cost;
-
-                        break;
-                    }
-                }
-            }
-        }
-
-        for utxo in current_selection {
-            self.add_input(utxo, None)?;
         }
 
         if self.inputs.len() <= 0 {
-            let utxo = match available_selection.get(0) {
-                Some(utxo) => utxo,
-                None => return Err(CoreError::msg("At least 1 utxo required, found none")),
-            };
-            self.add_input(utxo.clone(), None)?;
+            match available_selection.pop() {
+                Some(utxo) => self.add_input(utxo, None),
+                None => Err(CoreError::msg("At least 1 utxo required, found none")),
+            }
+        } else {
+            Ok(())
         }
-
-        Ok(())
     }
 
-    fn balance(&mut self) -> CoreResult<()> {
+    fn balance(&mut self) -> CoreResult<Either<(), ()>> {
         let mut fee = self.calculate_fee();
 
         let total_input = self
@@ -1432,11 +1167,9 @@ impl InstructionBuilder {
         match &total_input.partial_cmp(&(total_output.clone() + Assets::from_lovelace(fee))) {
             Some(Ordering::Equal) => {
                 self.fee = (total_input.get_lovelace() - total_output.get_lovelace()) as u64;
-                Ok(())
+                Ok(Either::Left(()))
             }
-            Some(Ordering::Less) => {
-                return Err(CoreError::msg("Insufficient input in transaction"))
-            }
+            Some(Ordering::Less) => return Ok(Either::Right(())),
             Some(Ordering::Greater) => {
                 let mut total_change = total_input - total_output;
 
@@ -1459,9 +1192,7 @@ impl InstructionBuilder {
                         total_change = total_change.clamped_sub(change_output.assets);
 
                         if total_change.len() <= 0 {
-                            return Err(CoreError::msg(
-                                "Not enough lovelace left to cover required lovelace",
-                            ));
+                            return Ok(Either::Right(()));
                         }
                         change_output.assets = Assets::from_unit(unit.clone(), *quantity);
                     } else {
@@ -1473,7 +1204,7 @@ impl InstructionBuilder {
                                        total_change: &Assets,
                                        change_output: &Utxo,
                                        fee: u64|
-                 -> CoreResult<()> {
+                 -> CoreResult<Either<(), ()>> {
                     if !total_change.contains_other() {
                         return Err(CoreError::msg(
                             "No other assets found, splitting unnecessary, continue with one",
@@ -1518,14 +1249,14 @@ impl InstructionBuilder {
                     builder.change_outputs.push(change_output_1);
                     builder.fee = fee_check;
 
-                    Ok(())
+                    Ok(Either::Left(()))
                 };
 
                 let try_one_output = |builder: &mut InstructionBuilder,
                                       total_change: &Assets,
                                       change_output: &Utxo,
                                       fee: u64|
-                 -> CoreResult<()> {
+                 -> CoreResult<Either<(), ()>> {
                     let mut fee_check = fee;
                     let total_change_check = total_change.clone();
                     let mut change_output_0 = change_output.clone();
@@ -1548,21 +1279,21 @@ impl InstructionBuilder {
                     builder.change_outputs.push(change_output_0);
                     builder.fee = fee_check;
 
-                    Ok(())
+                    Ok(Either::Left(()))
                 };
 
                 let try_just_fee = |builder: &mut InstructionBuilder,
                                     total_change: &Assets,
                                     fee: u64|
-                 -> CoreResult<()> {
+                 -> CoreResult<Either<(), ()>> {
                     if total_change.contains_other() {
-                        return Err(CoreError::NotEnoughLovelaceForOutput.to_msg());
+                        return Ok(Either::Right(()));
                     }
                     if total_change.get_lovelace() < fee {
-                        return Err(CoreError::NotEnoughLovelaceForFee.to_msg());
+                        return Ok(Either::Right(()));
                     }
                     builder.fee = total_change.get_lovelace();
-                    Ok(())
+                    Ok(Either::Left(()))
                 };
 
                 try_two_outputs(self, &total_change, &change_output, fee).or_else(|_| {

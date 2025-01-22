@@ -12,6 +12,10 @@ pub enum CoreError {
     NotEnoughLovelaceForOutput,
     #[error("Not enough lovelace leftover to cover fee")]
     NotEnoughLovelaceForFee,
+    #[error("Could not build transaction")]
+    TxBuildFail,
+    #[error("Exhausted inputs: {0}")]
+    ExhaustedInputs(String),
 }
 
 impl CoreError {
