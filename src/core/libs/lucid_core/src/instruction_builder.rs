@@ -1081,7 +1081,7 @@ impl InstructionBuilder {
             return Ok(());
         }
 
-        let total_input = self
+        let mut total_input = self
             .inputs
             .iter()
             .fold(Assets::new(), |acc, curr| acc + curr.utxo.assets.clone())
@@ -1106,13 +1106,11 @@ impl InstructionBuilder {
 
         let target = total_output.clone().clamped_sub(total_input.clone());
 
-        let mut current = total_input.clone();
-
         // largest first
         for (unit, _) in target
             .get_all_others()
             .iter()
-            .chain(Assets::from_lovelace(current.get_lovelace()).iter())
+            .chain(Assets::from_lovelace(total_input.get_lovelace()).iter())
         {
             if unit == "lovelace" {
                 available_selection.sort_by(|a, b| {
@@ -1124,7 +1122,7 @@ impl InstructionBuilder {
                     .sort_by(|a, b| a.assets.get_unit(unit).cmp(&b.assets.get_unit(unit)));
             }
 
-            while current.get_unit(unit) < target.get_unit(unit) {
+            while total_input.get_unit(unit) < target.get_unit(unit) {
                 let utxo = available_selection
                     .pop()
                     .ok_or(CoreError::ExhaustedInputs(unit.to_string()).to_msg())?;
@@ -1132,7 +1130,7 @@ impl InstructionBuilder {
                     return Err(CoreError::ExhaustedInputs(unit.to_string()).to_msg());
                 }
                 self.add_input(utxo.clone(), None)?;
-                current += utxo.assets;
+                total_input += utxo.assets;
             }
         }
 
