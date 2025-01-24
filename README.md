@@ -110,8 +110,18 @@ validator validate(my_data: MyData) {
 ```ts
 import { ValidateMint } from "./plutus.ts";
 
-const validator = new ValidateMint({a: 123n, b: "0000"});
-const redeemer = ValidateMint.redeemer;
+const validator = new ValidateMint({ a: 123n, b: "0000" });
+
+const policyId = lucid.newScript(validator).toHash();
+
+const tx = await lucid
+  .newTx()
+  .mint(
+    { [policyId]: 1n },
+    Data.to({ a: 123n, b: "0000" }, ValidateMint.redeemer),
+  )
+  .attachScript(validator)
+  .commit();
 ```
 
 See [more examples](./tests/data.test.ts)
