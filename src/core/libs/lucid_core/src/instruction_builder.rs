@@ -884,24 +884,30 @@ impl InstructionBuilder {
                     script_data.as_slice(),
                 ));
 
-                let mut available_collateral: Vec<Utxo> =
-                    self.selection.clone().into_iter().map(|b| b.utxo).collect();
+                let collateral = self.collateral.clone().unwrap_or_default();
+
+                let mut available_collateral: Vec<Utxo> = self
+                    .selection
+                    .difference(&collateral)
+                    .cloned()
+                    .map(|b| b.utxo)
+                    .collect();
+
                 available_collateral.sort_by(|a, b| {
                     self.get_pure_lovelace(&a.assets)
                         .cmp(&self.get_pure_lovelace(&b.assets))
                 });
 
-                for _ in 0..self.protocol_parameters.max_collateral_inputs {
+                for _ in (collateral.len() as u16)..self.protocol_parameters.max_collateral_inputs {
+                    if let Ok(b) = adjust_collateral(self) {
+                        return Ok(b);
+                    }
+
                     let utxo = available_collateral
                         .pop()
                         .ok_or(CoreError::msg("Collateral balance insufficient"))?;
 
                     self.add_collateral(utxo)?;
-
-                    match adjust_collateral(self) {
-                        Ok(b) => return Ok(b),
-                        Err(_) => continue,
-                    }
                 }
 
                 Err(CoreError::msg(format!(
@@ -1052,7 +1058,7 @@ impl InstructionBuilder {
 
             self.assemble()?;
 
-            if !self.balance()? {
+            if !self.balance() {
                 continue;
             }
 
@@ -1087,22 +1093,11 @@ impl InstructionBuilder {
             .fold(Assets::new(), |acc, curr| acc + curr.utxo.assets.clone())
             + self.implicit_input.clone();
 
-        let mut total_output = self
+        let total_output = self
             .outputs
             .iter()
             .fold(Assets::new(), |acc, curr| acc + curr.assets.clone())
-            + self.implicit_output.clone()
-            + Assets::from_lovelace(self.calculate_fee());
-
-        let total_change = total_input.clone().clamped_sub(total_output.clone());
-        total_output += Assets::from_lovelace(if total_change.contains_other() {
-            let required_lovelace = self
-                .create_partial_change_output(total_change.clone())
-                .required_lovelace(self.protocol_parameters.coins_per_utxo_byte);
-            required_lovelace.max(total_change.get_lovelace())
-        } else {
-            0
-        });
+            + self.implicit_output.clone();
 
         let target = total_output.clone().clamped_sub(total_input.clone());
 
@@ -1144,8 +1139,9 @@ impl InstructionBuilder {
         }
     }
 
-    fn balance(&mut self) -> CoreResult<bool> {
+    fn balance(&mut self) -> bool {
         let mut fee = self.calculate_fee();
+        let mut change_outputs = Vec::new();
 
         let total_input = self
             .inputs
@@ -1162,9 +1158,9 @@ impl InstructionBuilder {
         match &total_input.partial_cmp(&(total_output.clone() + Assets::from_lovelace(fee))) {
             Some(Ordering::Equal) => {
                 self.fee = (total_input.get_lovelace() - total_output.get_lovelace()) as u64;
-                Ok(true)
+                true
             }
-            Some(Ordering::Less) => return Ok(false),
+            Some(Ordering::Less) => return false,
             Some(Ordering::Greater) => {
                 let mut total_change = total_input - total_output;
 
@@ -1182,12 +1178,12 @@ impl InstructionBuilder {
                             .required_lovelace_mut(self.protocol_parameters.coins_per_utxo_byte);
 
                         fee += change_output.get_fee_for_output(self.protocol_parameters.min_fee_a);
-                        self.change_outputs.push(change_output.clone());
+                        change_outputs.push(change_output.clone());
 
                         total_change = total_change.clamped_sub(change_output.assets);
 
                         if total_change.len() <= 0 {
-                            return Ok(false);
+                            return false;
                         }
                         change_output.assets = Assets::from_unit(unit.clone(), *quantity);
                     } else {
@@ -1199,10 +1195,9 @@ impl InstructionBuilder {
                                        total_change: &Assets,
                                        change_output: &Utxo,
                                        fee: u64|
-                 -> bool {
+                 -> Result<(Vec<Utxo>, u64), ()> {
                     if !total_change.contains_other() {
-                        // No other assets found, splitting unnecessary, continue with one
-                        return false;
+                        return Err(());
                     }
                     let mut fee_check = fee;
                     let mut total_change_check = total_change.clone();
@@ -1236,21 +1231,17 @@ impl InstructionBuilder {
                         < change_output_1
                             .required_lovelace(builder.protocol_parameters.coins_per_utxo_byte)
                     {
-                        return false;
+                        return Err(());
                     };
 
-                    builder.change_outputs.push(change_output_0);
-                    builder.change_outputs.push(change_output_1);
-                    builder.fee = fee_check;
-
-                    true
+                    Ok((vec![change_output_0, change_output_1], fee_check))
                 };
 
                 let try_one_output = |builder: &mut InstructionBuilder,
                                       total_change: &Assets,
                                       change_output: &Utxo,
                                       fee: u64|
-                 -> bool {
+                 -> Result<(Vec<Utxo>, u64), ()> {
                     let mut fee_check = fee;
                     let total_change_check = total_change.clone();
                     let mut change_output_0 = change_output.clone();
@@ -1267,32 +1258,35 @@ impl InstructionBuilder {
                         < change_output_0
                             .required_lovelace(builder.protocol_parameters.coins_per_utxo_byte)
                     {
-                        return false;
+                        return Err(());
                     };
 
-                    builder.change_outputs.push(change_output_0);
-                    builder.fee = fee_check;
-
-                    true
+                    Ok((vec![change_output_0], fee_check))
                 };
 
                 let try_just_fee =
-                    |builder: &mut InstructionBuilder, total_change: &Assets, fee: u64| -> bool {
-                        if total_change.contains_other() {
-                            return false;
+                    |total_change: &Assets, fee: u64| -> Result<(Vec<Utxo>, u64), ()> {
+                        if total_change.contains_other() || total_change.get_lovelace() < fee {
+                            return Err(());
                         }
-                        if total_change.get_lovelace() < fee {
-                            return false;
-                        }
-                        builder.fee = total_change.get_lovelace();
-                        true
+
+                        Ok((vec![], total_change.get_lovelace()))
                     };
 
-                Ok(try_two_outputs(self, &total_change, &change_output, fee)
-                    || try_one_output(self, &total_change, &change_output, fee)
-                    || try_just_fee(self, &total_change, fee))
+                match try_two_outputs(self, &total_change, &change_output, fee)
+                    .or_else(|_| try_one_output(self, &total_change, &change_output, fee))
+                    .or_else(|_| try_just_fee(&total_change, fee))
+                {
+                    Ok((outputs, fee)) => {
+                        change_outputs.extend(outputs);
+                        self.change_outputs = change_outputs;
+                        self.fee = fee;
+                        true
+                    }
+                    Err(_) => false,
+                }
             }
-            _ => return Err(CoreError::msg("Missing input or output for some assets")),
+            None => false,
         }
     }
 
@@ -2505,7 +2499,7 @@ mod tests {
 
         let builder = setup_builder(Some(vec![user_utxo.clone()]));
 
-        let result = builder.commit(Instructions(vec![
+        let signer = builder.commit(Instructions(vec![
             Instruction::CollectFrom {
                 utxos: vec![Utxo {
                     tx_hash: "2bbe956acdbea3552c7d46e05080ede65f93961e8b75d0232b6312488deb9a10"
@@ -2526,9 +2520,22 @@ mod tests {
                 datum_variant: DatumVariant::AsHash("d8799fa5446e616d654e5370616365427564202331393033467472616974739f4943616d6f20537569744442656c744e436f76657265642048656c6d65744b536b6920476f67676c6573ff44747970654341706545696d6167655f5840697066733a2f2f6261666b7265696374676274676b6c6c3373347537667463733670767835366773356c7267756b6772737574716f67336b666b6875666d6672423365ff467368613235365820533066652d7b9729f2cc52f3eb7ef8d2eae26a28d19527071b6a2a8f42b0b1d901d87980ff".to_string()),
                 script_ref: None,
             },
+            Instruction::PayTo {
+                assets: Assets::from_lovelace(2000000),
+                address: ADDRESS.to_string(),
+                datum_variant: Some(DatumVariant::AsHash("d87a80".to_string())),
+                script_ref: None,
+            },
             Instruction::AttachScript { script: Script::PlutusV2 { script: "59104b01000033332323232323233223232323232332232323232323232323232323232323232323322323232323232323232323232323322323232323232322223223232322322323253353332223232323232323232323232533500d13304b3304148004d5401c888888010cc12ccc10520013550072222220013304b3302a50023550072222220063304b3302a50023550072222220033304b3302a3305003f50063305003f50043304b3302a3301d03f500650183304b3302a3301d03f50045335330293302a500548810431393033003302a50054890436343133001375c03626eb8068cc0a8d5400c8800540104cc12cc8c8ccd54c0a448004d414141308d400488ccd54c0b048004d414d413c8d400488ccd40048cc1292000001223304b00200123304a00148000004cc088008004c07cd54008880054028cc12cc8d403c888d40108894cd4cc14001800c54cd4cc1200140084cc140010004414c414cd5400488008ccd54c09c48004d409540a08d400488c8ccd5cd19b8800148008140144ccc088c07c004d5403088008cdc5280d998298211aa80611000991a80091111111111100628040a99aa99a9a805911a8011111111111111999a8069282012820128201199aa981a8900099a82e91299a801108018800a82011a80091299a9982880100209a8220018a821806909a800911a80091111a809111a801111111111111199aa981b09000911a8011111299a9a80c111a803111919a802919a8021299a999ab9a3371e0040020dc0da2a00620da40da466a00840da4a66a666ae68cdc78010008370368a80188368a99a80190a99a8011099a801119a801119a801119a8011198270010009038119a801103811982700100091103811119a8021038111299a999ab9a3370e00c0060e60e42a66a666ae68cdc38028010398390998338020008839083908358a99a800908358835899a82f8030028802a82d00509931901e19ab9c4901024c660003c1622153350011533532323235001222222222222300e002500b320013550552253350011503622135002225335333573466e3c00801c1541504d40ec0044c01800cd54ccd4d400888880085885884d412800480048c8c8c8c854cd4ccccccd5d200291999ab9a3370e6aae7540152000233335573ea00a4a07646666aae7d4014940f08cccd55cfa8029281e91999aab9f35744a00c4a66aa66a646666666ae900049410094100941008d4104dd6801128200251aba1500821350403305e35742a0140022a07c426a08060026ae854020540f8940f812011c118114940e810c940e4940e4940e4940e410c84cd54138004c08c020584d5d1280089aba25001135573ca00226ea80045888584d540048800854cd4c0fcc06cc065402058884d40088894cd40104cd5412400c00888584d5400c8888880084cc12d200e5001135500122222200515335303b323500122222222222200850011622135002222533500416221350022225335004112333333001009008007004003002221613500422002153353039500116221350022225335004133550430030022216130143012500113235001220013500122350022222222222223333500d26262625335333553026120012253353500222353500122220042233500220572058133504b0020011001504a00d16221533500110022215335001153355335333573466e3cd4d4d4d401088004888801088cd4008988d414c0048004d4d4d4d400888004888801088cd4008988d414c00480041541504150415454cd4cc120d40108800801440104008588858cccd5cd19b8735573aa010900011998221aba15008375a6ae85401cd5d09aba2500723263203033573806206005c6666ae68cdc3a80224004424400246666ae68cdc3a802a40004244004464c6406266ae700c80c40bc0b8cccd5cd19b8735573aa0049000119910919800801801191919191919191919191919191999ab9a3370e6aae754031200023333333333332222222222221233333333333300100d00c00b00a00900800700600500400300233502d02e35742a01866a05a05c6ae85402ccd40b40bcd5d0a805199aa818bae503035742a012666aa062eb940c0d5d0a80419a81681c1aba150073335503103975a6ae854018c8c8c8cccd5cd19b8735573aa00490001199109198008018011919191999ab9a3370e6aae754009200023322123300100300233504375a6ae854008c110d5d09aba2500223263204633573808e08c08826aae7940044dd50009aba150023232323333573466e1cd55cea8012400046644246600200600466a086eb4d5d0a80118221aba135744a004464c6408c66ae7011c1181104d55cf280089baa001357426ae8940088c98c8108cd5ce02182102009aab9e5001137540026ae854014cd40b5d71aba1500433355031035200135742a006666aa062eb88004d5d0a801181b9aba135744a004464c6407c66ae700fc0f80f04d5d1280089aba25001135744a00226ae8940044d5d1280089aba25001135744a00226ae8940044d5d1280089aba25001135573ca00226ea8004d5d0a80118139aba135744a004464c6406066ae700c40c00b840bc4c98c80bccd5ce2481035054350002f135573ca00226ea80044d55ce9baa001135744a00226aae7940044dd500089bae001235001222200322333718900000100091919aa98050900091a8009119aa81700119aa98068900091a8009119aa818801199a80091981ea4000002446607c00400246607a0029000000998020010009919aa98050900091a8009119aa81700119aa98068900091a8009119aa81880119b8248004004004004cd40a0cd540a8038cd40a0cd540a8038ccc00800403803940a540a4888c8c8c004014c8004d540e088cd400520002235002225335333573466e3c0080240e00dc4c01c0044c01800cc8004d540dc88cd400520002235002225335333573466e3c00801c0dc0d840044c01800c88cd54c020480048d400488cd540b0008ccd40048cd54c030480048d400488cd540c0008d5403400400488ccd5540200440080048cd54c030480048d400488cd540c0008d54030004004ccd55400c030008004444888ccd54c01048005409ccd54c020480048d400488cd540b0008d54024004ccd54c0104800488d4008894cd4ccd54c03448004d402d40388d400488cc028008014018400c4cd40ac01000d40a0004cd54c020480048d400488c8cd540b400cc004014c8004d540e0894cd40044d5402800c884d4008894cd4cc03000802044888cc0080280104c01800c008c8004d540c488448894cd40044008884cc014008ccd54c01c480040140100044484888c00c0104484888c00401048cd40ac88ccd400c88008008004d400488004c8004d540b48844894cd400454090884cd4094c010008cd54c01848004010004c8004d540b088448894cd40044d400c88004884ccd401488008c010008ccd54c01c48004014010004448cc004008094894cd40084098400488ccd5cd19b8f0020010250244881001232230023758002640026aa050446666aae7c004940788cd4074c010d5d080118019aba2002014232323333573466e1cd55cea8012400046644246600200600460186ae854008c014d5d09aba2500223263201433573802a02802426aae7940044dd50009191919191999ab9a3370e6aae75401120002333322221233330010050040030023232323333573466e1cd55cea80124000466442466002006004602a6ae854008cd4034050d5d09aba2500223263201933573803403202e26aae7940044dd50009aba150043335500875ca00e6ae85400cc8c8c8cccd5cd19b875001480108c84888c008010d5d09aab9e500323333573466e1d4009200223212223001004375c6ae84d55cf280211999ab9a3370ea00690001091100191931900d99ab9c01c01b019018017135573aa00226ea8004d5d0a80119a804bae357426ae8940088c98c8054cd5ce00b00a80989aba25001135744a00226aae7940044dd5000899aa800bae75a224464460046eac004c8004d5409488c8cccd55cf8011280e119a80d99aa80e98031aab9d5002300535573ca00460086ae8800c0484d5d080089119191999ab9a3370ea002900011a80398029aba135573ca00646666ae68cdc3a801240044a00e464c6402466ae7004c04804003c4d55cea80089baa0011212230020031122001232323333573466e1d400520062321222230040053007357426aae79400c8cccd5cd19b875002480108c848888c008014c024d5d09aab9e500423333573466e1d400d20022321222230010053007357426aae7940148cccd5cd19b875004480008c848888c00c014dd71aba135573ca00c464c6402066ae7004404003803403002c4d55cea80089baa001232323333573466e1cd55cea80124000466442466002006004600a6ae854008dd69aba135744a004464c6401866ae700340300284d55cf280089baa0012323333573466e1cd55cea800a400046eb8d5d09aab9e500223263200a33573801601401026ea80048c8c8c8c8c8cccd5cd19b8750014803084888888800c8cccd5cd19b875002480288488888880108cccd5cd19b875003480208cc8848888888cc004024020dd71aba15005375a6ae84d5d1280291999ab9a3370ea00890031199109111111198010048041bae35742a00e6eb8d5d09aba2500723333573466e1d40152004233221222222233006009008300c35742a0126eb8d5d09aba2500923333573466e1d40192002232122222223007008300d357426aae79402c8cccd5cd19b875007480008c848888888c014020c038d5d09aab9e500c23263201333573802802602202001e01c01a01801626aae7540104d55cf280189aab9e5002135573ca00226ea80048c8c8c8c8cccd5cd19b875001480088ccc888488ccc00401401000cdd69aba15004375a6ae85400cdd69aba135744a00646666ae68cdc3a80124000464244600400660106ae84d55cf280311931900619ab9c00d00c00a009135573aa00626ae8940044d55cf280089baa001232323333573466e1d400520022321223001003375c6ae84d55cf280191999ab9a3370ea004900011909118010019bae357426aae7940108c98c8024cd5ce00500480380309aab9d50011375400224464646666ae68cdc3a800a40084244400246666ae68cdc3a8012400446424446006008600c6ae84d55cf280211999ab9a3370ea00690001091100111931900519ab9c00b00a008007006135573aa00226ea80048c8cccd5cd19b8750014800880548cccd5cd19b8750024800080548c98c8018cd5ce00380300200189aab9d37540029309000a49035054310048020894cd4ccd5cd19b8f3500222002350012200200f00e1333573466e1cd400888004d40048800403c038403888ccd5cd19b8700200100e00d233002500500132001355010222533500110022213500222330073330080020060010033200135500f22225335001100222135002225335333573466e1c00520000110101333008007006003133300800733500912333001008003002006003112200212212233001004003112212330010030021212300100222333573466ebc008004018014448cc004008010894cd40084004400c48800848800448cd400888ccd400c88008008004d40048800448848cc00400c00888ccdc600119b81371a002004002444246660020080060044466e00008004448c8c00400488cc00cc0080080053001054400001070004c010544000643b0004c010544000de1400001".to_string() } },
-        ]));
+        ])).unwrap();
 
-        assert!(result.is_ok())
+        let tx = signer.get_tx();
+
+        assert_eq!(
+            tx.transaction_witness_set
+                .plutus_data
+                .map_or(0, |d| d.len()),
+            2
+        )
     }
 }
