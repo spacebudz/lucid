@@ -175,6 +175,10 @@ function debugString(val) {
     return className;
 }
 
+export function main() {
+    wasm.main();
+}
+
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_export_4.get(idx);
     wasm.__externref_table_dealloc(idx);
@@ -1239,6 +1243,18 @@ export function __wbg_entries_3265d4158b33e5dc(arg0) {
     return ret;
 };
 
+export function __wbg_error_7534b8e9a36f1ab4(arg0, arg1) {
+    let deferred0_0;
+    let deferred0_1;
+    try {
+        deferred0_0 = arg0;
+        deferred0_1 = arg1;
+        console.error(getStringFromWasm0(arg0, arg1));
+    } finally {
+        wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
+    }
+};
+
 export function __wbg_getRandomValues_bcb4912f16000dc4() { return handleError(function (arg0, arg1) {
     arg0.getRandomValues(arg1);
 }, arguments) };
@@ -1325,6 +1341,11 @@ export function __wbg_new_78feb108b6472713() {
     return ret;
 };
 
+export function __wbg_new_8a6f238a6ece86ea() {
+    const ret = new Error();
+    return ret;
+};
+
 export function __wbg_new_a12002a7f91c75be(arg0) {
     const ret = new Uint8Array(arg0);
     return ret;
@@ -1389,6 +1410,14 @@ export function __wbg_set_65595bdd868b3009(arg0, arg1, arg2) {
 export function __wbg_set_8fc6bf8a5b1071d1(arg0, arg1, arg2) {
     const ret = arg0.set(arg1, arg2);
     return ret;
+};
+
+export function __wbg_stack_0ed75d68575b0f3c(arg0, arg1) {
+    const ret = arg1.stack;
+    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+    getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
 };
 
 export function __wbg_static_accessor_GLOBAL_88a902d13a557d07() {

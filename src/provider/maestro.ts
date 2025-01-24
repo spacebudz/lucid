@@ -1,17 +1,17 @@
 import {
-  ActiveDelegation,
-  Assets,
-  Credential,
+  type ActiveDelegation,
+  type Assets,
+  type Credential,
   fromHex,
-  Json,
-  Network,
-  OutRef,
-  Provider,
-  RelevantProtocolParameters,
+  type Json,
+  type Network,
+  type OutRef,
+  type Provider,
+  type RelevantProtocolParameters,
   Utils,
-  Utxo,
+  type Utxo,
 } from "../mod.ts";
-import packageJson from "../../package.json" with { type: "json" };
+import denoJson from "../../deno.json" with { type: "json" };
 
 export type MaestroSupportedNetworks = "Mainnet" | "Preprod" | "Preview";
 
@@ -364,4 +364,4 @@ type MaestroUtxo = {
 
 type MaestroUtxos = Array<MaestroUtxo>;
 
-const lucid = packageJson.version; // Lucid version
+const lucid = denoJson.version; // Lucid version

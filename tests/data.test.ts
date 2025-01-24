@@ -418,7 +418,9 @@ Deno.test("Apply params to script", () => {
       ),
     };
     flag = false;
-  } catch (_) {}
+  } catch (_) {
+    _;
+  }
   assert(flag);
   flag = true;
   try {
@@ -429,7 +431,7 @@ Deno.test("Apply params to script", () => {
         script,
       ),
     };
-  } catch (e) {
+  } catch (_) {
     flag = false;
   }
   assert(flag);

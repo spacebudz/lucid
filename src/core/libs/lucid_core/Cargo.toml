@@ -26,6 +26,7 @@ fraction = "0.15.3"
 rand = "0.8.4"
 num-integer = "0.1.46"
 thiserror = "2.0.4"
+console_error_panic_hook = "0.1.2"
 
 [patch.crates-io]
 serde = { git = "https://github.com/serde-rs/serde.git", rev = "8d5f1d103f80726c9b865a724e4cf58cb5a6885b"}

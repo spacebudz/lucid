@@ -1,4 +1,4 @@
-import { Hasher, Lucid } from "../mod.ts";
+import { Hasher, type Lucid } from "../mod.ts";
 
 export class TxSigned {
   tx: string;

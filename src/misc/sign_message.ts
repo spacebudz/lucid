@@ -4,7 +4,7 @@ import {
   fromHex,
   Hasher,
   MessageSigning,
-  SignedMessage,
+  type SignedMessage,
   toHex,
 } from "../mod.ts";
 

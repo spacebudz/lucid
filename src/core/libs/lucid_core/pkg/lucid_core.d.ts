@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export function main(): void;
 export type Network = "Mainnet" | "Preprod" | "Preview" | { Emulator: number };
 
 export type Credential = { type: "Key"; hash: string } | { type: "Script"; hash: string };

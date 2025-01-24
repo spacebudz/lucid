@@ -1,15 +1,15 @@
 import {
-  ActiveDelegation,
-  Credential,
+  type ActiveDelegation,
+  type Credential,
   fromHex,
-  Network,
-  OutRef,
-  Provider,
-  RelevantProtocolParameters,
+  type Network,
+  type OutRef,
+  type Provider,
+  type RelevantProtocolParameters,
   Utils,
-  Utxo,
+  type Utxo,
 } from "../mod.ts";
-import packageJson from "../../package.json" with { type: "json" };
+import denoJson from "../../deno.json" with { type: "json" };
 
 export class Blockfrost implements Provider {
   url: string;
@@ -290,4 +290,4 @@ type BlockfrostUtxoError = {
   error: unknown;
 };
 
-const lucid = packageJson.version; // Lucid version
+const lucid = denoJson.version; // Lucid version

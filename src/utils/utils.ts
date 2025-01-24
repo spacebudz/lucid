@@ -5,11 +5,11 @@ import {
 } from "https://deno.land/std@0.100.0/encoding/hex.ts";
 import {
   Addresses,
-  Assets,
-  Credential,
+  type Assets,
+  type Credential,
   Data,
-  Exact,
-  Json,
+  type Exact,
+  type Json,
   Utils,
 } from "../mod.ts";
 import { crc8 } from "../misc/crc8.ts";

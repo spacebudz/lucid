@@ -7,8 +7,16 @@
     "test:core": "cd src/core/libs/lucid_core && cargo test; cd ../message_signing && RUSTFLAGS=-Awarnings cargo test"
   },
   "lint": {
-    "include": ["src/"],
-    "exclude": ["src/core/"]
+    "include": ["src/", "tests/", "blueprint.ts"],
+    "exclude": ["src/core/libs/"]
   },
-  "nodeModulesDir": "none"
+  "nodeModulesDir": "none",
+
+  "name": "@spacebudz/lucid",
+  "version": "0.10.11",
+  "license": "MIT",
+  "exports": "./mod.ts",
+  "author": "Alessandro Konrad",
+  "description": "Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript, Deno and Node.js.",
+  "repository": "https://github.com/spacebudz/lucid"
 }

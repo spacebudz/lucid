@@ -1,6 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
+export const main: () => void;
 export const __wbg_addresses_free: (a: number, b: number) => void;
 export const addresses_keyHashToCredential: (a: number, b: number) => any;
 export const addresses_scriptHashToCredential: (a: number, b: number) => any;
@@ -56,15 +57,15 @@ export const utils_applyParamsToScript: (a: number, b: number, c: number, d: num
 export const utils_encodeBech32: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const utils_applySingleCborEncoding: (a: number, b: number) => [number, number, number, number];
 export const utils_applyDoubleCborEncoding: (a: number, b: number) => [number, number, number, number];
-export const __wbg_crypto_free: (a: number, b: number) => void;
-export const __wbg_codec_free: (a: number, b: number) => void;
 export const __wbg_utils_free: (a: number, b: number) => void;
+export const __wbg_crypto_free: (a: number, b: number) => void;
 export const __wbg_hasher_free: (a: number, b: number) => void;
+export const __wbg_codec_free: (a: number, b: number) => void;
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
 export const __wbindgen_exn_store: (a: number) => void;
 export const __externref_table_alloc: () => number;
 export const __wbindgen_export_4: WebAssembly.Table;
-export const __externref_table_dealloc: (a: number) => void;
 export const __wbindgen_free: (a: number, b: number, c: number) => void;
+export const __externref_table_dealloc: (a: number) => void;
 export const __wbindgen_start: () => void;

@@ -1,10 +1,10 @@
 import {
   Codec,
-  DataJson,
-  Exact,
+  type DataJson,
+  type Exact,
   fromHex,
   fromText,
-  Json,
+  type Json,
   toHex,
 } from "../mod.ts";
 

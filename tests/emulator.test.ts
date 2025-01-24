@@ -1,6 +1,6 @@
 import {
   Addresses,
-  Assets,
+  type Assets,
   Codec,
   Crypto,
   Data,
@@ -9,7 +9,7 @@ import {
   Hasher,
   Lucid,
   paymentCredentialOf,
-  Script,
+  type Script,
   toUnit,
 } from "../mod.ts";
 import {

@@ -1,4 +1,4 @@
-import { Hasher, InstructionSigner, Lucid, TxSigned } from "../mod.ts";
+import { Hasher, type InstructionSigner, type Lucid, TxSigned } from "../mod.ts";
 
 export class TxComplete {
   private instructionSigner: InstructionSigner;

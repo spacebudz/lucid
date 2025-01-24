@@ -1,16 +1,16 @@
 import {
-  ActiveDelegation,
-  Assets,
-  Credential,
+  type ActiveDelegation,
+  type Assets,
+  type Credential,
   EmulatorState,
   Hasher,
-  Network,
-  OutputData,
-  OutRef,
+  type Network,
+  type OutputData,
+  type OutRef,
   paymentCredentialOf,
-  Provider,
-  RelevantProtocolParameters,
-  Utxo,
+  type Provider,
+  type RelevantProtocolParameters,
+  type Utxo,
 } from "../mod.ts";
 
 export class Emulator implements Provider {

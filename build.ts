@@ -1,5 +1,5 @@
 import { copySync, moveSync } from "https://deno.land/std@0.224.0/fs/mod.ts";
-import partialPackage from "./package.json" with { type: "json" };
+import denoJson from "./deno.json" with { type: "json" };
 import * as dnt from "jsr:@deno/dnt";
 
 await dnt.emptyDir("./dist");
@@ -33,7 +33,12 @@ try {
     skipSourceOutput: true,
     shims: {},
     package: {
-      ...partialPackage,
+      name: "lucid-cardano",
+      version: denoJson.version,
+      license: denoJson.license,
+      author: denoJson.author,
+      description: denoJson.description,
+      repository: denoJson.repository,
       type: "module",
       main: "./esm/mod.js",
       engines: {

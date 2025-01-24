@@ -96,7 +96,7 @@ export type WalletSelection =
   | {
     Seed: {
       seed: string;
-      options?: { type?: "Base" | "Enterprise"; index?: number };
+      options?: { addressType?: "Base" | "Enterprise"; index?: number };
     };
   }
   | {

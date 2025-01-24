@@ -1,4 +1,4 @@
-import { Addresses, Crypto, Lucid, SignedMessage } from "../mod.ts";
+import { Addresses, Crypto, type Lucid, type SignedMessage } from "../mod.ts";
 import { signMessage } from "../misc/sign_message.ts";
 
 export class Message {

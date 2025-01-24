@@ -1,14 +1,14 @@
 import {
-  ActiveDelegation,
-  Assets,
-  Credential,
+  type ActiveDelegation,
+  type Assets,
+  type Credential,
   fromUnit,
-  Network,
-  OutRef,
-  Provider,
-  RelevantProtocolParameters,
+  type Network,
+  type OutRef,
+  type Provider,
+  type RelevantProtocolParameters,
   Utils,
-  Utxo,
+  type Utxo,
 } from "../mod.ts";
 
 export class Kupmios implements Provider {

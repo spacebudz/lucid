@@ -15,8 +15,8 @@
       <img src="https://img.shields.io/npm/dw/lucid-cardano?style=for-the-badge" />
     </a>
     <img src="https://img.shields.io/npm/l/lucid-cardano?style=for-the-badge" />
-    <a href="https://twitter.com/spacebudzNFT">
-      <img src="https://img.shields.io/twitter/follow/spacebudzNFT?style=for-the-badge&logo=twitter" />
+    <a href="https://twitter.com/spacebudznft">
+      <img src="https://img.shields.io/twitter/follow/spacebudznft?style=for-the-badge&logo=twitter" />
     </a>
   </p>
 
@@ -24,36 +24,27 @@
 
 ### Get started
 
-#### NPM
-
-```
-npm install lucid-cardano
-```
-
-`--experimental-wasm-modules` flag needs to be set in Node.js
+Lucid is a Deno first TypeScript framework. Node.js and NPM are still supported, but may be deprecated in the future.
 
 #### Deno 🦕
 
 For JavaScript and TypeScript
 
 ```js
-import { Lucid } from "https://deno.land/x/lucid@0.10.11/mod.ts";
+import { Lucid } from "https://deno.land/x/lucid/mod.ts";
 ```
 
-#### Web
+#### NPM
 
-```html
-<script type="module">
-import { Lucid } from "https://unpkg.com/lucid-cardano@0.10.11/web/mod.js"
-// ...
-</script>
+```
+npm install lucid-cardano
 ```
 
-### 
+`--experimental-wasm-modules` flag needs to be set in Node.js as well as `{ "type": "module" }` in package.json
 
 ### Build from source
 
-Build NPM and Web target
+Build for NPM
 
 ```
 deno task build
@@ -63,19 +54,19 @@ Outputs a `dist` folder
 
 ### Examples
 
-- [Basic examples](./src/examples/)
-- [Next.js Blockfrost Proxy API Example](https://github.com/GGAlanSmithee/cardano-lucid-blockfrost-proxy-example)
+- [Basic examples](./examples/)
 
 ### Basic usage
 
 ```js
-// import { Blockfrost, Lucid } from "https://deno.land/x/lucid@0.10.11/mod.ts"; Deno
-import { Blockfrost, Lucid } from "lucid-cardano"; // NPM
+import { Blockfrost, Lucid } from "https://deno.land/x/lucid/mod.ts";
 
-const lucid = await Lucid.new(
-  new Blockfrost("https://cardano-preview.blockfrost.io/api/v0", "<projectId>"),
-  "Preview",
-);
+const lucid = new Lucid({
+  provider: new Blockfrost(
+    "https://cardano-preview.blockfrost.io/api/v0",
+    "<projectId>",
+  ),
+});
 
 // Assumes you are in a browser environment
 const api = await window.cardano.nami.enable();
@@ -92,6 +83,20 @@ const txHash = await signedTx.submit();
 console.log(txHash);
 ```
 
+### Blueprint
+
+Lucid supports [CIP-0057](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0057) blueprints.
+
+```
+deno run -A https://deno.land/x/lucid/blueprint.ts
+```
+
+```js
+
+```
+
+See [more examples](./tests/data.test.ts)
+
 ### Test
 
 ```
@@ -100,9 +105,7 @@ deno task test
 
 ### Build Core
 
-This library is built on top of a customized version of the serialization-lib
-(cardano-multiplatform-lib) and on top of the message-signing library, which are
-written in Rust.
+The core library (instruction builder, crypto, hashing etc.) is written in Rust and compiled to WASM.
 
 ```
 deno task build:core
@@ -138,22 +141,9 @@ experiments: {
   }
 ```
 
-To run the library in Node.js you need to set `{"type" : "module"}` in your
-project's `package.json`. Otherwise you will get import issues.
-
 ### Contributing
 
-Contributions and PRs are welcome!\
+Contributions and PRs are welcome\
 The [contribution instructions](./CONTRIBUTING.md).
 
 Join us on [Discord](https://discord.gg/82MWs63Tdm)!
-
-### Use Lucid with React
-
-[use-cardano](https://use-cardano.alangaming.com/) a React context, hook and set
-of components built on top of Lucid.
-
-### Use Lucid with Next.js
-
-[Cardano Starter Kit](https://cardano-starter-kit.alangaming.com/) a Next.js
-starter kit for building Cardano dApps.

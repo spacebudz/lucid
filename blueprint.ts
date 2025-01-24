@@ -1,3 +1,5 @@
+import type { Json } from "./mod.ts";
+
 type Blueprint = {
   preamble: {
     title: string;
@@ -126,12 +128,12 @@ function definitionsToTypes(definitions: Blueprint["definitions"]): string {
   ).join("\n");
 }
 
-function resolveSchema(schema: any): any {
+function resolveSchema(schema: Json): Json {
   if (schema.items) {
     if (schema.items instanceof Array) {
       return {
         ...schema,
-        items: schema.items.map((item: any) => resolveSchema(item)),
+        items: schema.items.map((item: Json) => resolveSchema(item)),
       };
     } else {
       return {
@@ -142,9 +144,9 @@ function resolveSchema(schema: any): any {
   } else if (schema.anyOf) {
     return {
       ...schema,
-      anyOf: schema.anyOf.map((a: any) => ({
+      anyOf: schema.anyOf.map((a: Json) => ({
         ...a,
-        fields: a.fields.map((field: any) => ({
+        fields: a.fields.map((field: Json) => ({
           ...resolveSchema(field),
           title: field.title ? snakeToCamel(field.title) : undefined,
         })),
@@ -171,7 +173,7 @@ function resolveDefinitions(
   );
 }
 
-function schemaToType(schema: any): string {
+function schemaToType(schema: Json): string {
   if (!schema) throw new Error("Could not generate type.");
   const shapeType = (schema.anyOf ? "enum" : schema["$ref"] ? "$ref" : "") ||
     schema.dataType;
@@ -188,7 +190,7 @@ function schemaToType(schema: any): string {
         return "undefined";
       } else {
         return `{${
-          schema.fields.map((field: any) =>
+          schema.fields.map((field: Json) =>
             `${snakeToCamel(field.title || "wrapper")}:${schemaToType(field)}`
           ).join(";")
         }}`;
@@ -205,18 +207,18 @@ function schemaToType(schema: any): string {
       if (isNullable(schema)) {
         return `${schemaToType(schema.anyOf[0].fields[0])} | null`;
       }
-      return schema.anyOf.map((entry: any) =>
+      return schema.anyOf.map((entry: Json) =>
         entry.fields.length === 0
           ? `"${snakeToCamel(entry.title)}"`
           : `{${snakeToCamel(entry.title)}: ${
             entry.fields[0].title
               ? `{${
-                entry.fields.map((field: any) =>
+                entry.fields.map((field: Json) =>
                   [snakeToCamel(field.title), schemaToType(field)].join(":")
                 ).join(",")
               }}}`
               : `[${
-                entry.fields.map((field: any) => schemaToType(field)).join(",")
+                entry.fields.map((field: Json) => schemaToType(field)).join(",")
               }]}`
           }`
       ).join(" | ");
@@ -224,7 +226,7 @@ function schemaToType(schema: any): string {
     case "list": {
       if (schema.items instanceof Array) {
         return `[${
-          schema.items.map((item: any) => schemaToType(item)).join(",")
+          schema.items.map((item: Json) => schemaToType(item)).join(",")
         }]`;
       } else {
         return `Array<${schemaToType(schema.items)}>`;
@@ -246,16 +248,16 @@ function schemaToType(schema: any): string {
   throw new Error("Could not type cast data.");
 }
 
-function isBoolean(shape: any): boolean {
+function isBoolean(shape: Json): boolean {
   return shape.anyOf && shape.anyOf[0]?.title === "False" &&
     shape.anyOf[1]?.title === "True";
 }
 
-function isVoid(shape: any): boolean {
+function isVoid(shape: Json): boolean {
   return shape.index === 0 && shape.fields.length === 0;
 }
 
-function isNullable(shape: any): boolean {
+function isNullable(shape: Json): boolean {
   return shape.anyOf && shape.anyOf[0]?.title === "Some" &&
     shape.anyOf[1]?.title === "None";
 }

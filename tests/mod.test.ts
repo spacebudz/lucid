@@ -4,7 +4,7 @@ import {
   Constr,
   Crypto,
   Data,
-  DataJson,
+  type DataJson,
   fromHex,
   fromLabel,
   fromUnit,

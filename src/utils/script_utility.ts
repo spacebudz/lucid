@@ -1,13 +1,13 @@
 import {
   applyParamsToScript,
   Codec,
-  Credential,
-  Data,
-  Exact,
+  type Credential,
+  type Data,
+  type Exact,
   Hasher,
-  Lucid,
-  NativeScript,
-  Script,
+  type Lucid,
+  type NativeScript,
+  type Script,
 } from "../mod.ts";
 
 export class ScriptUtility<T extends unknown[] = Data[]> {

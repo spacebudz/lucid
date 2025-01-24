@@ -1,35 +1,35 @@
 import {
-  ActiveDelegation,
+  type ActiveDelegation,
   Addresses,
   Codec,
-  Constr,
-  Credential,
+  type Constr,
+  type Credential,
   Crypto,
   Data,
-  Exact,
+  type Exact,
   fromUnit,
-  Instruction,
+  type Instruction,
   InstructionBuilder,
   InstructionSigner,
-  Json,
+  type Json,
   Message,
-  NativeScript,
-  Network,
-  OutRef,
-  PartialInstruction,
-  Provider,
-  ReadOnlyWallet,
+  type NativeScript,
+  type Network,
+  type OutRef,
+  type PartialInstruction,
+  type Provider,
+  type ReadOnlyWallet,
   resolveInstructions,
-  Script,
+  type Script,
   ScriptUtility,
-  SignedMessage,
+  type SignedMessage,
   toUnit,
   Tx,
   TxComplete,
-  Utxo,
-  Wallet,
-  WalletApi,
-  WalletSelection,
+  type Utxo,
+  type Wallet,
+  type WalletApi,
+  type WalletSelection,
 } from "../mod.ts";
 import { signMessage, verifyMessage } from "../misc/sign_message.ts";
 
@@ -396,13 +396,13 @@ export class Lucid {
   selectWalletFromSeed(
     seed: string,
     options?: {
-      type?: "Base" | "Enterprise";
+      addressType?: "Base" | "Enterprise";
       index?: number;
     },
   ): Lucid {
     const index = options?.index || 0;
     const paymentDetails = Crypto.seedToDetails(seed, index, "Payment");
-    const delegationDetails = options?.type === "Enterprise"
+    const delegationDetails = options?.addressType === "Enterprise"
       ? null
       : Crypto.seedToDetails(seed, options?.index || 0, "Delegation");
 
