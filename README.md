@@ -1,10 +1,9 @@
 <p align="center">
   <img width="100px" src="./logo/lucid.svg" align="center"/>
   <h1 align="center">Lucid</h1>
-  <p align="center">Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript, Deno and Node.js.</p>
+  <p align="center">Lucid is a library designed to simplify creating Cardano transactions and writing off-chain code for Plutus contracts.</p>
 
 <p align="center">
-    <img src="https://img.shields.io/github/commit-activity/m/berry-pool/lucid?style=for-the-badge" />
     <a href="https://www.npmjs.com/package/lucid-cardano">
       <img src="https://img.shields.io/npm/v/lucid-cardano?style=for-the-badge" />
     </a>
@@ -23,8 +22,6 @@
 </p>
 
 ### Get started
-
-Lucid is a Deno first TypeScript framework. Node.js and NPM are still supported, but may be deprecated in the future.
 
 #### Deno 🦕
 
@@ -87,12 +84,34 @@ console.log(txHash);
 
 Lucid supports [CIP-0057](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0057) blueprints.
 
+Run the following command in a directory with a `plutus.json` file.
+
 ```
 deno run -A https://deno.land/x/lucid/blueprint.ts
 ```
 
-```js
+You can import the example Aiken validator...
 
+```
+pub type MyData {
+  a: Int,
+  b: ByteArray,
+}
+
+validator validate(my_data: MyData) {
+  mint(redeemer: MyData, _policy_id: PolicyId, _transaction: Transaction) {
+    my_data == redeemer
+  } 
+}
+```
+
+...into Lucid using the generated `plutus.ts` file created with the blueprint command, as shown below:
+
+```ts
+import { ValidateMint } from "./plutus.ts";
+
+const validator = new ValidateMint({a: 123n, b: "0000"});
+const redeemer = ValidateMint.redeemer;
 ```
 
 See [more examples](./tests/data.test.ts)
@@ -129,15 +148,12 @@ deno doc
 
 ### Compatibility
 
-Lucid is an ES Module, so to run it in the browser any bundler which allows for
-top level await and WebAssembly is recommended. If you use Webpack 5 enable in
+Lucid is an ES Module, and to use it in the browser, a bundler that supports top-level await and WebAssembly is recommended. If you use Webpack 5 enable in
 the `webpack.config.js`:
 
 ```
 experiments: {
     asyncWebAssembly: true,
-    topLevelAwait: true,
-    layers: true // optional, with some bundlers/frameworks it doesn't work without
   }
 ```
 
