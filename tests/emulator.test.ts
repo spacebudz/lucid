@@ -275,3 +275,23 @@ Deno.test("Evaluate matching numbers contract", async () => {
 
   await lucid.awaitTx(await signedTxRedeem.submit());
 });
+
+Deno.test("Evaluate plutusV3 script", async () => {
+  const matchingNumber5 = lucid.newScript({
+    type: "PlutusV3",
+    script:
+      "585701010029800aba2aba1aab9eaab9dab9a4888896600264646644b30013370e900018031baa00289919b8748028dd698048021bae300830073754005164014600c600e002600c004600c00260066ea801a29344d9590011",
+  });
+
+  const policyId = matchingNumber5.toHash();
+
+  const tx = await lucid
+    .newTx()
+    .mint({ [toUnit(policyId, fromText("Number5"))]: 12n }, Data.to(5n))
+    .attachScript(matchingNumber5.script)
+    .commit();
+
+  const signedTx = await tx.sign().commit();
+
+  await lucid.awaitTx(await signedTx.submit());
+});
