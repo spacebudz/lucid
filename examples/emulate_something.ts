@@ -42,7 +42,7 @@ async function mint(): Promise<string> {
       [toUnit(policyId, fromText("Wow"))]: 123n,
     })
     .validTo(emulator.now() + 30000)
-    .attachScript(mintingPolicy.script)
+    .attachScript(mintingPolicy)
     .commit();
   const signedTx = await tx.sign().commit();
 

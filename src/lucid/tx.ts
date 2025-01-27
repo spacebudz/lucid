@@ -13,6 +13,7 @@ import {
   type PartialInstruction,
   type PoolRegistration,
   type Script,
+  ScriptUtility,
   toHex,
   TxComplete,
   type Utxo,
@@ -263,8 +264,11 @@ export class Tx {
     return this;
   }
 
-  attachScript(script: Script): Tx {
-    this.tasks.push(() => ({ type: "AttachScript", script }));
+  attachScript(script: Script | ScriptUtility): Tx {
+    this.tasks.push(() => ({
+      type: "AttachScript",
+      script: script instanceof ScriptUtility ? script.script : script,
+    }));
     return this;
   }
 
