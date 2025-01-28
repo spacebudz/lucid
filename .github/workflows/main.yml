@@ -16,7 +16,7 @@ jobs:
       - name: Use Deno
         uses: denoland/setup-deno@v2
 
-      - name: build
+      - name: Build
         run: deno task build
 
       - name: Lint
