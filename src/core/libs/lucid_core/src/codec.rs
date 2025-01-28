@@ -19,6 +19,7 @@ use std::{
     cmp::Ordering,
     collections::{BTreeMap, HashMap},
     i128,
+    net::{Ipv4Addr, Ipv6Addr},
     ops::{Add, AddAssign, Deref, DerefMut, Sub, SubAssign},
     str::FromStr,
 };
@@ -394,7 +395,7 @@ impl Assets {
     }
 
     pub fn get_lovelace(&self) -> u64 {
-        *self.0.get("lovelace").unwrap_or(&0) as u64
+        *self.0.get("lovelace").unwrap_or(&0).max(&0) as u64
     }
 
     pub fn set_lovelace(&mut self, lovelace: u64) {
@@ -925,12 +926,20 @@ impl TryFrom<Certificate> for pallas_primitives::conway::Certificate {
                                 Relay::SingleHostIp { ip_v4, ip_v6, port } => {
                                     pallas_primitives::Relay::SingleHostAddr(
                                         port.map_or(Nullable::Null, |p| Nullable::Some(p)),
-                                        ip_v6
-                                            .map(|ip| ip.parse().map_err(CoreError::msg))
+                                        ip_v4
+                                            .map(|ip| {
+                                                ip.parse::<Ipv4Addr>()
+                                                    .map(|ip| ip.octets().to_vec().into())
+                                                    .map_err(CoreError::msg)
+                                            })
                                             .transpose()?
                                             .map_or(Nullable::Null, Nullable::Some),
-                                        ip_v4
-                                            .map(|ip| ip.parse().map_err(CoreError::msg))
+                                        ip_v6
+                                            .map(|ip| {
+                                                ip.parse::<Ipv6Addr>()
+                                                    .map(|ip| ip.octets().to_vec().into())
+                                                    .map_err(CoreError::msg)
+                                            })
                                             .transpose()?
                                             .map_or(Nullable::Null, Nullable::Some),
                                     )

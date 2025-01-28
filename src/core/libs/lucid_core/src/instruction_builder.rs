@@ -244,10 +244,10 @@ impl InstructionBuilder {
                     self.used_scripts.insert(policy_id);
 
                     for (unit, quantity) in assets.iter() {
-                        if *quantity > 0 {
+                        if *quantity >= 0 {
                             self.implicit_input += Assets::from_unit(unit.clone(), *quantity);
                         } else {
-                            self.implicit_output += Assets::from_unit(unit.clone(), -*quantity);
+                            self.implicit_output += Assets::from_unit(unit.clone(), -quantity);
                         }
                     }
 
@@ -485,9 +485,6 @@ impl InstructionBuilder {
                         bech32::decode(&pool_retirement.pool_id).map_err(CoreError::msg)?;
                     self.used_keys.insert(pool_id_raw.as_slice().into());
 
-                    self.implicit_input +=
-                        Assets::from_lovelace(self.protocol_parameters.pool_deposit);
-
                     self.certificates
                         .get_or_insert_with(Vec::new)
                         .push(BuilderCertificate {
@@ -647,7 +644,10 @@ impl InstructionBuilder {
             // assumes new fee is always higher than previously set fee
             let amount_to_subtract = new_fee - old_fee;
 
-            change_output.assets -= Assets::from_lovelace(amount_to_subtract);
+            change_output.assets = change_output
+                .assets
+                .clone()
+                .clamped_sub(Assets::from_lovelace(amount_to_subtract));
 
             if change_output.assets.get_lovelace()
                 < change_output.required_lovelace(self.protocol_parameters.coins_per_utxo_byte)
@@ -1212,7 +1212,9 @@ impl InstructionBuilder {
                     change_output_0
                         .assets
                         .set_lovelace(change_value_0.get_lovelace());
-                    total_change_check -= change_output_0.assets.clone();
+
+                    total_change_check =
+                        total_change_check.clamped_sub(change_output_0.assets.clone());
 
                     fee_check +=
                         change_output_0.get_fee_for_output(builder.protocol_parameters.min_fee_a);
@@ -1223,9 +1225,12 @@ impl InstructionBuilder {
                     fee_check +=
                         change_output_1.get_fee_for_output(builder.protocol_parameters.min_fee_a);
 
-                    change_output_1
-                        .assets
-                        .set_lovelace(change_output_1.assets.get_lovelace() - fee_check);
+                    change_output_1.assets.set_lovelace(
+                        change_output_1
+                            .assets
+                            .get_lovelace()
+                            .saturating_sub(fee_check),
+                    );
 
                     if change_output_1.assets.get_lovelace()
                         < change_output_1
@@ -1250,9 +1255,12 @@ impl InstructionBuilder {
                     fee_check +=
                         change_output_0.get_fee_for_output(builder.protocol_parameters.min_fee_a);
 
-                    change_output_0
-                        .assets
-                        .set_lovelace(change_output_0.assets.get_lovelace() - fee_check);
+                    change_output_0.assets.set_lovelace(
+                        change_output_0
+                            .assets
+                            .get_lovelace()
+                            .saturating_sub(fee_check),
+                    );
 
                     if change_output_0.assets.get_lovelace()
                         < change_output_0
