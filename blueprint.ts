@@ -1,9 +1,4 @@
-import packageJson from "./package.json" with { type: "json" };
-import { parse } from "https://deno.land/std@0.185.0/flags/mod.ts";
-
-const flags = parse(Deno.args, {
-  boolean: ["npm"],
-});
+import type { Json } from "./mod.ts";
 
 type Blueprint = {
   preamble: {
@@ -45,7 +40,7 @@ type Blueprint = {
 };
 
 const plutusJson: Blueprint = JSON.parse(
-  await Deno.readTextFile("plutus.json"),
+  Deno.readTextFileSync("plutus.json").replaceAll("~1", "/"),
 );
 
 const plutusVersion = "Plutus" +
@@ -54,93 +49,105 @@ const plutusVersion = "Plutus" +
 const definitions = plutusJson.definitions;
 
 const imports = `// deno-lint-ignore-file
-import { applyParamsToScript, Data, Validator } from "${
-  flags.npm
-    ? "lucid-cardano"
-    : `https://deno.land/x/lucid@${packageJson.version}/mod.ts`
+import { applyParamsToScript, Data, Script } from "${
+  import.meta.url.replace("/blueprint.ts", "/mod.ts")
 }"`;
 
-const validators = plutusJson.validators.map((validator) => {
+const validators = plutusJson.validators.filter((validator) =>
+  !validator.title.includes(".else")
+).map((validator) => {
   const title = validator.title;
-  const name = (() => {
-    const [a, b] = title.split(".");
-    return upperFirst(snakeToCamel(a)) + upperFirst(snakeToCamel(b));
-  })();
+  const name = title
+    .split(".")
+    .map((w) => upperFirst(snakeToCamel(w)))
+    .join("");
   const datum = validator.datum;
   const datumTitle = datum ? snakeToCamel(datum.title) : null;
-  const datumSchema = datum ? resolveSchema(datum.schema, definitions) : null;
+  const datumSchema = datum
+    ? { shape: resolveSchema(datum.schema), definitions }
+    : null;
 
   const redeemer = validator.redeemer;
   const redeemerTitle = snakeToCamel(redeemer.title);
-  const redeemerSchema = resolveSchema(redeemer.schema, definitions);
+  const redeemerSchema = {
+    shape: resolveSchema(redeemer.schema),
+    definitions,
+  };
 
   const params = validator.parameters || [];
   const paramsSchema = {
-    dataType: "list",
-    items: params.map((param) => resolveSchema(param.schema, definitions)),
+    shape: {
+      dataType: "list",
+      items: params.map((param) => resolveSchema(param.schema)),
+    },
+    definitions,
   };
   const paramsArgs = params.map((
     param,
     index,
-  ) => [snakeToCamel(param.title), schemaToType(paramsSchema.items[index])]);
+  ) => [
+    snakeToCamel(param.title),
+    schemaToType(paramsSchema.shape.items[index]),
+  ]);
 
   const script = validator.compiledCode;
 
   return `export interface ${name} {
-    new (${paramsArgs.map((param) => param.join(":")).join(",")}): Validator;${
-    datum ? `\n${datumTitle}: ${schemaToType(datumSchema)};` : ""
+    new (${paramsArgs.map((param) => param.join(":")).join(",")}): Script;${
+    datum ? `\n${datumTitle}: ${schemaToType(datumSchema?.shape)};` : ""
   }
-    ${redeemerTitle}: ${schemaToType(redeemerSchema)};
+    ${redeemerTitle}: ${schemaToType(redeemerSchema.shape)};
   };
 
   export const ${name} = Object.assign(
     function (${paramsArgs.map((param) => param.join(":")).join(",")}) {${
     paramsArgs.length > 0
-      ? `return { type: "${plutusVersion}", script: applyParamsToScript("${script}", [${
+      ? `return { type: "${plutusVersion}", script: applyParamsToScript([${
         paramsArgs.map((param) => param[0]).join(",")
-      }], ${JSON.stringify(paramsSchema)} as any) };`
+      }], "${script}", { "shape":${
+        JSON.stringify(paramsSchema.shape)
+      }, definitions } as any) };`
       : `return {type: "${plutusVersion}", script: "${script}"};`
   }},
-    ${datum ? `{${datumTitle}: ${JSON.stringify(datumSchema)}},` : ""}
-    {${redeemerTitle}: ${JSON.stringify(redeemerSchema)}},
+    ${
+    datum
+      ? `{${datumTitle}: { "shape": ${
+        JSON.stringify(datumSchema?.shape)
+      }, definitions }},`
+      : ""
+  }
+    {${redeemerTitle}: { "shape": ${
+    JSON.stringify(redeemerSchema.shape)
+  }, definitions }},
   ) as unknown as ${name};`;
 });
 
-const plutus = imports + "\n\n" + validators.join("\n\n");
+function definitionsToTypes(definitions: Blueprint["definitions"]): string {
+  return Object.entries(definitions).map(([name, schema]) =>
+    `export type ${upperFirst(snakeToCamel(name))} = ${schemaToType(schema)};`
+  ).join("\n");
+}
 
-await Deno.writeTextFile("plutus.ts", plutus);
-await new Deno.Command(Deno.execPath(), {
-  args: ["fmt", "plutus.ts"],
-  stderr: "piped",
-}).output();
-console.log(
-  "%cGenerated %cplutus.ts",
-  "color: green; font-weight: bold",
-  "font-weight: bold",
-);
-
-function resolveSchema(schema: any, definitions: any): any {
+function resolveSchema(schema: Json): Json {
   if (schema.items) {
     if (schema.items instanceof Array) {
       return {
         ...schema,
-        items: schema.items.map((item: any) =>
-          resolveSchema(item, definitions)
-        ),
+        items: schema.items.map((item: Json) => resolveSchema(item)),
       };
     } else {
       return {
         ...schema,
-        items: resolveSchema(schema.items, definitions),
+        items: resolveSchema(schema.items),
       };
     }
   } else if (schema.anyOf) {
     return {
       ...schema,
-      anyOf: schema.anyOf.map((a: any) => ({
+      anyOf: schema.anyOf.map((a: Json) => ({
         ...a,
-        fields: a.fields.map((field: any) => ({
-          ...resolveSchema(field, definitions),
+        fields: a.fields.map((field: Json) => ({
+          ...resolveSchema(field),
           title: field.title ? snakeToCamel(field.title) : undefined,
         })),
       })),
@@ -148,23 +155,28 @@ function resolveSchema(schema: any, definitions: any): any {
   } else if (schema.keys && schema.values) {
     return {
       ...schema,
-      keys: resolveSchema(schema.keys, definitions),
-      values: resolveSchema(schema.values, definitions),
+      keys: resolveSchema(schema.keys),
+      values: resolveSchema(schema.values),
     };
   } else {
-    if (schema["$ref"]) {
-      const refKey =
-        schema["$ref"].replaceAll("~1", "/").split("#/definitions/")[1];
-      return resolveSchema(definitions[refKey], definitions);
-    } else {
-      return schema;
-    }
+    return schema;
   }
 }
 
-function schemaToType(schema: any): string {
+function resolveDefinitions(
+  definitions: Blueprint["definitions"],
+): Blueprint["definitions"] {
+  return Object.fromEntries(
+    Object.entries(definitions).map(([name, schema]) => {
+      return [name, resolveSchema(schema)];
+    }),
+  );
+}
+
+function schemaToType(schema: Json): string {
   if (!schema) throw new Error("Could not generate type.");
-  const shapeType = (schema.anyOf ? "enum" : "") || schema.dataType;
+  const shapeType = (schema.anyOf ? "enum" : schema["$ref"] ? "$ref" : "") ||
+    schema.dataType;
 
   switch (shapeType) {
     case "integer": {
@@ -178,8 +190,8 @@ function schemaToType(schema: any): string {
         return "undefined";
       } else {
         return `{${
-          schema.fields.map((field: any) =>
-            `${field.title || "wrapper"}:${schemaToType(field)}`
+          schema.fields.map((field: Json) =>
+            `${snakeToCamel(field.title || "wrapper")}:${schemaToType(field)}`
           ).join(";")
         }}`;
       }
@@ -195,18 +207,18 @@ function schemaToType(schema: any): string {
       if (isNullable(schema)) {
         return `${schemaToType(schema.anyOf[0].fields[0])} | null`;
       }
-      return schema.anyOf.map((entry: any) =>
+      return schema.anyOf.map((entry: Json) =>
         entry.fields.length === 0
-          ? `"${entry.title}"`
-          : `{${entry.title}: ${
+          ? `"${snakeToCamel(entry.title)}"`
+          : `{${snakeToCamel(entry.title)}: ${
             entry.fields[0].title
               ? `{${
-                entry.fields.map((field: any) =>
-                  [field.title, schemaToType(field)].join(":")
+                entry.fields.map((field: Json) =>
+                  [snakeToCamel(field.title), schemaToType(field)].join(":")
                 ).join(",")
               }}}`
               : `[${
-                entry.fields.map((field: any) => schemaToType(field)).join(",")
+                entry.fields.map((field: Json) => schemaToType(field)).join(",")
               }]}`
           }`
       ).join(" | ");
@@ -214,7 +226,7 @@ function schemaToType(schema: any): string {
     case "list": {
       if (schema.items instanceof Array) {
         return `[${
-          schema.items.map((item: any) => schemaToType(item)).join(",")
+          schema.items.map((item: Json) => schemaToType(item)).join(",")
         }]`;
       } else {
         return `Array<${schemaToType(schema.items)}>`;
@@ -225,6 +237,10 @@ function schemaToType(schema: any): string {
         schemaToType(schema.values)
       }>`;
     }
+    case "$ref": {
+      const definition: string = schema["$ref"].split("#/definitions/")[1];
+      return upperFirst(snakeToCamel(definition));
+    }
     case undefined: {
       return "Data";
     }
@@ -232,16 +248,16 @@ function schemaToType(schema: any): string {
   throw new Error("Could not type cast data.");
 }
 
-function isBoolean(shape: any): boolean {
+function isBoolean(shape: Json): boolean {
   return shape.anyOf && shape.anyOf[0]?.title === "False" &&
     shape.anyOf[1]?.title === "True";
 }
 
-function isVoid(shape: any): boolean {
+function isVoid(shape: Json): boolean {
   return shape.index === 0 && shape.fields.length === 0;
 }
 
-function isNullable(shape: any): boolean {
+function isNullable(shape: Json): boolean {
   return shape.anyOf && shape.anyOf[0]?.title === "Some" &&
     shape.anyOf[1]?.title === "None";
 }
@@ -249,13 +265,15 @@ function isNullable(shape: any): boolean {
 function snakeToCamel(s: string): string {
   const withUnderscore = s.charAt(0) === "_" ? s.charAt(0) : "";
   return withUnderscore +
-    (withUnderscore ? s.slice(1) : s).toLowerCase().replace(
-      /([-_][a-z])/g,
+    (withUnderscore ? s.slice(1) : s).replace(
+      /([-_$/][a-zA-Z])/g,
       (group) =>
         group
           .toUpperCase()
           .replace("-", "")
-          .replace("_", ""),
+          .replace("_", "")
+          .replace("$", "")
+          .replace("/", ""),
     );
 }
 
@@ -265,3 +283,22 @@ function upperFirst(s: string): string {
     s.charAt(withUnderscore ? 1 : 0).toUpperCase() +
     s.slice((withUnderscore ? 1 : 0) + 1);
 }
+
+const plutus = imports +
+  "\n\n" +
+  `${definitionsToTypes(definitions)}` +
+  "\n\n" +
+  `const definitions = ${JSON.stringify(resolveDefinitions(definitions))};` +
+  "\n\n" +
+  validators.join("\n\n");
+
+await Deno.writeTextFile("plutus.ts", plutus);
+await new Deno.Command(Deno.execPath(), {
+  args: ["fmt", "plutus.ts"],
+  stderr: "piped",
+}).output();
+console.log(
+  "%cGenerated %cplutus.ts",
+  "color: green; font-weight: bold",
+  "font-weight: bold",
+);

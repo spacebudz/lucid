@@ -1,30 +1,36 @@
-import * as C from "./libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js";
-import * as M from "./libs/cardano_message_signing/cardano_message_signing.generated.js";
-import packageJson from "../../package.json" with { type: "json" };
+import * as Core from "./libs/lucid_core/pkg/lucid_core.js";
+import type * as CoreTypes from "./libs/lucid_core/pkg/lucid_core.d.ts";
+import * as MessageSigningInstance from "./libs/message_signing/pkg/message_signing.js";
+import type * as MessageSigningTypes from "./libs/message_signing/pkg/message_signing.d.ts";
 
-async function unsafeInstantiate(module: any, url: string) {
-  try {
-    await module.instantiate({
-      // Exception for Deno fresh framework
-      url: new URL(
-        url,
-        `https://deno.land/x/lucid@${packageJson.version}/src/core/libs/`,
-      ),
-    });
-  } catch (_e) {
-    // This only ever happens during SSR rendering
-  }
-}
+export type Addresses = CoreTypes.Addresses;
+export const Addresses: typeof CoreTypes.Addresses = Core.Addresses;
 
-await Promise.all([
-  unsafeInstantiate(
-    C,
-    `cardano_multiplatform_lib/cardano_multiplatform_lib_bg.wasm`,
-  ),
-  unsafeInstantiate(
-    M,
-    `cardano_message_signing/cardano_message_signing_bg.wasm`,
-  ),
-]);
+export type Codec = CoreTypes.Codec;
+export const Codec: typeof CoreTypes.Codec = Core.Codec;
 
-export { C, M };
+export type Crypto = CoreTypes.Crypto;
+export const Crypto: typeof CoreTypes.Crypto = Core.Crypto;
+
+export type EmulatorState = CoreTypes.EmulatorState;
+export const EmulatorState: typeof CoreTypes.EmulatorState = Core.EmulatorState;
+
+export type Hasher = CoreTypes.Hasher;
+export const Hasher: typeof CoreTypes.Hasher = Core.Hasher;
+
+export type InstructionBuilder = CoreTypes.InstructionBuilder;
+export const InstructionBuilder: typeof CoreTypes.InstructionBuilder =
+  Core.InstructionBuilder;
+
+export type InstructionSigner = CoreTypes.InstructionSigner;
+export const InstructionSigner: typeof CoreTypes.InstructionSigner =
+  Core.InstructionSigner;
+
+export type Utils = CoreTypes.Utils;
+export const Utils: typeof CoreTypes.Utils = Core.Utils;
+
+export type MessageSigning = typeof MessageSigningTypes;
+export const MessageSigning: typeof MessageSigningTypes =
+  MessageSigningInstance;
+
+export type * from "./libs/lucid_core/pkg/lucid_core.d.ts";

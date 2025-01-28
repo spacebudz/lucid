@@ -7,8 +7,6 @@ docs_menu:
     id: basics
   - title: Getting started
     id: getting-started
-  - title: Advanced
-    id: advanced
 
 docs_items:
   - title: Resources

@@ -1,23 +1,17 @@
-import { C } from "../core/mod.ts";
-import { applyDoubleCborEncoding, fromHex } from "../utils/mod.ts";
 import {
-  Address,
-  Assets,
-  Credential,
-  Datum,
-  DatumHash,
-  Delegation,
-  Json,
-  OutRef,
-  ProtocolParameters,
-  Provider,
-  RewardAddress,
-  Transaction,
-  TxHash,
-  Unit,
-  UTxO,
-} from "../types/mod.ts";
-import packageJson from "../../package.json" with { type: "json" };
+  type ActiveDelegation,
+  type Assets,
+  type Credential,
+  fromHex,
+  type Json,
+  type Network,
+  type OutRef,
+  type Provider,
+  type RelevantProtocolParameters,
+  Utils,
+  type Utxo,
+} from "../mod.ts";
+import denoJson from "../../deno.json" with { type: "json" };
 
 export type MaestroSupportedNetworks = "Mainnet" | "Preprod" | "Preview";
 
@@ -31,14 +25,16 @@ export class Maestro implements Provider {
   url: string;
   apiKey: string;
   turboSubmit: boolean;
+  network?: Network;
 
   constructor({ network, apiKey, turboSubmit = false }: MaestroConfig) {
     this.url = `https://${network}.gomaestro-api.org/v1`;
     this.apiKey = apiKey;
     this.turboSubmit = turboSubmit;
+    this.network = network;
   }
 
-  async getProtocolParameters(): Promise<ProtocolParameters> {
+  async getProtocolParameters(): Promise<RelevantProtocolParameters> {
     const timestampedResult = await fetch(`${this.url}/protocol-parameters`, {
       headers: this.commonHeaders(),
     }).then((res) => res.json());
@@ -62,20 +58,27 @@ export class Maestro implements Provider {
           ),
         };
       });
-      return Object.assign({}, ...entries);
+      const sorted = Object.assign({}, ...entries);
+      return Object.fromEntries(
+        Object.entries(sorted).map((
+          [plutus, costModel],
+        ) => [plutus, Object.values(costModel as Record<string, number>)]),
+      );
     };
     return {
       minFeeA: parseInt(result.min_fee_coefficient),
       minFeeB: parseInt(result.min_fee_constant.ada.lovelace),
       maxTxSize: parseInt(result.max_transaction_size.bytes),
       maxValSize: parseInt(result.max_value_size.bytes),
-      keyDeposit: BigInt(result.stake_credential_deposit.ada.lovelace),
-      poolDeposit: BigInt(result.stake_pool_deposit.ada.lovelace),
-      priceMem: decimalFromRationalString(result.script_execution_prices.memory),
+      keyDeposit: parseInt(result.stake_credential_deposit.ada.lovelace),
+      poolDeposit: parseInt(result.stake_pool_deposit.ada.lovelace),
+      priceMem: decimalFromRationalString(
+        result.script_execution_prices.memory,
+      ),
       priceStep: decimalFromRationalString(result.script_execution_prices.cpu),
-      maxTxExMem: BigInt(result.max_execution_units_per_transaction.memory),
-      maxTxExSteps: BigInt(result.max_execution_units_per_transaction.cpu),
-      coinsPerUtxoByte: BigInt(result.min_utxo_deposit_coefficient),
+      maxTxExMem: parseInt(result.max_execution_units_per_transaction.memory),
+      maxTxExSteps: parseInt(result.max_execution_units_per_transaction.cpu),
+      coinsPerUtxoByte: parseInt(result.min_utxo_deposit_coefficient),
       collateralPercentage: parseInt(result.collateral_percentage),
       maxCollateralInputs: parseInt(result.max_collateral_inputs),
       costModels: renameKeysAndSort(result.plutus_cost_models, {
@@ -83,26 +86,24 @@ export class Maestro implements Provider {
         "plutus_v2": "PlutusV2",
         "plutus_v3": "PlutusV3",
       }),
-      minfeeRefscriptCostPerByte: parseFloat(result.min_fee_reference_scripts.base),
+      minfeeRefscriptCostPerByte: parseFloat(
+        result.min_fee_reference_scripts.base,
+      ),
     };
   }
 
   private async getUtxosInternal(
-    addressOrCredential: Address | Credential,
-    unit?: Unit,
-  ): Promise<UTxO[]> {
+    addressOrCredential: string | Credential,
+    unit?: string,
+  ): Promise<Utxo[]> {
     const queryPredicate = (() => {
       if (typeof addressOrCredential === "string") {
         return "/addresses/" + addressOrCredential;
       }
       let credentialBech32Query = "/addresses/cred/";
       credentialBech32Query += addressOrCredential.type === "Key"
-        ? C.Ed25519KeyHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_vkh",
-        )
-        : C.ScriptHash.from_hex(addressOrCredential.hash).to_bech32(
-          "addr_shared_vkh",
-        );
+        ? Utils.encodeBech32("addr_vkh", addressOrCredential.hash)
+        : Utils.encodeBech32("addr_shared_vkh", addressOrCredential.hash);
       return credentialBech32Query;
     })();
     const qparams = new URLSearchParams({
@@ -119,18 +120,18 @@ export class Maestro implements Provider {
     return result.map(this.maestroUtxoToUtxo);
   }
 
-  getUtxos(addressOrCredential: Address | Credential): Promise<UTxO[]> {
+  getUtxos(addressOrCredential: string | Credential): Promise<Utxo[]> {
     return this.getUtxosInternal(addressOrCredential);
   }
 
   getUtxosWithUnit(
-    addressOrCredential: Address | Credential,
-    unit: Unit,
-  ): Promise<UTxO[]> {
+    addressOrCredential: string | Credential,
+    unit: string,
+  ): Promise<Utxo[]> {
     return this.getUtxosInternal(addressOrCredential, unit);
   }
 
-  async getUtxoByUnit(unit: Unit): Promise<UTxO> {
+  async getUtxoByUnit(unit: string): Promise<Utxo> {
     const timestampedAddressesResponse = await fetch(
       `${this.url}/assets/${unit}/addresses?count=2`,
       { headers: this.commonHeaders() },
@@ -168,7 +169,7 @@ export class Maestro implements Provider {
     return utxos[0];
   }
 
-  async getUtxosByOutRef(outRefs: OutRef[]): Promise<UTxO[]> {
+  async getUtxosByOutRef(outRefs: OutRef[]): Promise<Utxo[]> {
     const qry = `${this.url}/transactions/outputs`;
     const body = JSON.stringify(
       outRefs.map(({ txHash, outputIndex }) => `${txHash}#${outputIndex}`),
@@ -190,7 +191,7 @@ export class Maestro implements Provider {
     return utxos.map(this.maestroUtxoToUtxo);
   }
 
-  async getDelegation(rewardAddress: RewardAddress): Promise<Delegation> {
+  async getDelegation(rewardAddress: string): Promise<ActiveDelegation> {
     const timestampedResultResponse = await fetch(
       `${this.url}/accounts/${rewardAddress}`,
       { headers: this.commonHeaders() },
@@ -206,7 +207,7 @@ export class Maestro implements Provider {
     };
   }
 
-  async getDatum(datumHash: DatumHash): Promise<Datum> {
+  async getDatum(datumHash: string): Promise<string> {
     const timestampedResultResponse = await fetch(
       `${this.url}/datum/${datumHash}`,
       {
@@ -227,7 +228,7 @@ export class Maestro implements Provider {
     return timestampedResult.data.bytes;
   }
 
-  awaitTx(txHash: TxHash, checkInterval = 3000): Promise<boolean> {
+  awaitTx(txHash: string, checkInterval = 3000): Promise<boolean> {
     return new Promise((res) => {
       const confirmation = setInterval(async () => {
         const isConfirmedResponse = await fetch(
@@ -246,7 +247,7 @@ export class Maestro implements Provider {
     });
   }
 
-  async submitTx(tx: Transaction): Promise<TxHash> {
+  async submit(tx: string): Promise<string> {
     let queryUrl = `${this.url}/txmanager`;
     queryUrl += this.turboSubmit ? "/turbosubmit" : "";
     const response = await fetch(queryUrl, {
@@ -273,7 +274,7 @@ export class Maestro implements Provider {
     return { "api-key": this.apiKey, lucid };
   }
 
-  private maestroUtxoToUtxo(result: MaestroUtxo): UTxO {
+  private maestroUtxoToUtxo(result: MaestroUtxo): Utxo {
     return {
       txHash: result.tx_hash,
       outputIndex: result.index,
@@ -291,10 +292,12 @@ export class Maestro implements Provider {
       datum: result.datum?.bytes,
       scriptRef: result.reference_script
         ? result.reference_script.type == "native" ? undefined : {
-          type: result.reference_script.type == "plutusv1"
-            ? "PlutusV1"
-            : "PlutusV2",
-          script: applyDoubleCborEncoding(result.reference_script.bytes!),
+          type: result.reference_script.type[0].toUpperCase() +
+            result.reference_script.type.slice(1).replace("v", "V") as
+              | "PlutusV1"
+              | "PlutusV2"
+              | "PlutusV3",
+          script: Utils.applyDoubleCborEncoding(result.reference_script.bytes!),
         }
         : undefined,
     };
@@ -350,10 +353,10 @@ type MaestroAsset = {
 };
 
 type MaestroUtxo = {
-  tx_hash: TxHash;
+  tx_hash: string;
   index: number;
   assets: Array<MaestroAsset>;
-  address: Address;
+  address: string;
   datum?: MaestroDatumOption;
   reference_script?: MaestroScript;
   // Other fields such as `slot` & `txout_cbor` are ignored.
@@ -361,4 +364,4 @@ type MaestroUtxo = {
 
 type MaestroUtxos = Array<MaestroUtxo>;
 
-const lucid = packageJson.version; // Lucid version
+const lucid = denoJson.version; // Lucid version

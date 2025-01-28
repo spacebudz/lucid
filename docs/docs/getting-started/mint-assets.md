@@ -15,18 +15,20 @@ example we utilize a native script time-locking policy with our wallet as
 required signer:
 
 ```js
-const { paymentCredential } = lucid.utils.getAddressDetails(
+import { Addresses } from "https://deno.land/x/lucid/mod.ts";
+
+const { payment } = Addresses.inspect(
   await lucid.wallet.address(),
 );
 
-const mintingPolicy = lucid.utils.nativeScriptFromJson(
+const mintingPolicy = lucid.newScript(
   {
-    type: "all",
+    type: "All",
     scripts: [
-      { type: "sig", keyHash: paymentCredential.hash },
+      { type: "Sig", keyHash: paymentCredential.hash },
       {
-        type: "before",
-        slot: lucid.utils.unixTimeToSlot(Date.now() + 1000000),
+        type: "Before",
+        slot: lucid.utils.unixTimeToSlots(Date.now() + 1000000),
       },
     ],
   },
@@ -36,7 +38,7 @@ const mintingPolicy = lucid.utils.nativeScriptFromJson(
 Next we derive the policy id from the minting policy script:
 
 ```js
-const policyId = lucid.utils.mintingPolicyToId(mintingPolicy);
+const policyId = mintingPolicy.toHash();
 ```
 
 Now we can mint our desired tokens:
@@ -45,12 +47,12 @@ Now we can mint our desired tokens:
 const unit = policyId + fromText("MyMintedToken");
 
 const tx = await lucid.newTx()
-  .mintAssets({ [unit]: 1n })
+  .mint({ [unit]: 1n })
   .validTo(Date.now() + 200000)
-  .attachMintingPolicy(mintingPolicy)
-  .complete();
+  .attachScript(mintingPolicy)
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -62,12 +64,12 @@ const unit = policyId + fromText("MyMintedToken");
 
 const tx = await lucid
   .newTx()
-  .mintAssets({ [unit]: -1n })
+  .mint({ [unit]: -1n })
   .validTo(Date.now() + 200000)
-  .attachMintingPolicy(mintingPolicy)
-  .complete();
+  .attachScript(mintingPolicy)
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
