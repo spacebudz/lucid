@@ -11,14 +11,18 @@ There are multiple methods to select a wallet in Lucid.
 ### Select wallet from private key
 
 ```js
-const privateKey = lucid.utils.generatePrivateKey(); // Bech32 encoded private key
+import { Crypto } from "https://deno.land/x/lucid/mod.ts";
+
+const privateKey = Crypto.generatePrivateKey(); // Bech32 encoded private key
 lucid.selectWalletFromPrivateKey(privateKey);
 ```
 
 ### Select wallet from seed phrase
 
 ```js
-const seed = lucid.utils.generateSeedPhrase();
+import { Crypto } from "https://deno.land/x/lucid/mod.ts";
+
+const seed = Crypto.generateSeed();
 lucid.selectWalletFromSeed(seed);
 ```
 
@@ -30,16 +34,16 @@ compliant wallet.
 
 ```js
 const api = await window.cardano.nami.enable();
-lucid.selectWallet(api);
+lucid.selectWalletFromApi(api);
 ```
 
 ### Select wallet from custom data
 
-This wallet is viewable and can only handle query requests. Signing operations
-do not work because no private key was selected via this method.
+This wallet is only readable and so can only handle query requests. Signing operations
+do not work because no private key was selected in this method.
 
 ```js
-lucid.selectWalletFrom({address: "addr_test...", utxos: [...]});
+lucid.selectReadOnlyWallet({address: "addr_test...", utxos: [...]});
 ```
 
 ## Query wallet

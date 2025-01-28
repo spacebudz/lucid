@@ -45,12 +45,12 @@ const matchingNumberAddress = lucid.utils.validatorToAddress(
 ```js
 const tx = await lucid
   .newTx()
-  .payToContract(matchingNumberAddress, { inline: Data.to(100n) }, {
+  .payToContract(matchingNumberAddress, { Inline: Data.to(100n) }, {
     lovelace: 20000000n,
   })
-  .complete();
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -63,10 +63,10 @@ const [scriptUtxo] = await lucid.utxosAt(matchingNumberAddress);
 const tx = await lucid
   .newTx()
   .collectFrom([scriptUtxo], Data.to(100n))
-  .attachSpendingValidator(matchingNumberScript)
-  .complete();
+  .attachScript(matchingNumberScript)
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -80,8 +80,8 @@ dynamically:
 const mintingPolicy = {
   type: "PlutusV2",
   script: applyParamsToScript(
-    "5907945907910100...",
     [10n],
+    "5907945907910100...",
   ),
 };
 ```
@@ -100,7 +100,7 @@ scripts.
 ```js
 .collectFrom(utxos, redeemer)
 
-.mintAssets(assets, redeemer)
+.mint(assets, redeemer)
 
 .delegateTo(stakeAddress, poolId, redeemer)
 
@@ -120,11 +120,11 @@ const tx = await lucid
   .collectFrom([scriptUtxoA, scriptUtxoB], Data.void())
   .collectFrom([scriptUtxoC], Data.void())
   .collectFrom([scriptUtxoD], Data.void())
-  .mintAssets([plutusPolicyId]: 10n, Data.void())
-  .attachSpendingValidator(spendingScript1)
-  .attachSpendingValidator(spendingScript2)
-  .attachMintingPolicy(mintingPolicy)
-  .complete();
+  .mint([plutusPolicyId]: 10n, Data.void())
+  .attachScript(spendingScript1)
+  .attachScript(spendingScript2)
+  .attachScript(mintingPolicy)
+  .commit();
 ```
 
 ## Read UTxOs and plutus scripts
@@ -137,7 +137,7 @@ explicitly in the transaction, resulting in cost savings.
 const tx = await lucid
   .newTx()
   .readFrom([scriptUtxo])
-  .complete();
+  .commit();
 ```
 
 [Tx API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Tx)\

@@ -21,7 +21,7 @@ usage:
 
       import { Lucid } from "https://deno.land/x/lucid/mod.ts"
 
-      const lucid = await Lucid.new();
+      const lucid = new Lucid();
       ```
 
       ```ts { title="mod.ts" }
@@ -29,7 +29,7 @@ usage:
 
       import { Lucid } from "https://deno.land/x/lucid/mod.ts"
 
-      const lucid: Lucid = await Lucid.new();
+      const lucid: Lucid = new Lucid();
       ```
 
       ```js { title="index.js" }
@@ -37,7 +37,7 @@ usage:
 
       import { Lucid } from "lucid-cardano"
 
-      const lucid = await Lucid.new();
+      const lucid = Lucid();
       ```
 
       ```ts { title="index.ts" }
@@ -45,16 +45,7 @@ usage:
 
       import { Lucid } from "lucid-cardano"
 
-      const lucid: Lucid = await Lucid.new();
-      ```
-
-      ```html { title="index.html" }
-      <!-- Web -->
-      <script type="module">
-        import { Lucid } from "https://unpkg.com/lucid-cardano/web/mod.js"
-
-        const lucid = await Lucid.new();
-      </script>
+      const lucid: Lucid = new Lucid();
       ```
 
       </lume-code>
@@ -67,29 +58,29 @@ usage:
 
       ```ts { title="send.js" }
       const tx = await lucid.newTx()
-        .payToAddress("addr..", {lovelace: 40000000n})
-        .complete();
-      const signedTx = await tx.sign().complete();
+        .payTo("addr..", {lovelace: 40000000n})
+        .commit();
+      const signedTx = await tx.sign().commit();
       const txHash = await signedTx.submit();
       ```
 
       ```ts { title="multiple.js" }
       const tx = await lucid.newTx()
-        .payToAddress("addra..", {lovelace: 10000000n})
-        .payToAddress("addrb..", {lovelace: 20000000n})
-        .payToAddress("addrc..", {lovelace: 30000000n})
-        .payToAddress("addrd..", {lovelace: 40000000n})
-        .payToAddress("addre..", {lovelace: 50000000n})
-        .complete();
+        .payTo("addra..", {lovelace: 10000000n})
+        .payTo("addrb..", {lovelace: 20000000n})
+        .payTo("addrc..", {lovelace: 30000000n})
+        .payTo("addrd..", {lovelace: 40000000n})
+        .payTo("addre..", {lovelace: 50000000n})
+        .commit();
       ```
 
       ```ts { title="multisig.js" }
       const tx = await lucid.newTx()
         .collectFrom([scriptUtxo])
-        .payToAddress("addr..", {lovelace: 50000000n})
-        .attachSpendingValidator(multisigScript)
-        .complete();
-      const signedTx = await tx.assemble(["<sig_1>", "<sig_2>"]).complete();
+        .payTo("addr..", {lovelace: 50000000n})
+        .attachScript(multisigScript)
+        .commit();
+      const signedTx = await tx.assemble(["<sig_1>", "<sig_2>"]).commit();
       const txHash = await signedTx.submit();
       ```
 
@@ -114,57 +105,55 @@ usage:
         .payToAddress("addra..", {lovelace: 10000000n})
         .compose(txA)
         .compose(txB(utxo))
-        .complete();
+        .commit();
       ```
 
       </lume-code>
 
   - title: Modular providers
     description: |
-      Use one of the existing blockchain providers in Lucid or implement your own provider.
+      Use one of the existing blockchain providers in Lucid or implement your own one.
     code: |
       <lume-code>
 
       ```js { title="blockfrost.js" }
-      import { Lucid, Blockfrost } from "https://deno.land/x/lucid/mod.ts"
+      import { Blockfrost, Lucid } from "https://deno.land/x/lucid/mod.ts";
 
-      const lucid = await Lucid.new(
-        new Blockfrost(
-          "https://cardano-mainnet.blockfrost.io/api/v0",
-          "<project_id>",
+      const lucid = new Lucid({
+        provider: new Blockfrost(
+          "https://cardano-preprod.blockfrost.io/api/v0",
+          "<projectId>",
         ),
-      );
+      });
       ```
       ```js { title="kupmios.js" }
-      import { Lucid, Kupmios } from "https://deno.land/x/lucid/mod.ts"
+      import { Kupmios, Lucid } from "https://deno.land/x/lucid/mod.ts";
 
-      const lucid = await Lucid.new(
-        new Kupmios(
-          "http://localhost:1442",
-          "ws://localhost:1337",
-        ),
-      );
+      const lucid = new Lucid({
+        provider: new Kupmios({
+          kupoUrl: "http://localhost:1442",
+          ogmiosUrl: "ws://localhost:1337",
+          network: "Preprod",
+        }),
+      });
       ```
       ```js { title="maestro.js" }
-      import { Maestro, Lucid } from "https://deno.land/x/lucid/mod.ts";
+      import { Lucid, Maestro } from "https://deno.land/x/lucid/mod.ts";
 
-      const lucid = await Lucid.new(
-        new Maestro({
-          network: "Preprod",  // For MAINNET: "Mainnet".
-          apiKey: "<Your-API-Key>",  // Get yours by visiting https://docs.gomaestro.org/docs/Getting-started/Sign-up-login.
-          turboSubmit: false  // Read about paid turbo transaction submission feature at https://docs.gomaestro.org/docs/Dapp%20Platform/Turbo%20Transaction.
+      const lucid = new Lucid({
+        provider: new Maestro({
+          network: "Preprod", // For MAINNET: "Mainnet".
+          apiKey: "<Your-API-Key>", // Get yours by visiting https://docs.gomaestro.org/docs/Getting-started/Sign-up-login.
+          turboSubmit: false, // Read about paid turbo transaction submission feature at https://docs.gomaestro.org/docs/Dapp%20Platform/Turbo%20Transaction.
         }),
-        "Preprod",  // For MAINNET: "Mainnet".
-      );
+      });
       ```
       ```js { title="custom.ts" }
       import { Lucid, Provider } from "https://deno.land/x/lucid/mod.ts"
 
       class MyProvider implements Provider { ... }
 
-      const lucid = await Lucid.new(
-        new MyProvider(),
-      );
+      const lucid = new Lucid({ provider: new MyProvider() });
       ```
 
       </lume-code>
@@ -177,40 +166,43 @@ usage:
 
       ```js { title="browser.js" }
       const api = await window.cardano.nami.enable();
-      lucid.selectWallet(api);
+      lucid.selectWalletFromApi(api);
       ```
 
       ```js { title="seed.js" }
-      const seedPhrase = lucid.utils.generateSeedPhrase();
+      import { Crypto } from "https://deno.land/x/lucid/mod.ts";
+
+      const seedPhrase = Crypto.generateSeed();
       lucid.selectWalletFromSeed(seedPhrase);
       ```
 
       ```js { title="privateKey.js" }
-      const privateKey = lucid.utils.generatePrivateKey();
+      import { Crypto } from "https://deno.land/x/lucid/mod.ts";
+
+      const privateKey = Crypto.generatePrivateKey();
       lucid.selectWalletFromPrivateKey(privateKey);
       ```
 
-      ```js { title="view.js" }
-      lucid.selectWalletFrom({address:"addr..."})
+      ```js { title="readOnly.js" }
+      lucid.selectReadOnlyWallet({address:"addr..."})
       ```
 
 
       </lume-code>
 
-  - title: Convenient and secure datum usability
+  - title: Convenient and secure datum conversion
     description: |
       Instead of having to deal with raw plutus data Lucid allows you to leverage the underlying data structures and primitives of JavaScript.
     code: |
       <lume-code>
 
       ```ts { title="to.ts" }
-      const ListingSchema = Data.Object({
+      const Listing = Data.Object({
         owner: Data.Bytes(),
         amount: Data.Integer(),
         private: Data.Boolean(),
       });
-      type Listing = Data.Static<typeof ListingSchema>;
-      const Listing = ListingSchema as unknown as Listing;
+      type Listing = typeof Listing;
 
       const listing = Data.to(
         { owner: "31313131313131", amount: 5252352323n, private: false },

@@ -17,9 +17,9 @@ const rewardAddress = await lucid.wallet.rewardAddress();
 
 const tx = await lucid.newTx()
   .registerStake(rewardAddress)
-  .complete();
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -31,9 +31,9 @@ const rewardAddress = await lucid.wallet.rewardAddress();
 
 const tx = await lucid.newTx()
   .delegateTo(rewardAddress, "poolabc...")
-  .complete();
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -47,9 +47,9 @@ const delegation = await lucid.wallet.getDelegation();
 
 const tx = await lucid.newTx()
   .withdraw(rewardAddress, delegation.rewards)
-  .complete();
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -63,9 +63,9 @@ const rewardAddress = await lucid.wallet.rewardAddress();
 
 const tx = await lucid.newTx()
   .deregisterStake(rewardAddress)
-  .complete();
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
