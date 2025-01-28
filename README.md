@@ -134,7 +134,7 @@ deno task test
 
 ### Build Core
 
-The core library (instruction builder, crypto, hashing etc.) is written in Rust and compiled to WASM.
+The [core library]("./src/core/libs/lucid_core/") (instruction builder, crypto, hashing etc.) is written in Rust and compiled to WASM.
 
 ```
 deno task build:core
