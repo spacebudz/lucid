@@ -19,6 +19,9 @@ jobs:
       - name: Use Deno
         uses: denoland/setup-deno@v2
 
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+
       - name: Build Core
         run: deno task build:core
 
