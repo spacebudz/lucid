@@ -201,9 +201,6 @@ deno task test:core
 ```
 
 ### Docs
-
-[View docs](https://doc.deno.land/https://deno.land/x/lucid/mod.ts) 📖
-
 You can generate documentation with:
 
 ```
