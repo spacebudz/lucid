@@ -1,8 +1,4 @@
-import {
-  decode,
-  decodeString,
-  encodeToString,
-} from "https://deno.land/std@0.100.0/encoding/hex.ts";
+import { decodeHex, encodeHex } from "jsr:@std/encoding/hex";
 import {
   Addresses,
   type Assets,
@@ -15,16 +11,16 @@ import {
 import { crc8 } from "../misc/crc8.ts";
 
 export function fromHex(hex: string): Uint8Array {
-  return decodeString(hex);
+  return decodeHex(hex);
 }
 
 export function toHex(bytes: Uint8Array): string {
-  return encodeToString(bytes);
+  return encodeHex(bytes);
 }
 
 /** Convert a Hex encoded string to a Utf-8 encoded string. */
 export function toText(hex: string): string {
-  return new TextDecoder().decode(decode(new TextEncoder().encode(hex)));
+  return new TextDecoder().decode(fromHex(hex));
 }
 
 /** Convert a Utf-8 encoded string to a Hex encoded string. */

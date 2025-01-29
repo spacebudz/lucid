@@ -218,25 +218,25 @@ Deno.test("json datum to cbor datum", () => {
   assertEquals(cborDatum, Codec.encodeData(jsonDatum as DataJson));
 });
 
-Deno.test("Basic Merkle tree", () => {
+Deno.test("Basic Merkle tree", async () => {
   const data = [new Uint8Array([0]), new Uint8Array([1])];
-  const merkleTree = new MerkleTree(data);
+  const merkleTree = await MerkleTree.new(data);
   const rootHash = merkleTree.rootHash();
-  const proof = merkleTree.getProof(data[0]);
-  assert(MerkleTree.verify(data[0], rootHash, proof));
+  const proof = await merkleTree.getProof(data[0]);
+  assert(await MerkleTree.verify(data[0], rootHash, proof));
   assertEquals(merkleTree.size(), 3);
 });
 
-Deno.test("Merkle tree property test", () => {
-  fc.assert(
-    fc.property(
+Deno.test("Merkle tree property test", async () => {
+  await fc.assert(
+    fc.asyncProperty(
       fc.array(fc.uint8Array(), { minLength: 1 }),
-      (data: Uint8Array[]) => {
-        const merkleTree = new MerkleTree(data);
+      async (data: Uint8Array[]) => {
+        const merkleTree = await MerkleTree.new(data);
         const rootHash = merkleTree.rootHash();
         const index = Math.floor(Math.random() * data.length);
-        const proof = merkleTree.getProof(data[index]);
-        assert(MerkleTree.verify(data[index], rootHash, proof));
+        const proof = await merkleTree.getProof(data[index]);
+        assert(await MerkleTree.verify(data[index], rootHash, proof));
         assertEquals(
           merkleTree.size(),
           Math.max(0, data.length + (data.length - 1)),
