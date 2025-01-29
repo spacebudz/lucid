@@ -126,6 +126,60 @@ const tx = await lucid
 
 See [more examples](./tests/data.test.ts)
 
+### Instructions
+
+Lucid transactions can be converted into instructions, which are JSON, making them highly portable.
+
+```js
+const instructions = await lucid.newTx()
+  .delegateTo("{{own}}", "pool...")
+  .payTo("addr_test1...", { lovelace: 1000000n })
+  .toInstructions();
+```
+
+The above transaction can be converted into the following object:
+
+```js
+[
+  {
+    "type": "DelegateTo",
+    "delegation": {
+      "rewardAddress": "stake...",
+      "poolId": "pool..."
+    },
+    "redeemer": undefined
+  },
+  {
+    "type": "PayTo",
+    "address": "addr_test1...",
+    "assets": { "lovelace": 1000000n }
+  }
+]
+```
+
+Consume the instructions in Lucid:
+
+```js
+const tx = await lucid.fromInstructions([
+  {
+    "type": "DelegateTo",
+    "delegation": {
+      "rewardAddress": "stake...",
+      "poolId": "pool...",
+    },
+    "redeemer": undefined,
+  },
+  {
+    "type": "PayTo",
+    "address": "addr_test1...",
+    "assets": { "lovelace": 1000000n },
+  },
+]);
+```
+
+You can avoid address resolution if you use `.toPartialInstructions()` instead of `.toInstructions()`.\
+Then Lucid will resolve `{{own}}` fields with the addresses of the selected wallet.
+
 ### Test
 
 ```
