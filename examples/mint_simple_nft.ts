@@ -1,4 +1,11 @@
-import { Addresses, Blockfrost, Codec, fromText, Lucid } from "../mod.ts";
+import {
+  Addresses,
+  Blockfrost,
+  Cardano,
+  Codec,
+  fromText,
+  Lucid,
+} from "../mod.ts";
 
 /*
   MintSimpleNFT Example
@@ -12,7 +19,7 @@ const lucid = new Lucid({
   ),
 });
 
-const api = await globalThis.cardano.nami.enable();
+const api = await (globalThis as any).cardano.nami.enable();
 // Assumes you are in a browser environment
 lucid.selectWalletFromApi(api);
 
