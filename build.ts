@@ -42,7 +42,7 @@ try {
       type: "module",
       main: "./esm/mod.js",
       engines: {
-        node: ">=18",
+        node: ">=20",
       },
     },
     postBuild: async () => {

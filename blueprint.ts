@@ -1,3 +1,8 @@
+/**
+ * This module contains functions to generate blueprints from plutus.json files.
+ * @module
+ */
+
 import type { Json } from "./mod.ts";
 
 type Blueprint = {

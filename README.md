@@ -4,15 +4,7 @@
   <p align="center">Lucid is a library designed to simplify creating Cardano transactions and writing off-chain code for Plutus contracts.</p>
 
 <p align="center">
-    <a href="https://www.npmjs.com/package/lucid-cardano">
-      <img src="https://img.shields.io/npm/v/lucid-cardano?style=for-the-badge" />
-    </a>
-     <a href="https://doc.deno.land/https://deno.land/x/lucid/mod.ts">
-      <img src="https://img.shields.io/readthedocs/cardano-lucid?style=for-the-badge" />
-    </a>
-    <a href="https://www.npmjs.com/package/lucid-cardano">
-      <img src="https://img.shields.io/npm/dw/lucid-cardano?style=for-the-badge" />
-    </a>
+    <img src="https://img.shields.io/jsr/v/@spacebudz/lucid?style=for-the-badge" />
     <img src="https://img.shields.io/npm/l/lucid-cardano?style=for-the-badge" />
     <a href="https://twitter.com/spacebudznft">
       <img src="https://img.shields.io/twitter/follow/spacebudznft?style=for-the-badge&logo=twitter" />
@@ -25,16 +17,22 @@
 
 #### Deno 🦕
 
-For JavaScript and TypeScript
-
+```js
+import { Lucid } from "jsr:@spacebudz/lucid";
+```
+or
 ```js
 import { Lucid } from "https://deno.land/x/lucid/mod.ts";
 ```
 
-#### NPM
+#### Node.js
 
 ```
-npm install lucid-cardano
+npx jsr add @spacebudz/lucid
+```
+or
+```
+npm install lucid-cardano (legacy, will likely be obsolete)
 ```
 
 `--experimental-wasm-modules` flag needs to be set in Node.js as well as `{ "type": "module" }` in package.json

@@ -29,7 +29,7 @@ If you use Visual Studio Code, it's highly recommended to install the
 
 ## Using NPM/Node.js
 
-Make sure you have [Node.js](https://nodejs.org/en/) >= 18 installed.
+Make sure you have [Node.js](https://nodejs.org/en/) >= 20 installed.
 
 Add Lucid to your project:
 
