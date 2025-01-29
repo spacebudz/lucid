@@ -91,8 +91,8 @@ const datum = await lucid.provider.getDatum("<datum_hash>");
 ```
 
 For convenience you can also query datums directly from utxos. When you query
-the datum for a UTxO, Lucid automatically adds the datum to the UTxO. This means
-that subsequent queries for the same UTxO will return the result instantly,
+the datum for a utxo, Lucid automatically adds the datum to the utxo. This means
+that subsequent queries for the same utxo will return the result instantly,
 without the need for an additional network request.
 
 ```js
