@@ -8,6 +8,10 @@ import {
   toHex,
 } from "../mod.ts";
 
+type DeepRemoveReadonly<T> = T extends object
+  ? { -readonly [K in keyof T]: DeepRemoveReadonly<T[K]> }
+  : T;
+
 export class Constr<T> {
   index: number;
   fields: T[];
@@ -30,7 +34,7 @@ export const Data = {
     options?:
       | { minLength?: number; maxLength?: number; enum?: string[] }
       | number,
-  ) => {
+  ): string => {
     const bytes: Record<string, unknown> = { dataType: "bytes" };
     if (typeof options === "number") {
       bytes.minLength = options;
@@ -42,8 +46,8 @@ export const Data = {
     }
     return bytes as unknown as string;
   },
-  Integer: () => ({ dataType: "integer" } as unknown as bigint),
-  Boolean: () => ({
+  Integer: (): bigint => ({ dataType: "integer" } as unknown as bigint),
+  Boolean: (): boolean => ({
     anyOf: [
       {
         title: "False",
@@ -65,7 +69,7 @@ export const Data = {
     options?:
       | { minItems?: number; maxItems?: number; uniqueItems?: boolean }
       | number,
-  ) => {
+  ): Array<T> => {
     const array: Record<string, unknown> = { dataType: "list", items };
     if (typeof options === "number") {
       array.minItems = options;
@@ -81,7 +85,7 @@ export const Data = {
     keys: K,
     values: V,
     options?: { minItems?: number; maxItems?: number } | number,
-  ) => {
+  ): Map<K, V> => {
     const map: Record<string, unknown> = {
       dataType: "map",
       keys,
@@ -100,7 +104,7 @@ export const Data = {
   Object: <T extends object>(
     properties: T,
     options?: { hasConstr?: boolean },
-  ) => {
+  ): T => {
     const object = {
       anyOf: [{
         dataType: "constructor",
@@ -121,7 +125,9 @@ export const Data = {
       options.hasConstr;
     return object as unknown as T;
   },
-  Enum: <const T extends unknown[]>(...items: T) => {
+  Enum: <const T extends unknown[]>(
+    ...items: T
+  ): DeepRemoveReadonly<T[number]> => {
     const union = {
       anyOf: items.flatMap((item, index) => {
         if (typeof item === "string") {
@@ -166,16 +172,12 @@ export const Data = {
       }),
     };
 
-    type DeepRemoveReadonly<T> = T extends object
-      ? { -readonly [K in keyof T]: DeepRemoveReadonly<T[K]> }
-      : T;
-
     return union as unknown as DeepRemoveReadonly<T[number]>;
   },
   Tuple: <T extends unknown[]>(
     items: [...T],
     options?: { hasConstr?: boolean },
-  ) => {
+  ): T => {
     const tuple: Record<string, unknown> = {
       dataType: "list",
       items,
@@ -187,7 +189,7 @@ export const Data = {
     }
     return tuple as unknown as T;
   },
-  Nullable: <T>(item: T) => {
+  Nullable: <T>(item: T): T | null => {
     return {
       anyOf: [
         {

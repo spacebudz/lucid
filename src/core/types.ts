@@ -165,8 +165,3 @@ export type Cardano = {
     isEnabled(): Promise<boolean>;
   };
 };
-
-declare global {
-  // deno-lint-ignore no-var
-  var cardano: Cardano;
-}

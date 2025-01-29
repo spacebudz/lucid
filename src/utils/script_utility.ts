@@ -53,7 +53,7 @@ export class ScriptUtility<T extends unknown[] = Data[]> {
     return this.lucid.utils.scriptToRewardAddress(this.script);
   }
 
-  toString() {
+  toString(): string {
     return this.script.script;
   }
 }

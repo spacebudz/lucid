@@ -25,7 +25,7 @@ export class MerkleTree {
   }
 
   /** Construct Merkle tree from sha256 hashes */
-  static fromHashes(hashes: Array<Hash>) {
+  static fromHashes(hashes: Array<Hash>): MerkleTree {
     return new this(hashes);
   }
 
