@@ -401,6 +401,7 @@ export class Lucid {
     },
   ): Lucid {
     const index = options?.index || 0;
+    if (index < 0) throw new Error("Index cannot be negative");
     const paymentDetails = Crypto.seedToDetails(seed, index, "Payment");
     const delegationDetails = options?.addressType === "Enterprise"
       ? null
