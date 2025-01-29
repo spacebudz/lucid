@@ -13,7 +13,7 @@
   "nodeModulesDir": "none",
 
   "name": "@spacebudz/lucid",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "license": "MIT",
   "exports": {
     ".": "./mod.ts",
