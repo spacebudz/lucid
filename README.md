@@ -178,7 +178,7 @@ const tx = await lucid.fromInstructions([
 ```
 
 You can avoid address resolution if you use `.toPartialInstructions()` instead of `.toInstructions()`.\
-Then Lucid will resolve `{{own}}` fields with the addresses of the selected wallet.
+Then Lucid will resolve `{{own}}` fields with the addresses of the selected wallet during consumption of instructions.
 
 ### Test
 
