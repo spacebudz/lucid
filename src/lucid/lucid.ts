@@ -231,7 +231,7 @@ export class Lucid {
   }
 
   /** Query CIP-0068 metadata for a specifc asset. */
-  async metadataOf<T = Json>(unit: string): Promise<T> {
+  async metadataOf(unit: string): Promise<Json> {
     const { policyId, name, label } = fromUnit(unit);
     switch (label) {
       case 222:

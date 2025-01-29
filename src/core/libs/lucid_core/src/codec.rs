@@ -595,8 +595,11 @@ impl TryFrom<Assets> for Value {
                                         .map(|(asset_name, quantity)| {
                                             Ok((
                                                 asset_name.into(),
-                                                PositiveCoin::try_from(quantity as u64)
-                                                    .map_err(CoreError::msg)?,
+                                                PositiveCoin::try_from(
+                                                    u64::try_from(quantity)
+                                                        .map_err(CoreError::msg)?,
+                                                )
+                                                .map_err(CoreError::msg)?,
                                             ))
                                         })
                                         .collect::<CoreResult<_>>()?,
@@ -778,7 +781,7 @@ impl TryFrom<TransactionOutput> for Utxo {
                                                 .map(|(asset_name, quantity)| {
                                                     Ok((
                                                         asset_name.clone(),
-                                                        PositiveCoin::try_from(*quantity as u64)
+                                                        PositiveCoin::try_from(*quantity)
                                                             .map_err(CoreError::msg)?,
                                                     ))
                                                 })
@@ -803,27 +806,25 @@ impl TryFrom<TransactionOutput> for Utxo {
                 output.script_ref,
             ),
         };
-        Ok(Utxo {
+        Ok(Utxo::from_output(
             // placeholder value for input
-            tx_hash: "00".repeat(32).to_string(),
-            output_index: 0,
-            address: Address::from_bytes(&output.0).unwrap().to_bech32().unwrap(),
-            assets: output.1.into(),
-            datum: match &output.2 {
-                Some(option) => match option {
-                    DatumOption::Data(d) => Some(hex::encode(d.0.encode_fragment().unwrap())),
-                    _ => None,
-                },
-                _ => None,
-            },
-            datum_hash: match &output.2 {
+            Address::from_bytes(&output.0).unwrap().to_bech32().unwrap(),
+            output.1.into(),
+            match &output.2 {
                 Some(option) => match option {
                     DatumOption::Hash(h) => Some(h.to_string()),
                     _ => None,
                 },
                 _ => None,
             },
-            script_ref: match &output.3 {
+            match &output.2 {
+                Some(option) => match option {
+                    DatumOption::Data(d) => Some(hex::encode(d.0.encode_fragment().unwrap())),
+                    _ => None,
+                },
+                _ => None,
+            },
+            match &output.3 {
                 Some(script_ref) => match &script_ref.0 {
                     PseudoScript::NativeScript(native_script) => Some(Script::Native {
                         script: hex::encode(native_script.encode_fragment().unwrap()),
@@ -840,7 +841,7 @@ impl TryFrom<TransactionOutput> for Utxo {
                 },
                 _ => None,
             },
-        })
+        ))
     }
 }
 
@@ -1125,8 +1126,12 @@ impl<A> ConstrConversion<A> for Constr<A> {
 
 #[cfg(test)]
 mod tests {
+    use std::cmp::Ordering;
+
     use crate::codec::ConstrConversion;
     use pallas_primitives::{Constr, PlutusData};
+
+    use super::Assets;
 
     #[test]
     fn compact_tag_range() {
@@ -1173,5 +1178,25 @@ mod tests {
             Constr::from_index(127, Vec::<PlutusData>::new()).get_index(),
             127
         );
+    }
+
+    #[test]
+    fn test_partial_compare_assets() {
+        let assets1 = Assets::from([("lovelace".to_string(), 100), ("00".to_string(), 10)]);
+        let assets2 = Assets::from([("lovelace".to_string(), 100), ("00".to_string(), 12)]);
+        let assets3 = Assets::from([("lovelace".to_string(), 50), ("00".to_string(), 10)]);
+        let assets4 = Assets::from([
+            ("lovelace".to_string(), 50),
+            ("00".to_string(), 5),
+            ("11".to_string(), 5),
+        ]);
+
+        assert_eq!(assets1.partial_cmp(&assets1), Some(Ordering::Equal));
+        assert_eq!(assets1.partial_cmp(&assets2), Some(Ordering::Less));
+        assert_eq!(assets2.partial_cmp(&assets1), Some(Ordering::Greater));
+        assert_eq!(assets1.partial_cmp(&assets3), Some(Ordering::Greater));
+        assert_eq!(assets3.partial_cmp(&assets1), Some(Ordering::Less));
+        assert_eq!(assets1.partial_cmp(&assets4), None);
+        assert_eq!(assets4.partial_cmp(&assets1), None);
     }
 }

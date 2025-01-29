@@ -66,7 +66,7 @@ export class Tx {
 
   /**
    * All assets should be of the same policy id.
-   * You can chain mintAssets functions together if you need to mint assets with different policy ids.
+   * You can chain mint function calls together if you need to mint assets with different policy ids.
    * If the plutus script doesn't need a redeemer, you still need to specifiy the void redeemer.
    */
   mint(assets: Assets, redeemer?: string): Tx {
