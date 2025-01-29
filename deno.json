@@ -15,7 +15,10 @@
   "name": "@spacebudz/lucid",
   "version": "0.20.0",
   "license": "MIT",
-  "exports": "./mod.ts",
+  "exports": {
+    ".": "./mod.ts",
+    "./blueprint": "./blueprint.ts"
+  },
   "author": "Alessandro Konrad",
   "description": "Lucid is a library designed to simplify creating Cardano transactions and writing off-chain code for Plutus contracts.",
   "repository": "https://github.com/spacebudz/lucid"
