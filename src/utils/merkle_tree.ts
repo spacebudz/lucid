@@ -1,6 +1,6 @@
 // Haskell implementation: https://github.com/input-output-hk/hydra-poc/blob/master/plutus-merkle-tree/src/Plutus/MerkleTree.hs
 // TODO: get rid of async sha256
-import { concat, equals } from "jsr:@std/bytes";
+import { concat, equals } from "jsr:@std/bytes@1.0.4";
 import { toHex } from "./utils.ts";
 
 type MerkleNode = {

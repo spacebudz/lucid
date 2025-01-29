@@ -1,4 +1,4 @@
-import { decodeHex, encodeHex } from "jsr:@std/encoding/hex";
+import { decodeHex, encodeHex } from "jsr:@std/encoding@1.0.5/hex";
 import {
   Addresses,
   type Assets,
