@@ -105,6 +105,3 @@ const datum = await lucid.datumOf(scriptUtxo);
 ```js
 const protocolParameters = await lucid.provider.getProtocolParameters();
 ```
-
-[Provider API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Provider)\
-[Lucid API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Lucid)

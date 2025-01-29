@@ -65,5 +65,3 @@ const utxos = await lucid.wallet.getUtxos();
 ```js
 const delegation = await lucid.wallet.getDelegation();
 ```
-
-[Wallet API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Wallet)

@@ -39,5 +39,3 @@ stake addresses.
 ```js
 emulator.distributeRewards(100000000n);
 ```
-
-[Emulator Api reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Emulator)

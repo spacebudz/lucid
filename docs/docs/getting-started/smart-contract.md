@@ -139,8 +139,3 @@ const tx = await lucid
   .readFrom([scriptUtxo])
   .commit();
 ```
-
-[Tx API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Tx)\
-[TxComplete API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=TxComplete)\
-[TxSigned API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=TxSigned)\
-[Utils API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Utils)

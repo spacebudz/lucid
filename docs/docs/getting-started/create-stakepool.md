@@ -74,7 +74,3 @@ const signedTx = await tx.sign()
 
 const txHash = await signedTx.submit();
 ```
-
-[Tx API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Tx)\
-[TxComplete API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=TxComplete)\
-[TxSigned API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=TxSigned)
