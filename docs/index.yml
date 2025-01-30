@@ -126,6 +126,11 @@ usage:
         ),
       });
       ```
+      ```js { title="koios.js" }
+      import { Lucid, Koios } from "https://deno.land/x/lucid/mod.ts"
+
+      const lucid = await Lucid.new(new Koios("Preprod"), "Preprod");
+      ```
       ```js { title="kupmios.js" }
       import { Kupmios, Lucid } from "https://deno.land/x/lucid/mod.ts";
 

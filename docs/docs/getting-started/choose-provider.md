@@ -21,6 +21,12 @@ const lucid = new Lucid({
 });
 ```
 
+```js
+import { Lucid, Koios } from "https://deno.land/x/lucid/mod.ts";
+
+const lucid = await Lucid.new(new Koios("Preprod"), "Preprod");
+```
+
 ### Kupmios
 
 Kupmios is a mix of [Ogmios](https://ogmios.dev/) and
@@ -50,6 +56,19 @@ const lucid = new Lucid({
     turboSubmit: false, // Read about paid turbo transaction submission feature at https://docs.gomaestro.org/docs/Dapp%20Platform/Turbo%20Transaction.
   }),
 });
+```
+
+### Koios
+
+```js
+import { Lucid, Koios } from "https://deno.land/x/lucid/mod.ts";
+
+const lucid = await Lucid.new(
+  new Koios(
+    "https://prepod.koios.rest/api/v0", // For MAINNET: "https://api.koios.rest/api/v0".
+  ),
+  "Preprod", // For MAINNET: "Mainnet".
+);
 ```
 
 ### Custom
