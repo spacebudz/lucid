@@ -565,7 +565,8 @@ impl TryFrom<Assets> for Value {
     type Error = CoreErr;
     fn try_from(assets: Assets) -> Result<Self, Self::Error> {
         let mut assets_inner = assets.0.clone();
-        let lovelace = assets_inner.remove("lovelace").unwrap_or(0) as u64;
+        let lovelace = u64::try_from(assets_inner.remove("lovelace").unwrap_or(0))
+            .map_err(|_| CoreError::msg("lovelace cannot be negative"))?;
         if assets_inner.len() > 0 {
             let mut value: BTreeMap<Vec<u8>, BTreeMap<Vec<u8>, i128>> = BTreeMap::new();
             for (unit, quantity) in assets_inner.into_iter() {
