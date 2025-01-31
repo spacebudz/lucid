@@ -5,6 +5,7 @@ import {
   type Change,
   Data,
   type DatumVariant,
+  type DelegVariant,
   Hasher,
   type Instruction,
   InstructionBuilder,
@@ -126,17 +127,17 @@ export class Tx {
     return this;
   }
 
-  /** Delegate to a stake pool. */
+  /** Delegate to a stake pool or drep. */
   delegateTo(
     rewardAddress: string | "{{own}}",
-    poolId: string,
+    variant: DelegVariant,
     redeemer?: string,
   ): Tx {
     this.tasks.push(() => ({
       type: "DelegateTo",
       delegation: {
         rewardAddress,
-        poolId,
+        variant,
       },
       redeemer,
     }));

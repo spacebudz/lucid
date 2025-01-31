@@ -30,7 +30,7 @@ const txHash = await signedTx.submit();
 const rewardAddress = await lucid.wallet.rewardAddress();
 
 const tx = await lucid.newTx()
-  .delegateTo(rewardAddress, "poolabc...")
+  .delegateTo(rewardAddress, { Pool: "poolabc..." })
   .commit();
 
 const signedTx = await tx.sign().commit();

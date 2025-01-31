@@ -868,7 +868,16 @@ pub enum Certificate {
 #[serde(rename_all = "camelCase")]
 pub struct Delegation {
     pub reward_address: String,
-    pub pool_id: String,
+    pub variant: DelegVariant,
+}
+
+#[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum DelegVariant {
+    Abstain,
+    NoConfidence,
+    DRep(String),
+    Pool(String),
 }
 
 impl TryFrom<Certificate> for pallas_primitives::conway::Certificate {
@@ -878,12 +887,37 @@ impl TryFrom<Certificate> for pallas_primitives::conway::Certificate {
             Certificate::Delegation(delegation) => {
                 let credential =
                     Addresses::reward_address_to_credential(&delegation.reward_address)?;
-                let (_, pool_id_raw) =
-                    bech32::decode(&delegation.pool_id).map_err(CoreError::msg)?;
-                pallas_primitives::conway::Certificate::StakeDelegation(
-                    credential.try_into()?,
-                    pool_id_raw.as_slice().into(),
-                )
+                match delegation.variant {
+                    DelegVariant::Pool(id) => {
+                        let (_, id_raw) = bech32::decode(&id).map_err(CoreError::msg)?;
+                        pallas_primitives::conway::Certificate::StakeDelegation(
+                            credential.try_into()?,
+                            id_raw.as_slice().into(),
+                        )
+                    }
+                    variant => pallas_primitives::conway::Certificate::VoteDeleg(
+                        credential.try_into()?,
+                        match variant {
+                            DelegVariant::Abstain => pallas_primitives::conway::DRep::Abstain,
+                            DelegVariant::NoConfidence => {
+                                pallas_primitives::conway::DRep::NoConfidence
+                            }
+                            DelegVariant::DRep(id) => {
+                                let (_, id_raw) = bech32::decode(&id).map_err(CoreError::msg)?;
+                                match id_raw[0] {
+                                    0b0010_0010 => {
+                                        pallas_primitives::conway::DRep::Key(id_raw[1..].into())
+                                    }
+                                    0b0010_0011 => {
+                                        pallas_primitives::conway::DRep::Script(id_raw[1..].into())
+                                    }
+                                    _ => return Err(CoreError::msg("Invalid DRep id")),
+                                }
+                            }
+                            _ => unreachable!(),
+                        },
+                    ),
+                }
             }
             Certificate::StakeRegistration { reward_address } => {
                 let credential = Addresses::reward_address_to_credential(&reward_address)?;

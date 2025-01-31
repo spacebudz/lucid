@@ -44,8 +44,10 @@ export type Certificate = ({ type: "Delegation" } & Delegation) | { type: "Stake
 
 export interface Delegation {
     rewardAddress: string;
-    poolId: string;
+    variant: DelegVariant;
 }
+
+export type DelegVariant = "Abstain" | "NoConfidence" | { DRep: string } | { Pool: string };
 
 export interface PoolRegistration {
     poolId: string;

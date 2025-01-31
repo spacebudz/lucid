@@ -5,7 +5,7 @@ use super::codec::{Certificate, Delegation, Script, Utxos};
 use super::error::{CoreError, CoreResult};
 use super::instruction_builder::BuilderInput;
 use crate::addresses::Network;
-use crate::codec::Utxo;
+use crate::codec::{DelegVariant, Utxo};
 use crate::hasher::Hasher;
 use bech32::Hrp;
 use pallas_crypto::key::ed25519::{PublicKey, Signature};
@@ -623,7 +623,7 @@ impl EmulatorState {
 
                         certificate_requests.push(Certificate::Delegation(Delegation {
                             reward_address,
-                            pool_id,
+                            variant: DelegVariant::Pool(pool_id),
                         }));
                     }
                     _ => {}
@@ -757,7 +757,7 @@ impl EmulatorState {
                 }
                 Certificate::Delegation(Delegation {
                     reward_address,
-                    pool_id,
+                    variant: DelegVariant::Pool(pool_id),
                 }) => {
                     if let Some(staking) = self.staking.get_mut(&reward_address) {
                         staking.pool_id = Some(pool_id);

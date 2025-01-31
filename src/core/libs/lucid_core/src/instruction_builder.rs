@@ -218,6 +218,7 @@ impl InstructionBuilder {
                         self.add_input(utxo, redeemer.clone())?;
                     }
                 }
+
                 Instruction::ReadFrom { utxos } => {
                     for utxo in utxos {
                         if let (Some(_), Some(data)) = (&utxo.datum_hash, &utxo.datum) {
@@ -238,6 +239,7 @@ impl InstructionBuilder {
                             });
                     }
                 }
+
                 Instruction::Mint { assets, redeemer } => {
                     let policy_id = assets.get_policy_id()?;
 
@@ -268,6 +270,7 @@ impl InstructionBuilder {
                         self.mint = None;
                     }
                 }
+
                 Instruction::PayTo {
                     assets,
                     address,
@@ -315,6 +318,7 @@ impl InstructionBuilder {
 
                     self.outputs.push(utxo);
                 }
+
                 Instruction::PayToContract {
                     assets,
                     address,
@@ -361,6 +365,7 @@ impl InstructionBuilder {
 
                     self.outputs.push(utxo);
                 }
+
                 Instruction::DelegateTo {
                     delegation,
                     redeemer,
@@ -384,6 +389,7 @@ impl InstructionBuilder {
                             redeemer,
                         })
                 }
+
                 Instruction::RegisterStake { reward_address } => {
                     validate_network(&reward_address, &self.network)?;
 
@@ -397,6 +403,7 @@ impl InstructionBuilder {
                             redeemer: None,
                         })
                 }
+
                 Instruction::DeregisterStake {
                     reward_address,
                     redeemer,
@@ -423,6 +430,7 @@ impl InstructionBuilder {
                             redeemer,
                         })
                 }
+
                 Instruction::RegisterPool(pool_registration) => {
                     validate_network(&pool_registration.reward_address, &self.network)?;
 
@@ -453,6 +461,7 @@ impl InstructionBuilder {
                             redeemer: None,
                         })
                 }
+
                 Instruction::UpdatePool(pool_registration) => {
                     validate_network(&pool_registration.reward_address, &self.network)?;
 
@@ -480,6 +489,7 @@ impl InstructionBuilder {
                             redeemer: None,
                         })
                 }
+
                 Instruction::RetirePool(pool_retirement) => {
                     let (_, pool_id_raw) =
                         bech32::decode(&pool_retirement.pool_id).map_err(CoreError::msg)?;
@@ -492,6 +502,7 @@ impl InstructionBuilder {
                             redeemer: None,
                         })
                 }
+
                 Instruction::Withdraw {
                     withdrawal,
                     redeemer,
@@ -518,6 +529,7 @@ impl InstructionBuilder {
                         },
                     );
                 }
+
                 Instruction::AddSigner { key_hash } => {
                     self.used_keys
                         .insert(key_hash.parse().map_err(CoreError::msg)?);
@@ -525,20 +537,24 @@ impl InstructionBuilder {
                         .get_or_insert_with(BTreeSet::new)
                         .insert(AddrKeyhash::from_str(&key_hash).map_err(CoreError::msg)?);
                 }
+
                 Instruction::AddNetworkId { id } => {
                     self.tx.transaction_body.network_id = Some(
                         id.try_into()
                             .map_err(|_| CoreError::msg("Casting network id failed"))?,
                     )
                 }
+
                 Instruction::ValidFrom { unix_time } => {
                     let slots = unix_time_to_slots(unix_time, &self.slot_config);
                     self.tx.transaction_body.validity_interval_start = Some(slots);
                 }
+
                 Instruction::ValidTo { unix_time } => {
                     let slots = unix_time_to_slots(unix_time, &self.slot_config);
                     self.tx.transaction_body.ttl = Some(slots);
                 }
+
                 Instruction::AttachMetadata {
                     metadata: (label, value),
                 } => {
@@ -546,6 +562,7 @@ impl InstructionBuilder {
                         .get_or_insert_with(BTreeMap::new)
                         .insert(label, Either::Left(value));
                 }
+
                 Instruction::AttachMetadataWithConversion {
                     metadata: (label, value),
                 } => {
@@ -553,6 +570,7 @@ impl InstructionBuilder {
                         .get_or_insert_with(BTreeMap::new)
                         .insert(label, Either::Right(value));
                 }
+
                 Instruction::AttachScript { script } => {
                     let script = script.try_double_cbor()?;
 
@@ -564,9 +582,11 @@ impl InstructionBuilder {
                         .get_or_insert_with(HashMap::new)
                         .insert(hash, script);
                 }
+
                 Instruction::WithChangeTo(change) => {
                     self.change = change;
                 }
+
                 Instruction::WithoutCoinSelection => {
                     self.without_coin_selection = true;
                 }
@@ -1927,7 +1947,8 @@ mod tests {
     use crate::{
         addresses::{Addresses, Network},
         codec::{
-            Assets, AuxMetadata, ConstrConversion, Delegation, Script, Utxo, Utxos, Withdrawal,
+            Assets, AuxMetadata, ConstrConversion, DelegVariant, Delegation, Script, Utxo, Utxos,
+            Withdrawal,
         },
         hasher::Hasher,
         instruction_builder::DatumVariant,
@@ -2132,8 +2153,9 @@ mod tests {
                         reward_address:
                             "stake1uxk96skvmq8sx5gezj4jwh0pakswf8thnrw5musz2rja48c0sfdmh"
                                 .to_string(),
-                        pool_id: "pool19f6guwy97mmnxg9dz65rxyj8hq07qxud886hamyu4fgfz7dj9gl"
-                            .to_string(),
+                        variant: DelegVariant::Pool(
+                            "pool19f6guwy97mmnxg9dz65rxyj8hq07qxud886hamyu4fgfz7dj9gl".to_string(),
+                        ),
                     },
                     redeemer: None,
                 },
@@ -2327,8 +2349,9 @@ mod tests {
                 Instruction::DelegateTo {
                     delegation: Delegation {
                         reward_address: reward_address.clone(),
-                        pool_id: "pool19f6guwy97mmnxg9dz65rxyj8hq07qxud886hamyu4fgfz7dj9gl"
-                            .to_string(),
+                        variant: DelegVariant::Pool(
+                            "pool19f6guwy97mmnxg9dz65rxyj8hq07qxud886hamyu4fgfz7dj9gl".to_string(),
+                        ),
                     },
                     redeemer: Some(redeemer.clone()),
                 },

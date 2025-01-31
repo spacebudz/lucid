@@ -172,7 +172,9 @@ Deno.test("Reward withdrawal", async () => {
   });
   // Delegation
   await lucid.awaitTx(
-    await (await (await lucid.newTx().delegateTo(rewardAddress!, poolId)
+    await (await (await lucid.newTx().delegateTo(rewardAddress!, {
+      Pool: poolId,
+    })
       .commit())
       .sign().commit()).submit(),
   );
