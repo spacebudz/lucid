@@ -10,16 +10,16 @@ JavaScript runtimes too.
 ## Using Deno
 
 Make sure you have
-[Deno](https://deno.land/manual@v1.29.1/getting_started/installation) installed.
+[Deno](https://docs.deno.com/runtime/getting_started/installation/) installed.
 
 ```js
 import { Lucid } from "https://deno.land/x/lucid/mod.ts";
 
-const lucid = await Lucid.new();
+const lucid = new Lucid();
 ```
 
 **Hint:** We always recommend importing libraries including the version tag:\
-e.g. `https://deno.land/x/lucid@0.8.3/mod.ts`\
+e.g. `https://deno.land/x/lucid@0.20.0/mod.ts`\
 For simplicity we leave it out in the documentation.
 
 ### Visual Studio Code configuration
@@ -29,7 +29,7 @@ If you use Visual Studio Code, it's highly recommended to install the
 
 ## Using NPM/Node.js
 
-Make sure you have [Node.js](https://nodejs.org/en/) installed.
+Make sure you have [Node.js](https://nodejs.org/en/) >= 20 installed.
 
 Add Lucid to your project:
 
@@ -42,11 +42,10 @@ then import it:
 ```js
 import { Lucid } from "lucid-cardano";
 
-const lucid = await Lucid.new();
+const lucid = new Lucid();
 ```
 
-**Note:** Lucid is an ES Module. You need to set `{"type" : "module"}` in your
-`package.json`.\
+**Note:** Lucid is an ES Module. `--experimental-wasm-modules` flag needs to be set in Node.js as well as `{ "type": "module" }` in package.json.\
 To bundle your NPM project you may need to adjust your bundler. For instance
 when using [Webpack](https://webpack.js.org/) you need to enbale in the
 `webpack.config.json`:
@@ -54,20 +53,7 @@ when using [Webpack](https://webpack.js.org/) you need to enbale in the
 ```json
 experiments: {
     "asyncWebAssembly": true,
-    "topLevelAwait": true,
-    "layers": true // optional, with some bundlers/frameworks it doesn't work without
   }
-```
-
-## Using Web
-
-Create a html file and import Lucid in a `<script>` tag:
-
-```html
-<script type="module">
-import { Lucid } from "https://unpkg.com/lucid-cardano/web/mod.js"
-const lucid = await Lucid.new();
-</script>
 ```
 
 ## Build locally

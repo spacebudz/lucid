@@ -1,4 +1,2 @@
-src/core/libs/cardano_multiplatform_lib/cardano_multiplatform_lib.generated.js linguist-detectable=false
-src/core/libs/cardano_multiplatform_lib/nodejs/cardano_multiplatform_lib.generated.js linguist-detectable=false
-src/core/libs/cardano_message_signing/cardano_message_signing.generated.js linguist-detectable=false
-src/core/libs/cardano_message_signing/nodejs/cardano_message_signing.generated.js linguist-detectable=false
+src/core/libs/lucid_core/pkg/lucid_core_bg.js linguist-detectable=false
+src/core/libs/message_signing/pkg/message_signing_bg.js linguist-detectable=false

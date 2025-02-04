@@ -16,7 +16,7 @@ const emulator = new Emulator([{
   assets: { lovelace: 3000000000n },
 }]);
 
-const lucid = await Lucid.new(emulator);
+const lucid = new Lucid({ provider: emulator });
 ```
 
 ## Working with time ranges
@@ -28,7 +28,7 @@ not live and steps are only taken when requested. Instead you have to use
 ```js
 const tx = await lucid.newTx()
   .validTo(emulator.now())
-  .complete();
+  .commit();
 ```
 
 ## Distribute staking rewards
@@ -39,15 +39,3 @@ stake addresses.
 ```js
 emulator.distributeRewards(100000000n);
 ```
-
-## Logging state
-
-At any point in the emulation you can call the following code to get the current
-state of the emulated blockchain. It gives you insights into the distribution of
-funds across addresses and shows you the current block height and slot.
-
-```js
-emulator.log();
-```
-
-[Emulator Api reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Emulator)

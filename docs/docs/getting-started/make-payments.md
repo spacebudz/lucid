@@ -12,27 +12,27 @@ order: 2
 
 ```js
 const tx = await lucid.newTx()
-  .payToAddress("addr_test...", { lovelace: 5000000n })
-  .complete();
+  .payTo("addr_test...", { lovelace: 5000000n })
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
 
 ## Multiple recipients
 
-Each `payToAddress` call creates new UTxO, also for same addresses.\
+Each `payTo` call creates new UTxO, also for same addresses.\
 Lucid takes the order of outputs into account.
 
 ```js
 const tx = await lucid.newTx()
-  .payToAddress("addr_testa...", { lovelace: 5000000n })
-  .payToAddress("addr_testb...", { lovelace: 5000000n })
-  .payToAddress("addr_testc...", { lovelace: 5000000n })
-  .complete();
+  .payTo("addr_testa...", { lovelace: 5000000n })
+  .payTo("addr_testb...", { lovelace: 5000000n })
+  .payTo("addr_testc...", { lovelace: 5000000n })
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -46,10 +46,10 @@ const policyId = "00...";
 const assetName = "MyToken";
 
 const tx = await lucid.newTx()
-  .payToAddress("addr_test...", { [policyId + fromText(assetName)]: 10n })
-  .complete();
+  .payTo("addr_test...", { [policyId + fromText(assetName)]: 10n })
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -58,11 +58,11 @@ const txHash = await signedTx.submit();
 
 ```js
 const tx = await lucid.newTx()
-  .payToAddress("addr_test...", { lovelace: 5000000n })
+  .payTo("addr_test...", { lovelace: 5000000n })
   .attachMetadata(1, { msg: "Hello from Lucid." })
-  .complete();
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -77,17 +77,12 @@ datums.
 
 ```js
 const tx = await lucid.newTx()
-  .payToAddressWithData("addr_test...", Data.to("31313131"), {
+  .payToWithData("addr_test...", Data.to("31313131"), {
     lovelace: 5000000n,
   })
-  .complete();
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
-
-[Tx API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Tx)\
-[TxComplete API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=TxComplete)\
-[TxSigned API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=TxSigned)\
-[Data API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Data)

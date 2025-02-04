@@ -17,9 +17,9 @@ const rewardAddress = await lucid.wallet.rewardAddress();
 
 const tx = await lucid.newTx()
   .registerStake(rewardAddress)
-  .complete();
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -30,10 +30,10 @@ const txHash = await signedTx.submit();
 const rewardAddress = await lucid.wallet.rewardAddress();
 
 const tx = await lucid.newTx()
-  .delegateTo(rewardAddress, "poolabc...")
-  .complete();
+  .delegateTo(rewardAddress, { Pool: "poolabc..." })
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -47,9 +47,9 @@ const delegation = await lucid.wallet.getDelegation();
 
 const tx = await lucid.newTx()
   .withdraw(rewardAddress, delegation.rewards)
-  .complete();
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
@@ -63,13 +63,9 @@ const rewardAddress = await lucid.wallet.rewardAddress();
 
 const tx = await lucid.newTx()
   .deregisterStake(rewardAddress)
-  .complete();
+  .commit();
 
-const signedTx = await tx.sign().complete();
+const signedTx = await tx.sign().commit();
 
 const txHash = await signedTx.submit();
 ```
-
-[Tx API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=Tx)\
-[TxComplete API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=TxComplete)\
-[TxSigned API reference](https://deno.land/x/lucid@0.10.1/mod.ts?s=TxSigned)

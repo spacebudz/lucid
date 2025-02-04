@@ -6,8 +6,6 @@
 
 - #### Avoid external dependencies. The less dependencies the easier Lucid is interoperable between Browser, Node.js and Deno. But Deno dependencies are fine most of the time because they are mostly written in a browser compatible way.
 
-- #### Avoid exposing functions and arguments directly from the `cardano-multiplatform-lib` or `message-signing` library. Rather wrap them and expose types from JavaScript like `string`, `number` or `object`.
-
 - #### Add tests to the `tests` folder.
 
 - #### Always run and test the code with the latest Deno version. Simply do `deno upgrade` to get the latest version.

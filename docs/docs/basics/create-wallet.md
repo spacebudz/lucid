@@ -10,7 +10,9 @@ section we are using the private key method.
 In case you do not have private key yet, you can generate one with Lucid:
 
 ```js
-const privateKey = lucid.utils.generatePrivateKey(); // Bech32 encoded private key
+import { Addresses } from "https://deno.land/x/lucid/mod.ts";
+
+const privateKey = Addresses.generatePrivateKey(); // Extended bech32 encoded private key
 console.log(privateKey);
 ```
 
