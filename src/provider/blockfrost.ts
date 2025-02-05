@@ -177,10 +177,20 @@ export class Blockfrost implements Provider {
       { headers: { project_id: this.projectId, lucid } },
     ).then((res) => res.json());
     if (!result || result.error) {
-      return { poolId: null, rewards: 0n };
+      return { poolId: null, drep: null, rewards: 0n };
     }
+
+    const drep: ActiveDelegation["drep"] = result.drep_id
+      ? result.drep_id.includes("abstain")
+        ? "Abstain"
+        : result.drep_id.includes("confidence")
+        ? "NoConfidence"
+        : { Id: result.drep_id }
+      : null;
+
     return {
       poolId: result.pool_id || null,
+      drep,
       rewards: BigInt(result.withdrawable_amount),
     };
   }

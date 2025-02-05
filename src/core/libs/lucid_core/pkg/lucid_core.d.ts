@@ -88,7 +88,10 @@ export interface Staking {
     registered: boolean;
     rewards: number;
     poolId: string | undefined;
+    drep: DRep | undefined;
 }
+
+export type DRep = "Abstain" | "NoConfidence" | { Id: string };
 
 export type Instructions = Instruction[];
 

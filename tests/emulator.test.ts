@@ -150,14 +150,17 @@ Deno.test("Mint asset in slot range", async () => {
 Deno.test("Reward withdrawal", async () => {
   const rewardAddress = await lucid.wallet.rewardAddress();
   const poolId = "pool1jsa3rv0dqtkv2dv2rcx349yfx6rxqyvrnvdye4ps3wxyws6q95m";
+  const drep = "drep1ygae5pgpnzwv7snru3cy09wsm55gl0qrkrpt0wude5gd98gjvfmh7";
   const REWARD_AMOUNT = 100000000n;
   assertEquals(await lucid.wallet.getDelegation(), {
     poolId: null,
+    drep: null,
     rewards: 0n,
   });
   emulator.distributeRewards(REWARD_AMOUNT);
   assertEquals(await lucid.wallet.getDelegation(), {
     poolId: null,
+    drep: null,
     rewards: 0n,
   });
   // Registration
@@ -165,9 +168,19 @@ Deno.test("Reward withdrawal", async () => {
     await (await (await lucid.newTx().registerStake(rewardAddress!).commit())
       .sign().commit()).submit(),
   );
+
+  await lucid.awaitTx(
+    await (await (await lucid.newTx().delegateTo(rewardAddress!, {
+      DRep: drep,
+    })
+      .commit())
+      .sign().commit()).submit(),
+  );
+
   emulator.distributeRewards(REWARD_AMOUNT);
   assertEquals(await lucid.wallet.getDelegation(), {
     poolId: null,
+    drep: { Id: drep },
     rewards: 0n,
   });
   // Delegation
@@ -181,8 +194,22 @@ Deno.test("Reward withdrawal", async () => {
   emulator.distributeRewards(REWARD_AMOUNT);
   assertEquals(await lucid.wallet.getDelegation(), {
     poolId,
+    drep: { Id: drep },
     rewards: REWARD_AMOUNT,
   });
+
+  // Withdrawal
+  await lucid.awaitTx(
+    await (await (await lucid.newTx().withdraw(rewardAddress!, REWARD_AMOUNT)
+      .commit())
+      .sign().commit()).submit(),
+  );
+  assertEquals(await lucid.wallet.getDelegation(), {
+    poolId,
+    drep: { Id: drep },
+    rewards: 0n,
+  });
+
   // Deregistration
   await lucid.awaitTx(
     await (await (await lucid.newTx().deregisterStake(rewardAddress!)
@@ -191,16 +218,7 @@ Deno.test("Reward withdrawal", async () => {
   );
   assertEquals(await lucid.wallet.getDelegation(), {
     poolId: null,
-    rewards: REWARD_AMOUNT,
-  });
-  // Withdrawal
-  await lucid.awaitTx(
-    await (await (await lucid.newTx().withdraw(rewardAddress!, REWARD_AMOUNT)
-      .commit())
-      .sign().commit()).submit(),
-  );
-  assertEquals(await lucid.wallet.getDelegation(), {
-    poolId: null,
+    drep: null,
     rewards: 0n,
   });
 });

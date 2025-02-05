@@ -197,12 +197,13 @@ export class Maestro implements Provider {
       { headers: this.commonHeaders() },
     );
     if (!timestampedResultResponse.ok) {
-      return { poolId: null, rewards: 0n };
+      return { poolId: null, drep: null, rewards: 0n };
     }
     const timestampedResult = await timestampedResultResponse.json();
     const result = timestampedResult.data;
     return {
       poolId: result.delegated_pool || null,
+      drep: "- information not available -" as ActiveDelegation["drep"], // TODO
       rewards: BigInt(result.rewards_available),
     };
   }

@@ -323,7 +323,7 @@ export class Lucid {
 
         return rewardAddress
           ? await this.delegationAt(rewardAddress)
-          : { poolId: null, rewards: 0n };
+          : { poolId: null, drep: null, rewards: 0n };
       },
       sign: async (
         instructionSigner: InstructionSigner,
@@ -374,7 +374,7 @@ export class Lucid {
 
         return rewardAddress
           ? await this.delegationAt(rewardAddress)
-          : { poolId: null, rewards: 0n };
+          : { poolId: null, drep: null, rewards: 0n };
       },
       sign: () => {
         throw new Error("Wallet is read only");
@@ -432,7 +432,7 @@ export class Lucid {
         const rewardAddress = await this.wallet.rewardAddress();
         return rewardAddress
           ? await this.delegationAt(rewardAddress)
-          : { poolId: null, rewards: 0n };
+          : { poolId: null, drep: null, rewards: 0n };
       },
       sign: (
         instructionSigner: InstructionSigner,

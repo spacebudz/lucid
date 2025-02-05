@@ -103,14 +103,24 @@ impl InstructionSigner {
         if let Some(certificates) = &tx.transaction_body.certificates {
             for cert in certificates.iter() {
                 match cert {
-                    pallas_primitives::conway::Certificate::StakeDeregistration(credential) => {
-                        if let pallas_primitives::conway::StakeCredential::AddrKeyhash(hash) =
-                            credential
-                        {
-                            used_keys.insert(hash.clone());
-                        }
-                    }
-                    pallas_primitives::conway::Certificate::StakeDelegation(credential, _) => {
+                    pallas_primitives::conway::Certificate::Reg(credential, _) // does this require a signature?
+                    | pallas_primitives::conway::Certificate::UnReg(credential, _)
+                    | pallas_primitives::conway::Certificate::VoteDeleg(credential, _)
+                    | pallas_primitives::conway::Certificate::VoteRegDeleg(credential, _, _)
+                    | pallas_primitives::conway::Certificate::StakeVoteDeleg(credential, _, _)
+                    | pallas_primitives::conway::Certificate::StakeVoteRegDeleg(
+                        credential,
+                        _,
+                        _,
+                        _,
+                    )
+                    | pallas_primitives::conway::Certificate::StakeRegDeleg(credential, _, _)
+                    | pallas_primitives::conway::Certificate::UnRegDRepCert(credential, _)
+                    | pallas_primitives::conway::Certificate::RegDRepCert(credential, _, _)
+                    | pallas_primitives::conway::Certificate::UpdateDRepCert(credential, _)
+                    | pallas_primitives::conway::Certificate::StakeDeregistration(credential)
+                    | pallas_primitives::conway::Certificate::ResignCommitteeCold(credential, _)
+                    | pallas_primitives::conway::Certificate::StakeDelegation(credential, _) => {
                         if let pallas_primitives::conway::StakeCredential::AddrKeyhash(hash) =
                             credential
                         {
@@ -130,7 +140,23 @@ impl InstructionSigner {
                     pallas_primitives::conway::Certificate::PoolRetirement(key_hash, _) => {
                         used_keys.insert(key_hash.clone());
                     }
-                    _ => (),
+                    pallas_primitives::conway::Certificate::AuthCommitteeHot(
+                        cold_credential,
+                        hot_credential,
+                    ) => {
+                        if let pallas_primitives::conway::StakeCredential::AddrKeyhash(hash) =
+                            cold_credential
+                        {
+                            used_keys.insert(hash.clone());
+                        }
+                        if let pallas_primitives::conway::StakeCredential::AddrKeyhash(hash) =
+                            hot_credential
+                        // does this require a signature in the tx?
+                        {
+                            used_keys.insert(hash.clone());
+                        }
+                    }
+                    pallas_primitives::conway::Certificate::StakeRegistration(_) => (),
                 }
             }
         }

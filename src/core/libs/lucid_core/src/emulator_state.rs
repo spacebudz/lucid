@@ -449,14 +449,7 @@ impl EmulatorState {
                     )));
                 }
 
-                withdrawals_requests.insert(
-                    reward_address,
-                    Staking {
-                        registered: staking.registered,
-                        rewards: *rewards,
-                        pool_id: staking.pool_id.clone(),
-                    },
-                );
+                withdrawals_requests.insert(reward_address, *rewards);
             }
             withdrawals_requests
         } else {
@@ -626,6 +619,97 @@ impl EmulatorState {
                             variant: DelegVariant::Pool(pool_id),
                         }));
                     }
+                    pallas_primitives::conway::Certificate::VoteDeleg(credential, drep) => {
+                        let (reward_address, credential) = match credential {
+                            pallas_primitives::conway::StakeCredential::AddrKeyhash(hash) => (
+                                Addresses::credential_to_reward_address(
+                                    Network::Preprod,
+                                    Credential::Key {
+                                        hash: hash.to_string(),
+                                    },
+                                )?,
+                                Credential::Key {
+                                    hash: hash.to_string(),
+                                },
+                            ),
+                            pallas_primitives::conway::StakeCredential::ScriptHash(hash) => (
+                                Addresses::credential_to_reward_address(
+                                    Network::Preprod,
+                                    Credential::Script {
+                                        hash: hash.to_string(),
+                                    },
+                                )?,
+                                Credential::Script {
+                                    hash: hash.to_string(),
+                                },
+                            ),
+                        };
+
+                        let variant = match drep {
+                            pallas_primitives::conway::DRep::Abstain => DelegVariant::Abstain,
+                            pallas_primitives::conway::DRep::NoConfidence => {
+                                DelegVariant::NoConfidence
+                            }
+                            pallas_primitives::conway::DRep::Key(key) => {
+                                let mut key_with_header = Vec::new();
+                                key_with_header.push(0b0010_0010);
+                                key_with_header.extend(key.to_vec());
+                                let drep = bech32::encode::<bech32::Bech32>(
+                                    Hrp::parse("drep").unwrap(),
+                                    &key_with_header,
+                                )
+                                .map_err(CoreError::msg)?;
+                                DelegVariant::DRep(drep)
+                            }
+                            pallas_primitives::conway::DRep::Script(script) => {
+                                let mut script_with_header = Vec::new();
+                                script_with_header.push(0b0010_0011);
+                                script_with_header.extend(script.to_vec());
+                                let drep = bech32::encode::<bech32::Bech32>(
+                                    Hrp::parse("drep").unwrap(),
+                                    &script_with_header,
+                                )
+                                .map_err(CoreError::msg)?;
+                                DelegVariant::DRep(drep)
+                            }
+                        };
+
+                        check_and_consum(
+                            credential,
+                            Some(RedeemersKey {
+                                tag: RedeemerTag::Cert,
+                                index: index as u32,
+                            }),
+                        )?;
+
+                        let staking = self
+                            .staking
+                            .get(&reward_address)
+                            .cloned()
+                            .unwrap_or_default();
+
+                        if !staking.registered
+                            && !certificate_requests
+                                .iter()
+                                .find(|c| match c {
+                                    Certificate::Delegation(delegation) => {
+                                        &delegation.reward_address == &reward_address
+                                    }
+                                    _ => false,
+                                })
+                                .is_some()
+                        {
+                            return Err(CoreError::msg(format!(
+                                "Stake registration not found: {}",
+                                &reward_address
+                            )));
+                        }
+
+                        certificate_requests.push(Certificate::Delegation(Delegation {
+                            reward_address,
+                            variant,
+                        }));
+                    }
                     _ => {}
                 }
             }
@@ -727,9 +811,9 @@ impl EmulatorState {
             }
         }
 
-        for (reward_address, staking) in withdrawals_requests {
+        for (reward_address, rewards) in withdrawals_requests {
             if let Some(entry) = self.staking.get_mut(&reward_address) {
-                entry.rewards -= staking.rewards;
+                entry.rewards -= rewards;
             }
         }
 
@@ -745,22 +829,25 @@ impl EmulatorState {
                                 registered: true,
                                 rewards: 0,
                                 pool_id: None,
+                                drep: None,
                             },
                         );
                     }
                 }
                 Certificate::StakeDeregistration { reward_address } => {
-                    if let Some(staking) = self.staking.get_mut(&reward_address) {
-                        staking.registered = false;
-                        staking.pool_id = None;
-                    }
+                    self.staking.remove(&reward_address);
                 }
                 Certificate::Delegation(Delegation {
                     reward_address,
-                    variant: DelegVariant::Pool(pool_id),
+                    variant,
                 }) => {
                     if let Some(staking) = self.staking.get_mut(&reward_address) {
-                        staking.pool_id = Some(pool_id);
+                        match variant {
+                            DelegVariant::Pool(pool_id) => staking.pool_id = Some(pool_id),
+                            DelegVariant::Abstain => staking.drep = Some(DRep::Abstain),
+                            DelegVariant::NoConfidence => staking.drep = Some(DRep::NoConfidence),
+                            DelegVariant::DRep(id) => staking.drep = Some(DRep::Id(id)),
+                        };
                     }
                 }
                 _ => {}
@@ -989,6 +1076,15 @@ pub struct Staking {
     pub registered: bool,
     pub rewards: u64,
     pub pool_id: Option<String>,
+    pub drep: Option<DRep>,
+}
+
+#[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum DRep {
+    Abstain,
+    NoConfidence,
+    Id(String),
 }
 
 impl Default for Staking {
@@ -997,6 +1093,7 @@ impl Default for Staking {
             registered: false,
             rewards: 0,
             pool_id: None,
+            drep: None,
         }
     }
 }

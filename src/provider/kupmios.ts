@@ -1,5 +1,6 @@
 import {
   type ActiveDelegation,
+  Addresses,
   type Assets,
   type Credential,
   fromUnit,
@@ -160,8 +161,10 @@ export class Kupmios implements Provider {
 
   async getDelegation(rewardAddress: string): Promise<ActiveDelegation> {
     const client = await this.rpc(
-      "queryLedgerState/rewardAccountSummaries",
-      { keys: [rewardAddress] }, // TODO: Does this work for reward addresses that are scripts as well?
+      "queryLedgerState/delegateRepresentative",
+      Addresses.inspect(rewardAddress).delegation?.type === "Key"
+        ? { keys: [rewardAddress] }
+        : { scripts: [rewardAddress] },
     );
 
     return new Promise((res, rej) => {
@@ -175,6 +178,7 @@ export class Kupmios implements Provider {
           res(
             {
               poolId: delegation?.delegate.id || null,
+              drep: "- information not available -" as ActiveDelegation["drep"], // TODO
               rewards: BigInt(delegation?.rewards.ada.lovelace || 0),
             },
           );

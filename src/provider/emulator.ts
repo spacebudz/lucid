@@ -74,6 +74,7 @@ export class Emulator implements Provider {
     const staking = this.state.getStaking(rewardAddress);
     return Promise.resolve({
       poolId: staking?.poolId || null,
+      drep: staking?.drep || null,
       rewards: BigInt(staking?.rewards || 0),
     });
   }

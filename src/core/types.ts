@@ -1,6 +1,7 @@
 import type {
   Credential,
   DatumVariant,
+  DRep,
   Instruction,
   InstructionSigner,
   Network,
@@ -33,6 +34,7 @@ export type PartialInstruction =
 
 export type ActiveDelegation = {
   poolId: string | null;
+  drep: DRep | null;
   rewards: bigint;
 };
 
