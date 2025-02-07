@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="100px" src="./logo/lucid.svg" align="center"/>
+  <img width="100px" src="./assets/lucid.svg" align="center"/>
   <h1 align="center">Lucid</h1>
   <p align="center">Lucid is a library designed to simplify creating Cardano transactions and writing off-chain code for Plutus contracts.</p>
 

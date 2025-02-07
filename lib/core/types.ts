@@ -8,7 +8,7 @@ import type {
   RelevantProtocolParameters,
   Script,
   Utxo,
-} from "./libs/lucid_core/pkg/lucid_core.d.ts";
+} from "../../rs_lib/pkg/lucid_core.d.ts";
 
 type OmitInstruction<T extends Instruction, K extends T["type"]> = T extends
   { type: K } ? never : T;

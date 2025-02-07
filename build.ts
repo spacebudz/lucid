@@ -5,19 +5,19 @@ import * as dnt from "jsr:@deno/dnt";
 await dnt.emptyDir("./dist");
 
 try {
-  moveSync("./src/core/core.backup.ts", "./src/core/core.ts", {
+  moveSync("./lib/core/core.backup.ts", "./lib/core/core.ts", {
     overwrite: true,
   });
 } catch (_) {}
-copySync("./src/core/core.ts", "./src/core/core.backup.ts");
-const coreFile = await Deno.readTextFile("./src/core/core.ts");
+copySync("./lib/core/core.ts", "./lib/core/core.backup.ts");
+const coreFile = await Deno.readTextFile("./lib/core/core.ts");
 Deno.writeTextFileSync(
-  "./src/core/core.ts",
+  "./lib/core/core.ts",
   coreFile.replace(
-    `import * as Core from "./libs/lucid_core/pkg/lucid_core.js";`,
+    `import * as Core from "../../rs_lib/pkg/lucid_core.js";`,
     "const Core = {};",
   ).replace(
-    `import * as MessageSigningInstance from "./libs/message_signing/pkg/message_signing.js";`,
+    `import * as MessageSigningInstance from "../../rs_lib/message_signing/pkg/message_signing.js";`,
     "const MessageSigningInstance = {};",
   ),
 );
@@ -47,38 +47,50 @@ try {
     },
     postBuild: async () => {
       const coreFileEsm = await Deno.readTextFile(
-        "./dist/esm/src/core/core.js",
+        "./dist/esm/lib/core/core.js",
       );
       Deno.writeTextFileSync(
-        "./dist/esm/src/core/core.js",
-        coreFileEsm.replace(
-          "const Core = {};",
-          `import * as Core from "./libs/lucid_core/pkg/lucid_core.js";`,
-        ).replace(
-          "const MessageSigningInstance = {};",
-          `import * as MessageSigningInstance from "./libs/message_signing/pkg/message_signing.js";`,
-        ),
+        "./dist/esm/lib/core/core.js",
+        coreFileEsm
+          .replace(
+            "const Core = {};",
+            `import * as Core from "./libs/lucid_core/pkg/lucid_core.js";`,
+          )
+          .replace(
+            "const MessageSigningInstance = {};",
+            `import * as MessageSigningInstance from "./libs/message_signing/pkg/message_signing.js";`,
+          ),
+      );
+
+      const coreTypesFileEsm = await Deno.readTextFile(
+        "./dist/esm/lib/core/core.d.ts",
+      );
+      Deno.writeTextFileSync(
+        "./dist/esm/lib/core/core.d.ts",
+        coreTypesFileEsm
+          .replaceAll(
+            "../../rs_lib/pkg/lucid_core",
+            "./libs/lucid_core/pkg/lucid_core",
+          )
+          .replace(
+            "../../rs_lib/message_signing/pkg/message_signing",
+            "./libs/message_signing/pkg/message_signing",
+          ),
       );
 
       copySync(
-        "./src/core/libs/message_signing/pkg/",
-        "./dist/esm/src/core/libs/message_signing/pkg",
-        {
-          overwrite: true,
-        },
+        "./rs_lib/message_signing/pkg/",
+        "./dist/esm/lib/core/libs/message_signing/pkg",
       );
       copySync(
-        "./src/core/libs/lucid_core/pkg/",
-        "./dist/esm/src/core/libs/lucid_core/pkg",
-        {
-          overwrite: true,
-        },
+        "./rs_lib/pkg/",
+        "./dist/esm/lib/core/libs/lucid_core/pkg",
       );
     },
   });
 } catch (e) {
   console.log(e);
 }
-moveSync("./src/core/core.backup.ts", "./src/core/core.ts", {
+moveSync("./lib/core/core.backup.ts", "./lib/core/core.ts", {
   overwrite: true,
 });

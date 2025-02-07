@@ -1,10 +1,10 @@
 {
   "tasks": {
     "build": "deno run -A build.ts",
-    "build:core": "cd src/core/libs/lucid_core && wasm-pack build . --no-pack --weak-refs --release && rm ./pkg/.gitignore; cd ../message_signing && wasm-pack build . --no-pack --weak-refs --release && rm ./pkg/.gitignore",
+    "build:core": "cd ./rs_lib && wasm-pack build . --no-pack --weak-refs --release && rm ./pkg/.gitignore; cd ./message_signing && wasm-pack build . --no-pack --weak-refs --release && rm ./pkg/.gitignore",
     "publish": "deno task build && deno task test && npm publish dist",
     "test": "deno test --allow-env --allow-read --allow-net tests",
-    "test:core": "cd src/core/libs/lucid_core && cargo test; cd ../message_signing && RUSTFLAGS=-Awarnings cargo test"
+    "test:core": "cd ./rs_lib && cargo test; cd ./message_signing && RUSTFLAGS=-Awarnings cargo test"
   },
   "lint": {
     "include": ["src/", "tests/", "blueprint.ts"],

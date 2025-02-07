@@ -1,7 +1,7 @@
-import * as Core from "./libs/lucid_core/pkg/lucid_core.js";
-import type * as CoreTypes from "./libs/lucid_core/pkg/lucid_core.d.ts";
-import * as MessageSigningInstance from "./libs/message_signing/pkg/message_signing.js";
-import type * as MessageSigningTypes from "./libs/message_signing/pkg/message_signing.d.ts";
+import * as Core from "../../rs_lib/pkg/lucid_core.js";
+import type * as CoreTypes from "../../rs_lib/pkg/lucid_core.d.ts";
+import * as MessageSigningInstance from "../../rs_lib/message_signing/pkg/message_signing.js";
+import type * as MessageSigningTypes from "../../rs_lib/message_signing/pkg/message_signing.d.ts";
 
 export type Addresses = CoreTypes.Addresses;
 export const Addresses: typeof CoreTypes.Addresses = Core.Addresses;
@@ -33,4 +33,4 @@ export type MessageSigning = typeof MessageSigningTypes;
 export const MessageSigning: typeof MessageSigningTypes =
   MessageSigningInstance;
 
-export type * from "./libs/lucid_core/pkg/lucid_core.d.ts";
+export type * from "../../rs_lib/pkg/lucid_core.d.ts";

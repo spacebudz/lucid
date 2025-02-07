@@ -1,1 +1,1 @@
-export * from "./src/mod.ts";
+export * from "./lib/mod.ts";
