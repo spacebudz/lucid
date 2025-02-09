@@ -113,7 +113,7 @@ export const Data = {
           if (title[0] !== title[0].toLowerCase()) {
             throw new Error(
               `Object requires lower case properties: found ${title}, expected ${
-                title[0].toUpperCase() + title.slice(1)
+                title[0].toLowerCase() + title.slice(1)
               }`,
             );
           }
