@@ -1,2 +1,2 @@
-src/core/libs/lucid_core/pkg/lucid_core_bg.js linguist-detectable=false
-src/core/libs/message_signing/pkg/message_signing_bg.js linguist-detectable=false
+rs_lib/pkg/lucid_core_bg.js linguist-detectable=false
+rs_lib/message_signing/pkg/message_signing_bg.js linguist-detectable=false
