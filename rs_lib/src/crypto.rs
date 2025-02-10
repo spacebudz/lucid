@@ -6,7 +6,10 @@ use bech32::Hrp;
 use pallas_crypto::key::ed25519::{PublicKey, SecretKey, SecretKeyExtended, Signature};
 use pallas_primitives::Bytes;
 use pallas_traverse::ComputeHash;
-use pallas_wallet::{hd::Bip32PrivateKey, PrivateKey};
+use pallas_wallet::{
+    hd::{Bip32PrivateKey, Bip32PublicKey},
+    PrivateKey,
+};
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
@@ -71,6 +74,35 @@ impl Crypto {
                 hash: key_hash.to_string(),
             },
         })
+    }
+
+    #[wasm_bindgen(js_name = seedToXpub)]
+    pub fn seed_to_xpub(seed: &str, index: u32) -> CoreResult<String> {
+        let bip32_priv = Bip32PrivateKey::from_bip39_mnenomic(seed.to_string(), "".to_string())
+            .map_err(CoreError::msg)?;
+        let account_key = bip32_priv
+            .derive(harden(1852))
+            .derive(harden(1815))
+            .derive(harden(index));
+
+        Ok(account_key.to_public().to_bech32())
+    }
+
+    #[wasm_bindgen(js_name = xpubToPublicKey)]
+    pub fn xpub_to_public_key(xpub: &str, part: Part) -> CoreResult<String> {
+        let bip32_public = Bip32PublicKey::from_bech32(xpub.to_string()).map_err(CoreError::msg)?;
+
+        let public_key = bip32_public
+            .derive(match part {
+                Part::Payment => 0,
+                Part::Delegation => 2,
+            })
+            .map_err(CoreError::msg)?
+            .derive(0)
+            .map_err(CoreError::msg)?
+            .to_ed25519_pubkey();
+
+        Ok(public_key.to_string())
     }
 
     #[wasm_bindgen(js_name = generateSeed)]
@@ -144,9 +176,6 @@ impl Crypto {
     }
 
     pub fn seed_to_private_key(seed: &str, index: u32, part: Part) -> CoreResult<PrivateKey> {
-        fn harden(n: u32) -> u32 {
-            0x80000000 + n
-        }
         let bip32_priv = Bip32PrivateKey::from_bip39_mnenomic(seed.to_string(), "".to_string())
             .map_err(CoreError::msg)?;
         let account_key = bip32_priv
@@ -164,6 +193,10 @@ impl Crypto {
 
         Ok(private_key)
     }
+}
+
+fn harden(n: u32) -> u32 {
+    0x80000000 + n
 }
 
 #[derive(Tsify, Serialize, Deserialize, Debug, Clone)]

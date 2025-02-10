@@ -153,6 +153,8 @@ export class Crypto {
   free(): void;
   static privateKeyToDetails(key: string): KeyDetails;
   static seedToDetails(seed: string, index: number, part: Part): KeyDetails;
+  static seedToXpub(seed: string, index: number): string;
+  static xpubToPublicKey(xpub: string, part: Part): string;
   static generateSeed(): string;
   /**
    * generates extended ed25519 private key
