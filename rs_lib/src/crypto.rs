@@ -80,6 +80,7 @@ impl Crypto {
     pub fn seed_to_xpub(seed: &str, index: u32) -> CoreResult<String> {
         let bip32_priv = Bip32PrivateKey::from_bip39_mnenomic(seed.to_string(), "".to_string())
             .map_err(CoreError::msg)?;
+
         let account_key = bip32_priv
             .derive(harden(1852))
             .derive(harden(1815))
