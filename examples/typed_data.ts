@@ -26,7 +26,7 @@ export async function send(): Promise<string> {
   const datum: typeof MyDatum = {
     name: fromText("Lucid"),
     age: 0n,
-    fruits: { Other: { name: "Coconut", quantity: 123n } },
+    fruits: { Other: { name: fromText("Coconut"), quantity: 123n } },
     colors: [fromText("Blue"), fromText("Purple")],
     description: null,
   };
