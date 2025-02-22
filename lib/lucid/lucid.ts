@@ -328,7 +328,7 @@ export class Lucid {
       sign: async (
         instructionSigner: InstructionSigner,
       ) => {
-        const tx = instructionSigner.commit();
+        const { tx } = instructionSigner.commit();
         const witnessSet = await api.signTx(tx, true);
         instructionSigner.signWithWitnessSet(witnessSet);
         return witnessSet;

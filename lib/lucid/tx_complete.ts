@@ -1,4 +1,9 @@
-import { Hasher, type InstructionSigner, type Lucid, TxSigned } from "../mod.ts";
+import {
+  Hasher,
+  type InstructionSigner,
+  type Lucid,
+  TxSigned,
+} from "../mod.ts";
 
 export class TxComplete {
   private instructionSigner: InstructionSigner;
@@ -75,10 +80,10 @@ export class TxComplete {
   }
 
   toString(): string {
-    return this.instructionSigner.commit();
+    return this.instructionSigner.commit().tx;
   }
 
   toHash(): string {
-    return Hasher.hashTransaction(this.instructionSigner.commit());
+    return Hasher.hashTransaction(this.instructionSigner.commit().tx);
   }
 }

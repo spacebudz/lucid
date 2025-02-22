@@ -1,25 +1,29 @@
-import { Hasher, type Lucid } from "../mod.ts";
+import { Hasher, type Lucid, type SignerResult } from "../mod.ts";
 
 export class TxSigned {
-  tx: string;
+  private signerResult: SignerResult;
   private lucid: Lucid;
-  constructor(lucid: Lucid, tx: string) {
+  constructor(lucid: Lucid, signerResult: SignerResult) {
     this.lucid = lucid;
-    this.tx = tx;
+    this.signerResult = signerResult;
   }
 
   async submit(): Promise<string> {
     const provider = this.lucid.wallet || this.lucid.provider;
     return await provider.submit(
-      this.tx,
+      this.signerResult.tx,
     );
   }
 
+  toWitnessSet(): string {
+    return this.signerResult.witnessSet;
+  }
+
   toString(): string {
-    return this.tx;
+    return this.signerResult.tx;
   }
 
   toHash(): string {
-    return Hasher.hashTransaction(this.tx);
+    return Hasher.hashTransaction(this.signerResult.tx);
   }
 }

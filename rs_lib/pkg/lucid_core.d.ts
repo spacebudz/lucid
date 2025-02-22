@@ -122,6 +122,11 @@ export interface RelevantProtocolParameters {
     minfeeRefscriptCostPerByte: number;
 }
 
+export interface SignerResult {
+    tx: string;
+    witnessSet: string;
+}
+
 export class Addresses {
   private constructor();
   free(): void;
@@ -207,7 +212,7 @@ export class InstructionSigner {
   signWithWitness(witness: string): InstructionSigner;
   signWithWitnessSet(set: string): InstructionSigner;
   getPartialWitnessSet(): string;
-  commit(): string;
+  commit(): SignerResult;
 }
 export class Utils {
   private constructor();

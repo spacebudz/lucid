@@ -34,10 +34,12 @@ use pallas_primitives::{
     AddrKeyhash, Fragment, NonEmptySet, TransactionInput,
 };
 use pallas_traverse::ComputeHash;
+use serde::{Deserialize, Serialize};
 use std::{
     cmp::Ordering,
     collections::{BTreeSet, HashSet},
 };
+use tsify::Tsify;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 #[wasm_bindgen]
@@ -353,7 +355,7 @@ impl InstructionSigner {
         }
     }
 
-    pub fn commit(&mut self) -> String {
+    pub fn commit(&mut self) -> SignerResult {
         if self.vkey_witnesses.len() > 0 {
             self.tx.transaction_witness_set.vkeywitness = Some(
                 NonEmptySet::from_vec(self.vkey_witnesses.iter().map(|s| s.0.clone()).collect())
@@ -361,8 +363,19 @@ impl InstructionSigner {
             )
         }
 
-        hex::encode(self.tx.encode_fragment().unwrap())
+        SignerResult {
+            tx: hex::encode(self.tx.encode_fragment().unwrap()),
+            witness_set: hex::encode(self.tx.transaction_witness_set.encode_fragment().unwrap()),
+        }
     }
+}
+
+#[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+#[serde(rename_all = "camelCase")]
+pub struct SignerResult {
+    pub tx: String,
+    pub witness_set: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -54,7 +54,7 @@ export const instructionsigner_signWithSeed: (a: number, b: number, c: number, d
 export const instructionsigner_signWithWitness: (a: number, b: number, c: number) => [number, number, number];
 export const instructionsigner_signWithWitnessSet: (a: number, b: number, c: number) => [number, number, number];
 export const instructionsigner_getPartialWitnessSet: (a: number) => [number, number, number, number];
-export const instructionsigner_commit: (a: number) => [number, number];
+export const instructionsigner_commit: (a: number) => any;
 export const utils_applyParamsToScript: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const utils_encodeBech32: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const utils_applySingleCborEncoding: (a: number, b: number) => [number, number, number, number];

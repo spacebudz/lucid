@@ -91,7 +91,21 @@ impl Crypto {
 
     #[wasm_bindgen(js_name = xpubToPublicKey)]
     pub fn xpub_to_public_key(xpub: &str, part: Part) -> CoreResult<String> {
-        let bip32_public = Bip32PublicKey::from_bech32(xpub.to_string()).map_err(CoreError::msg)?;
+        let raw = bech32::decode(xpub)
+            .map(|(_, raw)| raw)
+            .or_else(|bech32_err| {
+                hex::decode(xpub).map_err(|hex_err| {
+                    CoreError::msg(format!(
+                        "Both decoding attempts failed:\n  Bech32 error: {}\n  Hex error: {}",
+                        bech32_err, hex_err
+                    ))
+                })
+            })?;
+
+        let bip32_public = Bip32PublicKey::from_bytes(
+            <[u8; 64]>::try_from(raw)
+                .map_err(|_| CoreError::msg("Invalid xpub size: expected 64 bytes"))?,
+        );
 
         let public_key = bip32_public
             .derive(match part {

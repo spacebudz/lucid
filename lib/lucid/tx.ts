@@ -227,7 +227,7 @@ export class Tx {
   }
 
   /** Add a payment or stake key hash as a required signer of the transaction. */
-  addSigner(keyHash: string | "{{own.payment}}" | "{{own.stake}}"): Tx {
+  addSigner(keyHash: string | "{{own.payment}}" | "{{own.delegation}}"): Tx {
     this.tasks.push(() => ({ type: "AddSigner", keyHash }));
     return this;
   }
@@ -427,7 +427,7 @@ export function resolveInstructions(
         if (instruction.keyHash === "{{own.payment}}") {
           instruction.keyHash = payment!.hash;
         }
-        if (instruction.keyHash === "{{own.stake}}") {
+        if (instruction.keyHash === "{{own.delegation}}") {
           if (!delegation?.hash) {
             throw new Error("Wallet does not have a reward address");
           }

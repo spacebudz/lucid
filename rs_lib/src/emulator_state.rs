@@ -1206,7 +1206,7 @@ mod tests {
 
         let builder = setup_builder(start_utxos, &address);
 
-        let tx = builder
+        let signed = builder
             .commit(Instructions(vec![Instruction::PayTo {
                 assets: Assets::from_lovelace(10000000),
                 address: address_other.to_string(),
@@ -1216,7 +1216,7 @@ mod tests {
             .sign_with_key(&private_key)?
             .commit();
 
-        assert!(state.validate(&tx).is_ok());
+        assert!(state.validate(&signed.tx).is_ok());
 
         Ok(())
     }
@@ -1262,9 +1262,9 @@ mod tests {
 
         let mut tx = InstructionSigner::from_tx(tx, Some(Utxos(start_utxos)))?;
 
-        let signed_tx = tx.sign_with_key(&private_key)?.commit();
+        let signed = tx.sign_with_key(&private_key)?.commit();
 
-        state.validate(&signed_tx).unwrap();
+        state.validate(&signed.tx).unwrap();
         Ok(())
     }
 }

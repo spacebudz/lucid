@@ -70,7 +70,7 @@ export function signMessage(
       ),
     ),
     MessageSigning.CBORValue.new_bytes(
-      fromHex(Crypto.privateKeyToDetails(privateKey).privateKey),
+      fromHex(Crypto.privateKeyToDetails(privateKey).publicKey),
     ),
   ); // x (-2) set to public key
 
