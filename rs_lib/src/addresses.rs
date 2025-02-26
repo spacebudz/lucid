@@ -1,6 +1,7 @@
 use super::codec::Script;
 use super::error::{CoreErr, CoreError, CoreResult};
 use super::hasher::Hasher;
+use crate::utils::Utils;
 use pallas_addresses::{Address, ShelleyAddress, ShelleyDelegationPart, ShelleyPaymentPart};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -41,6 +42,37 @@ impl Addresses {
     #[wasm_bindgen(js_name = scriptToRewardAddress)]
     pub fn script_to_reward_address(network: Network, script: Script) -> CoreResult<String> {
         Self::credential_to_reward_address(network, Self::script_to_credential(script)?)
+    }
+
+    #[wasm_bindgen(js_name = scriptToDrep)]
+    pub fn script_to_drep(script: Script) -> CoreResult<String> {
+        Self::credential_to_drep(Self::script_to_credential(script)?)
+    }
+
+    #[wasm_bindgen(js_name = credentialToDrep)]
+    pub fn credential_to_drep(credential: Credential) -> CoreResult<String> {
+        match credential {
+            Credential::Key { hash } => {
+                Utils::encode_bech32("drep", &(hex::encode([0b0010_0010]) + &hash))
+            }
+            Credential::Script { hash } => {
+                Utils::encode_bech32("drep", &(hex::encode([0b0010_0011]) + &hash))
+            }
+        }
+    }
+
+    #[wasm_bindgen(js_name = drepToCredential)]
+    pub fn drep_to_credential(id: &str) -> CoreResult<Credential> {
+        let (_, id_raw) = bech32::decode(&id).map_err(CoreError::msg)?;
+        Ok(match id_raw[0] {
+            0b0010_0010 => Credential::Key {
+                hash: hex::encode(&id_raw[1..]),
+            },
+            0b0010_0011 => Credential::Script {
+                hash: hex::encode(&id_raw[1..]),
+            },
+            _ => return Err(CoreError::msg("Invalid drep id")),
+        })
     }
 
     #[wasm_bindgen(js_name = credentialToAddress)]
@@ -166,7 +198,7 @@ impl From<Network> for pallas_addresses::Network {
     }
 }
 
-#[derive(Tsify, Serialize, Deserialize, Debug, Clone)]
+#[derive(Tsify, Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(tag = "type")]
 pub enum Credential {
@@ -261,4 +293,25 @@ pub enum AddressDetails {
     Enterprise(AddressDetailsInner),
     Reward(AddressDetailsInner),
     Byron(AddressDetailsInner),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Credential;
+    use crate::addresses::Addresses;
+
+    #[test]
+    fn test_roundtrip_drep() {
+        let credential = Credential::Key {
+            hash: "9257e68f13d3a9fcebc6be8997ccc092781e2fbd45c8891dc73f7e1d".to_string(),
+        };
+
+        assert_eq!(
+            Addresses::drep_to_credential(
+                &Addresses::credential_to_drep(credential.clone()).unwrap()
+            )
+            .unwrap(),
+            credential
+        );
+    }
 }

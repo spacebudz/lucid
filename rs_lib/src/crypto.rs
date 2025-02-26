@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use super::addresses::Credential;
 use crate::error::{CoreError, CoreResult};
 use bech32::Hrp;
@@ -12,6 +10,7 @@ use pallas_wallet::{
 };
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use tsify::Tsify;
 use wasm_bindgen::prelude::wasm_bindgen;
 

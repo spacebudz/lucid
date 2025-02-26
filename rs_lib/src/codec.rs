@@ -1,9 +1,8 @@
-use crate::utils::Utils;
-
 use super::{
     addresses::{Addresses, Credential},
     error::{CoreErr, CoreError, CoreResult},
 };
+use crate::utils::Utils;
 use pallas_addresses::Address;
 use pallas_codec::utils::CborWrap;
 use pallas_primitives::{
@@ -903,15 +902,18 @@ impl TryFrom<Certificate> for pallas_primitives::conway::Certificate {
                                 pallas_primitives::conway::DRep::NoConfidence
                             }
                             DelegVariant::DRep(id) => {
-                                let (_, id_raw) = bech32::decode(&id).map_err(CoreError::msg)?;
-                                match id_raw[0] {
-                                    0b0010_0010 => {
-                                        pallas_primitives::conway::DRep::Key(id_raw[1..].into())
+                                let credential = Addresses::drep_to_credential(&id)?;
+                                match credential {
+                                    Credential::Key { hash } => {
+                                        pallas_primitives::conway::DRep::Key(
+                                            hash.parse().map_err(CoreError::msg)?,
+                                        )
                                     }
-                                    0b0010_0011 => {
-                                        pallas_primitives::conway::DRep::Script(id_raw[1..].into())
+                                    Credential::Script { hash } => {
+                                        pallas_primitives::conway::DRep::Script(
+                                            hash.parse().map_err(CoreError::msg)?,
+                                        )
                                     }
-                                    _ => return Err(CoreError::msg("Invalid DRep id")),
                                 }
                             }
                             _ => unreachable!(),

@@ -135,6 +135,9 @@ export class Addresses {
   static scriptToCredential(script: Script): Credential;
   static scriptToAddress(network: Network, script: Script, delegation?: Credential | null): string;
   static scriptToRewardAddress(network: Network, script: Script): string;
+  static scriptToDrep(script: Script): string;
+  static credentialToDrep(credential: Credential): string;
+  static drepToCredential(id: string): Credential;
   static credentialToAddress(network: Network, payment: Credential, delegation?: Credential | null): string;
   static credentialToRewardAddress(network: Network, delegation: Credential): string;
   static addressToCredential(address: string): Credential;

@@ -281,6 +281,63 @@ export class Addresses {
         }
     }
     /**
+     * @param {Script} script
+     * @returns {string}
+     */
+    static scriptToDrep(script) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.addresses_scriptToDrep(script);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @param {Credential} credential
+     * @returns {string}
+     */
+    static credentialToDrep(credential) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.addresses_credentialToDrep(credential);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @param {string} id
+     * @returns {Credential}
+     */
+    static drepToCredential(id) {
+        const ptr0 = passStringToWasm0(id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.addresses_drepToCredential(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
      * @param {Network} network
      * @param {Credential} payment
      * @param {Credential | null} [delegation]
