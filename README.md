@@ -130,7 +130,7 @@ Lucid transactions can be converted into instructions, which are JSON, making th
 
 ```js
 const instructions = await lucid.newTx()
-  .delegateTo("{{own}}", "pool...")
+  .delegateTo("{{own}}", { Pool: "pool..." })
   .payTo("addr_test1...", { lovelace: 1000000n })
   .toInstructions();
 ```
@@ -143,15 +143,17 @@ The above transaction can be converted into the following object:
     "type": "DelegateTo",
     "delegation": {
       "rewardAddress": "stake...",
-      "poolId": "pool..."
+      "variant": {
+        "Pool": "pool...",
+      },
     },
-    "redeemer": undefined
+    "redeemer": undefined,
   },
   {
     "type": "PayTo",
     "address": "addr_test1...",
-    "assets": { "lovelace": 1000000n }
-  }
+    "assets": { "lovelace": 1000000n },
+  },
 ]
 ```
 
@@ -163,7 +165,9 @@ const tx = await lucid.fromInstructions([
     "type": "DelegateTo",
     "delegation": {
       "rewardAddress": "stake...",
-      "poolId": "pool...",
+      "variant": {
+        "Pool": "pool...",
+      },
     },
     "redeemer": undefined,
   },
