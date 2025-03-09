@@ -8,10 +8,6 @@ import {
   toHex,
 } from "../mod.ts";
 
-type DeepRemoveReadonly<T> = T extends object
-  ? { -readonly [K in keyof T]: DeepRemoveReadonly<T[K]> }
-  : T;
-
 export class Constr<T> {
   index: number;
   fields: T[];
@@ -107,7 +103,7 @@ export const Data = {
     return map as unknown as Map<K, V>;
   },
 
-  Object: <T extends object>(
+  Object: <T extends Record<string, unknown>>(
     properties: T,
     options?: { hasConstr?: boolean },
   ): T => {
@@ -123,7 +119,7 @@ export const Data = {
               }`,
             );
           }
-          return { ...p, title };
+          return { ...p as object, title };
         }),
       }] as Array<Record<string, unknown>>,
     };
@@ -132,9 +128,15 @@ export const Data = {
     return object as unknown as T;
   },
 
-  Enum: <const T extends unknown[]>(
+  Enum: <
+    T extends Array<
+      | string
+      | { [enum_key: string]: unknown[] }
+      | { [enum_key: string]: Record<string, unknown> }
+    >,
+  >(
     ...items: T
-  ): DeepRemoveReadonly<T[number]> => {
+  ): T[number] => {
     const union = {
       anyOf: items.flatMap((item, index) => {
         if (typeof item === "string") {
@@ -179,7 +181,7 @@ export const Data = {
       }),
     };
 
-    return union as unknown as DeepRemoveReadonly<T[number]>;
+    return union as unknown as T[number];
   },
 
   Tuple: <T extends unknown[]>(
