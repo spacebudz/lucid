@@ -129,9 +129,10 @@ export const Data = {
   },
 
   Enum: <
+    S extends unknown[],
     T extends Array<
       | string
-      | { [enum_key: string]: unknown[] }
+      | { [enum_key: string]: [...S] }
       | { [enum_key: string]: Record<string, unknown> }
     >,
   >(
