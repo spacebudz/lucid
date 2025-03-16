@@ -48,11 +48,6 @@ const plutusVersion = "Plutus" +
 
 const definitions = plutusJson.definitions;
 
-const imports = `// deno-lint-ignore-file
-import { applyParamsToScript, Data, Script } from "${
-  import.meta.url.replace("/blueprint.ts", "/mod.ts")
-}"`;
-
 const validators = plutusJson.validators.filter((validator) =>
   !validator.title.includes(".else")
 ).map((validator) => {
@@ -283,6 +278,23 @@ function upperFirst(s: string): string {
     s.charAt(withUnderscore ? 1 : 0).toUpperCase() +
     s.slice((withUnderscore ? 1 : 0) + 1);
 }
+
+function replaceBlueprintImport(url: string): string {
+  const jsrSubstring = "https://jsr.io/@spacebudz/lucid/";
+  if (url.startsWith(jsrSubstring)) {
+    const version = url.split(jsrSubstring)[1].replace(
+      "/blueprint.ts",
+      "",
+    );
+    return "jsr:@spacebudz/lucid@" + version;
+  }
+  return url.replace("/blueprint.ts", "/mod.ts");
+}
+
+const imports = `// deno-lint-ignore-file
+import { applyParamsToScript, Data, Script } from "${
+  replaceBlueprintImport(import.meta.url)
+}"`;
 
 const plutus = imports +
   "\n\n" +
