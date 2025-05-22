@@ -79,11 +79,33 @@ impl Codec {
         fn decode(d: PlutusData) -> CoreResult<DataJson> {
             Ok(match d {
                 PlutusData::BigInt(BigInt::Int(int)) => DataJson::Int { int: int.into() },
-                PlutusData::BigInt(pallas_primitives::BigInt::BigUInt(_))
-                | PlutusData::BigInt(pallas_primitives::BigInt::BigNInt(_)) => {
-                    return Err(CoreError::msg(
-                        "Infinitely large numbers are not supported! Max is Rust i128.",
-                    ))
+                PlutusData::BigInt(BigInt::BigUInt(uint)) => {
+                    let int: i128 = num_bigint::BigUint::from_bytes_be(&uint)
+                        .try_into()
+                        .map_err(|_| {
+                            CoreError::msg(
+                                "Infinitely large numbers are not supported! Max is Rust i128",
+                            )
+                        })?;
+                    DataJson::Int { int }
+                }
+                PlutusData::BigInt(BigInt::BigNInt(nint)) => {
+                    let int: u128 = num_bigint::BigUint::from_bytes_be(&nint)
+                        .try_into()
+                        .map_err(|_| {
+                            CoreError::msg(
+                                "Infinitely large numbers are not supported! Max is Rust i128",
+                            )
+                        })?;
+                    if int <= i128::MAX as u128 + 1 {
+                        DataJson::Int {
+                            int: -(int as i128),
+                        }
+                    } else {
+                        return Err(CoreError::msg(
+                            "Infinitely large numbers are not supported! Max is Rust i128",
+                        ));
+                    }
                 }
                 PlutusData::BoundedBytes(bytes) => DataJson::Bytes {
                     bytes: bytes.to_string(),
@@ -1166,6 +1188,7 @@ mod tests {
     use std::cmp::Ordering;
 
     use crate::codec::ConstrConversion;
+    use fraction::FromPrimitive;
     use pallas_primitives::{Constr, PlutusData};
 
     use super::Assets;
@@ -1235,5 +1258,31 @@ mod tests {
         assert_eq!(assets3.partial_cmp(&assets1), Some(Ordering::Less));
         assert_eq!(assets1.partial_cmp(&assets4), None);
         assert_eq!(assets4.partial_cmp(&assets1), None);
+    }
+
+    #[test]
+    fn test_big_num() {
+        let original_num = 1234567890;
+        let bytes = num_bigint::BigInt::from_i128(original_num)
+            .unwrap()
+            .to_bytes_be()
+            .1;
+        let num: i128 = num_bigint::BigUint::from_bytes_be(&bytes)
+            .try_into()
+            .unwrap();
+        assert_eq!(original_num, num);
+    }
+
+    #[test]
+    fn test_big_num_negative() {
+        let original_num = -1234567890;
+        let bytes = num_bigint::BigInt::from_i128(original_num)
+            .unwrap()
+            .to_bytes_be()
+            .1;
+        let num: u128 = num_bigint::BigUint::from_bytes_be(&bytes)
+            .try_into()
+            .unwrap();
+        assert_eq!(original_num, -(num as i128));
     }
 }
