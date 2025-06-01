@@ -962,7 +962,7 @@ impl TryFrom<Certificate> for pallas_primitives::conway::Certificate {
                         .map_err(CoreError::msg)?,
                     pledge: pool_registration.pledge,
                     cost: pool_registration.cost,
-                    margin: RationalNumber::from_number(pool_registration.margin),
+                    margin: RationalNumber::from_f32(pool_registration.margin),
                     reward_account: Address::from_bech32(&pool_registration.reward_address)
                         .map_err(CoreError::msg)?
                         .to_vec()
@@ -1040,16 +1040,13 @@ impl TryFrom<Certificate> for pallas_primitives::conway::Certificate {
     }
 }
 
-trait ToRationalNumber<A> {
-    fn from_number(n: A) -> Self;
+trait ToRationalNumber {
+    fn from_f32(n: f32) -> Self;
 }
 
-impl<A> ToRationalNumber<A> for RationalNumber
-where
-    A: Into<f64>,
-{
-    fn from_number(n: A) -> Self {
-        let fraction = fraction::Fraction::from(n.into());
+impl ToRationalNumber for RationalNumber {
+    fn from_f32(n: f32) -> Self {
+        let fraction = fraction::Fraction::from(n);
         Self {
             numerator: *fraction.numer().unwrap() as u64,
             denominator: *fraction.denom().unwrap() as u64,
@@ -1187,7 +1184,7 @@ impl<A> ConstrConversion<A> for Constr<A> {
 mod tests {
     use std::cmp::Ordering;
 
-    use crate::codec::ConstrConversion;
+    use crate::codec::{ConstrConversion, ToRationalNumber};
     use fraction::FromPrimitive;
     use pallas_primitives::{Constr, PlutusData};
 
@@ -1284,5 +1281,14 @@ mod tests {
             .try_into()
             .unwrap();
         assert_eq!(original_num, -(num as i128));
+    }
+
+    #[test]
+    fn test_fraction() {
+        let rat = pallas_primitives::RationalNumber::from_f32(0.015);
+        let frac = fraction::Fraction::from((rat.numerator, rat.denominator));
+        let f: f64 = frac.try_into().unwrap();
+
+        assert_eq!(f, 0.015);
     }
 }
