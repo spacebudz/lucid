@@ -29,6 +29,12 @@ export class Blockfrost implements Provider {
       headers: { project_id: this.projectId, lucid },
     }).then((res) => res.json());
 
+    if (!result) throw new Error("Failed to fetch protocal parameters");
+
+    if (result.error) {
+      throw new Error(`${result.status_code} ${result.error}:  ${result.message}`);
+    }
+
     return {
       minFeeA: parseInt(result.min_fee_a),
       minFeeB: parseInt(result.min_fee_b),
