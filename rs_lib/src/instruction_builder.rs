@@ -881,7 +881,7 @@ impl InstructionBuilder {
 
                 let builder_redeemers: BTreeSet<BuilderRedeemer> = redeemers
                     .iter()
-                    .map(|r| BuilderRedeemer(r.clone()))
+                    .map(|(r, _)| BuilderRedeemer(r.clone()))
                     .collect();
 
                 self.redeemers = Some(builder_redeemers.clone());
