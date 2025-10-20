@@ -34,9 +34,23 @@ impl Codec {
     pub fn encode_data(d: DataJson) -> CoreResult<String> {
         fn encode(d: DataJson) -> CoreResult<PlutusData> {
             Ok(match d {
-                DataJson::Int { int } => {
-                    PlutusData::BigInt(BigInt::Int(Int::try_from(int).map_err(CoreError::msg)?))
+                DataJson::BigInt { int } => {
+                    if let Ok(int) = int.parse::<i128>() {
+                        if let Ok(int) = Int::try_from(int) {
+                            return Ok(PlutusData::BigInt(BigInt::Int(int)));
+                        }
+                    }
+
+                    let big_int = num_bigint::BigInt::from_str(&int).map_err(CoreError::msg)?;
+                    let bytes = big_int.magnitude().to_bytes_be();
+
+                    PlutusData::BigInt(if big_int.sign() == num_bigint::Sign::Minus {
+                        BigInt::BigNInt(bytes.into())
+                    } else {
+                        BigInt::BigUInt(bytes.into())
+                    })
                 }
+                DataJson::Int { int } => PlutusData::BigInt(BigInt::Int(Int::from(int))),
                 DataJson::Bytes { bytes } => PlutusData::BoundedBytes(BoundedBytes::from(
                     hex::decode(bytes).map_err(CoreError::msg)?,
                 )),
@@ -78,35 +92,22 @@ impl Codec {
             .map_err(CoreError::msg)?;
         fn decode(d: PlutusData) -> CoreResult<DataJson> {
             Ok(match d {
-                PlutusData::BigInt(BigInt::Int(int)) => DataJson::Int { int: int.into() },
-                PlutusData::BigInt(BigInt::BigUInt(uint)) => {
-                    let int: i128 = num_bigint::BigUint::from_bytes_be(&uint)
-                        .try_into()
-                        .map_err(|_| {
-                            CoreError::msg(
-                                "Infinitely large numbers are not supported! Max is Rust i128",
-                            )
-                        })?;
-                    DataJson::Int { int }
-                }
-                PlutusData::BigInt(BigInt::BigNInt(nint)) => {
-                    let int: u128 = num_bigint::BigUint::from_bytes_be(&nint)
-                        .try_into()
-                        .map_err(|_| {
-                            CoreError::msg(
-                                "Infinitely large numbers are not supported! Max is Rust i128",
-                            )
-                        })?;
-                    if int <= i128::MAX as u128 + 1 {
-                        DataJson::Int {
-                            int: -(int as i128),
-                        }
-                    } else {
-                        return Err(CoreError::msg(
-                            "Infinitely large numbers are not supported! Max is Rust i128",
-                        ));
+                PlutusData::BigInt(BigInt::Int(int)) => {
+                    const MAX_SAFE_JS_INTEGER: i64 = 9007199254740991;
+
+                    let int = int.to_string();
+
+                    match int.parse::<i64>() {
+                        Ok(int) if int <= MAX_SAFE_JS_INTEGER => DataJson::Int { int },
+                        _ => DataJson::BigInt { int },
                     }
                 }
+                PlutusData::BigInt(BigInt::BigUInt(uint)) => DataJson::BigInt {
+                    int: num_bigint::BigUint::from_bytes_be(&uint).to_string(),
+                },
+                PlutusData::BigInt(BigInt::BigNInt(nint)) => DataJson::BigInt {
+                    int: format!("-{}", num_bigint::BigUint::from_bytes_be(&nint).to_string()),
+                },
                 PlutusData::BoundedBytes(bytes) => DataJson::Bytes {
                     bytes: bytes.to_string(),
                 },
@@ -234,8 +235,11 @@ impl TryFrom<NativeScript> for pallas_primitives::conway::NativeScript {
 #[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(untagged)]
 pub enum DataJson {
+    BigInt {
+        int: String,
+    },
     Int {
-        int: i128,
+        int: i64,
     },
     Bytes {
         bytes: String,

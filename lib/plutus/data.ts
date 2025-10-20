@@ -230,7 +230,7 @@ export const Data = {
    */
   to: <T = Data>(data: Exact<T>, type?: T): string => {
     function dataToJson(data: Data): DataJson {
-      if (typeof data === "bigint") return { int: data };
+      if (typeof data === "bigint") return { int: data.toString() };
       if (typeof data === "string") return { bytes: data };
       if (data instanceof Array) return { list: data.map(dataToJson) };
       if (data instanceof Map) {
@@ -253,7 +253,7 @@ export const Data = {
   /** Convert cbor encoded data to plutus data */
   from: <T = Data>(raw: string, type?: T): T => {
     function jsonToData(json: DataJson): Data {
-      if ("int" in json) return json.int;
+      if ("int" in json) return BigInt(json.int);
       if ("bytes" in json) return json.bytes;
       if ("list" in json) return json.list.map(jsonToData);
       if ("map" in json) {

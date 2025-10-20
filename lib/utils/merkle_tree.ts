@@ -136,7 +136,9 @@ export class MerkleTree {
 export { concat, equals };
 
 export function sha256(data: Uint8Array): Hash {
-  return new Uint8Array(crypto.subtle.digestSync("SHA-256", data));
+  return new Uint8Array(
+    crypto.subtle.digestSync("SHA-256", data as BufferSource),
+  );
 }
 
 export function combineHash(hash1: Hash, hash2: Hash): Hash {

@@ -12,10 +12,7 @@ import {
   type Script,
   toUnit,
 } from "../mod.ts";
-import {
-  assert,
-  assertEquals,
-} from "https://deno.land/std@0.145.0/testing/asserts.ts";
+import { assert, assertEquals } from "@std/assert";
 
 function generateAccount(assets: Assets) {
   const seedPhrase = Crypto.generateSeed();

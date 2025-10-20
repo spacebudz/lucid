@@ -258,7 +258,7 @@ export class Maestro implements Provider {
         "Accept": "text/plain",
         ...this.commonHeaders(),
       },
-      body: fromHex(tx),
+      body: fromHex(tx) as BufferSource,
     });
     const result = await response.text();
     if (!response.ok) {

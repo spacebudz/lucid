@@ -17,7 +17,7 @@ export type AddressDetails = ({ type: "Base" } & AddressDetailsInner) | ({ type:
 
 export type NativeScript = { type: "Sig"; keyHash: string } | { type: "Any"; scripts: NativeScript[] } | { type: "All"; scripts: NativeScript[] } | { type: "AtLeast"; required: number; scripts: NativeScript[] } | { type: "Before"; slot: number } | { type: "After"; slot: number };
 
-export type DataJson = { int: bigint } | { bytes: string } | { list: DataJson[] } | { map: MapEntry[] } | { constructor: number; fields: DataJson[] };
+export type DataJson = { int: string } | { int: number } | { bytes: string } | { list: DataJson[] } | { map: MapEntry[] } | { constructor: number; fields: DataJson[] };
 
 export interface MapEntry {
     k: DataJson;

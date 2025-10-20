@@ -14,11 +14,8 @@ import {
   toLabel,
   toUnit,
 } from "../mod.ts";
-import {
-  assert,
-  assertEquals,
-} from "https://deno.land/std@0.145.0/testing/asserts.ts";
-import * as fc from "https://esm.sh/fast-check@3.1.1";
+import { assert, assertEquals } from "@std/assert";
+import * as fc from "fast-check";
 
 const privateKey = Crypto.generatePrivateKey();
 const lucid = new Lucid({ network: "Preprod" });
@@ -202,7 +199,7 @@ Deno.test("json datum to cbor datum", () => {
             ],
           },
           {
-            int: 1653325108875,
+            int: "1653325108875",
           },
           {
             bytes: "f4a4a183be0b0da6e7a7548d1b26f2191b1ab7b2d20ac1c7d97b681c",

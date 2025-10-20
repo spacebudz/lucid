@@ -32,7 +32,9 @@ export class Blockfrost implements Provider {
     if (!result) throw new Error("Failed to fetch protocal parameters");
 
     if (result.error) {
-      throw new Error(`${result.status_code} ${result.error}:  ${result.message}`);
+      throw new Error(
+        `${result.status_code} ${result.error}:  ${result.message}`,
+      );
     }
 
     return {
@@ -239,7 +241,7 @@ export class Blockfrost implements Provider {
         project_id: this.projectId,
         lucid,
       },
-      body: fromHex(tx),
+      body: fromHex(tx) as BufferSource,
     }).then((res) => res.json());
     if (!result || result.error) {
       if (result?.status_code === 400) throw new Error(result.message);
