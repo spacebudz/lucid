@@ -51,11 +51,7 @@ export class Blockfrost implements Provider {
       coinsPerUtxoByte: parseInt(result.coins_per_utxo_size),
       collateralPercentage: parseInt(result.collateral_percent),
       maxCollateralInputs: parseInt(result.max_collateral_inputs),
-      costModels: Object.fromEntries(
-        Object.entries(result.cost_models).map((
-          [plutus, costModel],
-        ) => [plutus, Object.values(costModel as Record<string, number>)]),
-      ),
+      costModels: result.cost_models_raw,
       minfeeRefscriptCostPerByte: parseInt(
         result.min_fee_ref_script_cost_per_byte,
       ),
