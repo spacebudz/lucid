@@ -1,3 +1,8 @@
+# DEPRECATED
+This package has been deprecated and is no longer being supported or updated. Have a look at [MeshJS](https://github.com/MeshJS/mesh) as an alternative.
+
+---
+
 <p align="center">
   <img width="100px" src="./assets/lucid.svg" align="center"/>
   <h1 align="center">Lucid</h1>
