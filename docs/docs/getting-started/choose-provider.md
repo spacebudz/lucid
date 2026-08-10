@@ -52,6 +52,19 @@ const lucid = new Lucid({
 });
 ```
 
+### Nexus
+
+```js
+import { Lucid, Nexus } from "https://deno.land/x/lucid/mod.ts";
+
+const lucid = new Lucid({
+  provider: new Nexus({
+    network: "Preprod", // For MAINNET: "Mainnet".
+    apiKey: "<Your-API-Key>", // Get yours at https://nexus.gerowallet.io (keys are scoped per chain + network).
+  }),
+});
+```
+
 ### Custom
 
 Lucid may add more providers in the future, but you also have the option to

@@ -148,6 +148,16 @@ usage:
         }),
       });
       ```
+      ```js { title="nexus.js" }
+      import { Lucid, Nexus } from "https://deno.land/x/lucid/mod.ts";
+
+      const lucid = new Lucid({
+        provider: new Nexus({
+          network: "Preprod", // For MAINNET: "Mainnet".
+          apiKey: "<Your-API-Key>", // Get yours at https://nexus.gerowallet.io (keys are scoped per chain + network).
+        }),
+      });
+      ```
       ```js { title="custom.ts" }
       import { Lucid, Provider } from "https://deno.land/x/lucid/mod.ts"
 
